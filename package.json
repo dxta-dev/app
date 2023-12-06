@@ -1,0 +1,11 @@
+{
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.3.6"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
