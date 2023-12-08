@@ -1,5 +1,5 @@
 .PHONY: air-watch
-air-watch:
+watch:
 	@./bin/air & $(MAKE) tailwind-watch
 
 .PHONY: templ

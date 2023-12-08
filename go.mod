@@ -3,6 +3,7 @@ module github.com/dxta-dev/app
 go 1.21.5
 
 require (
+	github.com/a-h/templ v0.2.476
 	github.com/donseba/go-htmx v1.1.0
 	github.com/labstack/echo/v4 v4.11.3
 )
