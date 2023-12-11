@@ -2,25 +2,31 @@ package main
 
 import (
 	"context"
-	"fmt"
-
-	"net/http"
 
 	"github.com/donseba/go-htmx"
+	"github.com/dxta-dev/app/internals/handlers"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
-	fmt.Println("Hey there!")
+	app := &handlers.App{
+		HTMX: htmx.New(),
+	}
 
 	e := echo.New()
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hello, World!")
-	})
+	e.Use(echoMiddleware.Logger())
+	e.Use(echoMiddleware.Recover())
+	e.Use(htmxMiddleware)
+
+	e.Static("/", "public")
+
+	e.GET("/", app.Home)
+
 	e.Logger.Fatal(e.Start(":3000"))
 }
 
-func HtmxMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func htmxMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 

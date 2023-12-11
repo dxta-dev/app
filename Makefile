@@ -1,4 +1,4 @@
-.PHONY: air-watch
+.PHONY: watch
 watch:
 	@./bin/air & $(MAKE) tailwind-watch
 
