@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"github.com/dxta-dev/app/internals/templates"
+	"dxta-dev/app/internals/templates"
 	"github.com/labstack/echo/v4"
 )
 

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/donseba/go-htmx"
-	"github.com/dxta-dev/app/internals/handlers"
+	"dxta-dev/app/internals/handlers"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
