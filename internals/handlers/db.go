@@ -5,17 +5,19 @@ import (
 	"database/sql"
 	"dxta-dev/app/internals/templates"
 	"fmt"
+	"os"
+
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
-	"os"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
 
 type user struct {
-	Id          int
-	Name        string
+	Id         int
+	ExternalId int
+	Name       string
 }
 
 func (a *App) Database(c echo.Context) error {
@@ -38,7 +40,7 @@ func (a *App) Database(c echo.Context) error {
 		return err
 	}
 
-	rows, err := db.Query("SELECT id, name FROM forge_users;")
+	rows, err := db.Query("SELECT id, external_id, name FROM forge_users;")
 
 	if err != nil {
 		return err
@@ -53,6 +55,7 @@ func (a *App) Database(c echo.Context) error {
 
 		if err := rows.Scan(
 			&u.Id,
+			&u.ExternalId,
 			&u.Name,
 		); err != nil {
 			return err
