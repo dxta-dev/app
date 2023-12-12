@@ -49,7 +49,7 @@ jobs:
           key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
       - name: Generate
-        if: steps.generate.cache.outputs.cache-hit != 'true'
+        if: steps.generate-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p bin/
           go install github.com/a-h/templ/cmd/templ@latest
