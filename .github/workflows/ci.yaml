@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  test:
+  setup:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +36,17 @@ jobs:
       - name: Generate
         run: |
           ./.github/workflows/generate.sh
-
+  test:
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
       - name: Test
         run: |
           go test -v ./...
+  build:
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dry Build
+        run: |
+          go build -o ./tmp/main ./cmd/web/main.go
