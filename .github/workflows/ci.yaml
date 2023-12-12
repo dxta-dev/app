@@ -31,14 +31,6 @@ jobs:
         run: |
           bun i
 
-      - name: Setup go cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
       - name: Setup generate cache
         uses: actions/cache@v3
         id: generate-cache
@@ -49,7 +41,7 @@ jobs:
           key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
       - name: Generate
-        if: steps.generate.cache.outputs.cache-hit != 'true'
+        if: steps.generate-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p bin/
           go install github.com/a-h/templ/cmd/templ@latest
@@ -67,14 +59,8 @@ jobs:
         with:
           go-version: 1.21.5
 
-      - uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
-      - uses: actions/cache/restore@v3
+      - name: Restore generate cache
+        uses: actions/cache/restore@v3
         with:
           path: |
             ./public/style.css
@@ -96,14 +82,8 @@ jobs:
         with:
           go-version: 1.21.5
 
-      - uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
-      - uses: actions/cache/restore@v3
+      - name: Restore generate cache
+        uses: actions/cache/restore@v3
         with:
           path: |
             ./public/style.css
