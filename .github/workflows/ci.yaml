@@ -40,10 +40,6 @@ jobs:
             ./internals/templates/**/*_templ.go
           key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
-      - name: go mod download
-        run: |
-          go mod download
-
       - name: Generate
         if: steps.generate-cache.outputs.cache-hit != 'true'
         run: |
