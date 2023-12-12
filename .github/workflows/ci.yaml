@@ -35,7 +35,7 @@ jobs:
 
       - name: Generate
         run: |
-          ./github/workflows/generate.sh
+          ./.github/workflows/generate.sh
 
       - name: Test
         run: |
