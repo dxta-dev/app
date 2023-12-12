@@ -31,14 +31,6 @@ jobs:
         run: |
           bun i
 
-      - name: Setup go cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
       - name: Setup generate cache
         uses: actions/cache@v3
         id: generate-cache
@@ -71,14 +63,6 @@ jobs:
         with:
           go-version: 1.21.5
 
-      - name: Restore go cache
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-
       - name: Restore generate cache
         uses: actions/cache/restore@v3
         with:
@@ -101,14 +85,6 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.21.5
-
-      - name: Restore go cache
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
       - name: Restore generate cache
         uses: actions/cache/restore@v3
