@@ -18,26 +18,29 @@ jobs:
         with:
           go-version: 1.21.5
 
-      - uses: actions/cache@v3
+      - name: Setup bun cache
+        uses: actions/cache@v3
         id: bun-cache
         with:
           path: |
             ./node_modules
           key: ${{ runner.os }}-bun-${{ hashFiles('./bun.lockb') }}
 
-      - name: Bun install
+      - name: bun install
         if: steps.bun-cache.outputs.cache-hit != 'true'
         run: |
           bun i
 
-      - uses: actions/cache@v3
+      - name: Setup go cache
+        uses: actions/cache@v3
         with:
           path: |
             ~/.cache/go-build
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - uses: actions/cache@v3
+      - name: Setup generate cache
+        uses: actions/cache@v3
         id: generate-cache
         with:
           path: |
@@ -52,6 +55,35 @@ jobs:
           go install github.com/a-h/templ/cmd/templ@latest
           templ generate
           ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
+
+  test:
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.5
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ./public/style.css
+            ./internals/templates/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
+
+      - name: Test
+        run: |
+          go test -v ./...
 
   build:
     needs: [setup]
