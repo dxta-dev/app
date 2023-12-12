@@ -31,17 +31,6 @@ jobs:
         run: |
           bun i
 
-  generate:
-    needs: [setup]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup go
-        uses: actions/setup-go@v4
-        with:
-          go-version: 1.21.5
-
       - name: Setup go cache
         uses: actions/cache@v3
         with:
@@ -60,7 +49,7 @@ jobs:
           key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
       - name: Generate
-        if: steps.generate-cache.outputs.cache-hit != 'true'
+        if: steps.generate.cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p bin/
           go install github.com/a-h/templ/cmd/templ@latest
@@ -68,7 +57,7 @@ jobs:
           ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
 
   test:
-    needs: [generate]
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -77,13 +66,27 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.21.5
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ./public/style.css
+            ./internals/templates/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
       - name: Test
         run: |
           go test -v ./...
 
   build:
-    needs: [generate]
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -92,6 +95,20 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: 1.21.5
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - uses: actions/cache/restore@v3
+        with:
+          path: |
+            ./public/style.css
+            ./internals/templates/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
       - name: Dry Build
         run: |
