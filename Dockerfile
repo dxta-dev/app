@@ -8,8 +8,6 @@ COPY ./internals/templates/*.templ ./internals/templates/
 
 RUN bun install
 
-RUN ls ./internals/templates
-
 RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
 FROM golang:1.21.5-bullseye AS build
