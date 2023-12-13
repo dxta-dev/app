@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
-	"fmt"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -63,8 +62,6 @@ func (a *App) Database(c echo.Context) error {
 
 		users = append(users, u)
 	}
-
-	fmt.Println(users)
 
 	components := templates.Home("DXTA")
 	return components.Render(context.Background(), c.Response().Writer)
