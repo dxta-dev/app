@@ -23,6 +23,8 @@ func main() {
 
 	e.GET("/", app.Home)
 
+	e.GET("/database", app.Database)
+
 	e.Logger.Fatal(e.Start(":3000"))
 }
 
