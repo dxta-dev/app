@@ -3,7 +3,7 @@ name: CI
 on: [push]
 
 env:
-  TEST_TAG: dxta/app:test
+  TEST_TAG: user/app:test
 
 jobs:
   setup:
@@ -112,6 +112,3 @@ jobs:
           context: .
           load: true
           tags: ${{ env.TEST_TAG }}
-
-
-

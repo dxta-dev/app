@@ -10,6 +10,8 @@ RUN bun install
 
 RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
+
+
 FROM golang:1.21.5-bullseye AS build
 
 WORKDIR /app
@@ -33,6 +35,8 @@ RUN go build \
   -tags netgo \
   -o web \
   ./cmd/web/main.go
+
+
 
 FROM scratch
 
