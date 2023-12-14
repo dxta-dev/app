@@ -1,0 +1,10 @@
+package templates
+
+templ Charts(page *Page, chartData []TimeSeries) {
+	@Layout(page) {
+		for _, item := range chartData {
+			@TimeSeriesChart(item)
+		}
+	}
+}
+

@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 
-	"github.com/donseba/go-htmx"
 	"dxta-dev/app/internals/handlers"
+
+	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -24,6 +25,8 @@ func main() {
 	e.GET("/", app.Home)
 
 	e.GET("/database", app.Database)
+
+	e.GET("/charts", app.Charts)
 
 	e.Logger.Fatal(e.Start(":3000"))
 }
