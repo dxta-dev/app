@@ -28,6 +28,8 @@ func main() {
 
 	e.GET("/charts", app.Charts)
 
+	e.GET("/scatter", app.Scatter)
+
 	e.Logger.Fatal(e.Start(":3000"))
 }
 
