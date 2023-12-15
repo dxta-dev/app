@@ -2,9 +2,10 @@ package main
 
 import (
 	"context"
+	"strings"
 
-	"github.com/donseba/go-htmx"
 	"dxta-dev/app/internals/handlers"
+	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -17,6 +18,7 @@ func main() {
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
+	e.Use(tenantMiddleware)
 	e.Use(htmxMiddleware)
 
 	e.Static("/", "public")
@@ -26,6 +28,27 @@ func main() {
 	e.GET("/database", app.Database)
 
 	e.Logger.Fatal(e.Start(":3000"))
+}
+
+func tenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		host := c.Request().Host
+		parts := strings.Split(host, ".")
+
+		if len(parts) > 2 {
+			subdomain := parts[0]
+
+			if subdomain == "dxta" {
+				c.Set("is_root", true)
+			} else {
+				c.Set("is_root", false)
+			}
+
+			c.Set("subdomain", subdomain)
+		}
+
+		return next(c)
+	}
 }
 
 func htmxMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
