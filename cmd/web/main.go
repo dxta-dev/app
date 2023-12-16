@@ -25,5 +25,7 @@ func main() {
 
 	e.GET("/database", app.Database)
 
+	e.GET("/oss", app.OSSIndex)
+
 	e.Logger.Fatal(e.Start(":3000"))
 }
