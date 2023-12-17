@@ -24,6 +24,41 @@ type Card struct {
 	URL                templ.SafeURL
 }
 
+type CardGroup struct {
+	FirstNarrowCard  *Card
+	SecondNarrowCard *Card
+	WideCard         *Card
+}
+
+
+templ ACardGroup(cardGroup CardGroup) {
+	<div class="flex flex-wrap w-1/2">
+		if cardGroup.FirstNarrowCard != nil {
+			@NarrowCard(*cardGroup.FirstNarrowCard)
+		}
+		if cardGroup.SecondNarrowCard != nil {
+			@NarrowCard(*cardGroup.SecondNarrowCard)
+		}
+		if cardGroup.WideCard != nil {
+			@WideCard(*cardGroup.WideCard)
+		}
+	</div>
+}
+
+templ BCardGroup(cardGroup CardGroup) {
+	<div class="flex flex-wrap w-1/2">
+		if cardGroup.WideCard != nil {
+			@WideCard(*cardGroup.WideCard)
+		}
+		if cardGroup.FirstNarrowCard != nil {
+			@NarrowCard(*cardGroup.FirstNarrowCard)
+		}
+		if cardGroup.SecondNarrowCard != nil {
+			@NarrowCard(*cardGroup.SecondNarrowCard)
+		}
+	</div>
+}
+
 templ NarrowCard(card Card) {
 	<div class="md:p-2 p-1 w-1/2">
 		<div
@@ -106,12 +141,10 @@ templ WideCard(card Card) {
 	</div>
 }
 
-templ OSSIndex() {
+templ OSSIndex(cardGroups []CardGroup) {
 	<html>
 		<head>
 			<title>oss</title>
-			<script src="https://unpkg.com/htmx.org@1.9.9"></script>
-			<script src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
 			<link rel="stylesheet" href="style.css"/>
 		</head>
 		<body>
@@ -128,70 +161,13 @@ templ OSSIndex() {
 					</div>
 					<div class="mx-auto mt-12">
 						<div class="flex flex-wrap md:-m-2 -m-1">
-							<div class="flex flex-wrap w-1/2">
-								@NarrowCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1642132652859-3ef5a1048fd1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2660&q=80",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-								@NarrowCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1522932753915-9ee97e43e3d9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE0fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-								@WideCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1491895200222-0fc4a4c35e18?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1674&q=80",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-							</div>
-							<div class="flex flex-wrap w-1/2">
-								@WideCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1491895200222-0fc4a4c35e18?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1674&q=80",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-								@NarrowCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1642132652859-3ef5a1048fd1?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=2660&q=80",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-								@NarrowCard(
-									Card{
-										Logo: "/images/icon-32x32.svg",
-										LogoAlt: "DXTA",
-										Content: "DXTA has Economy growth upswing market index funds capitalization corporate bonds mutual.",
-										BackgroundImage: "https://images.unsplash.com/photo-1522932753915-9ee97e43e3d9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1yZWxhdGVkfDE0fHx8ZW58MHx8fHw%3D&auto=format&fit=crop&w=800&q=60",
-										BackgroundImageAlt: "DXTA",
-										URL: "/",
-									},
-								)
-							</div>
+							for index, cardGroup := range cardGroups {
+								if index % 2 == 0 {
+									@BCardGroup(cardGroup)
+								} else {
+									@ACardGroup(cardGroup)
+								}
+							}
 						</div>
 					</div>
 				</div>
