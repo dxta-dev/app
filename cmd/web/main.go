@@ -1,11 +1,9 @@
 package main
 
 import (
-	"context"
-
 	"dxta-dev/app/internals/handlers"
 	"dxta-dev/app/internals/middlewares"
-  
+
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -32,12 +30,6 @@ func main() {
 
 	e.GET("/scatter", app.Scatter)
 
-	e.Logger.Fatal(e.Start(":3000"))
-}
-
-func htmxMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		ctx := c.Request().Context()
 	e.GET("/oss", app.OSSIndex)
 
 	e.Logger.Fatal(e.Start(":3000"))
