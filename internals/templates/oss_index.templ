@@ -30,34 +30,6 @@ type CardGroup struct {
 	WideCard         *Card
 }
 
-templ ACardGroup(cardGroup CardGroup) {
-	<div class="flex flex-wrap w-1/2">
-		if cardGroup.FirstNarrowCard != nil {
-			@NarrowCard(*cardGroup.FirstNarrowCard)
-		}
-		if cardGroup.SecondNarrowCard != nil {
-			@NarrowCard(*cardGroup.SecondNarrowCard)
-		}
-		if cardGroup.WideCard != nil {
-			@WideCard(*cardGroup.WideCard)
-		}
-	</div>
-}
-
-templ BCardGroup(cardGroup CardGroup) {
-	<div class="flex flex-wrap w-1/2">
-		if cardGroup.WideCard != nil {
-			@WideCard(*cardGroup.WideCard)
-		}
-		if cardGroup.FirstNarrowCard != nil {
-			@NarrowCard(*cardGroup.FirstNarrowCard)
-		}
-		if cardGroup.SecondNarrowCard != nil {
-			@NarrowCard(*cardGroup.SecondNarrowCard)
-		}
-	</div>
-}
-
 templ NarrowCard(card Card) {
 	<div class="md:p-2 p-1 w-1/2">
 		<div
@@ -162,9 +134,29 @@ templ OSSIndex(cardGroups []CardGroup) {
 						<div class="flex flex-wrap md:-m-2 -m-1">
 							for index, cardGroup := range cardGroups {
 								if index % 2 == 0 {
-									@BCardGroup(cardGroup)
+									<div class="flex flex-wrap w-1/2">
+										if cardGroup.FirstNarrowCard != nil {
+											@NarrowCard(*cardGroup.FirstNarrowCard)
+										}
+										if cardGroup.SecondNarrowCard != nil {
+											@NarrowCard(*cardGroup.SecondNarrowCard)
+										}
+										if cardGroup.WideCard != nil {
+											@WideCard(*cardGroup.WideCard)
+										}
+									</div>
 								} else {
-									@ACardGroup(cardGroup)
+									<div class="flex flex-wrap w-1/2">
+										if cardGroup.FirstNarrowCard != nil {
+											@NarrowCard(*cardGroup.FirstNarrowCard)
+										}
+										if cardGroup.SecondNarrowCard != nil {
+											@NarrowCard(*cardGroup.SecondNarrowCard)
+										}
+										if cardGroup.WideCard != nil {
+											@WideCard(*cardGroup.WideCard)
+										}
+									</div>
 								}
 							}
 						</div>
