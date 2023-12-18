@@ -21,20 +21,8 @@ func (a *App) Scatter(c echo.Context) error {
 
 	chartData = append(chartData, templates.ScatterSeries{
 		Title:   "Random Series",
-		XValues: chart.Seq{Sequence: chart.NewLinearSequence().WithStart(1.0).WithEnd(100.0)}.Values(),
+		XValues: chart.Seq{Sequence: chart.NewLinearSequence().WithStart(1).WithEnd(7).WithStep(1)}.Values(),
 		YValues: chart.Seq{Sequence: chart.NewRandomSequence().WithLen(100).WithMin(0).WithMax(100)}.Values(),
-	})
-
-	chartData = append(chartData, templates.ScatterSeries{
-		Title:   "Random Series 2",
-		XValues: chart.Seq{Sequence: chart.NewLinearSequence().WithStart(50).WithEnd(55)}.Values(),
-		YValues: chart.Seq{Sequence: chart.NewRandomSequence().WithLen(10).WithMin(0).WithMax(10)}.Values(),
-	})
-
-	chartData = append(chartData, templates.ScatterSeries{
-		Title:   "Series",
-		XValues: []float64{1, 2, 3, 4, 5},
-		YValues: []float64{1, 2, 3, 4, 5},
 	})
 
 	components := templates.Scatter(page, chartData)

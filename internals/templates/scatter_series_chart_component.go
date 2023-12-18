@@ -36,9 +36,36 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	}
 
 	graph := chart.Chart{
+		XAxis: chart.XAxis{
+			GridMajorStyle: chart.Style{
+				StrokeColor: chart.ColorAlternateGray,
+				StrokeWidth: 1.0,
+			},
+			Ticks: []chart.Tick{
+				{Value: 1, Label: "Monday"},
+				{Value: 2, Label: "Tuesday"},
+				{Value: 3, Label: "Wednesday"},
+				{Value: 4, Label: "Thursday"},
+				{Value: 5, Label: "Friday"},
+				{Value: 6, Label: "Saturday"},
+				{Value: 7, Label: "Sunday"},
+			},
+		},
 		Series: []chart.Series{
 			mainSeries,
 		},
+	}
+
+	for _, tick := range graph.XAxis.Ticks {
+		gridLine := chart.ContinuousSeries{
+			XValues: []float64{tick.Value, tick.Value},
+			YValues: []float64{0, 100},
+			Style: chart.Style{
+				StrokeColor: chart.ColorAlternateGray,
+				StrokeWidth: 1.0,
+			},
+		}
+		graph.Series = append(graph.Series, gridLine)
 	}
 
 	buffer := bytes.NewBuffer([]byte{})
