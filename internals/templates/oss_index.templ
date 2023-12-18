@@ -135,14 +135,14 @@ templ OSSIndex(cardGroups []CardGroup) {
 							for index, cardGroup := range cardGroups {
 								if index % 2 == 0 {
 									<div class="flex flex-wrap w-1/2">
+										if cardGroup.WideCard != nil {
+											@WideCard(*cardGroup.WideCard)
+										}
 										if cardGroup.FirstNarrowCard != nil {
 											@NarrowCard(*cardGroup.FirstNarrowCard)
 										}
 										if cardGroup.SecondNarrowCard != nil {
 											@NarrowCard(*cardGroup.SecondNarrowCard)
-										}
-										if cardGroup.WideCard != nil {
-											@WideCard(*cardGroup.WideCard)
 										}
 									</div>
 								} else {
