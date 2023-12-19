@@ -54,7 +54,6 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 
 	for i := startOfWeek.Day(); i <= endOfWeek.Day(); i++ {
 		day := time.Date(now.Year(), now.Month(), i, 0, 0, 0, 0, time.UTC)
-		// Format the date as "Mon 02"
 		dateLabel := day.Format("Mon 02")
 		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{Value: float64(i), Label: dateLabel})
 	}
