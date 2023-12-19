@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/wcharczuk/go-chart/v2"
@@ -25,6 +26,10 @@ type ScatterSeries struct {
 }
 
 func ScatterSeriesChart(series ScatterSeries) templ.Component {
+	now := time.Now()
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1)
+	endOfWeek := startOfWeek.AddDate(0, 0, 6)
+
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,
@@ -41,19 +46,17 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 				StrokeColor: chart.ColorAlternateGray,
 				StrokeWidth: 1.0,
 			},
-			Ticks: []chart.Tick{
-				{Value: 1, Label: "Monday"},
-				{Value: 2, Label: "Tuesday"},
-				{Value: 3, Label: "Wednesday"},
-				{Value: 4, Label: "Thursday"},
-				{Value: 5, Label: "Friday"},
-				{Value: 6, Label: "Saturday"},
-				{Value: 7, Label: "Sunday"},
-			},
 		},
 		Series: []chart.Series{
 			mainSeries,
 		},
+	}
+
+	for i := startOfWeek.Day(); i <= endOfWeek.Day(); i++ {
+		day := time.Date(now.Year(), now.Month(), i, 0, 0, 0, 0, time.UTC)
+		// Format the date as "Mon 02"
+		dateLabel := day.Format("Mon 02")
+		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{Value: float64(i), Label: dateLabel})
 	}
 
 	for _, tick := range graph.XAxis.Ticks {
