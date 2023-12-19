@@ -53,9 +53,11 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	}
 
 	for i := startOfWeek.Day(); i <= endOfWeek.Day(); i++ {
+		var dayMilisec int64
 		day := time.Date(now.Year(), now.Month(), i, 0, 0, 0, 0, time.UTC)
 		dateLabel := day.Format("Mon 02")
-		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{Value: float64(i), Label: dateLabel})
+		dayMilisec = day.UnixNano() / 1e6
+		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{Value: float64(dayMilisec), Label: dateLabel})
 	}
 
 	for _, tick := range graph.XAxis.Ticks {
