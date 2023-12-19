@@ -5,6 +5,7 @@ go 1.21.5
 require (
 	github.com/a-h/templ v0.2.476
 	github.com/donseba/go-htmx v1.1.0
+	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.3
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	modernc.org/sqlite v1.27.0
@@ -15,7 +16,6 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/labstack/gommon v0.4.0 // indirect

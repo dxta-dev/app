@@ -1,0 +1,47 @@
+package templates
+
+type Page struct {
+	Title   string
+	Boosted bool
+}
+
+templ Layout(page *Page) {
+	<html>
+		@Head(page.Title)
+		if !page.Boosted {
+			@Navigation(false)
+		}
+		<body>
+			@Content() {
+				{ children... }
+			}
+		</body>
+	</html>
+}
+
+templ Head(title string) {
+	<head>
+		<meta charset="UTF-8"/>
+		<title>{ title }</title>
+		<script src="https://unpkg.com/htmx.org@1.9.6/dist/htmx.min.js"></script>
+		<script src="https://unpkg.com/htmx.org@1.9.6/dist/ext/head-support.js"></script>
+		<link href="/style.css" rel="stylesheet"/>
+		<script>
+		</script>
+	</head>
+}
+
+templ Content() {
+	<main>
+		{ children... }
+	</main>
+}
+
+templ Navigation(isSignedIn bool) {
+	<nav hx-boost="true" hx-target="main" hx-swap="outerHTML show:unset" class="bg-blue-500 p-4">
+		<a href="/" class="text-white hover:text-blue-200">Home</a>
+		<a href="/charts" class="text-white hover:text-blue-200">Charts</a>
+		<a href="/database" class="text-white hover:text-blue-200">Database</a>
+	</nav>
+	<hr class="my-4"/>
+}

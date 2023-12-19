@@ -1,0 +1,101 @@
+package templates
+
+import "fmt"
+
+type Date struct {
+	Id      int
+	Day     int
+    Week    int
+    Month   int
+    Year    int
+}
+
+type MergeRequestMetrics struct {
+	Id              int
+	UserJunk        int
+    MrSize          int
+    CodingDuration  int
+    PickupDuration  int
+    ReviewDuration  int
+    Merged          int
+    Closed          int
+    Approved        int
+    Reviewed        int
+	MergedAt        Date
+    OpenedAt        Date
+    ClosedAt        Date
+    LastUpdatedAt   Date
+    StartedCodingAt Date
+    StartedPickupAt Date
+    StartedReviewAt Date
+}
+
+templ Database(page *Page, name string, metrics []MergeRequestMetrics) {
+	@Layout(page){
+		<html>
+			<head>
+				<title>{ name }</title>
+				<link rel="stylesheet" href="style.css"/>
+			</head>
+			<body>
+                <div class="bg-white">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead>
+                                <tr>
+                                    <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged</th>
+                                </tr>
+                            </thead>
+                        </table>
+                    </div>
+				<div class="bg-white">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User junk</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mr size</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coding duration</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pickup duration</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review duration</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opened at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closed at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last updated at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started coding at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started pickup at</th>
+                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started review at</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            for _, metric := range metrics {
+                                <tr>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Id) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.UserJunk) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.MrSize) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.CodingDuration) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.PickupDuration) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.ReviewDuration) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Merged) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Closed) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Approved) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Reviewed) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.MergedAt.Day) }-{ fmt.Sprintf("%d", metric.MergedAt.Month) }-{ fmt.Sprintf("%d", metric.MergedAt.Year) } / { fmt.Sprintf("%d", metric.MergedAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.OpenedAt.Day) }-{ fmt.Sprintf("%d", metric.OpenedAt.Month) }-{ fmt.Sprintf("%d", metric.OpenedAt.Year) } / { fmt.Sprintf("%d", metric.OpenedAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.ClosedAt.Day) }-{ fmt.Sprintf("%d", metric.ClosedAt.Month) }-{ fmt.Sprintf("%d", metric.ClosedAt.Year) } / { fmt.Sprintf("%d", metric.ClosedAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.LastUpdatedAt.Day) }-{ fmt.Sprintf("%d", metric.LastUpdatedAt.Month) }-{ fmt.Sprintf("%d", metric.LastUpdatedAt.Year) } / { fmt.Sprintf("%d", metric.LastUpdatedAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedCodingAt.Day) }-{ fmt.Sprintf("%d", metric.StartedCodingAt.Month) }-{ fmt.Sprintf("%d", metric.StartedCodingAt.Year) } / { fmt.Sprintf("%d", metric.StartedCodingAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedPickupAt.Day) }-{ fmt.Sprintf("%d", metric.StartedPickupAt.Month) }-{ fmt.Sprintf("%d", metric.StartedPickupAt.Year) } / { fmt.Sprintf("%d", metric.StartedPickupAt.Week) }</td>
+                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedReviewAt.Day) }-{ fmt.Sprintf("%d", metric.StartedReviewAt.Month) }-{ fmt.Sprintf("%d", metric.StartedReviewAt.Year) } / { fmt.Sprintf("%d", metric.StartedReviewAt.Week) }</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+				</div>
+			</body>
+		</html>
+	}
+}
