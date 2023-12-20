@@ -4,11 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/donseba/go-htmx"
+	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 
@@ -70,11 +69,16 @@ func CheckValue(t int, max int) int {
 	return t
 }
 
-func CheckName(n string) string {
-	if n == "" {
-		return ""
+func unique(intSlice []int) []int {
+	keys := make(map[int]bool)
+	list := []int{}
+	for _, entry := range intSlice {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
 	}
-	return n
+	return list
 }
 
 func (a *App) Database(c echo.Context) error {
@@ -174,10 +178,19 @@ func (a *App) Database(c echo.Context) error {
 		searchedUserJunks = append(searchedUserJunks, j.Author, j.MergedBy, j.Approver1, j.Approver2, j.Approver3, j.Approver4, j.Approver5, j.Approver6, j.Approver7, j.Approver8, j.Approver9, j.Approver10, j.Committer1, j.Committer2, j.Committer3, j.Committer4, j.Committer5, j.Committer6, j.Committer7, j.Committer8, j.Committer9, j.Committer10, j.Reviewer1, j.Reviewer2, j.Reviewer3, j.Reviewer4, j.Reviewer5, j.Reviewer6, j.Reviewer7, j.Reviewer8, j.Reviewer9, j.Reviewer10)
 	}
 
+	searchedDates = unique(searchedDates)
+	searchedUserJunks = unique(searchedUserJunks)
+
 	var metrics []templates.MergeRequestMetrics
 
-	datesQueryString := "SELECT id, day, week, month, year FROM dates WHERE id IN (" + strings.Trim(strings.Join(strings.Fields(fmt.Sprint(searchedDates)), ", "), "[]") + ");"
-	neededDates, er := db.Query(datesQueryString)
+	// SOLUTION FROM https://stackoverflow.com/a/32837541
+	datesQuery, args, queryErr := sqlx.In("SELECT id, day, week, month, year FROM dates WHERE id IN (?)", searchedDates)
+
+	if queryErr != nil {
+		return queryErr
+	}
+
+	neededDates, er := db.Query(datesQuery, args...)
 	if er != nil {
 		return er
 	}
@@ -202,8 +215,13 @@ func (a *App) Database(c echo.Context) error {
 		}
 	}
 
-	usersQueryString := "SELECT id, name FROM forge_users WHERE id IN (" + strings.Trim(strings.Join(strings.Fields(fmt.Sprint(searchedUserJunks)), ", "), "[]") + ");"
-	neededUsers, er := db.Query(usersQueryString)
+	usersQuery, args, queryErr := sqlx.In("SELECT id, name FROM forge_users WHERE id IN (?)", searchedUserJunks)
+
+	if queryErr != nil {
+		return queryErr
+	}
+
+	neededUsers, er := db.Query(usersQuery, args...)
 	if er != nil {
 		return er
 	}
@@ -219,7 +237,7 @@ func (a *App) Database(c echo.Context) error {
 		}
 		userMap[m.Id] = templates.User{
 			Id:   m.Id,
-			Name: CheckName(m.Name),
+			Name: m.Name,
 		}
 	}
 
