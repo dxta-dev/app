@@ -25,6 +25,9 @@ func readData() ([]float64, []float64) {
 	var xvalues []float64
 	var yvalues []float64
 
+	now := time.Now()
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+
 	// Hardcoded dates
 	dates := []string{
 		"2023,12,19,16,51.1948264984227130",
@@ -40,9 +43,10 @@ func readData() ([]float64, []float64) {
 		hour := parseInt(parts[3])
 		// elapsedMillis := parseFloat64(parts[4]) -> we will later implement Yvalue so this will stay commented out
 		timeValue := time.Date(year, time.Month(month), day, hour, 0, 0, 0, time.UTC)
-		xSecondsValue := float64(timeValue.Unix())
+		xSecondsValue := float64(timeValue.Unix() - startOfWeek.Unix())
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 50)
+
 	}
 
 	return xvalues, yvalues

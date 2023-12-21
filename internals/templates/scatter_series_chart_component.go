@@ -3,7 +3,6 @@ package templates
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"time"
 
@@ -28,9 +27,7 @@ type ScatterSeries struct {
 
 func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	now := time.Now()
-	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour) // Set time to midnight
-	endOfTheWeek := startOfWeek.AddDate(0, 0, 7).Truncate(24 * time.Hour)
-	fmt.Println(endOfTheWeek)
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -59,7 +56,6 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 		secondsFromStartOfWeek := startOfWeekSeconds + int64(i*24*60*60)
 		secondsForEachDay := int64(i * 24 * 60 * 60)
 		dateLabel := time.Unix(secondsFromStartOfWeek, 0).Format("Mon 02")
-		fmt.Println(secondsForEachDay)
 		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{
 			Value: float64(secondsForEachDay),
 			Label: dateLabel,
