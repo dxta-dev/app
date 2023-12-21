@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"dxta-dev/app/internals/templates"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -25,23 +24,27 @@ func parseFloat64(str string) float64 {
 func readData() ([]float64, []float64) {
 	var xvalues []float64
 	var yvalues []float64
-	var xmilisecValue float64
-	err := chart.ReadLines("internals/handlers/request.csv", func(line string) error {
-		parts := chart.SplitCSV(line)
+
+	// Hardcoded dates
+	dates := []string{
+		"2023,12,19,16,51.1948264984227130",
+		"2023,12,19,18,1.7940833333333333",
+		"2023,12,22,18,10.0383889931207000",
+	}
+
+	for _, dateStr := range dates {
+		parts := chart.SplitCSV(dateStr)
 		year := parseInt(parts[0])
 		month := parseInt(parts[1])
 		day := parseInt(parts[2])
 		hour := parseInt(parts[3])
 		// elapsedMillis := parseFloat64(parts[4]) -> we will later implement Yvalue so this will stay commented out
 		timeValue := time.Date(year, time.Month(month), day, hour, 0, 0, 0, time.UTC)
-		xmilisecValue = float64(timeValue.UnixNano()) / 1e6
+		xmilisecValue := float64(timeValue.UnixNano()) / 1e6
 		xvalues = append(xvalues, xmilisecValue)
 		yvalues = append(yvalues, 50)
-		return nil
-	})
-	if err != nil {
-		fmt.Println(err.Error())
 	}
+
 	return xvalues, yvalues
 }
 
