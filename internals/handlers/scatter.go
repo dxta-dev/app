@@ -29,24 +29,16 @@ func readData() ([]float64, []float64) {
 	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
 	// Hardcoded dates
-	dates := []string{
-		"2023,12,19,16,51.1948264984227130",
-		"2023,12,19,18,1.7940833333333333",
-		"2023,12,22,18,10.0383889931207000",
+	times := []time.Time{
+		time.Date(2023, 12, 19, 16, 51, 0, 0, time.UTC),
+		time.Date(2023, 12, 19, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 22, 23, 0, 0, 0, time.UTC),
 	}
 
-	for _, dateStr := range dates {
-		parts := chart.SplitCSV(dateStr)
-		year := parseInt(parts[0])
-		month := parseInt(parts[1])
-		day := parseInt(parts[2])
-		hour := parseInt(parts[3])
-		// elapsedMillis := parseFloat64(parts[4]) -> we will later implement Yvalue so this will stay commented out
-		timeValue := time.Date(year, time.Month(month), day, hour, 0, 0, 0, time.UTC)
-		xSecondsValue := float64(timeValue.Unix() - startOfWeek.Unix())
+	for _, time := range times {
+		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 50)
-
 	}
 
 	return xvalues, yvalues
