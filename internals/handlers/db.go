@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
+	"fmt"
 	"os"
 
+	"github.com/donseba/go-htmx"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 
@@ -13,13 +15,14 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type user struct {
-	Id         int
-	ExternalId int
-	Name       string
-}
-
 func (a *App) Database(c echo.Context) error {
+
+	r := c.Request()
+	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+	page := &templates.Page{
+		Title:   "Database",
+		Boosted: h.HxBoosted,
+	}
 
 	err := godotenv.Load()
 
@@ -47,10 +50,10 @@ func (a *App) Database(c echo.Context) error {
 
 	defer rows.Close()
 
-	var users []user
+	var users []templates.User
 
 	for rows.Next() {
-		var u user
+		var u templates.User
 
 		if err := rows.Scan(
 			&u.Id,
@@ -62,7 +65,8 @@ func (a *App) Database(c echo.Context) error {
 
 		users = append(users, u)
 	}
+	fmt.Println(users)
 
-	components := templates.Home("DXTA")
+	components := templates.Database(page, page.Title, users)
 	return components.Render(context.Background(), c.Response().Writer)
 }

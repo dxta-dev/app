@@ -3,6 +3,7 @@ package main
 import (
 	"dxta-dev/app/internals/handlers"
 	"dxta-dev/app/internals/middlewares"
+
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
@@ -24,6 +25,10 @@ func main() {
 	e.GET("/", app.Home)
 
 	e.GET("/database", app.Database)
+
+	e.GET("/charts", app.Charts)
+
+	e.GET("/scatter", app.Scatter)
 
 	e.GET("/oss", app.OSSIndex)
 
