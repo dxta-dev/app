@@ -40,8 +40,8 @@ func readData() ([]float64, []float64) {
 		hour := parseInt(parts[3])
 		// elapsedMillis := parseFloat64(parts[4]) -> we will later implement Yvalue so this will stay commented out
 		timeValue := time.Date(year, time.Month(month), day, hour, 0, 0, 0, time.UTC)
-		xmilisecValue := float64(timeValue.UnixNano()) / 1e6
-		xvalues = append(xvalues, xmilisecValue)
+		xSecondsValue := float64(timeValue.Unix())
+		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 50)
 	}
 
