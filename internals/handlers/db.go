@@ -294,7 +294,6 @@ func (a *App) Database(c echo.Context) error {
 			Reviewers:       reviewers,
 		})
 	}
-	fmt.Println(users)
 
 	components := templates.Database(page, page.Title, metrics)
 	return components.Render(context.Background(), c.Response().Writer)
