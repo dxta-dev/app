@@ -8,7 +8,6 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
-	"github.com/wcharczuk/go-chart/v2"
 )
 
 func parseInt(str string) int {
