@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
-	"fmt"
 	"os"
 	"time"
 
@@ -201,7 +200,6 @@ func (a *App) Database(c echo.Context) error {
 		`)
 
 	if err != nil {
-		fmt.Println("ROWS Error:", err)
 		return err
 	}
 
@@ -270,7 +268,6 @@ func (a *App) Database(c echo.Context) error {
 			&j.Reviewer9Name,
 			&j.Reviewer10Name,
 		); err != nil {
-			fmt.Println("SWQ Error:", err)
 			return err
 		}
 
