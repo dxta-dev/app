@@ -6,7 +6,6 @@ import (
 	"dxta-dev/app/internals/templates"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -18,65 +17,60 @@ import (
 )
 
 type JoinedIndexes struct {
-	Id              int
-	MergedAt        int
-	OpenedAt        int
-	ClosedAt        int
-	LastUpdatedAt   int
-	StartedCodingAt int
-	StartedPickupAt int
-	StartedReviewAt int
-	Author          int
-	MergedBy        int
-	Approver1       int
-	Approver2       int
-	Approver3       int
-	Approver4       int
-	Approver5       int
-	Approver6       int
-	Approver7       int
-	Approver8       int
-	Approver9       int
-	Approver10      int
-	Committer1      int
-	Committer2      int
-	Committer3      int
-	Committer4      int
-	Committer5      int
-	Committer6      int
-	Committer7      int
-	Committer8      int
-	Committer9      int
-	Committer10     int
-	Reviewer1       int
-	Reviewer2       int
-	Reviewer3       int
-	Reviewer4       int
-	Reviewer5       int
-	Reviewer6       int
-	Reviewer7       int
-	Reviewer8       int
-	Reviewer9       int
-	Reviewer10      int
-}
-
-func CheckValue(t int, max int) int {
-	if t > max {
-		return 0
-	}
-	return t
-}
-
-func unique(intSlice []int) []int {
-	keys := make(map[int]bool)
-	list := []int{}
-	for _, entry := range intSlice {
-		if _, value := keys[entry]; !value {
-			keys[entry] = true
-			list = append(list, entry)
-		}
-	}
-	return list
+	Id                 int
+	MergedDay          int
+	MergedMonth        int
+	MergedYear         int
+	OpenedDay          int
+	OpenedMonth        int
+	OpenedYear         int
+	ClosedDay          int
+	ClosedMonth        int
+	ClosedYear         int
+	LastUpdatedDay     int
+	LastUpdatedMonth   int
+	LastUpdatedYear    int
+	StartedCodingDay   int
+	StartedCodingMonth int
+	StartedCodingYear  int
+	StartedPickupDay   int
+	StartedPickupMonth int
+	StartedPickupYear  int
+	StartedReviewDay   int
+	StartedReviewMonth int
+	StartedReviewYear  int
+	AuthorName         string
+	MergedByName       string
+	Approver1Name      string
+	Approver2Name      string
+	Approver3Name      string
+	Approver4Name      string
+	Approver5Name      string
+	Approver6Name      string
+	Approver7Name      string
+	Approver8Name      string
+	Approver9Name      string
+	Approver10Name     string
+	Committer1Name     string
+	Committer2Name     string
+	Committer3Name     string
+	Committer4Name     string
+	Committer5Name     string
+	Committer6Name     string
+	Committer7Name     string
+	Committer8Name     string
+	Committer9Name     string
+	Committer10Name    string
+	Reviewer1Name      string
+	Reviewer2Name      string
+	Reviewer3Name      string
+	Reviewer4Name      string
+	Reviewer5Name      string
+	Reviewer6Name      string
+	Reviewer7Name      string
+	Reviewer8Name      string
+	Reviewer9Name      string
+	Reviewer10Name     string
 }
 
 func (a *App) Database(c echo.Context) error {
@@ -109,22 +103,102 @@ func (a *App) Database(c echo.Context) error {
 	rows, err := db.Query(`
 		SELECT
 		merge_request_metrics.id,
-		merge_request_fact_dates_junk.merged_at, merge_request_fact_dates_junk.opened_at, merge_request_fact_dates_junk.closed_at, merge_request_fact_dates_junk.last_updated_at,
-		merge_request_fact_dates_junk.started_coding_at, merge_request_fact_dates_junk.started_pickup_at, merge_request_fact_dates_junk.started_review_at,
-		merge_request_fact_users_junk.author, merge_request_fact_users_junk.merged_by, merge_request_fact_users_junk.approver1, merge_request_fact_users_junk.approver2,
-		merge_request_fact_users_junk.approver3, merge_request_fact_users_junk.approver4, merge_request_fact_users_junk.approver5, merge_request_fact_users_junk.approver6,
-		merge_request_fact_users_junk.approver7, merge_request_fact_users_junk.approver8, merge_request_fact_users_junk.approver9, merge_request_fact_users_junk.approver10,
-		merge_request_fact_users_junk.committer1, merge_request_fact_users_junk.committer2, merge_request_fact_users_junk.committer3, merge_request_fact_users_junk.committer4,
-		merge_request_fact_users_junk.committer5, merge_request_fact_users_junk.committer6, merge_request_fact_users_junk.committer7, merge_request_fact_users_junk.committer8,
-		merge_request_fact_users_junk.committer9, merge_request_fact_users_junk.committer10, merge_request_fact_users_junk.reviewer1, merge_request_fact_users_junk.reviewer2,
-		merge_request_fact_users_junk.reviewer3, merge_request_fact_users_junk.reviewer4, merge_request_fact_users_junk.reviewer5, merge_request_fact_users_junk.reviewer6,
-		merge_request_fact_users_junk.reviewer7, merge_request_fact_users_junk.reviewer8, merge_request_fact_users_junk.reviewer9, merge_request_fact_users_junk.reviewer10
+		merged_date.day, merged_date.month, merged_date.year,
+		opened_date.day, opened_date.month, opened_date.year,
+		closed_date.day, closed_date.month, closed_date.year,
+		last_updated_date.day, last_updated_date.month, last_updated_date.year,
+		started_coding_date.day, started_coding_date.month, started_coding_date.year,
+		started_pickup_date.day, started_pickup_date.month, started_pickup_date.year,
+		started_review_date.day, started_review_date.month, started_review_date.year,
+		author.name, merged_by.name,
+		approver1.name, approver2.name, approver3.name, approver4.name, approver5.name, approver6.name, approver7.name, approver8.name, approver9.name, approver10.name,
+		committer1.name, committer2.name, committer3.name, committer4.name, committer5.name, committer6.name, committer7.name, committer8.name, committer9.name, committer10.name,
+		reviewer1.name, reviewer2.name, reviewer3.name, reviewer4.name, reviewer5.name, reviewer6.name, reviewer7.name, reviewer8.name, reviewer9.name, reviewer10.name
 		FROM merge_request_metrics
 		JOIN merge_request_fact_dates_junk
 		ON merge_request_metrics.dates_junk = merge_request_fact_dates_junk.id
+		JOIN dates AS merged_date
+		ON merged_date.id = merge_request_fact_dates_junk.merged_at
+		JOIN dates AS opened_date
+		ON opened_date.id = merge_request_fact_dates_junk.opened_at
+		JOIN dates AS closed_date
+		ON closed_date.id = merge_request_fact_dates_junk.closed_at
+		JOIN dates AS last_updated_date
+		ON last_updated_date.id = merge_request_fact_dates_junk.last_updated_at
+		JOIN dates AS started_coding_date
+		ON started_coding_date.id = merge_request_fact_dates_junk.started_coding_at
+		JOIN dates AS started_pickup_date
+		ON started_pickup_date.id = merge_request_fact_dates_junk.started_pickup_at
+		JOIN dates AS started_review_date
+		ON started_review_date.id = merge_request_fact_dates_junk.started_review_at
 		JOIN merge_request_fact_users_junk
-		ON merge_request_metrics.users_junk = merge_request_fact_users_junk.id;
-	`)
+		ON merge_request_metrics.users_junk = merge_request_fact_users_junk.id
+		JOIN forge_users AS author
+		ON author.id = merge_request_fact_users_junk.author
+		JOIN forge_users AS merged_by
+		ON merged_by.id = merge_request_fact_users_junk.merged_by
+		JOIN forge_users AS approver1
+		ON approver1.id = merge_request_fact_users_junk.approver1
+		JOIN forge_users AS approver2
+		ON approver2.id = merge_request_fact_users_junk.approver2
+		JOIN forge_users AS approver3
+		ON approver3.id = merge_request_fact_users_junk.approver3
+		JOIN forge_users AS approver4
+		ON approver4.id = merge_request_fact_users_junk.approver4
+		JOIN forge_users AS approver5
+		ON approver5.id = merge_request_fact_users_junk.approver5
+		JOIN forge_users AS approver6
+		ON approver6.id = merge_request_fact_users_junk.approver6
+		JOIN forge_users AS approver7
+		ON approver7.id = merge_request_fact_users_junk.approver7
+		JOIN forge_users AS approver8
+		ON approver8.id = merge_request_fact_users_junk.approver8
+		JOIN forge_users AS approver9
+		ON approver9.id = merge_request_fact_users_junk.approver9
+		JOIN forge_users AS approver10
+		ON approver10.id = merge_request_fact_users_junk.approver10
+		JOIN forge_users AS committer1
+		ON committer1.id = merge_request_fact_users_junk.committer1
+		JOIN forge_users AS committer2
+		ON committer2.id = merge_request_fact_users_junk.committer2
+		JOIN forge_users AS committer3
+		ON committer3.id = merge_request_fact_users_junk.committer3
+		JOIN forge_users AS committer4
+		ON committer4.id = merge_request_fact_users_junk.committer4
+		JOIN forge_users AS committer5
+		ON committer5.id = merge_request_fact_users_junk.committer5
+		JOIN forge_users AS committer6
+		ON committer6.id = merge_request_fact_users_junk.committer6
+		JOIN forge_users AS committer7
+		ON committer7.id = merge_request_fact_users_junk.committer7
+		JOIN forge_users AS committer8
+		ON committer8.id = merge_request_fact_users_junk.committer8
+		JOIN forge_users AS committer9
+		ON committer9.id = merge_request_fact_users_junk.committer9
+		JOIN forge_users AS committer10
+		ON committer10.id = merge_request_fact_users_junk.committer10
+		JOIN forge_users AS reviewer1
+		ON reviewer1.id = merge_request_fact_users_junk.reviewer1
+		JOIN forge_users AS reviewer2
+		ON reviewer2.id = merge_request_fact_users_junk.reviewer2
+		JOIN forge_users AS reviewer3
+		ON reviewer3.id = merge_request_fact_users_junk.reviewer3
+		JOIN forge_users AS reviewer4
+		ON reviewer4.id = merge_request_fact_users_junk.reviewer4
+		JOIN forge_users AS reviewer5
+		ON reviewer5.id = merge_request_fact_users_junk.reviewer5
+		JOIN forge_users AS reviewer6
+		ON reviewer6.id = merge_request_fact_users_junk.reviewer6
+		JOIN forge_users AS reviewer7
+		ON reviewer7.id = merge_request_fact_users_junk.reviewer7
+		JOIN forge_users AS reviewer8
+		ON reviewer8.id = merge_request_fact_users_junk.reviewer8
+		JOIN forge_users AS reviewer9
+		ON reviewer9.id = merge_request_fact_users_junk.reviewer9
+		JOIN forge_users AS reviewer10
+		ON reviewer10.id = merge_request_fact_users_junk.reviewer10
+		;
+		`)
 
 	if err != nil {
 		fmt.Println("ROWS Error:", err)
@@ -133,182 +207,88 @@ func (a *App) Database(c echo.Context) error {
 
 	defer rows.Close()
 
-	var joined []JoinedIndexes
-	var searchedDates []int
-	var searchedUserJunks []int
-	var searchedDatesInterface []interface{}
-	var searchedUserJunksInterface []interface{}
-	dateMap := make(map[int]time.Time)
-	userMap := make(map[int]string)
-
+	var metrics []templates.MergeRequestMetrics
 	for rows.Next() {
+		var approvers []string
+		var committers []string
+		var reviewers []string
 		var j JoinedIndexes
 
 		if err := rows.Scan(
 			&j.Id,
-			&j.MergedAt,
-			&j.OpenedAt,
-			&j.ClosedAt,
-			&j.LastUpdatedAt,
-			&j.StartedCodingAt,
-			&j.StartedPickupAt,
-			&j.StartedReviewAt,
-			&j.Author,
-			&j.MergedBy,
-			&j.Approver1,
-			&j.Approver2,
-			&j.Approver3,
-			&j.Approver4,
-			&j.Approver5,
-			&j.Approver6,
-			&j.Approver7,
-			&j.Approver8,
-			&j.Approver9,
-			&j.Approver10,
-			&j.Committer1,
-			&j.Committer2,
-			&j.Committer3,
-			&j.Committer4,
-			&j.Committer5,
-			&j.Committer6,
-			&j.Committer7,
-			&j.Committer8,
-			&j.Committer9,
-			&j.Committer10,
-			&j.Reviewer1,
-			&j.Reviewer2,
-			&j.Reviewer3,
-			&j.Reviewer4,
-			&j.Reviewer5,
-			&j.Reviewer6,
-			&j.Reviewer7,
-			&j.Reviewer8,
-			&j.Reviewer9,
-			&j.Reviewer10,
+			&j.MergedDay,
+			&j.MergedMonth,
+			&j.MergedYear,
+			&j.OpenedDay,
+			&j.OpenedMonth,
+			&j.OpenedYear,
+			&j.ClosedDay,
+			&j.ClosedMonth,
+			&j.ClosedYear,
+			&j.LastUpdatedDay,
+			&j.LastUpdatedMonth,
+			&j.LastUpdatedYear,
+			&j.StartedCodingDay,
+			&j.StartedCodingMonth,
+			&j.StartedCodingYear,
+			&j.StartedPickupDay,
+			&j.StartedPickupMonth,
+			&j.StartedPickupYear,
+			&j.StartedReviewDay,
+			&j.StartedReviewMonth,
+			&j.StartedReviewYear,
+			&j.AuthorName,
+			&j.MergedByName,
+			&j.Approver1Name,
+			&j.Approver2Name,
+			&j.Approver3Name,
+			&j.Approver4Name,
+			&j.Approver5Name,
+			&j.Approver6Name,
+			&j.Approver7Name,
+			&j.Approver8Name,
+			&j.Approver9Name,
+			&j.Approver10Name,
+			&j.Committer1Name,
+			&j.Committer2Name,
+			&j.Committer3Name,
+			&j.Committer4Name,
+			&j.Committer5Name,
+			&j.Committer6Name,
+			&j.Committer7Name,
+			&j.Committer8Name,
+			&j.Committer9Name,
+			&j.Committer10Name,
+			&j.Reviewer1Name,
+			&j.Reviewer2Name,
+			&j.Reviewer3Name,
+			&j.Reviewer4Name,
+			&j.Reviewer5Name,
+			&j.Reviewer6Name,
+			&j.Reviewer7Name,
+			&j.Reviewer8Name,
+			&j.Reviewer9Name,
+			&j.Reviewer10Name,
 		); err != nil {
 			fmt.Println("SWQ Error:", err)
 			return err
 		}
-		joined = append(joined, j)
-		searchedDates = append(searchedDates, j.MergedAt, j.ClosedAt, j.OpenedAt, j.LastUpdatedAt, j.StartedCodingAt, j.StartedPickupAt, j.StartedReviewAt)
-		searchedUserJunks = append(searchedUserJunks, j.Author, j.MergedBy, j.Approver1, j.Approver2, j.Approver3, j.Approver4, j.Approver5, j.Approver6, j.Approver7, j.Approver8, j.Approver9, j.Approver10, j.Committer1, j.Committer2, j.Committer3, j.Committer4, j.Committer5, j.Committer6, j.Committer7, j.Committer8, j.Committer9, j.Committer10, j.Reviewer1, j.Reviewer2, j.Reviewer3, j.Reviewer4, j.Reviewer5, j.Reviewer6, j.Reviewer7, j.Reviewer8, j.Reviewer9, j.Reviewer10)
-	}
 
-	searchedDates = unique(searchedDates)
-	searchedUserJunks = unique(searchedUserJunks)
-
-	for i := range searchedDates {
-		searchedDatesInterface = append(searchedDatesInterface, searchedDates[i])
-	}
-
-	for i := range searchedUserJunks {
-		searchedUserJunksInterface = append(searchedUserJunksInterface, searchedUserJunks[i])
-	}
-
-	placeholderDateSlice := make([]string, len(searchedDates))
-	for i := range placeholderDateSlice {
-		placeholderDateSlice[i] = "?"
-	}
-
-	// Join the datePlaceholders with commas
-	datePlaceholders := strings.Join(placeholderDateSlice, ", ")
-
-	// Construct the datesQuery
-	datesQuery := fmt.Sprintf("SELECT id, day, week, month, year FROM dates WHERE id IN (%s);", datePlaceholders)
-
-	dateStmt, err := db.Prepare(datesQuery)
-	if err != nil {
-		fmt.Println("DS Error:", err)
-		return err
-	}
-	defer dateStmt.Close()
-
-	neededDates, err := dateStmt.Query(searchedDatesInterface...)
-
-	if err != nil {
-		fmt.Println("ND Error:", err)
-		return err
-	}
-	defer neededDates.Close()
-
-	var metrics []templates.MergeRequestMetrics
-
-	for neededDates.Next() {
-		var m templates.Date
-		var Day int
-		var Month int
-		var Year int
-		if err := neededDates.Scan(
-			&m.Id,
-			&m.Day,
-			&m.Week,
-			&m.Month,
-			&m.Year,
-		); err != nil {
-			fmt.Println("ND NEXT Error:", err)
-			return err
-		}
-		Day = CheckValue(m.Day, 31)
-		Month = CheckValue(m.Month, 12)
-		Year = CheckValue(m.Year, 2100)
-		dateMap[m.Id] = time.Date(Year, time.Month(Month), Day, 0, 0, 0, 0, time.UTC)
-	}
-
-	placeholderUserSlice := make([]string, len(searchedUserJunks))
-	for i := range placeholderUserSlice {
-		placeholderUserSlice[i] = "?"
-	}
-
-	userPlaceholders := strings.Join(placeholderUserSlice, ", ")
-
-	usersQuery := fmt.Sprintf("SELECT id, name FROM forge_users WHERE id IN (%s);", userPlaceholders)
-
-	userStmt, err := db.Prepare(usersQuery)
-	if err != nil {
-		fmt.Println("US Error:", err)
-		return err
-	}
-	defer userStmt.Close()
-
-	neededUsers, err := userStmt.Query(searchedUserJunksInterface...)
-
-	if err != nil {
-		fmt.Println("NU Error:", err)
-		return err
-	}
-	defer neededUsers.Close()
-
-	for neededUsers.Next() {
-		var m templates.User
-		if err := neededUsers.Scan(
-			&m.Id,
-			&m.Name,
-		); err != nil {
-			fmt.Println("NU NEXT Error:", err)
-			return err
-		}
-		userMap[m.Id] = m.Name
-	}
-
-	for _, data := range joined {
-		var approvers []string
-		var committers []string
-		var reviewers []string
-		approvers = append(approvers, userMap[data.Approver1], userMap[data.Approver2], userMap[data.Approver3], userMap[data.Approver4], userMap[data.Approver5], userMap[data.Approver6], userMap[data.Approver7], userMap[data.Approver8], userMap[data.Approver9], userMap[data.Approver10])
-		committers = append(committers, userMap[data.Committer1], userMap[data.Committer2], userMap[data.Committer3], userMap[data.Committer4], userMap[data.Committer5], userMap[data.Committer6], userMap[data.Committer7], userMap[data.Committer8], userMap[data.Committer9], userMap[data.Committer10])
-		reviewers = append(reviewers, userMap[data.Reviewer1], userMap[data.Reviewer2], userMap[data.Reviewer3], userMap[data.Reviewer4], userMap[data.Reviewer5], userMap[data.Reviewer6], userMap[data.Reviewer7], userMap[data.Reviewer8], userMap[data.Reviewer9], userMap[data.Reviewer10])
+		approvers = append(approvers, j.Approver1Name, j.Approver2Name, j.Approver3Name, j.Approver4Name, j.Approver5Name, j.Approver6Name, j.Approver7Name, j.Approver8Name, j.Approver9Name, j.Approver10Name)
+		committers = append(committers, j.Committer1Name, j.Committer2Name, j.Committer3Name, j.Committer4Name, j.Committer5Name, j.Committer6Name, j.Committer7Name, j.Committer8Name, j.Committer9Name, j.Committer10Name)
+		reviewers = append(reviewers, j.Reviewer1Name, j.Reviewer2Name, j.Reviewer3Name, j.Reviewer4Name, j.Reviewer5Name, j.Reviewer6Name, j.Reviewer7Name, j.Reviewer8Name, j.Reviewer9Name, j.Reviewer10Name)
 
 		metrics = append(metrics, templates.MergeRequestMetrics{
-			Id:              data.Id,
-			MergedAt:        dateMap[data.MergedAt],
-			OpenedAt:        dateMap[data.OpenedAt],
-			ClosedAt:        dateMap[data.ClosedAt],
-			LastUpdatedAt:   dateMap[data.LastUpdatedAt],
-			StartedCodingAt: dateMap[data.StartedCodingAt],
-			StartedPickupAt: dateMap[data.StartedPickupAt],
-			StartedReviewAt: dateMap[data.StartedReviewAt],
-			Author:          userMap[data.Author],
-			MergedBy:        userMap[data.MergedBy],
+			Id:              j.Id,
+			MergedAt:        time.Date(j.MergedYear, time.Month(j.MergedMonth), j.MergedDay, 0, 0, 0, 0, time.UTC),
+			OpenedAt:        time.Date(j.OpenedYear, time.Month(j.OpenedMonth), j.OpenedDay, 0, 0, 0, 0, time.UTC),
+			ClosedAt:        time.Date(j.ClosedYear, time.Month(j.MergedMonth), j.ClosedDay, 0, 0, 0, 0, time.UTC),
+			LastUpdatedAt:   time.Date(j.LastUpdatedYear, time.Month(j.LastUpdatedMonth), j.LastUpdatedDay, 0, 0, 0, 0, time.UTC),
+			StartedCodingAt: time.Date(j.StartedCodingYear, time.Month(j.StartedCodingMonth), j.StartedCodingDay, 0, 0, 0, 0, time.UTC),
+			StartedPickupAt: time.Date(j.StartedPickupYear, time.Month(j.StartedPickupMonth), j.StartedPickupDay, 0, 0, 0, 0, time.UTC),
+			StartedReviewAt: time.Date(j.StartedReviewYear, time.Month(j.StartedReviewMonth), j.StartedReviewDay, 0, 0, 0, 0, time.UTC),
+			Author:          j.AuthorName,
+			MergedBy:        j.MergedByName,
 			Approvers:       approvers,
 			Committers:      reviewers,
 			Reviewers:       reviewers,
