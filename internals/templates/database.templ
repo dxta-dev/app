@@ -1,7 +1,6 @@
 package templates
 
 import "fmt"
-import "time"
 
 type Date struct {
 	Id      int
@@ -18,13 +17,13 @@ type User struct {
 
 type MergeRequestMetrics struct {
 	Id              int
-	MergedAt        time.Time
-	OpenedAt        time.Time
-	ClosedAt        time.Time
-	LastUpdatedAt   time.Time
-	StartedCodingAt time.Time
-	StartedPickupAt time.Time
-	StartedReviewAt time.Time
+	MergedAt        string
+	OpenedAt        string
+	ClosedAt        string
+	LastUpdatedAt   string
+	StartedCodingAt string
+	StartedPickupAt string
+	StartedReviewAt string
 	Author          string
 	MergedBy        string
 	Approvers		[]string
