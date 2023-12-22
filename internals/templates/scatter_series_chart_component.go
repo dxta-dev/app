@@ -27,8 +27,7 @@ type ScatterSeries struct {
 
 func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	now := time.Now()
-	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1)
-	endOfWeek := startOfWeek.AddDate(0, 0, 6)
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -52,12 +51,15 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 		},
 	}
 
-	for i := startOfWeek.Day(); i <= endOfWeek.Day(); i++ {
-		var dayMilisec int64
-		day := time.Date(now.Year(), now.Month(), i, 0, 0, 0, 0, time.UTC)
-		dateLabel := day.Format("Mon 02")
-		dayMilisec = day.UnixNano() / 1e6
-		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{Value: float64(dayMilisec), Label: dateLabel})
+	startOfWeekSeconds := startOfWeek.Unix()
+	for i := 0; i < 7; i++ {
+		secondsFromStartOfWeek := startOfWeekSeconds + int64(i*24*60*60)
+		secondsForEachDay := int64(i * 24 * 60 * 60)
+		dateLabel := time.Unix(secondsFromStartOfWeek, 0).Format("Mon 02")
+		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{
+			Value: float64(secondsForEachDay),
+			Label: dateLabel,
+		})
 	}
 
 	for _, tick := range graph.XAxis.Ticks {

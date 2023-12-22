@@ -8,7 +8,6 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
-	"github.com/wcharczuk/go-chart/v2"
 )
 
 func parseInt(str string) int {
@@ -25,23 +24,19 @@ func readData() ([]float64, []float64) {
 	var xvalues []float64
 	var yvalues []float64
 
+	now := time.Now()
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+
 	// Hardcoded dates
-	dates := []string{
-		"2023,12,19,16,51.1948264984227130",
-		"2023,12,19,18,1.7940833333333333",
-		"2023,12,22,18,10.0383889931207000",
+	times := []time.Time{
+		time.Date(2023, 12, 19, 16, 51, 0, 0, time.UTC),
+		time.Date(2023, 12, 19, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 22, 23, 0, 0, 0, time.UTC),
 	}
 
-	for _, dateStr := range dates {
-		parts := chart.SplitCSV(dateStr)
-		year := parseInt(parts[0])
-		month := parseInt(parts[1])
-		day := parseInt(parts[2])
-		hour := parseInt(parts[3])
-		// elapsedMillis := parseFloat64(parts[4]) -> we will later implement Yvalue so this will stay commented out
-		timeValue := time.Date(year, time.Month(month), day, hour, 0, 0, 0, time.UTC)
-		xmilisecValue := float64(timeValue.UnixNano()) / 1e6
-		xvalues = append(xvalues, xmilisecValue)
+	for _, time := range times {
+		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
+		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 50)
 	}
 
