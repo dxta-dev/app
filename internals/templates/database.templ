@@ -1,6 +1,7 @@
 package templates
 
 import "fmt"
+import "time"
 
 type Date struct {
 	Id      int
@@ -17,49 +18,18 @@ type User struct {
 
 type MergeRequestMetrics struct {
 	Id              int
-    Merged          int
-    Closed          int
-    Approved        int
-    Reviewed        int
-	MergedAt        Date
-    OpenedAt        Date
-    ClosedAt        Date
-    LastUpdatedAt   Date
-    StartedCodingAt Date
-    StartedPickupAt Date
-    StartedReviewAt Date
-    Author          User
-	MergedBy        User
-	Approver1       User
-	Approver2       User
-	Approver3       User
-	Approver4       User
-	Approver5       User
-	Approver6       User
-	Approver7       User
-	Approver8       User
-	Approver9       User
-	Approver10      User
-	Committer1      User
-	Committer2      User
-	Committer3      User
-	Committer4      User
-	Committer5      User
-	Committer6      User
-	Committer7      User
-	Committer8      User
-	Committer9      User
-	Committer10     User
-	Reviewer1       User
-	Reviewer2       User
-	Reviewer3       User
-	Reviewer4       User
-	Reviewer5       User
-	Reviewer6       User
-	Reviewer7       User
-	Reviewer8       User
-	Reviewer9       User
-	Reviewer10      User
+	MergedAt        time.Time
+	OpenedAt        time.Time
+	ClosedAt        time.Time
+	LastUpdatedAt   time.Time
+	StartedCodingAt time.Time
+	StartedPickupAt time.Time
+	StartedReviewAt time.Time
+	Author          string
+	MergedBy        string
+	Approvers		[]string
+	Committers		[]string
+	Reviewers		[]string
 }
 
 templ Database(page *Page, name string, metrics []MergeRequestMetrics) {
@@ -71,61 +41,9 @@ templ Database(page *Page, name string, metrics []MergeRequestMetrics) {
 			</head>
 			<body>
                 <div class="bg-white">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead>
-                                <tr>
-                                    <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
-				<div class="bg-white">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged by</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approver</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Committer</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reviewer</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Approved</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Review</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merged at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opened at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closed at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last updated at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started coding at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started pickup at</th>
-                                <th scope="col" class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Started review at</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            for _, metric := range metrics {
-                                <tr>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Id) }</td>
-                                    <td class="whitespace-nowrap">{metric.Author.Name}</td>
-                                    <td class="whitespace-nowrap">{metric.MergedBy.Name}</td>
-                                    <td class="whitespace-nowrap">{metric.Approver1.Name} {metric.Approver2.Name} {metric.Approver3.Name} {metric.Approver4.Name} {metric.Approver5.Name} {metric.Approver6.Name} {metric.Approver7.Name} {metric.Approver8.Name} {metric.Approver9.Name} {metric.Approver10.Name}</td>
-                                    <td class="whitespace-nowrap">{metric.Committer1.Name} {metric.Committer2.Name} {metric.Committer3.Name} {metric.Committer4.Name} {metric.Committer5.Name} {metric.Committer6.Name} {metric.Committer7.Name} {metric.Committer8.Name} {metric.Committer9.Name} {metric.Committer10.Name}</td>
-                                    <td class="whitespace-nowrap">{metric.Reviewer1.Name} {metric.Reviewer2.Name} {metric.Reviewer3.Name} {metric.Reviewer4.Name} {metric.Reviewer5.Name} {metric.Reviewer6.Name} {metric.Reviewer7.Name} {metric.Reviewer8.Name} {metric.Reviewer9.Name} {metric.Reviewer10.Name}</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Merged) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Closed) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Approved) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.Reviewed) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.MergedAt.Day) }-{ fmt.Sprintf("%d", metric.MergedAt.Month) }-{ fmt.Sprintf("%d", metric.MergedAt.Year) } / { fmt.Sprintf("%d", metric.MergedAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.OpenedAt.Day) }-{ fmt.Sprintf("%d", metric.OpenedAt.Month) }-{ fmt.Sprintf("%d", metric.OpenedAt.Year) } / { fmt.Sprintf("%d", metric.OpenedAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.ClosedAt.Day) }-{ fmt.Sprintf("%d", metric.ClosedAt.Month) }-{ fmt.Sprintf("%d", metric.ClosedAt.Year) } / { fmt.Sprintf("%d", metric.ClosedAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.LastUpdatedAt.Day) }-{ fmt.Sprintf("%d", metric.LastUpdatedAt.Month) }-{ fmt.Sprintf("%d", metric.LastUpdatedAt.Year) } / { fmt.Sprintf("%d", metric.LastUpdatedAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedCodingAt.Day) }-{ fmt.Sprintf("%d", metric.StartedCodingAt.Month) }-{ fmt.Sprintf("%d", metric.StartedCodingAt.Year) } / { fmt.Sprintf("%d", metric.StartedCodingAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedPickupAt.Day) }-{ fmt.Sprintf("%d", metric.StartedPickupAt.Month) }-{ fmt.Sprintf("%d", metric.StartedPickupAt.Year) } / { fmt.Sprintf("%d", metric.StartedPickupAt.Week) }</td>
-                                    <td class="whitespace-nowrap">{ fmt.Sprintf("%d", metric.StartedReviewAt.Day) }-{ fmt.Sprintf("%d", metric.StartedReviewAt.Month) }-{ fmt.Sprintf("%d", metric.StartedReviewAt.Year) } / { fmt.Sprintf("%d", metric.StartedReviewAt.Week) }</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                    for _, metric := range metrics {
+                        <pre>{ fmt.Sprintf("%v", metric) }</pre>
+                    }
 				</div>
 			</body>
 		</html>

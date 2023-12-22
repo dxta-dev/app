@@ -4,10 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
+	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/donseba/go-htmx"
-	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 
@@ -17,10 +19,6 @@ import (
 
 type JoinedIndexes struct {
 	Id              int
-	Merged          int
-	Closed          int
-	Approved        int
-	Reviewed        int
 	MergedAt        int
 	OpenedAt        int
 	ClosedAt        int
@@ -108,9 +106,28 @@ func (a *App) Database(c echo.Context) error {
 		return err
 	}
 
-	rows, err := db.Query("SELECT merge_request_metrics.id, merge_request_metrics.merged, merge_request_metrics.closed, merge_request_metrics.approved, merge_request_metrics.reviewed, merge_request_fact_dates_junk.merged_at, merge_request_fact_dates_junk.opened_at, merge_request_fact_dates_junk.closed_at, merge_request_fact_dates_junk.last_updated_at, merge_request_fact_dates_junk.started_coding_at, merge_request_fact_dates_junk.started_pickup_at, merge_request_fact_dates_junk.started_review_at, merge_request_fact_users_junk.author, merge_request_fact_users_junk.merged_by, merge_request_fact_users_junk.approver1, merge_request_fact_users_junk.approver2, merge_request_fact_users_junk.approver3, merge_request_fact_users_junk.approver4, merge_request_fact_users_junk.approver5, merge_request_fact_users_junk.approver6, merge_request_fact_users_junk.approver7, merge_request_fact_users_junk.approver8, merge_request_fact_users_junk.approver9, merge_request_fact_users_junk.approver10, merge_request_fact_users_junk.committer1, merge_request_fact_users_junk.committer2, merge_request_fact_users_junk.committer3, merge_request_fact_users_junk.committer4, merge_request_fact_users_junk.committer5, merge_request_fact_users_junk.committer6, merge_request_fact_users_junk.committer7, merge_request_fact_users_junk.committer8, merge_request_fact_users_junk.committer9, merge_request_fact_users_junk.committer10, merge_request_fact_users_junk.reviewer1, merge_request_fact_users_junk.reviewer2, merge_request_fact_users_junk.reviewer3, merge_request_fact_users_junk.reviewer4, merge_request_fact_users_junk.reviewer5, merge_request_fact_users_junk.reviewer6, merge_request_fact_users_junk.reviewer7, merge_request_fact_users_junk.reviewer8, merge_request_fact_users_junk.reviewer9, merge_request_fact_users_junk.reviewer10 FROM merge_request_metrics LEFT JOIN merge_request_fact_dates_junk ON merge_request_metrics.dates_junk = merge_request_fact_dates_junk.id LEFT JOIN merge_request_fact_users_junk ON merge_request_metrics.users_junk = merge_request_fact_users_junk.id;")
+	rows, err := db.Query(`
+		SELECT
+		merge_request_metrics.id,
+		merge_request_fact_dates_junk.merged_at, merge_request_fact_dates_junk.opened_at, merge_request_fact_dates_junk.closed_at, merge_request_fact_dates_junk.last_updated_at,
+		merge_request_fact_dates_junk.started_coding_at, merge_request_fact_dates_junk.started_pickup_at, merge_request_fact_dates_junk.started_review_at,
+		merge_request_fact_users_junk.author, merge_request_fact_users_junk.merged_by, merge_request_fact_users_junk.approver1, merge_request_fact_users_junk.approver2,
+		merge_request_fact_users_junk.approver3, merge_request_fact_users_junk.approver4, merge_request_fact_users_junk.approver5, merge_request_fact_users_junk.approver6,
+		merge_request_fact_users_junk.approver7, merge_request_fact_users_junk.approver8, merge_request_fact_users_junk.approver9, merge_request_fact_users_junk.approver10,
+		merge_request_fact_users_junk.committer1, merge_request_fact_users_junk.committer2, merge_request_fact_users_junk.committer3, merge_request_fact_users_junk.committer4,
+		merge_request_fact_users_junk.committer5, merge_request_fact_users_junk.committer6, merge_request_fact_users_junk.committer7, merge_request_fact_users_junk.committer8,
+		merge_request_fact_users_junk.committer9, merge_request_fact_users_junk.committer10, merge_request_fact_users_junk.reviewer1, merge_request_fact_users_junk.reviewer2,
+		merge_request_fact_users_junk.reviewer3, merge_request_fact_users_junk.reviewer4, merge_request_fact_users_junk.reviewer5, merge_request_fact_users_junk.reviewer6,
+		merge_request_fact_users_junk.reviewer7, merge_request_fact_users_junk.reviewer8, merge_request_fact_users_junk.reviewer9, merge_request_fact_users_junk.reviewer10
+		FROM merge_request_metrics
+		JOIN merge_request_fact_dates_junk
+		ON merge_request_metrics.dates_junk = merge_request_fact_dates_junk.id
+		JOIN merge_request_fact_users_junk
+		ON merge_request_metrics.users_junk = merge_request_fact_users_junk.id;
+	`)
 
 	if err != nil {
+		fmt.Println("ROWS Error:", err)
 		return err
 	}
 
@@ -119,18 +136,16 @@ func (a *App) Database(c echo.Context) error {
 	var joined []JoinedIndexes
 	var searchedDates []int
 	var searchedUserJunks []int
-	dateMap := make(map[int]templates.Date)
-	userMap := make(map[int]templates.User)
+	var searchedDatesInterface []interface{}
+	var searchedUserJunksInterface []interface{}
+	dateMap := make(map[int]time.Time)
+	userMap := make(map[int]string)
 
 	for rows.Next() {
 		var j JoinedIndexes
 
 		if err := rows.Scan(
 			&j.Id,
-			&j.Merged,
-			&j.Closed,
-			&j.Approved,
-			&j.Reviewed,
 			&j.MergedAt,
 			&j.OpenedAt,
 			&j.ClosedAt,
@@ -171,6 +186,7 @@ func (a *App) Database(c echo.Context) error {
 			&j.Reviewer9,
 			&j.Reviewer10,
 		); err != nil {
+			fmt.Println("SWQ Error:", err)
 			return err
 		}
 		joined = append(joined, j)
@@ -181,23 +197,47 @@ func (a *App) Database(c echo.Context) error {
 	searchedDates = unique(searchedDates)
 	searchedUserJunks = unique(searchedUserJunks)
 
-	var metrics []templates.MergeRequestMetrics
-
-	// SOLUTION FROM https://stackoverflow.com/a/32837541
-	datesQuery, args, queryErr := sqlx.In("SELECT id, day, week, month, year FROM dates WHERE id IN (?)", searchedDates)
-
-	if queryErr != nil {
-		return queryErr
+	for i := range searchedDates {
+		searchedDatesInterface = append(searchedDatesInterface, searchedDates[i])
 	}
 
-	neededDates, er := db.Query(datesQuery, args...)
-	if er != nil {
-		return er
+	for i := range searchedUserJunks {
+		searchedUserJunksInterface = append(searchedUserJunksInterface, searchedUserJunks[i])
+	}
+
+	placeholderDateSlice := make([]string, len(searchedDates))
+	for i := range placeholderDateSlice {
+		placeholderDateSlice[i] = "?"
+	}
+
+	// Join the datePlaceholders with commas
+	datePlaceholders := strings.Join(placeholderDateSlice, ", ")
+
+	// Construct the datesQuery
+	datesQuery := fmt.Sprintf("SELECT id, day, week, month, year FROM dates WHERE id IN (%s);", datePlaceholders)
+
+	dateStmt, err := db.Prepare(datesQuery)
+	if err != nil {
+		fmt.Println("DS Error:", err)
+		return err
+	}
+	defer dateStmt.Close()
+
+	neededDates, err := dateStmt.Query(searchedDatesInterface...)
+
+	if err != nil {
+		fmt.Println("ND Error:", err)
+		return err
 	}
 	defer neededDates.Close()
 
+	var metrics []templates.MergeRequestMetrics
+
 	for neededDates.Next() {
 		var m templates.Date
+		var Day int
+		var Month int
+		var Year int
 		if err := neededDates.Scan(
 			&m.Id,
 			&m.Day,
@@ -205,25 +245,36 @@ func (a *App) Database(c echo.Context) error {
 			&m.Month,
 			&m.Year,
 		); err != nil {
+			fmt.Println("ND NEXT Error:", err)
 			return err
 		}
-		dateMap[m.Id] = templates.Date{
-			Day:   CheckValue(m.Day, 31),
-			Month: CheckValue(m.Month, 12),
-			Year:  CheckValue(m.Year, 2100),
-			Week:  CheckValue(m.Week, 52),
-		}
+		Day = CheckValue(m.Day, 31)
+		Month = CheckValue(m.Month, 12)
+		Year = CheckValue(m.Year, 2100)
+		dateMap[m.Id] = time.Date(Year, time.Month(Month), Day, 0, 0, 0, 0, time.UTC)
 	}
 
-	usersQuery, args, queryErr := sqlx.In("SELECT id, name FROM forge_users WHERE id IN (?)", searchedUserJunks)
-
-	if queryErr != nil {
-		return queryErr
+	placeholderUserSlice := make([]string, len(searchedUserJunks))
+	for i := range placeholderUserSlice {
+		placeholderUserSlice[i] = "?"
 	}
 
-	neededUsers, er := db.Query(usersQuery, args...)
-	if er != nil {
-		return er
+	userPlaceholders := strings.Join(placeholderUserSlice, ", ")
+
+	usersQuery := fmt.Sprintf("SELECT id, name FROM forge_users WHERE id IN (%s);", userPlaceholders)
+
+	userStmt, err := db.Prepare(usersQuery)
+	if err != nil {
+		fmt.Println("US Error:", err)
+		return err
+	}
+	defer userStmt.Close()
+
+	neededUsers, err := userStmt.Query(searchedUserJunksInterface...)
+
+	if err != nil {
+		fmt.Println("NU Error:", err)
+		return err
 	}
 	defer neededUsers.Close()
 
@@ -233,22 +284,22 @@ func (a *App) Database(c echo.Context) error {
 			&m.Id,
 			&m.Name,
 		); err != nil {
+			fmt.Println("NU NEXT Error:", err)
 			return err
 		}
-		userMap[m.Id] = templates.User{
-			Id:   m.Id,
-			Name: m.Name,
-		}
+		userMap[m.Id] = m.Name
 	}
 
 	for _, data := range joined {
+		var approvers []string
+		var committers []string
+		var reviewers []string
+		approvers = append(approvers, userMap[data.Approver1], userMap[data.Approver2], userMap[data.Approver3], userMap[data.Approver4], userMap[data.Approver5], userMap[data.Approver6], userMap[data.Approver7], userMap[data.Approver8], userMap[data.Approver9], userMap[data.Approver10])
+		committers = append(committers, userMap[data.Committer1], userMap[data.Committer2], userMap[data.Committer3], userMap[data.Committer4], userMap[data.Committer5], userMap[data.Committer6], userMap[data.Committer7], userMap[data.Committer8], userMap[data.Committer9], userMap[data.Committer10])
+		reviewers = append(reviewers, userMap[data.Reviewer1], userMap[data.Reviewer2], userMap[data.Reviewer3], userMap[data.Reviewer4], userMap[data.Reviewer5], userMap[data.Reviewer6], userMap[data.Reviewer7], userMap[data.Reviewer8], userMap[data.Reviewer9], userMap[data.Reviewer10])
 
 		metrics = append(metrics, templates.MergeRequestMetrics{
 			Id:              data.Id,
-			Merged:          data.Merged,
-			Closed:          data.Closed,
-			Approved:        data.Approved,
-			Reviewed:        data.Reviewed,
 			MergedAt:        dateMap[data.MergedAt],
 			OpenedAt:        dateMap[data.OpenedAt],
 			ClosedAt:        dateMap[data.ClosedAt],
@@ -258,36 +309,9 @@ func (a *App) Database(c echo.Context) error {
 			StartedReviewAt: dateMap[data.StartedReviewAt],
 			Author:          userMap[data.Author],
 			MergedBy:        userMap[data.MergedBy],
-			Approver1:       userMap[data.Approver1],
-			Approver2:       userMap[data.Approver2],
-			Approver3:       userMap[data.Approver3],
-			Approver4:       userMap[data.Approver4],
-			Approver5:       userMap[data.Approver5],
-			Approver6:       userMap[data.Approver6],
-			Approver7:       userMap[data.Approver7],
-			Approver8:       userMap[data.Approver8],
-			Approver9:       userMap[data.Approver9],
-			Approver10:      userMap[data.Approver10],
-			Committer1:      userMap[data.Committer1],
-			Committer2:      userMap[data.Committer2],
-			Committer3:      userMap[data.Committer3],
-			Committer4:      userMap[data.Committer4],
-			Committer5:      userMap[data.Committer5],
-			Committer6:      userMap[data.Committer6],
-			Committer7:      userMap[data.Committer7],
-			Committer8:      userMap[data.Committer8],
-			Committer9:      userMap[data.Committer9],
-			Committer10:     userMap[data.Committer10],
-			Reviewer1:       userMap[data.Reviewer1],
-			Reviewer2:       userMap[data.Reviewer2],
-			Reviewer3:       userMap[data.Reviewer3],
-			Reviewer4:       userMap[data.Reviewer4],
-			Reviewer5:       userMap[data.Reviewer5],
-			Reviewer6:       userMap[data.Reviewer6],
-			Reviewer7:       userMap[data.Reviewer7],
-			Reviewer8:       userMap[data.Reviewer8],
-			Reviewer9:       userMap[data.Reviewer9],
-			Reviewer10:      userMap[data.Reviewer10],
+			Approvers:       approvers,
+			Committers:      reviewers,
+			Reviewers:       reviewers,
 		})
 	}
 
