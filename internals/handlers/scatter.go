@@ -29,9 +29,19 @@ func readData() ([]float64, []float64) {
 
 	// Hardcoded dates
 	times := []time.Time{
-		time.Date(2023, 12, 19, 16, 51, 0, 0, time.UTC),
-		time.Date(2023, 12, 19, 18, 1, 0, 0, time.UTC),
-		time.Date(2023, 12, 22, 23, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 16, 51, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 5, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 10, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 20, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 25, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 35, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 40, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 45, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day()+1, 19, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day()+2, 20, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day()+3, 23, 0, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
