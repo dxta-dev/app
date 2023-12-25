@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"dxta-dev/app/internals/templates"
+	"math"
 	"strconv"
 	"time"
 
@@ -20,6 +21,22 @@ func parseFloat64(str string) float64 {
 	return v
 }
 
+func adjustOverlap(xValues, yValues []float64) ([]float64, []float64) {
+	const minXDistance = 4
+
+	for i := 1; i < len(xValues); i++ {
+		for j := i - 1; j >= 0; j-- {
+			if math.Abs(xValues[i]-xValues[j]) < minXDistance {
+				shift := minXDistance - math.Abs(xValues[i]-xValues[j])
+				yValues[i] += shift / 2.0
+				yValues[j] -= shift / 2.0
+			}
+		}
+	}
+
+	return xValues, yValues
+}
+
 func readData() ([]float64, []float64) {
 	var xvalues []float64
 	var yvalues []float64
@@ -29,9 +46,11 @@ func readData() ([]float64, []float64) {
 
 	// Hardcoded dates
 	times := []time.Time{
-		time.Date(2023, 12, 19, 16, 51, 0, 0, time.UTC),
-		time.Date(2023, 12, 19, 18, 1, 0, 0, time.UTC),
-		time.Date(2023, 12, 22, 23, 0, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 16, 51, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 29, 23, 0, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
@@ -39,6 +58,8 @@ func readData() ([]float64, []float64) {
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 50)
 	}
+
+	xvalues, yvalues = adjustOverlap(xvalues, yvalues)
 
 	return xvalues, yvalues
 }
