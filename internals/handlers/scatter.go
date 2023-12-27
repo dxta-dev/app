@@ -22,14 +22,22 @@ func parseFloat64(str string) float64 {
 }
 
 func adjustOverlap(xValues, yValues []float64) ([]float64, []float64) {
-	const minXDistance = 4
+	const overlapXDistance = 6720
+	const overlapYDistance = 2.0
+	const minYDistance = 20
+	const maxYDistance = 80
 
 	for i := 1; i < len(xValues); i++ {
 		for j := i - 1; j >= 0; j-- {
-			if math.Abs(xValues[i]-xValues[j]) < minXDistance {
-				shift := minXDistance - math.Abs(xValues[i]-xValues[j])
-				yValues[i] += shift / 2.0
-				yValues[j] -= shift / 2.0
+			if math.Abs(xValues[i]-xValues[j]) < overlapXDistance {
+				shift := overlapYDistance
+				if yValues[i] > yValues[j] {
+					yValues[i] += shift
+					yValues[j] -= shift
+				} else {
+					yValues[i] -= shift
+					yValues[j] += shift
+				}
 			}
 		}
 	}
@@ -50,6 +58,19 @@ func readData() ([]float64, []float64) {
 		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
 		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
 		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 1, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 20, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 18, 31, 0, 0, time.UTC),
+		time.Date(2023, 12, 26, 21, 1, 0, 0, time.UTC),
 		time.Date(2023, 12, 29, 23, 0, 0, 0, time.UTC),
 	}
 
