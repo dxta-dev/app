@@ -27,7 +27,6 @@ func readData() ([]float64, []float64) {
 	now := time.Now()
 	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
-	// Hardcoded dates
 	times := []time.Time{
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 16, 51, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 5, 0, 0, time.UTC),
@@ -47,7 +46,7 @@ func readData() ([]float64, []float64) {
 	for _, time := range times {
 		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
 		xvalues = append(xvalues, xSecondsValue)
-		yvalues = append(yvalues, 50)
+		yvalues = append(yvalues, 60*60*24)
 	}
 
 	return xvalues, yvalues
@@ -63,6 +62,7 @@ func (a *App) Scatter(c echo.Context) error {
 
 	var chartData []templates.ScatterSeries
 	xValues, yValues := readData()
+
 	chartData = append(chartData, templates.ScatterSeries{
 		Title:   "Random Series",
 		XValues: xValues,

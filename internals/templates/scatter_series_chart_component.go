@@ -65,7 +65,7 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	for _, tick := range graph.XAxis.Ticks {
 		gridLine := chart.ContinuousSeries{
 			XValues: []float64{tick.Value, tick.Value},
-			YValues: []float64{0, 100},
+			YValues: []float64{0, 2*60*60*24},
 			Style: chart.Style{
 				StrokeColor: chart.ColorAlternateGray,
 				StrokeWidth: 1.0,
