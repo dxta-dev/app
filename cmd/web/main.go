@@ -30,6 +30,8 @@ func main() {
 
 	e.GET("/scatter", app.Scatter)
 
+	e.GET("/scatter_force", app.ScatterForce)
+
 	e.GET("/oss", app.OSSIndex)
 
 	e.Logger.Fatal(e.Start(":3000"))

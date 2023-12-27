@@ -44,7 +44,7 @@ func repulsiveForce(distance float64) float64 {
 	if distance == 0 {
 		distance = 0.1
 	}
-	k := 100.0
+	k := 350.0
 	return k * k / distance
 }
 
@@ -63,8 +63,7 @@ func printGraph(iteration int, graph *Graph) {
 }
 
 func ForceDirectedGraphLayout(graph *Graph, iterations int) {
-	temperature := 60*15.0;
-
+	temperature := 60 * 15.0
 
 	for iter := 0; iter < iterations; iter++ {
 		printGraph(iter, graph)
@@ -90,16 +89,14 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 			distance := math.Sqrt(delta.X*delta.X + delta.Y*delta.Y)
 			force := repulsiveForce(distance)
 
-			if (delta.Y >= 0) {
-				displacement[edge[0]].Y += force;
-				displacement[edge[1]].Y -= force;
+			if delta.Y > 0 {
+				displacement[edge[0]].Y += force
+				displacement[edge[1]].Y -= force
 			} else {
-				displacement[edge[0]].Y -= force;
-				displacement[edge[1]].Y += force;
+				displacement[edge[0]].Y -= force
+				displacement[edge[1]].Y += force
 			}
 		}
-
-
 
 		/*for _, edge := range graph.Edges {
 			v := graph.Nodes[edge[0]]
@@ -114,7 +111,10 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 
 		for i, v := range graph.Nodes {
 			dispLength := math.Abs(displacement[i].Y)
-			v.Position.Y += displacement[i].Y / dispLength * math.Min(dispLength, temperature)
+			fmt.Println(displacement[i].Y / dispLength * math.Min(dispLength, temperature))
+			if displacement[i].Y != 0 {
+				v.Position.Y += displacement[i].Y / dispLength * math.Min(dispLength, temperature)
+			}
 		}
 
 		temperature *= 0.95
@@ -134,5 +134,3 @@ func FindClosePoints(index int, xValues []float64, yValues []float64, p1 Point, 
 	}
 	return closePoints
 }
-
-
