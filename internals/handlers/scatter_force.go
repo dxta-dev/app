@@ -2,13 +2,14 @@ package handlers
 
 import (
 	"context"
-	"dxta-dev/app/internals/templates"
 	"dxta-dev/app/internals/graphs"
+	"dxta-dev/app/internals/templates"
 	"time"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 )
+
 
 func series1() templates.ScatterSeries {
 	var xvalues []float64
@@ -18,9 +19,12 @@ func series1() templates.ScatterSeries {
 	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
 	times := []time.Time{
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 5, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 10, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 0, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 45, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 19, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 19, 15, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
@@ -34,11 +38,11 @@ func series1() templates.ScatterSeries {
 	graph.AddNode(graphs.NewNode(xvalues[0], yvalues[0]))
 	graph.AddNode(graphs.NewNode(xvalues[1], yvalues[1]))
 	graph.AddNode(graphs.NewNode(xvalues[2], yvalues[2]))
-	graph.AddEdge(0, 1)
-	graph.AddEdge(0, 2)
-	graph.AddEdge(1, 2)
+	graph.AddNode(graphs.NewNode(xvalues[3], yvalues[3]))
+	graph.AddNode(graphs.NewNode(xvalues[4], yvalues[4]))
+	graph.AddNode(graphs.NewNode(xvalues[5], yvalues[5]))
 
-	graphs.ForceDirectedGraphLayout(graph, 1)
+	graphs.ForceDirectedGraphLayout(graph, 200)
 
 	for i := 0; i < len(graph.Nodes); i++ {
 		xvalues[i] = graph.Nodes[i].Position.X

@@ -12,6 +12,7 @@ func TestSimpleGraph(t *testing.T) {
 		{60*60*12, 60*60*24},
 		{60*60*12.25, 60*60*24},
 		{60*60*12.50, 60*60*24},
+		{60*60*36, 60*60*24},
 	}
 
 	graph := graphs.NewGraph()
@@ -24,7 +25,7 @@ func TestSimpleGraph(t *testing.T) {
 	graph.AddEdge(0, 2)
 	graph.AddEdge(1, 2)
 
-	graphs.ForceDirectedGraphLayout(graph, 1)
+	graphs.ForceDirectedGraphLayout(graph, 10)
 
 	for i := 0; i < len(graph.Nodes); i++ {
 		fmt.Println("Result:", i, graph.Nodes[i].Position.X, graph.Nodes[i].Position.Y)

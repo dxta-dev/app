@@ -44,93 +44,70 @@ func repulsiveForce(distance float64) float64 {
 	if distance == 0 {
 		distance = 0.1
 	}
-	k := 350.0
-	return k * k / distance
-}
-
-func attractiveForce(distance float64) float64 {
-	if distance == 0 {
-		distance = 0.1
-	}
-	k := 100.0
-	return distance * distance / k
-}
-
-func printGraph(iteration int, graph *Graph) {
-	for i := 0; i < len(graph.Nodes); i++ {
-		fmt.Println(iteration, graph.Nodes[i].Position.X, graph.Nodes[i].Position.Y)
-	}
+	k := 60.0 * 60.0 * 24.0
+	return (k * k) / (distance * distance)
 }
 
 func ForceDirectedGraphLayout(graph *Graph, iterations int) {
-	temperature := 60 * 15.0
+	temperature := 1.0
+
+	graph.createEdges()
 
 	for iter := 0; iter < iterations; iter++ {
-		printGraph(iter, graph)
 		displacement := make([]Point, len(graph.Nodes))
 
-		/*for i, v := range graph.Nodes {
-			for j, u := range graph.Nodes {
-				if i != j {
-					delta := Point{X: v.Position.X - u.Position.X, Y: v.Position.Y - u.Position.Y}
-					distance := math.Sqrt(delta.X*delta.X+delta.Y*delta.Y)
-					force := repulsiveForce(distance)
-					fmt.Println("repu force", i, j, force, distance)
-					fmt.Println(delta.Y, distance)
-					displacement[i].Y += force;
-				}
-			}
-		}*/
-
 		for _, edge := range graph.Edges {
+			fmt.Println("edge", edge[0], edge[1])
 			v := graph.Nodes[edge[0]]
 			u := graph.Nodes[edge[1]]
 			delta := Point{X: v.Position.X - u.Position.X, Y: v.Position.Y - u.Position.Y}
+			if delta.Y == 0 {
+				delta.Y = 60 * 2.0
+			}
 			distance := math.Sqrt(delta.X*delta.X + delta.Y*delta.Y)
 			force := repulsiveForce(distance)
-
-			if delta.Y > 0 {
-				displacement[edge[0]].Y += force
-				displacement[edge[1]].Y -= force
+			forceY := force * math.Sin(math.Atan2(delta.Y, delta.X))
+			fmt.Println(edge[0], edge[1], distance, force, forceY)
+			if delta.Y >= 0 {
+				displacement[edge[0]].Y += forceY
+				displacement[edge[1]].Y -= forceY
 			} else {
-				displacement[edge[0]].Y -= force
-				displacement[edge[1]].Y += force
+				displacement[edge[0]].Y -= forceY
+				displacement[edge[1]].Y += forceY
 			}
 		}
-
-		/*for _, edge := range graph.Edges {
-			v := graph.Nodes[edge[0]]
-			u := graph.Nodes[edge[1]]
-			delta := Point{X: v.Position.X - u.Position.X, Y: v.Position.Y - u.Position.Y}
-			distance := math.Sqrt(delta.X*delta.X + delta.Y*delta.Y)
-			force := attractiveForce(distance)
-			fmt.Println("attr force", edge[0], edge[1], force)
-			displacement[edge[0]].Y -= force;
-			displacement[edge[1]].Y += force;
-		}*/
 
 		for i, v := range graph.Nodes {
 			dispLength := math.Abs(displacement[i].Y)
-			fmt.Println(displacement[i].Y / dispLength * math.Min(dispLength, temperature))
 			if displacement[i].Y != 0 {
-				v.Position.Y += displacement[i].Y / dispLength * math.Min(dispLength, temperature)
+				fmt.Println("disp", i, displacement[i].Y / dispLength * dispLength * temperature)
+				v.Position.Y += displacement[i].Y / dispLength * dispLength * temperature
 			}
 		}
 
-		temperature *= 0.95
+		temperature *= 0.98
+
 	}
 }
 
-func FindClosePoints(index int, xValues []float64, yValues []float64, p1 Point, r float64) []int {
-	var closePoints []int
-	for i := range xValues {
-		if i == index {
-			continue
-		}
-		p := Point{X: xValues[i], Y: yValues[i]}
-		if Distance(p1, p) <= r {
-			closePoints = append(closePoints, i)
-		}
+func (g *Graph) removeEdges() {
+	for i := range g.Edges {
+		g.Edges[i] = [2]int{}
 	}
-	return closePoints
+}
+
+func (g *Graph) createEdges() {
+	r := 60 * 60.0 * 6.0
+
+	for i := range g.Nodes {
+		p1 := g.Nodes[i].Position
+		fmt.Println("p1", p1)
+		for j := 0; j < i; j++ {
+			p2 := g.Nodes[j].Position
+			if Distance(p1, p2) <= r {
+				g.AddEdge(i, j)
+			}
+		}
+
+	}
 }
