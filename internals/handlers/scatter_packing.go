@@ -49,11 +49,18 @@ func series2() templates.ScatterSeries {
 	now := time.Now()
 	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
+	pixel := 5.0
+	radius := 432.0 * pixel
+
 	times := []time.Time{
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 45, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 15, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 15, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 15, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 15, 45, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
@@ -61,8 +68,6 @@ func series2() templates.ScatterSeries {
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 60*60*12)
 	}
-
-	direction := true
 
 	for i := 0; i < len(xvalues); i++ {
 		for j := i + 1; j < len(xvalues); j++ {
@@ -72,10 +77,10 @@ func series2() templates.ScatterSeries {
 			x := xvalues[i]
 			y := yvalues[i]
 			x1 := xvalues[j]
-			y1 := yvalues[j]
-			r := 2160 * 3.0
+			y0 := yvalues[j]
+			r := radius* 3.0
 
-			if !Intersect(x, y, x1, y1, r/2) {
+			if !Intersect(x, y, x1, y0, r/2) {
 				continue
 			}
 
@@ -83,14 +88,27 @@ func series2() templates.ScatterSeries {
 			if notFound {
 				continue
 			}
-			if direction {
+
+			for k := 0; k < len(xvalues); k++ {
+				if k == j {
+					continue
+				}
+				if Intersect(x1, y1, xvalues[k], yvalues[k], r/2) {
+					y1 += radius
+				}
+				if Intersect(x1, y2, xvalues[k], yvalues[k], r/2) {
+					y2 -= radius
+				}
+			}
+
+			if (y1 - y0) < (y0 - y2) {
 				yvalues[j] = y1
 			} else {
 				yvalues[j] = y2
 			}
-			fmt.Println(i, j, "y1", y1, "y2", y2, direction)
 
-			direction = !direction
+			fmt.Println(i, j, "y1", y1, "y2", y2)
+
 
 		}
 	}
