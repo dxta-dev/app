@@ -22,12 +22,12 @@ func series1() templates.ScatterSeries {
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 0, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 5, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 10, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 15, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 20, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 25, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 30, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 35, 0, 0, time.UTC),
 		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 13, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 20, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 25, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
@@ -42,7 +42,7 @@ func series1() templates.ScatterSeries {
 		graph.AddNode(graphs.NewNode(xvalues[i], yvalues[i]))
 	}
 
-	graphs.ForceDirectedGraphLayout(graph, 10)
+	graphs.ForceDirectedGraphLayout(graph, 1000)
 
 	for i := 0; i < len(graph.Nodes); i++ {
 		xvalues[i] = graph.Nodes[i].Position.X
