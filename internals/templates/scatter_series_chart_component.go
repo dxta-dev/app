@@ -46,9 +46,14 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 				StrokeWidth: 1.0,
 			},
 		},
+		YAxis: chart.YAxis{
+			Style: chart.Hidden(),
+		},
 		Series: []chart.Series{
 			mainSeries,
 		},
+		Width: 1425,
+		Height: 227,
 	}
 
 	startOfWeekSeconds := startOfWeek.Unix()
@@ -65,10 +70,11 @@ func ScatterSeriesChart(series ScatterSeries) templ.Component {
 	for _, tick := range graph.XAxis.Ticks {
 		gridLine := chart.ContinuousSeries{
 			XValues: []float64{tick.Value, tick.Value},
-			YValues: []float64{0, 2*60*60*24},
+			YValues: []float64{0, 60*60*24},
 			Style: chart.Style{
 				StrokeColor: chart.ColorAlternateGray,
 				StrokeWidth: 1.0,
+
 			},
 		}
 		graph.Series = append(graph.Series, gridLine)

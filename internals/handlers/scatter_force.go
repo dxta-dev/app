@@ -19,30 +19,30 @@ func series1() templates.ScatterSeries {
 	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
 
 	times := []time.Time{
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 15, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 30, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 18, 45, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 19, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 19, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 0, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 5, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 10, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 15, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 20, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 25, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 30, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 35, 0, 0, time.UTC),
+		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 13, 30, 0, 0, time.UTC),
 	}
 
 	for _, time := range times {
 		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
 		xvalues = append(xvalues, xSecondsValue)
-		yvalues = append(yvalues, 60*60*24)
+		yvalues = append(yvalues, 60*60*12)
 	}
 
 	graph := graphs.NewGraph()
 
-	graph.AddNode(graphs.NewNode(xvalues[0], yvalues[0]))
-	graph.AddNode(graphs.NewNode(xvalues[1], yvalues[1]))
-	graph.AddNode(graphs.NewNode(xvalues[2], yvalues[2]))
-	graph.AddNode(graphs.NewNode(xvalues[3], yvalues[3]))
-	graph.AddNode(graphs.NewNode(xvalues[4], yvalues[4]))
-	graph.AddNode(graphs.NewNode(xvalues[5], yvalues[5]))
+	for i := 0; i < len(times); i++ {
+		graph.AddNode(graphs.NewNode(xvalues[i], yvalues[i]))
+	}
 
-	graphs.ForceDirectedGraphLayout(graph, 200)
+	graphs.ForceDirectedGraphLayout(graph, 10)
 
 	for i := 0; i < len(graph.Nodes); i++ {
 		xvalues[i] = graph.Nodes[i].Position.X

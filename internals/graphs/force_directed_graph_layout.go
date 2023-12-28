@@ -44,12 +44,13 @@ func repulsiveForce(distance float64) float64 {
 	if distance == 0 {
 		distance = 0.1
 	}
-	k := 60.0 * 60.0 * 24.0
-	return (k * k) / (distance * distance)
+	k := 3600 * 3600 * 3600 * 600.0
+	return k / (distance * distance * distance)
 }
 
 func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 	temperature := 1.0
+	maxDisplacement := 60 * 60 * 2.0
 
 	graph.createEdges()
 
@@ -57,23 +58,18 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 		displacement := make([]Point, len(graph.Nodes))
 
 		for _, edge := range graph.Edges {
-			fmt.Println("edge", edge[0], edge[1])
 			v := graph.Nodes[edge[0]]
 			u := graph.Nodes[edge[1]]
 			delta := Point{X: v.Position.X - u.Position.X, Y: v.Position.Y - u.Position.Y}
-			if delta.Y == 0 {
-				delta.Y = 60 * 2.0
-			}
 			distance := math.Sqrt(delta.X*delta.X + delta.Y*delta.Y)
 			force := repulsiveForce(distance)
-			forceY := force * math.Sin(math.Atan2(delta.Y, delta.X))
-			fmt.Println(edge[0], edge[1], distance, force, forceY)
+			fmt.Println("force", edge[0], edge[1], distance, force)
 			if delta.Y >= 0 {
-				displacement[edge[0]].Y += forceY
-				displacement[edge[1]].Y -= forceY
+				displacement[edge[0]].Y += force
+				displacement[edge[1]].Y -= force
 			} else {
-				displacement[edge[0]].Y -= forceY
-				displacement[edge[1]].Y += forceY
+				displacement[edge[0]].Y -= force
+				displacement[edge[1]].Y += force
 			}
 		}
 
@@ -81,11 +77,14 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 			dispLength := math.Abs(displacement[i].Y)
 			if displacement[i].Y != 0 {
 				fmt.Println("disp", i, displacement[i].Y / dispLength * dispLength * temperature)
-				v.Position.Y += displacement[i].Y / dispLength * dispLength * temperature
+				v.Position.Y += displacement[i].Y / dispLength * math.Min(dispLength * temperature, maxDisplacement)
 			}
 		}
 
-		temperature *= 0.98
+		graph.removeEdges()
+		graph.createEdges()
+
+		temperature *= 0.95
 
 	}
 }
@@ -97,7 +96,7 @@ func (g *Graph) removeEdges() {
 }
 
 func (g *Graph) createEdges() {
-	r := 60 * 60.0 * 6.0
+	r := 60 * 60.0
 
 	for i := range g.Nodes {
 		p1 := g.Nodes[i].Position
