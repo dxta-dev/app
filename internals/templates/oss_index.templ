@@ -112,7 +112,8 @@ templ WideCard(card Card) {
 	</div>
 }
 
-templ OSSIndex(cardGroups []CardGroup) {
+templ OSSIndex(page *Page, cardGroups []CardGroup) {
+	@Layout(page) {
 	<section class="bg-white">
 		<div
 			class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center"
@@ -157,4 +158,5 @@ templ OSSIndex(cardGroups []CardGroup) {
 			</div>
 		</div>
 	</section>
+	}
 }
