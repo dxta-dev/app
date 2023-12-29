@@ -11,37 +11,29 @@ type User struct {
 
 templ Database(page *Page, name string, users []User) {
 	@Layout(page){
-		<html>
-			<head>
-				<title>{ name }</title>
-				<link rel="stylesheet" href="style.css"/>
-			</head>
-			<body>
-				<div class="bg-white">
-					<div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
-						<div class="mx-auto max-w-2xl text-center">
-							<table class="min-w-full divide-y divide-gray-200">
-								<thead>
-									<tr>
-										<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-										<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External ID</th>
-										<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-									</tr>
-								</thead>
-								<tbody class="bg-white divide-y divide-gray-200">
-									for _, user := range users {
-										<tr>
-											<td class="px-6 py-4 whitespace-nowrap">{ fmt.Sprintf("%d", user.Id) }</td>
-											<td class="px-6 py-4 whitespace-nowrap">{ fmt.Sprintf("%d", user.ExternalId) }</td>
-											<td class="px-6 py-4 whitespace-nowrap">{ user.Name }</td>
-										</tr>
-									}
-								</tbody>
-							</table>
-						</div>
-					</div>
+		<div class="bg-white">
+			<div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+				<div class="mx-auto max-w-2xl text-center">
+					<table class="min-w-full divide-y divide-gray-200">
+						<thead>
+							<tr>
+								<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
+								<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">External ID</th>
+								<th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+							</tr>
+						</thead>
+						<tbody class="bg-white divide-y divide-gray-200">
+							for _, user := range users {
+								<tr>
+									<td class="px-6 py-4 whitespace-nowrap">{ fmt.Sprintf("%d", user.Id) }</td>
+									<td class="px-6 py-4 whitespace-nowrap">{ fmt.Sprintf("%d", user.ExternalId) }</td>
+									<td class="px-6 py-4 whitespace-nowrap">{ user.Name }</td>
+								</tr>
+							}
+						</tbody>
+					</table>
 				</div>
-			</body>
-		</html>
+			</div>
+		</div>
 	}
 }
