@@ -26,7 +26,7 @@ RUN useradd -u 1001 dxta
 
 COPY . .
 
-RUN go install github.com/a-h/templ/cmd/templ@latest
+RUN go install github.com/a-h/templ/cmd/templ@e98db353f87ebedea804cb3dc3200a826afb8904
 
 RUN templ generate
 

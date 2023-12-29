@@ -17,7 +17,7 @@ tailwind-build:
 .ONESHELL:
 setup:
 	@curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s
-	@go install github.com/a-h/templ/cmd/templ@latest && cp $(shell go env GOPATH)/bin/templ ./bin
+	@go install github.com/a-h/templ/cmd/templ@e98db353f87ebedea804cb3dc3200a826afb8904 && cp $(shell go env GOPATH)/bin/templ ./bin
 	@bun i
 
 .PHONY: test
