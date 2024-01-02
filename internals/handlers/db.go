@@ -4,7 +4,9 @@ import (
 	"context"
 	"database/sql"
 	"dxta-dev/app/internals/templates"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -99,7 +101,19 @@ func (a *App) Database(c echo.Context) error {
 		return err
 	}
 
-	rows, err := db.Query(`
+	// Just for testing
+	repositoryId := 2
+	mrIds := []int{1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31}
+	var mrIdsInterface []interface{}
+
+	placeholderMrIdsSplice := make([]string, len(mrIds))
+	for i := range placeholderMrIdsSplice {
+		placeholderMrIdsSplice[i] = "?"
+		mrIdsInterface = append(mrIdsInterface, mrIds[i])
+	}
+	placeholderMrIds := strings.Join(placeholderMrIdsSplice, ", ")
+
+	selectQuery := fmt.Sprintf(`
 		SELECT
 		merge_request_metrics.id,
 		merged_date.day, merged_date.month, merged_date.year,
@@ -196,8 +210,19 @@ func (a *App) Database(c echo.Context) error {
 		ON reviewer9.id = merge_request_fact_users_junk.reviewer9
 		JOIN forge_users AS reviewer10
 		ON reviewer10.id = merge_request_fact_users_junk.reviewer10
+		WHERE merge_request_metrics.merge_request IN (%s) 
+		AND merge_request_metrics.repository = %d
 		;
-		`)
+	`, placeholderMrIds, repositoryId)
+
+	mrStmt, err := db.Prepare(selectQuery)
+	if err != nil {
+		fmt.Println("US Error:", err)
+		return err
+	}
+	defer mrStmt.Close()
+
+	rows, err := mrStmt.Query(mrIdsInterface...)
 
 	if err != nil {
 		return err
