@@ -1,7 +1,6 @@
 package graphs
 
 import (
-	"fmt"
 	"math"
 )
 
@@ -63,7 +62,6 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 			delta := Point{X: v.Position.X - u.Position.X, Y: v.Position.Y - u.Position.Y}
 			distance := math.Sqrt(delta.X*delta.X + delta.Y*delta.Y)
 			force := repulsiveForce(distance)
-			fmt.Println("force", edge[0], edge[1], distance, force)
 			if delta.Y >= 0 {
 				displacement[edge[0]].Y += force
 				displacement[edge[1]].Y -= force
@@ -76,7 +74,6 @@ func ForceDirectedGraphLayout(graph *Graph, iterations int) {
 		for i, v := range graph.Nodes {
 			dispLength := math.Abs(displacement[i].Y)
 			if displacement[i].Y != 0 {
-				fmt.Println("disp", i, displacement[i].Y / dispLength * dispLength * temperature)
 				v.Position.Y += displacement[i].Y / dispLength * math.Min(dispLength * temperature, maxDisplacement)
 			}
 		}
@@ -100,7 +97,6 @@ func (g *Graph) createEdges() {
 
 	for i := range g.Nodes {
 		p1 := g.Nodes[i].Position
-		fmt.Println("p1", p1)
 		for j := 0; j < i; j++ {
 			p2 := g.Nodes[j].Position
 			if Distance(p1, p2) <= r {

@@ -2,8 +2,9 @@ package handlers
 
 import (
 	"context"
-	"dxta-dev/app/internals/graphs"
 	"dxta-dev/app/internals/templates"
+	"dxta-dev/app/internals/graphs"
+	"dxta-dev/app/internals/data"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -15,20 +16,15 @@ func series1() templates.ScatterSeries {
 	var xvalues []float64
 	var yvalues []float64
 
-	now := time.Now()
-	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+	startOfWeek := time.Unix(1696204800, 0)
 
-	times := []time.Time{
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 0, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 5, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 10, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 30, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 12, 35, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 13, 30, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 15, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 20, 0, 0, time.UTC),
-		time.Date(startOfWeek.Year(), startOfWeek.Month(), startOfWeek.Day(), 14, 25, 0, 0, time.UTC),
+	var times []time.Time
+
+	for _, d := range data.DataList {
+		t := time.Unix(d.Timestamp/1000, 0)
+		times = append(times, t)
 	}
+
 
 	for _, time := range times {
 		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
@@ -68,6 +64,9 @@ func (a *App) ScatterForce(c echo.Context) error {
 
 	chartData = append(chartData, series1())
 
-	components := templates.Scatter(page, chartData)
+
+	startOfWeek := time.Unix(1696204800, 0)
+
+	components := templates.Scatter(page, chartData, startOfWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }

@@ -25,10 +25,7 @@ type ScatterSeries struct {
 	YValues  []float64
 }
 
-func ScatterSeriesChart(series ScatterSeries) templ.Component {
-	now := time.Now()
-	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
-
+func ScatterSeriesChart(series ScatterSeries, startOfWeek time.Time) templ.Component {
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,

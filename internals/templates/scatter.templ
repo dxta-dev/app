@@ -1,9 +1,11 @@
 package templates
 
-templ Scatter(page *Page, chartData []ScatterSeries) {
+import "time"
+
+templ Scatter(page *Page, chartData []ScatterSeries, timeOfWeek time.Time) {
 	@Layout(page) {
 		for _, item := range chartData {
-			@ScatterSeriesChart(item)
+			@ScatterSeriesChart(item, timeOfWeek)
 		}
 	}
 }

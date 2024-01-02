@@ -65,6 +65,8 @@ func series2() templates.ScatterSeries {
 
 	for _, time := range times {
 		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
+
+		fmt.Println(xSecondsValue)
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 60*60*12)
 	}
@@ -132,6 +134,10 @@ func (a *App) ScatterPacking(c echo.Context) error {
 
 	chartData = append(chartData, series2())
 
-	components := templates.Scatter(page, chartData)
+
+	now := time.Now()
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+
+	components := templates.Scatter(page, chartData, startOfWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }

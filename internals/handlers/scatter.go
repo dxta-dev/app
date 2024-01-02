@@ -69,6 +69,10 @@ func (a *App) Scatter(c echo.Context) error {
 		YValues: yValues,
 	})
 
-	components := templates.Scatter(page, chartData)
+
+	now := time.Now()
+	startOfWeek := now.AddDate(0, 0, -int(now.Weekday())+1).Truncate(24 * time.Hour)
+
+	components := templates.Scatter(page, chartData, startOfWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }
