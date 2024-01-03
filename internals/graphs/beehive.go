@@ -1,107 +1,113 @@
 package graphs
 
 import (
-	"errors"
+	"fmt"
 	"math"
+	"sort"
 )
 
-type Point struct {
+var unit float64 = 432.0
+var dayDPI = 200.0
+var radiusDPI = 5.0
+
+var radius float64 = radiusDPI * unit
+var r float64 = radius * 1.2
+
+type Hexagon struct {
 	X, Y float64
 }
 
-type Direction bool
+func generateHexagonGrid(width, height float64) []Hexagon {
+	var hexagons []Hexagon
 
-const (
-	Prev Direction = false
-	Next Direction = true
-)
+	hexHeight := 2 * r
+	hexWidth := 4 * math.Sqrt(3) * r / 3
 
-func visitToGatherXBasedColliderData(dln *Node, visitedDln *Node, direction Direction, minDistance float64, xBasedPossibleColliders []float64) (interface{}, error) {
-	if visitedDln == nil {
-		return nil, errors.New("No nearest possible collider found")
+	offset := hexHeight / 2
+
+	rows := int(height/hexHeight) + 1
+	cols := int(width/hexWidth*4/3) + 1
+
+	for row := 0; row < rows; row++ {
+		for col := 0; col < cols; col++ {
+			x := float64(col) * hexWidth * 3 / 4
+			y := float64(row) * hexHeight
+			if col%2 == 1 {
+				y += offset
+			}
+
+			if x < width && y < height {
+				hexagons = append(hexagons, Hexagon{x, y})
+			}
+
+		}
 	}
-
-	if direction == Prev && dln.value-visitedDln.value > minDistance {
-		return nil, errors.New("No nearest possible collider found")
-	}
-
-	if direction == Next && visitedDln.value-dln.value > minDistance {
-		return nil, errors.New("No nearest possible collider found")
-	}
-
-	xBasedPossibleColliders = append(xBasedPossibleColliders, visitedDln.id)
-
-	if direction == Prev {
-		visitToGatherXBasedColliderData(dln, visitedDln.prev, direction, minDistance, xBasedPossibleColliders)
-	} else {
-		visitToGatherXBasedColliderData(dln, visitedDln.next, direction, minDistance, xBasedPossibleColliders)
-	}
-
-	return xBasedPossibleColliders, nil
-
+	return hexagons
 }
 
-func findNearestPossibleCollider(dln *Node, visitedDln *Node, direction Direction, minDistance float64) (float64, error) {
-	if visitedDln == nil {
-		return -1, errors.New("No nearest possible collider found")
+func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []Hexagon {
+	var result []Hexagon
+
+	for _, hexagon := range hexagons {
+		if !takenHexagons[hexagon] {
+			result = append(result, hexagon)
+		}
 	}
 
-	if direction == Prev && dln.value-visitedDln.value > minDistance {
-		return -1, errors.New("No nearest possible collider found")
-	}
-
-	if direction == Next && visitedDln.value-dln.value > minDistance {
-		return -1, errors.New("No nearest possible collider found")
-	}
-
-	if visitedDln.free != math.Inf(-1) {
-		return visitedDln.free, nil
-	}
-
-	if direction == Prev {
-		return findNearestPossibleCollider(dln, visitedDln.prev, direction, minDistance)
-	} else {
-		return findNearestPossibleCollider(dln, visitedDln.next, direction, minDistance)
-	}
-
+	return result
 }
 
-func Beehive(xValues []float64, yValues []float64, r float64) {
+func distance(h Hexagon, x, y float64) float64 {
+    return math.Sqrt(math.Pow(h.X-x, 2) + math.Pow(h.Y-y, 2))
+}
 
-	minDistance := 2 * r
-	minSquaredDistance := minDistance * minDistance
 
-	xBasedDataManager := DoublyLinkedList{}
+func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y float64) Hexagon {
+	availableHexagons := removeTakenHexagons(hexagons, takenHexagons)
+
+	// Sort the points based on their distance to point p
+	sort.Slice(availableHexagons, func(i, j int) bool {
+		return distance(availableHexagons[i], x, y) < distance(availableHexagons[j], x,y)
+	})
+
+	return availableHexagons[0]
+}
+
+func Beehive(xValues []float64, yValues []float64) ([]float64, []float64) {
+	hexagons := generateHexagonGrid(7*dayDPI*unit, dayDPI*unit)
+
+	takenHex := make(map[Hexagon]bool)
 
 	for i := 0; i < len(xValues); i++ {
-		xBasedDataManager.Add(&Node{id: float64(i), value: xValues[i], free: math.Inf(-1), datum: Point{X: xValues[i], Y: yValues[i]}})
+		x := xValues[i]
+		y := yValues[i]
+
+		for _, hexagon := range hexagons {
+			if math.Abs(x-hexagon.X) < r && math.Abs(y-hexagon.Y) < r {
+				if _, exists := takenHex[hexagon]; exists {
+					nearHex := findNearestHex(hexagons, takenHex, x, y)
+					xValues[i] = nearHex.X
+					yValues[i] = nearHex.Y
+					takenHex[nearHex] = true
+					break
+				} else {
+					fmt.Println(i)
+					xValues[i] = hexagon.X
+					yValues[i] = hexagon.Y
+					takenHex[hexagon] = true
+					break
+				}
+			}
+		}
 	}
 
-	xBasedColliderManager := DoublyLinkedList{}
-	yBasedColliderManager := DoublyLinkedList{}
+	xvalues := []float64{}
+	yvalues := []float64{}
 
 	for i := 0; i < len(xValues); i++ {
-		bestYPosition := math.Inf(-1)
-		xBasedPossibleColliders := []float64{}
-		dln := xBasedDataManager.Find(i)
-
-		nearestXPrevAlreadyArrangedData, errPrev := findNearestPossibleCollider(dln, dln.prev, Prev, minDistance)
-		nearestXNextAlreadyArrangedData, errNext := findNearestPossibleCollider(dln, dln.next, Next, minDistance)
-
-		if errPrev == nil {
-			dln = xBasedDataManager.Find(nearestXPrevAlreadyArrangedData)
-			visitToGatherXBasedColliderData(dln, dln.prev, Prev, minDistance, xBasedPossibleColliders)
-		}
-
-		if errNext == nil {
-			dln = xBasedDataManager.Find(nearestXNextAlreadyArrangedData)
-			visitToGatherXBasedColliderData(dln, dln.next, Next, minDistance, xBasedPossibleColliders)
-		}
-
-		if len(xBasedPossibleColliders) == 0 {
-			bestYPosition = yValues[i]
-		}
-
+		xvalues = append(xvalues, xValues[i])
+		yvalues = append(yvalues, yValues[i])
 	}
 
+	return xvalues, yvalues
 }

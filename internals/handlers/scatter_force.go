@@ -3,9 +3,10 @@ package handlers
 import (
 	"context"
 	"dxta-dev/app/internals/templates"
-	"dxta-dev/app/internals/graphs"
 	"dxta-dev/app/internals/data"
+	"dxta-dev/app/internals/graphs"
 	"time"
+	"sort"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -20,11 +21,12 @@ func series1() templates.ScatterSeries {
 
 	var times []time.Time
 
+	sort.Sort(data.DataList)
+
 	for _, d := range data.DataList {
 		t := time.Unix(d.Timestamp/1000, 0)
 		times = append(times, t)
 	}
-
 
 	for _, time := range times {
 		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
@@ -32,18 +34,11 @@ func series1() templates.ScatterSeries {
 		yvalues = append(yvalues, 60*60*12)
 	}
 
-	graph := graphs.NewGraph()
+	xvalues, yvalues = graphs.Beehive(xvalues, yvalues)
 
-	for i := 0; i < len(times); i++ {
-		graph.AddNode(graphs.NewNode(xvalues[i], yvalues[i]))
-	}
 
-	graphs.ForceDirectedGraphLayout(graph, 1000)
 
-	for i := 0; i < len(graph.Nodes); i++ {
-		xvalues[i] = graph.Nodes[i].Position.X
-		yvalues[i] = graph.Nodes[i].Position.Y
-	}
+
 
 	return templates.ScatterSeries{
 		Title:   "series 1",

@@ -1,5 +1,6 @@
 package data
 
+
 type TimelineEventType int
 
 const (
@@ -22,7 +23,22 @@ type Data struct {
 	Timestamp int64
 }
 
-var DataList = []Data{
+type DataSlice []Data
+
+func (d DataSlice) Len() int {
+	return len(d)
+}
+
+func (d DataSlice) Less(i, j int) bool {
+	return d[i].Timestamp < d[j].Timestamp
+}
+
+func (d DataSlice) Swap(i, j int) {
+	d[i], d[j] = d[j], d[i]
+}
+
+
+var DataList = DataSlice{
 	{121, 3, 1696264037000},
 	{121, 2, 1696264265000},
 	{121, 3, 1696264301000},

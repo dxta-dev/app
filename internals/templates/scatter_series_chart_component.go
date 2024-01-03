@@ -54,7 +54,7 @@ func ScatterSeriesChart(series ScatterSeries, startOfWeek time.Time) templ.Compo
 	}
 
 	startOfWeekSeconds := startOfWeek.Unix()
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 8; i++ {
 		secondsFromStartOfWeek := startOfWeekSeconds + int64(i*24*60*60)
 		secondsForEachDay := int64(i * 24 * 60 * 60)
 		dateLabel := time.Unix(secondsFromStartOfWeek, 0).Format("Mon 02")
