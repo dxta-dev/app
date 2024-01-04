@@ -10,6 +10,7 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
+	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
 
@@ -36,12 +37,24 @@ func series1() templates.SwarmSeries {
 
 	xvalues, yvalues = graphs.Beehive(xvalues, yvalues, 1400, 200, 5)
 
+	colors := []drawing.Color{}
 
-
-
+	for i := 0; i < len(xvalues); i++ {
+		switch data.DataList[i].EventType {
+		case data.Commited:
+			colors = append(colors, drawing.ColorBlue)
+		case data.Reviewed:
+			colors = append(colors, drawing.ColorGreen)
+		case data.Merged:
+			colors = append(colors, drawing.ColorRed)
+		default:
+			colors = append(colors, drawing.ColorGreen)
+		}
+	}
 
 	return templates.SwarmSeries{
 		Title:   "series 1",
+		DotColors: colors,
 		XValues: xvalues,
 		YValues: yvalues,
 	}
