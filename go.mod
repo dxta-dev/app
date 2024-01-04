@@ -3,7 +3,7 @@ module dxta-dev/app
 go 1.21.5
 
 require (
-	github.com/a-h/templ v0.2.501
+	github.com/a-h/templ v0.2.502-0.20231223110451-e98db353f87e
 	github.com/donseba/go-htmx v1.1.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.3

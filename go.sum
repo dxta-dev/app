@@ -1,7 +1,9 @@
 github.com/a-h/templ v0.2.476 h1:+H4hP4CwK4kfJwXsE6kHeFWMGtcVOVoOm/I64uzARBk=
 github.com/a-h/templ v0.2.476/go.mod h1:zQ95mSyadNTGHv6k5Fm+wQU8zkBMMbHCHg7eAvUZKNM=
-github.com/a-h/templ v0.2.501 h1:9rIo5u+B+NDJIkbHGthckUGRguCuWKY/7ri8e2ckn9M=
-github.com/a-h/templ v0.2.501/go.mod h1:9gZxTLtRzM3gQxO8jr09Na0v8/jfliS97S9W5SScanM=
+
+github.com/a-h/templ v0.2.502-0.20231223110451-e98db353f87e h1:CWh1vb8cnl3QUgtjU49jKLWgk0ESs3Ohtjm/I01glNI=
+github.com/a-h/templ v0.2.502-0.20231223110451-e98db353f87e/go.mod h1:9gZxTLtRzM3gQxO8jr09Na0v8/jfliS97S9W5SScanM=
+
 github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 h1:goHVqTbFX3AIo0tzGr14pgfAW2ZfPChKO21Z9MGf/gk=
 github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9/go.mod h1:pSwJ0fSY5KhvocuWSx4fz3BA8OrA1bQn+K1Eli3BRwM=
 github.com/blend/go-sdk v1.20220411.3 h1:GFV4/FQX5UzXLPwWV03gP811pj7B8J2sbuq+GJQofXc=
