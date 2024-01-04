@@ -41,7 +41,7 @@ func generateHexagonGrid(width, height, r float64) []Hexagon {
 }
 
 func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []Hexagon {
-	var result []Hexagon
+	result := []Hexagon{}
 
 	for _, hexagon := range hexagons {
 		if !takenHexagons[hexagon] {
@@ -53,17 +53,20 @@ func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []H
 }
 
 func distance(h Hexagon, x, y float64) float64 {
-    return math.Sqrt(math.Pow(h.X-x, 2) + math.Pow(h.Y-y, 2))
+	return math.Sqrt(math.Pow(h.X-x, 2) + math.Pow(h.Y-y, 2))
 }
-
 
 func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y float64) Hexagon {
 	availableHexagons := removeTakenHexagons(hexagons, takenHexagons)
 
 	// Sort the points based on their distance to point p
 	sort.Slice(availableHexagons, func(i, j int) bool {
-		return distance(availableHexagons[i], x, y) < distance(availableHexagons[j], x,y)
+		return distance(availableHexagons[i], x, y) < distance(availableHexagons[j], x, y)
 	})
+
+	if len(availableHexagons) == 0 {
+		return Hexagon{}
+	}
 
 	return availableHexagons[0]
 }
