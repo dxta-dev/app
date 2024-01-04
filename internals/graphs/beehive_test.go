@@ -10,6 +10,41 @@ import (
 	"dxta-dev/app/internals/data"
 )
 
+func BenchmarkGenerateHexagonGrid(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		generateHexagonGrid(1400, 200, 5)
+	}
+}
+
+func BenchmarkFindNearestHex(b *testing.B) {
+	hexagons := generateHexagonGrid(1400, 200, 5)
+	takenHexagons := make(map[Hexagon]bool)
+	x, y := 216000.0, 43200.0
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		findNearestHex(hexagons, takenHexagons, x, y)
+	}
+}
+
+func BenchmarkFindNearestHexTaken(b *testing.B) {
+	hexagons := generateHexagonGrid(1400, 200, 5)
+	takenHexagons := make(map[Hexagon]bool)
+	x, y := 216000.0, 43200.0
+
+	for i, hex := range hexagons {
+		if i == 0 {
+			continue
+		}
+		takenHexagons[hex] = true
+	}
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		findNearestHex(hexagons, takenHexagons, x, y)
+	}
+}
+
 func BenchmarkBeehive(b *testing.B) {
 	var times []time.Time
 
