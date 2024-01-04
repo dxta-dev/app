@@ -3,9 +3,9 @@ package graphs
 import (
 	"math"
 	"reflect"
+	"sort"
 	"testing"
 	"time"
-	"sort"
 
 	"dxta-dev/app/internals/data"
 )
@@ -20,6 +20,44 @@ func BenchmarkFindNearestHex(b *testing.B) {
 	hexagons := generateHexagonGrid(1400, 200, 5)
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
+
+	r := 5.0 * 432 * 1.2
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		findNearestHex(hexagons, takenHexagons, x, y, r)
+	}
+}
+
+func BenchmarkFindNearestHexTaken20Percent(b *testing.B) {
+	hexagons := generateHexagonGrid(1400, 200, 5)
+	takenHexagons := make(map[Hexagon]bool)
+	x, y := 216000.0, 43200.0
+
+	for i, hex := range hexagons {
+		if i%5 == 0 {
+			takenHexagons[hex] = true
+		}
+	}
+
+	r := 5.0 * 432 * 1.2
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		findNearestHex(hexagons, takenHexagons, x, y, r)
+	}
+}
+
+func BenchmarkFindNearestHexTaken33Percent(b *testing.B) {
+	hexagons := generateHexagonGrid(1400, 200, 5)
+	takenHexagons := make(map[Hexagon]bool)
+	x, y := 216000.0, 43200.0
+
+	for i, hex := range hexagons {
+		if i%3 == 0 {
+			takenHexagons[hex] = true
+		}
+	}
 
 	r := 5.0 * 432 * 1.2
 
@@ -70,12 +108,12 @@ func BenchmarkBeehive(b *testing.B) {
 		yvalues = append(yvalues, 60*60*12)
 	}
 
-    chartWidth, chartHeight, dotWidth := 1400, 200, 5
+	chartWidth, chartHeight, dotWidth := 1400, 200, 5
 
-    b.ResetTimer()
-    for i := 0; i < b.N; i++ {
-        Beehive(xvalues, yvalues, chartWidth, chartHeight, dotWidth)
-    }
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		Beehive(xvalues, yvalues, chartWidth, chartHeight, dotWidth)
+	}
 }
 
 func TestGenerateHexagonGrid(t *testing.T) {
@@ -358,7 +396,6 @@ func TestBeehiveEdgeCases(t *testing.T) {
 		})
 	}
 }
-
 
 func TestBeehiveConsistency(t *testing.T) {
 	xValues := []float64{100, 200, 300}
