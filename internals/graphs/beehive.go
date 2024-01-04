@@ -1,7 +1,6 @@
 package graphs
 
 import (
-	"fmt"
 	"math"
 	"sort"
 )
@@ -43,6 +42,7 @@ func generateHexagonGrid(width, height float64) []Hexagon {
 		}
 	}
 	return hexagons
+
 }
 
 func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []Hexagon {
@@ -91,7 +91,6 @@ func Beehive(xValues []float64, yValues []float64) ([]float64, []float64) {
 					takenHex[nearHex] = true
 					break
 				} else {
-					fmt.Println(i)
 					xValues[i] = hexagon.X
 					yValues[i] = hexagon.Y
 					takenHex[hexagon] = true
