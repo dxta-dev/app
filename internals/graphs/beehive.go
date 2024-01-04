@@ -6,17 +6,12 @@ import (
 )
 
 var unit float64 = 432.0
-var dayDPI = 200.0
-var radiusDPI = 5.0
-
-var radius float64 = radiusDPI * unit
-var r float64 = radius * 1.2
 
 type Hexagon struct {
 	X, Y float64
 }
 
-func generateHexagonGrid(width, height float64) []Hexagon {
+func generateHexagonGrid(width, height, r float64) []Hexagon {
 	var hexagons []Hexagon
 
 	hexHeight := 2 * r
@@ -73,8 +68,11 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y flo
 	return availableHexagons[0]
 }
 
-func Beehive(xValues []float64, yValues []float64) ([]float64, []float64) {
-	hexagons := generateHexagonGrid(7*dayDPI*unit, dayDPI*unit)
+func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
+	radius := float64(dotWidth) * unit
+	r := radius * 1.2
+
+	hexagons := generateHexagonGrid(float64(chartWidth)*unit, float64(chartHeight)*unit, r)
 
 	takenHex := make(map[Hexagon]bool)
 

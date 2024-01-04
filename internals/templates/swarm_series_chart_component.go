@@ -18,14 +18,14 @@ const (
 	DotTypeDiamond
 )
 
-type ScatterSeries struct {
+type SwarmSeries struct {
 	Title    string
 	DotTypes []DotType
 	XValues  []float64
 	YValues  []float64
 }
 
-func ScatterSeriesChart(series ScatterSeries, startOfWeek time.Time) templ.Component {
+func SwarmChart(series SwarmSeries, startOfWeek time.Time) templ.Component {
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,

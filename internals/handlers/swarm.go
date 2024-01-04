@@ -13,7 +13,7 @@ import (
 )
 
 
-func series1() templates.ScatterSeries {
+func series1() templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
@@ -34,20 +34,20 @@ func series1() templates.ScatterSeries {
 		yvalues = append(yvalues, 60*60*12)
 	}
 
-	xvalues, yvalues = graphs.Beehive(xvalues, yvalues)
+	xvalues, yvalues = graphs.Beehive(xvalues, yvalues, 1400, 200, 5)
 
 
 
 
 
-	return templates.ScatterSeries{
+	return templates.SwarmSeries{
 		Title:   "series 1",
 		XValues: xvalues,
 		YValues: yvalues,
 	}
 }
 
-func (a *App) ScatterForce(c echo.Context) error {
+func (a *App) Swarm(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	page := &templates.Page{
@@ -55,13 +55,13 @@ func (a *App) ScatterForce(c echo.Context) error {
 		Boosted: h.HxBoosted,
 	}
 
-	var chartData []templates.ScatterSeries
+	var chartData []templates.SwarmSeries
 
 	chartData = append(chartData, series1())
 
 
 	startOfWeek := time.Unix(1696204800, 0)
 
-	components := templates.Scatter(page, chartData, startOfWeek)
+	components := templates.Swarm(page, chartData, startOfWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }
