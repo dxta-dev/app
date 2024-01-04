@@ -28,7 +28,7 @@ func main() {
 
 	e.GET("/charts", app.Charts)
 
-	e.GET("/scatter", app.Scatter)
+	e.GET("/swarm", app.Swarm)
 
 	e.GET("/oss", app.OSSIndex)
 
