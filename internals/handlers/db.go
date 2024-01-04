@@ -6,6 +6,7 @@ import (
 	"dxta-dev/app/internals/templates"
 	"fmt"
 	"os"
+	"reflect"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -230,68 +231,49 @@ func (a *App) Database(c echo.Context) error {
 		var approvers []string
 		var committers []string
 		var reviewers []string
-		var j JoinedData
+
+		data := JoinedData{}
+		d := reflect.ValueOf(&data).Elem()
+		numCols := d.NumField()
+		// Need to find a better wat to get number of columns
+		columns := make([]interface{}, 54)
+		index := 0
+		for i := 0; i < numCols; i++ {
+			field := d.Field(i)
+			if field.Kind() == reflect.Struct {
+				innerData := field
+				for j := 0; j < innerData.NumField(); j++ {
+					innerField := innerData.Field(j)
+					columns[index] = innerField.Addr().Interface()
+					index = index + 1
+				}
+			} else {
+				columns[index] = field.Addr().Interface()
+				index = index + 1
+			}
+		}
 
 		if err := rows.Scan(
-			&j.Id,
-			&j.MergedDate.Day, &j.MergedDate.Month, &j.MergedDate.Year,
-			&j.OpenedDate.Day, &j.OpenedDate.Month, &j.OpenedDate.Year,
-			&j.ClosedDate.Day, &j.ClosedDate.Month, &j.ClosedDate.Year,
-			&j.LastUpdatedDate.Day, &j.LastUpdatedDate.Month, &j.LastUpdatedDate.Year,
-			&j.StartedCodingDate.Day, &j.StartedCodingDate.Month, &j.StartedCodingDate.Year,
-			&j.StartedPickupDate.Day, &j.StartedPickupDate.Month, &j.StartedPickupDate.Year,
-			&j.StartedReviewDate.Day, &j.StartedReviewDate.Month, &j.StartedReviewDate.Year,
-			&j.Author.Name,
-			&j.MergedBy.Name,
-			&j.Approver1.Name,
-			&j.Approver2.Name,
-			&j.Approver3.Name,
-			&j.Approver4.Name,
-			&j.Approver5.Name,
-			&j.Approver6.Name,
-			&j.Approver7.Name,
-			&j.Approver8.Name,
-			&j.Approver9.Name,
-			&j.Approver10.Name,
-			&j.Committer1.Name,
-			&j.Committer2.Name,
-			&j.Committer3.Name,
-			&j.Committer4.Name,
-			&j.Committer5.Name,
-			&j.Committer6.Name,
-			&j.Committer7.Name,
-			&j.Committer8.Name,
-			&j.Committer9.Name,
-			&j.Committer10.Name,
-			&j.Reviewer1.Name,
-			&j.Reviewer2.Name,
-			&j.Reviewer3.Name,
-			&j.Reviewer4.Name,
-			&j.Reviewer5.Name,
-			&j.Reviewer6.Name,
-			&j.Reviewer7.Name,
-			&j.Reviewer8.Name,
-			&j.Reviewer9.Name,
-			&j.Reviewer10.Name,
+			columns...,
 		); err != nil {
 			return err
 		}
 
-		approvers = append(approvers, j.Approver1.Name, j.Approver2.Name, j.Approver3.Name, j.Approver4.Name, j.Approver5.Name, j.Approver6.Name, j.Approver7.Name, j.Approver8.Name, j.Approver9.Name, j.Approver10.Name)
-		committers = append(committers, j.Committer1.Name, j.Committer2.Name, j.Committer3.Name, j.Committer4.Name, j.Committer5.Name, j.Committer6.Name, j.Committer7.Name, j.Committer8.Name, j.Committer9.Name, j.Committer10.Name)
-		reviewers = append(reviewers, j.Reviewer1.Name, j.Reviewer2.Name, j.Reviewer3.Name, j.Reviewer4.Name, j.Reviewer5.Name, j.Reviewer6.Name, j.Reviewer7.Name, j.Reviewer8.Name, j.Reviewer9.Name, j.Reviewer10.Name)
+		approvers = append(approvers, data.Approver1.Name, data.Approver2.Name, data.Approver3.Name, data.Approver4.Name, data.Approver5.Name, data.Approver6.Name, data.Approver7.Name, data.Approver8.Name, data.Approver9.Name, data.Approver10.Name)
+		committers = append(committers, data.Committer1.Name, data.Committer2.Name, data.Committer3.Name, data.Committer4.Name, data.Committer5.Name, data.Committer6.Name, data.Committer7.Name, data.Committer8.Name, data.Committer9.Name, data.Committer10.Name)
+		reviewers = append(reviewers, data.Reviewer1.Name, data.Reviewer2.Name, data.Reviewer3.Name, data.Reviewer4.Name, data.Reviewer5.Name, data.Reviewer6.Name, data.Reviewer7.Name, data.Reviewer8.Name, data.Reviewer9.Name, data.Reviewer10.Name)
 
 		metrics = append(metrics, templates.MergeRequestMetrics{
-			Id:              j.Id,
-			MergedAt:        time.Date(j.MergedDate.Year, time.Month(j.MergedDate.Month), j.MergedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			OpenedAt:        time.Date(j.OpenedDate.Year, time.Month(j.OpenedDate.Month), j.OpenedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			ClosedAt:        time.Date(j.ClosedDate.Year, time.Month(j.OpenedDate.Month), j.ClosedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			LastUpdatedAt:   time.Date(j.LastUpdatedDate.Year, time.Month(j.LastUpdatedDate.Month), j.LastUpdatedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			StartedCodingAt: time.Date(j.StartedCodingDate.Year, time.Month(j.StartedCodingDate.Month), j.StartedCodingDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			StartedPickupAt: time.Date(j.StartedPickupDate.Year, time.Month(j.StartedPickupDate.Month), j.StartedPickupDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			StartedReviewAt: time.Date(j.StartedReviewDate.Year, time.Month(j.StartedReviewDate.Month), j.StartedReviewDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
-			Author:          j.Author.Name,
-			MergedBy:        j.MergedBy.Name,
+			Id:              data.Id,
+			MergedAt:        time.Date(data.MergedDate.Year, time.Month(data.MergedDate.Month), data.MergedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			OpenedAt:        time.Date(data.OpenedDate.Year, time.Month(data.OpenedDate.Month), data.OpenedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			ClosedAt:        time.Date(data.ClosedDate.Year, time.Month(data.OpenedDate.Month), data.ClosedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			LastUpdatedAt:   time.Date(data.LastUpdatedDate.Year, time.Month(data.LastUpdatedDate.Month), data.LastUpdatedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			StartedCodingAt: time.Date(data.StartedCodingDate.Year, time.Month(data.StartedCodingDate.Month), data.StartedCodingDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			StartedPickupAt: time.Date(data.StartedPickupDate.Year, time.Month(data.StartedPickupDate.Month), data.StartedPickupDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			StartedReviewAt: time.Date(data.StartedReviewDate.Year, time.Month(data.StartedReviewDate.Month), data.StartedReviewDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
+			Author:          data.Author.Name,
+			MergedBy:        data.MergedBy.Name,
 			Approvers:       approvers,
 			Committers:      committers,
 			Reviewers:       reviewers,
