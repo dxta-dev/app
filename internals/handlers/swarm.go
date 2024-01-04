@@ -29,8 +29,8 @@ func series1() templates.SwarmSeries {
 		times = append(times, t)
 	}
 
-	for _, time := range times {
-		xSecondsValue := float64(time.Unix() - startOfWeek.Unix())
+	for _, t := range times {
+		xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
 		xvalues = append(xvalues, xSecondsValue)
 		yvalues = append(yvalues, 60*60*12)
 	}
@@ -48,7 +48,7 @@ func series1() templates.SwarmSeries {
 		case data.Merged:
 			colors = append(colors, drawing.ColorRed)
 		default:
-			colors = append(colors, drawing.ColorGreen)
+			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(204, 204, 204, 255))
 		}
 	}
 
