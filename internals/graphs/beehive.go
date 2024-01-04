@@ -2,7 +2,6 @@ package graphs
 
 import (
 	"math"
-	"sort"
 )
 
 var unit float64 = 432.0
@@ -56,19 +55,29 @@ func distance(h Hexagon, x, y float64) float64 {
 	return math.Sqrt(math.Pow(h.X-x, 2) + math.Pow(h.Y-y, 2))
 }
 
-func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y float64) Hexagon {
-	availableHexagons := removeTakenHexagons(hexagons, takenHexagons)
+func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r float64) Hexagon {
+	minDistanceSquared := math.MaxFloat64
+	var nearestHex Hexagon
 
-	// Sort the points based on their distance to point p
-	sort.Slice(availableHexagons, func(i, j int) bool {
-		return distance(availableHexagons[i], x, y) < distance(availableHexagons[j], x, y)
-	})
+	for _, hex := range hexagons {
+		if takenHexagons[hex] {
+			continue
+		}
 
-	if len(availableHexagons) == 0 {
-		return Hexagon{}
+		dX, dY := hex.X-x, hex.Y-y
+		distanceSquared := dX*dX + dY*dY
+
+		if distanceSquared < minDistanceSquared {
+			minDistanceSquared = distanceSquared
+			nearestHex = hex
+
+			if minDistanceSquared < (r / 2) * (r / 2) {
+				break
+			}
+		}
 	}
 
-	return availableHexagons[0]
+	return nearestHex
 }
 
 func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
@@ -86,7 +95,7 @@ func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotW
 		for _, hexagon := range hexagons {
 			if math.Abs(x-hexagon.X) < r && math.Abs(y-hexagon.Y) < r {
 				if _, exists := takenHex[hexagon]; exists {
-					nearHex := findNearestHex(hexagons, takenHex, x, y)
+					nearHex := findNearestHex(hexagons, takenHex, x, y, r)
 					xValues[i] = nearHex.X
 					yValues[i] = nearHex.Y
 					takenHex[nearHex] = true

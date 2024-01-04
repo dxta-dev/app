@@ -21,9 +21,11 @@ func BenchmarkFindNearestHex(b *testing.B) {
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
 
+	r := 5.0 * 432 * 1.2
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		findNearestHex(hexagons, takenHexagons, x, y)
+		findNearestHex(hexagons, takenHexagons, x, y, r)
 	}
 }
 
@@ -39,9 +41,11 @@ func BenchmarkFindNearestHexTaken(b *testing.B) {
 		takenHexagons[hex] = true
 	}
 
+	r := 5.0 * 432 * 1.2
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		findNearestHex(hexagons, takenHexagons, x, y)
+		findNearestHex(hexagons, takenHexagons, x, y, r)
 	}
 }
 
@@ -236,7 +240,7 @@ func TestFindNearestHex(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := findNearestHex(hexagons, takenHexagons, tt.x, tt.y)
+			result := findNearestHex(hexagons, takenHexagons, tt.x, tt.y, 1)
 			if result != tt.expected {
 				t.Errorf("findNearestHex() = %v, want %v", result, tt.expected)
 			}
@@ -259,7 +263,7 @@ func TestFindNearestHexAllTaken(t *testing.T) {
 
 	x, y := 0.5, 0.5
 
-	result := findNearestHex(hexagons, takenHexagons, x, y)
+	result := findNearestHex(hexagons, takenHexagons, x, y, 1)
 
 	expected := Hexagon{}
 
