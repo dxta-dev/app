@@ -26,7 +26,7 @@ type User struct {
 	Name string
 }
 
-type JoinedIndexes struct {
+type JoinedData struct {
 	Id                int
 	MergedDate        Date
 	OpenedDate        Date
@@ -230,7 +230,7 @@ func (a *App) Database(c echo.Context) error {
 		var approvers []string
 		var committers []string
 		var reviewers []string
-		var j JoinedIndexes
+		var j JoinedData
 
 		if err := rows.Scan(
 			&j.Id,
