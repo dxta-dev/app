@@ -11,8 +11,6 @@ type Hexagon struct {
 }
 
 func generateHexagonGrid(width, height, r float64) []Hexagon {
-	var hexagons []Hexagon
-
 	hexHeight := 2 * r
 	hexWidth := 4 * math.Sqrt(3) * r / 3
 
@@ -20,6 +18,8 @@ func generateHexagonGrid(width, height, r float64) []Hexagon {
 
 	rows := int(height/hexHeight) + 1
 	cols := int(width/hexWidth*4/3) + 1
+
+	hexagons := make([]Hexagon, 0, rows*cols)
 
 	for row := 0; row < rows; row++ {
 		for col := 0; col < cols; col++ {
@@ -40,7 +40,7 @@ func generateHexagonGrid(width, height, r float64) []Hexagon {
 }
 
 func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []Hexagon {
-	result := []Hexagon{}
+	result := make([]Hexagon, 0, len(hexagons))
 
 	for _, hexagon := range hexagons {
 		if !takenHexagons[hexagon] {
@@ -49,10 +49,6 @@ func removeTakenHexagons(hexagons []Hexagon, takenHexagons map[Hexagon]bool) []H
 	}
 
 	return result
-}
-
-func distance(h Hexagon, x, y float64) float64 {
-	return math.Sqrt(math.Pow(h.X-x, 2) + math.Pow(h.Y-y, 2))
 }
 
 func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r float64) Hexagon {
@@ -71,7 +67,7 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r 
 			minDistanceSquared = distanceSquared
 			nearestHex = hex
 
-			if minDistanceSquared < (r / 2) * (r / 2) {
+			if minDistanceSquared < (r/2)*(r/2) {
 				break
 			}
 		}

@@ -1,7 +1,6 @@
 package graphs
 
 import (
-	"math"
 	"reflect"
 	"sort"
 	"testing"
@@ -227,29 +226,6 @@ func TestRemoveTakenHexagonsEmptyInverse(t *testing.T) {
 
 	if !reflect.DeepEqual(result, hexagons) {
 		t.Errorf("removeTakenHexagons() with empty hexagons = %v, want %v", result, hexagons)
-	}
-}
-
-func TestDistanceCalculation(t *testing.T) {
-	tests := []struct {
-		name     string
-		hexagon  Hexagon
-		x, y     float64
-		expected float64
-	}{
-		{"ZeroDistance", Hexagon{X: 0, Y: 0}, 0, 0, 0},
-		{"PositiveCoordinates", Hexagon{X: 3, Y: 4}, 0, 0, 5},
-		{"NegativeCoordinates", Hexagon{X: -3, Y: -4}, 0, 0, 5},
-		{"MixedCoordinates", Hexagon{X: -3, Y: 4}, 0, 0, 5},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := distance(tt.hexagon, tt.x, tt.y)
-			if math.Abs(result-tt.expected) > 1e-6 {
-				t.Errorf("distance(%v, %v, %v) = %v, want %v", tt.hexagon, tt.x, tt.y, result, tt.expected)
-			}
-		})
 	}
 }
 
