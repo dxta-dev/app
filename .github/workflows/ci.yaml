@@ -104,6 +104,14 @@ jobs:
         with:
           ref: 'main'
 
+      - name: Generate
+        if: github.ref != 'refs/heads/main'
+        run: |
+          mkdir -p bin/
+          go install github.com/a-h/templ/cmd/templ@latest
+          templ generate
+          ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
+
       - name: Bench main
         if: github.ref != 'refs/heads/main'
         run: go test -bench=. ./... > benchmark-main.txt
