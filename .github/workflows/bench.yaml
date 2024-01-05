@@ -32,7 +32,7 @@ jobs:
 
       - name: Bench
         run: |
-          go test -bench=. ./... > benchmark-new.txt
+          go test -bench=. -count=10 ./... > benchmark-new.txt
 
       - name: Checkout main branch
         uses: actions/checkout@v4
@@ -52,13 +52,19 @@ jobs:
           ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
 
       - name: Bench main
-        run: go test -bench=. ./... > benchmark-main.txt
+        run: go test -bench=. -count=10 ./... > benchmark-main.txt
 
       - name: Install benchstat
         run: go install golang.org/x/perf/cmd/benchstat@latest
 
       - name: Compare Benchmarks with benchstat
         run: benchstat benchmark-main.txt benchmark-new.txt > bench-diff.txt
+
+      - name: Cat
+        run: |
+          cat benchmark-new.txt
+          cat benchmark-main.txt
+          cat bench-diff.txt
 
       - name: Upload Benchmark Comparison as Artifact
         uses: actions/upload-artifact@v4
