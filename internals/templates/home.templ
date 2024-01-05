@@ -2,23 +2,13 @@ package templates
 
 templ Home(page *Page, name string) {
 	@Layout(page){
-		<html>
-			<head>
-				<title>{ name }</title>
-				<script src="https://unpkg.com/htmx.org@1.9.9"></script>
-				<script src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
-				<link rel="stylesheet" href="style.css"/>
-			</head>
-			<body>
-				<div class="bg-white">
-					<div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
-						<div class="mx-auto max-w-2xl text-center">
-							<h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{ name }<br/>Start using our app today.</h2>
-							<p class="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">"Now I have a machine gun. Ho ho ho." <br/> - Hans Gruber</p>
-						</div>
-					</div>
+		<div class="bg-white">
+			<div class="px-6 py-24 sm:px-6 sm:py-32 lg:px-8">
+				<div class="mx-auto max-w-2xl text-center">
+					<h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">{ name }<br/>Start using our app today.</h2>
+					<p class="mx-auto mt-6 max-w-xl text-lg leading-8 text-gray-600">"Now I have a machine gun. Ho ho ho." <br/> - Hans Gruber</p>
 				</div>
-			</body>
-		</html>
+			</div>
+		</div>
 	}
 }
