@@ -92,7 +92,6 @@ func (a *App) Database(c echo.Context) error {
 
 	weekQuery := r.URL.Query().Get("week")
 
-	fmt.Println("Week: ", weekParam, "weekQuery", weekQuery)
 	if weekQuery != "" {
 		weekParam = weekQuery
 	}
@@ -112,8 +111,6 @@ func (a *App) Database(c echo.Context) error {
 		year = strconv.Itoa(y)
 		currentWeek = setCurrentWeek()
 	}
-
-	fmt.Println(r.Context().Value(htmx.ContextRequestHeader))
 
 	page := &templates.Page{
 		Title:   "Database",
@@ -272,7 +269,6 @@ func (a *App) Database(c echo.Context) error {
 		if err != nil {
 			return err
 		}
-		// Need to find a better wat to get number of columns
 		columns := make([]interface{}, len(columnsName))
 
 		index := 0
@@ -324,10 +320,12 @@ func (a *App) Database(c echo.Context) error {
 		res.Header().Set("HX-Push-Url", "/database/"+weekParam)
 	}
 
-	if h.HxRequest {
+	// ToDo See if there is a better way to check this
+	if h.HxRequest && weekParam != "" || weekQuery != "" {
 		components := templates.DatabaseContent(metrics)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
+
 	components := templates.Database(page, page.Title, metrics, currentWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }
