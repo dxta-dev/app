@@ -74,6 +74,13 @@ func (a *App) Database(c echo.Context) error {
 
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+
+	w := r.URL.Query().Get("week")
+
+	fmt.Println("Week: ", w)
+
+	fmt.Println(r.Context().Value(htmx.ContextRequestHeader))
+
 	page := &templates.Page{
 		Title:   "Database",
 		Boosted: h.HxBoosted,
@@ -237,6 +244,7 @@ func (a *App) Database(c echo.Context) error {
 		numCols := d.NumField()
 		// Need to find a better wat to get number of columns
 		columns := make([]interface{}, 54)
+
 		index := 0
 		for i := 0; i < numCols; i++ {
 			field := d.Field(i)
@@ -278,6 +286,12 @@ func (a *App) Database(c echo.Context) error {
 			Committers:      committers,
 			Reviewers:       reviewers,
 		})
+	}
+
+	if(w != "") {
+		res := c.Response()
+
+		res.Header().Set("HX-Push-Url", "/database/" + w)
 	}
 
 	components := templates.Database(page, page.Title, metrics)

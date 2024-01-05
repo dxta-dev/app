@@ -1,6 +1,9 @@
 package templates
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type MergeRequestMetrics struct {
 	Id              int
@@ -13,19 +16,32 @@ type MergeRequestMetrics struct {
 	StartedReviewAt string
 	Author          string
 	MergedBy        string
-	Approvers		[]string
-	Committers		[]string
-	Reviewers		[]string
+	Approvers       []string
+	Committers      []string
+	Reviewers       []string
+}
+
+func setCurrentWeek() string {
+	currentDate := time.Now()
+	year, week := currentDate.ISOWeek()
+
+	formattedWeek := fmt.Sprintf("%d-W%02d", year, week)
+
+	return formattedWeek
 }
 
 templ Database(page *Page, name string, metrics []MergeRequestMetrics) {
-	@Layout(page){
+	@Layout(page) {
 		<html>
 			<body>
-                <div class="bg-white">
-                    for _, metric := range metrics {
-                        <pre>{ fmt.Sprintf("%v", metric) }</pre>
-                    }
+				<form>
+					<label for="week">Week</label>
+					<input hx-get="/database" id="week" type="week" name="week" value={ setCurrentWeek() }/>
+				</form>
+				<div class="bg-white">
+					for _, metric := range metrics {
+						<pre>{ fmt.Sprintf("%v", metric) }</pre>
+					}
 				</div>
 			</body>
 		</html>
