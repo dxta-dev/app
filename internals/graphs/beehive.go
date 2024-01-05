@@ -50,8 +50,11 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r 
 	var nearestHex Hexagon
 
 	for _, hex := range hexagons {
-		if takenHexagons[hex] {
-			continue
+		if len(takenHexagons) != 0 && takenHexagons[hex] {
+			value, ok := takenHexagons[hex]
+			if ok && value {
+				continue
+			}
 		}
 
 		dX, dY := hex.X-x, hex.Y-y
@@ -61,7 +64,7 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r 
 			minDistanceSquared = distanceSquared
 			nearestHex = hex
 
-			if minDistanceSquared < (r/2)*(r/2) {
+			if minDistanceSquared < math.Pow(r, 2) {
 				break
 			}
 		}
