@@ -96,11 +96,17 @@ jobs:
 
       - name: Bench
         run: |
-          go test -bench=. -count=10 ./... > benchmark-new.txt
+          go test -bench=. ./... > benchmark-new.txt
 
       - name: Checkout main branch
         if: github.ref != 'refs/heads/main'
-        run: go test -bench=. -count=10 ./... > benchmark-main.txt
+        uses: actions/checkout@v4
+        with:
+          ref: 'main'
+
+      - name: Bench main
+        if: github.ref != 'refs/heads/main'
+        run: go test -bench=. ./... > benchmark-main.txt
 
       - name: Install benchstat
         if: github.ref != 'refs/heads/main'
