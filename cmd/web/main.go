@@ -25,6 +25,7 @@ func main() {
 	e.GET("/", app.Home)
 
 	e.GET("/database", app.Database)
+	e.GET("/database/:week", app.Database)
 
 	e.GET("/charts", app.Charts)
 

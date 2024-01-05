@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -70,14 +72,46 @@ type JoinedData struct {
 	Reviewer10        User
 }
 
+func setCurrentWeek() string {
+	currentDate := time.Now()
+	year, week := currentDate.ISOWeek()
+
+	formattedWeek := fmt.Sprintf("%d-W%02d", year, week)
+
+	return formattedWeek
+}
+
 func (a *App) Database(c echo.Context) error {
 
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
-	w := r.URL.Query().Get("week")
+	weekParam := c.Param("week")
 
-	fmt.Println("Week: ", w)
+	var currentWeek string
+
+	weekQuery := r.URL.Query().Get("week")
+
+	fmt.Println("Week: ", weekParam, "weekQuery", weekQuery)
+	if weekQuery != "" {
+		weekParam = weekQuery
+	}
+
+	var week string
+	var year string
+
+	if weekParam != "" {
+		ind := strings.Index(weekParam, "-")
+		year = weekParam[:ind]
+		week = weekParam[ind+2:]
+		currentWeek = fmt.Sprintf("%s-W%s", year, week)
+	} else {
+		currentDate := time.Now()
+		y, w := currentDate.ISOWeek()
+		week = strconv.Itoa(w)
+		year = strconv.Itoa(y)
+		currentWeek = setCurrentWeek()
+	}
 
 	fmt.Println(r.Context().Value(htmx.ContextRequestHeader))
 
@@ -105,14 +139,6 @@ func (a *App) Database(c echo.Context) error {
 	}
 
 	var attributes []interface{}
-
-	// Just for testing
-	// Using date 27.07.2023. week 23
-	// start of week 24.07.2023.
-	// end of week 30.07.2023.
-
-	selectedDate := time.Date(2023, time.Month(7), 27, 0, 0, 0, 0, time.UTC)
-	year, week := selectedDate.ISOWeek()
 
 	attributes = append(attributes, week, year)
 
@@ -242,8 +268,12 @@ func (a *App) Database(c echo.Context) error {
 		data := JoinedData{}
 		d := reflect.ValueOf(&data).Elem()
 		numCols := d.NumField()
+		columnsName, err := rows.Columns()
+		if err != nil {
+			return err
+		}
 		// Need to find a better wat to get number of columns
-		columns := make([]interface{}, 54)
+		columns := make([]interface{}, len(columnsName))
 
 		index := 0
 		for i := 0; i < numCols; i++ {
@@ -288,12 +318,16 @@ func (a *App) Database(c echo.Context) error {
 		})
 	}
 
-	if(w != "") {
+	if weekParam != "" {
 		res := c.Response()
 
-		res.Header().Set("HX-Push-Url", "/database/" + w)
+		res.Header().Set("HX-Push-Url", "/database/"+weekParam)
 	}
 
-	components := templates.Database(page, page.Title, metrics)
+	if h.HxRequest {
+		components := templates.DatabaseContent(metrics)
+		return components.Render(context.Background(), c.Response().Writer)
+	}
+	components := templates.Database(page, page.Title, metrics, currentWeek)
 	return components.Render(context.Background(), c.Response().Writer)
 }
