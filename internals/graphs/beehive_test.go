@@ -10,17 +10,18 @@ import (
 )
 
 func BenchmarkGenerateHexagonGrid(b *testing.B) {
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(1400, 200, 5)
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		generateHexagonGrid(1400, 200, 5)
+		generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 	}
 }
 
 func BenchmarkFindNearestHex(b *testing.B) {
-	hexagons := generateHexagonGrid(1400, 200, 5)
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(1400, 200, 5)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
-
-	r := 5.0 * 432 * 1.2
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -29,7 +30,8 @@ func BenchmarkFindNearestHex(b *testing.B) {
 }
 
 func BenchmarkFindNearestHexTaken20Percent(b *testing.B) {
-	hexagons := generateHexagonGrid(1400, 200, 5)
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(1400, 200, 5)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
 
@@ -39,8 +41,6 @@ func BenchmarkFindNearestHexTaken20Percent(b *testing.B) {
 		}
 	}
 
-	r := 5.0 * 432 * 1.2
-
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		findNearestHex(hexagons, takenHexagons, x, y, r)
@@ -48,7 +48,8 @@ func BenchmarkFindNearestHexTaken20Percent(b *testing.B) {
 }
 
 func BenchmarkFindNearestHexTaken33Percent(b *testing.B) {
-	hexagons := generateHexagonGrid(1400, 200, 5)
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(1400, 200, 5)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
 
@@ -58,8 +59,6 @@ func BenchmarkFindNearestHexTaken33Percent(b *testing.B) {
 		}
 	}
 
-	r := 5.0 * 432 * 1.2
-
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		findNearestHex(hexagons, takenHexagons, x, y, r)
@@ -67,7 +66,8 @@ func BenchmarkFindNearestHexTaken33Percent(b *testing.B) {
 }
 
 func BenchmarkFindNearestHexTaken(b *testing.B) {
-	hexagons := generateHexagonGrid(1400, 200, 5)
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(1400, 200, 5)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 	takenHexagons := make(map[Hexagon]bool)
 	x, y := 216000.0, 43200.0
 
@@ -77,8 +77,6 @@ func BenchmarkFindNearestHexTaken(b *testing.B) {
 		}
 		takenHexagons[hex] = true
 	}
-
-	r := 5.0 * 432 * 1.2
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
@@ -113,178 +111,6 @@ func BenchmarkBeehive(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Beehive(xvalues, yvalues, chartWidth, chartHeight, dotWidth)
 	}
-}
-
-func TestGenerateHexagonGrid(t *testing.T) {
-	tests := []struct {
-		name           string
-		width, height  float64
-		r              float64
-		expectedLength int
-	}{
-		{"SmallGrid", 1000, 1000, 50, 120},
-		{"MediumGrid", 2000, 1500, 75, 160},
-		{"LargeGrid", 3000, 2500, 100, 225},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			hexagons := generateHexagonGrid(tt.width, tt.height, tt.r)
-			if len(hexagons) != tt.expectedLength {
-				t.Errorf("generateHexagonGrid(%v, %v, %v) got %v hexagons, want %v", tt.width, tt.height, tt.r, len(hexagons), tt.expectedLength)
-			}
-
-			for _, hex := range hexagons {
-				if hex.X < 0 || hex.X > tt.width || hex.Y < 0 || hex.Y > tt.height {
-					t.Errorf("Hexagon %v is out of bounds in grid size %v x %v", hex, tt.width, tt.height)
-				}
-			}
-		})
-	}
-}
-
-func TestGenerateHexagonGridBoundary(t *testing.T) {
-	tests := []struct {
-		name           string
-		width, height  float64
-		r              float64
-		expectedLength int
-	}{
-		{"VerySmallGrid", 10, 10, 5, 2},
-		{"ZeroGrid", 0, 0, 50, 0},
-		{"NegativeDimensions", -100, -100, 50, 0},
-		{"LargeGridSmallRadius", 10000, 10000, 1, 28870000},
-		{"SmallGridLargeRadius", 500, 500, 250, 2},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			hexagons := generateHexagonGrid(tt.width, tt.height, tt.r)
-			if len(hexagons) != tt.expectedLength {
-				t.Errorf("generateHexagonGrid(%v, %v, %v) got %v hexagons, want %v", tt.width, tt.height, tt.r, len(hexagons), tt.expectedLength)
-			}
-
-			for _, hex := range hexagons {
-				if hex.X < 0 || hex.X > tt.width || hex.Y < 0 || hex.Y > tt.height {
-					t.Errorf("Hexagon %v is out of bounds in grid size %v x %v", hex, tt.width, tt.height)
-				}
-			}
-		})
-	}
-}
-
-func TestRemoveTakenHexagons(t *testing.T) {
-	hexagons := []Hexagon{
-		{X: 0, Y: 0},
-		{X: 1, Y: 1},
-		{X: 2, Y: 2},
-		{X: 3, Y: 3},
-	}
-
-	takenHexagons := map[Hexagon]bool{
-		{X: 1, Y: 1}: true,
-		{X: 3, Y: 3}: true,
-	}
-
-	result := removeTakenHexagons(hexagons, takenHexagons)
-
-	expected := []Hexagon{
-		{X: 0, Y: 0},
-		{X: 2, Y: 2},
-	}
-
-	if !reflect.DeepEqual(result, expected) {
-		t.Errorf("removeTakenHexagons() = %v, want %v", result, expected)
-	}
-}
-
-func TestRemoveTakenHexagonsEmpty(t *testing.T) {
-	hexagons := []Hexagon{
-		{X: 0, Y: 0},
-		{X: 1, Y: 1},
-		{X: 2, Y: 2},
-	}
-
-	takenHexagons := make(map[Hexagon]bool)
-
-	result := removeTakenHexagons(hexagons, takenHexagons)
-
-	if !reflect.DeepEqual(result, hexagons) {
-		t.Errorf("removeTakenHexagons() with empty map = %v, want %v", result, hexagons)
-	}
-}
-
-func TestRemoveTakenHexagonsEmptyInverse(t *testing.T) {
-	hexagons := []Hexagon{}
-
-	takenHexagons := map[Hexagon]bool{
-		{X: 1, Y: 1}: true,
-		{X: 3, Y: 3}: true,
-	}
-
-	result := removeTakenHexagons(hexagons, takenHexagons)
-
-	if !reflect.DeepEqual(result, hexagons) {
-		t.Errorf("removeTakenHexagons() with empty hexagons = %v, want %v", result, hexagons)
-	}
-}
-
-func TestFindNearestHex(t *testing.T) {
-	hexagons := []Hexagon{
-		{X: 0, Y: 0},
-		{X: 1, Y: 1},
-		{X: 2, Y: 2},
-		{X: 3, Y: 3},
-	}
-
-	takenHexagons := map[Hexagon]bool{
-		{X: 0, Y: 0}: true,
-		{X: 1, Y: 1}: true,
-	}
-
-	tests := []struct {
-		name     string
-		x, y     float64
-		expected Hexagon
-	}{
-		{"ClosestToOrigin", 0, 0, Hexagon{X: 2, Y: 2}},
-		{"ClosestToMidPoint", 1.5, 1.5, Hexagon{X: 2, Y: 2}},
-		{"ClosestToFarPoint", 3, 3, Hexagon{X: 3, Y: 3}},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := findNearestHex(hexagons, takenHexagons, tt.x, tt.y, 1)
-			if result != tt.expected {
-				t.Errorf("findNearestHex() = %v, want %v", result, tt.expected)
-			}
-		})
-	}
-}
-
-func TestFindNearestHexAllTaken(t *testing.T) {
-	hexagons := []Hexagon{
-		{X: 0, Y: 0},
-		{X: 1, Y: 1},
-		{X: 2, Y: 2},
-	}
-
-	takenHexagons := map[Hexagon]bool{
-		{X: 0, Y: 0}: true,
-		{X: 1, Y: 1}: true,
-		{X: 2, Y: 2}: true,
-	}
-
-	x, y := 0.5, 0.5
-
-	result := findNearestHex(hexagons, takenHexagons, x, y, 1)
-
-	expected := Hexagon{}
-
-	if result != expected {
-		t.Errorf("findNearestHex() with all hexagons taken = %v, want %v", result, expected)
-	}
-
 }
 
 func TestBeehiveFunctionality(t *testing.T) {

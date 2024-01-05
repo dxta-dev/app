@@ -10,14 +10,8 @@ type Hexagon struct {
 	X, Y float64
 }
 
-func generateHexagonGrid(width, height, r float64) []Hexagon {
-	hexHeight := 2 * r
-	hexWidth := 4 * math.Sqrt(3) * r / 3
-
+func generateHexagonGrid(width, height, hexWidth, hexHeight, r float64, rows, cols int) []Hexagon {
 	offset := hexHeight / 2
-
-	rows := int(height/hexHeight) + 1
-	cols := int(width/hexWidth*4/3) + 1
 
 	hexagons := make([]Hexagon, 0, rows*cols)
 
@@ -73,14 +67,28 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r 
 		}
 	}
 
+	takenHexagons[nearestHex] = true
 	return nearestHex
 }
 
-func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
+func setup(chartWidth, chartHeight, dotWidth int) (float64, float64, float64, float64, float64, int, int) {
 	radius := float64(dotWidth) * unit
 	r := radius * 1.2
 
-	hexagons := generateHexagonGrid(float64(chartWidth)*unit, float64(chartHeight)*unit, r)
+	hexHeight := 2 * r
+	hexWidth := 4 * math.Sqrt(3) * r / 3
+
+	height := float64(chartHeight) * unit
+	width := float64(chartWidth) * unit
+	rows := int(height/hexHeight) + 1
+	cols := int(width/hexWidth*4/3) + 1
+
+	return height, width, hexHeight, hexWidth, r, rows, cols
+}
+
+func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(chartWidth, chartHeight, dotWidth)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
 
 	takenHex := make(map[Hexagon]bool)
 
