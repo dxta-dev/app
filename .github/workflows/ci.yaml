@@ -77,6 +77,7 @@ jobs:
   bench:
     needs: [setup]
     runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
 
@@ -93,10 +94,28 @@ jobs:
             ./internals/templates/**/*_templ.go
           key: ${{ runner.os }}-generate-${{ hashFiles('./internals/templates/**/*.templ') }}
 
-      - name: Test
+      - name: Bench
         run: |
-          go test -bench=. -v ./...
+          go test -bench=. -v ./... > benchmark-new.txt
 
+      - name: Checkout main branch
+        if: github.ref != 'refs/heads/main'
+        run: go test -bench=. ./... > benchmark-main.txt
+
+      - name: Install benchstat
+        if: github.ref != 'refs/heads/main'
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Compare Benchmarks with benchstat
+        if: github.ref != 'refs/heads/main'
+        run: benchstat bench-main.txt bench-new.txt > bench-diff.txt
+
+      - name: Upload Benchmark Comparison as Artifact
+        if: github.ref != 'refs/heads/main'
+        uses: actions/upload-artifact@v2
+        with:
+          name: benchmark-comparison
+          path: bench-diff.txt
 
   build:
     needs: [setup]
