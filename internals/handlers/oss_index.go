@@ -3,10 +3,19 @@ package handlers
 import (
 	"context"
 	"dxta-dev/app/internals/templates"
+
+	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 )
 
 func (a *App) OSSIndex(c echo.Context) error {
+	r := c.Request()
+	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+
+	page := &templates.Page{
+		Title:   "oss",
+		Boosted: h.HxBoosted,
+	}
 
 	cardGroups := []templates.CardGroup{
 		{
@@ -73,6 +82,6 @@ func (a *App) OSSIndex(c echo.Context) error {
 		},
 	}
 
-	components := templates.OSSIndex(cardGroups)
+	components := templates.OSSIndex(page, cardGroups)
 	return components.Render(context.Background(), c.Response().Writer)
 }
