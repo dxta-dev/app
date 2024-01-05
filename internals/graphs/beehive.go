@@ -67,7 +67,6 @@ func findNearestHex(hexagons []Hexagon, takenHexagons map[Hexagon]bool, x, y, r 
 		}
 	}
 
-	takenHexagons[nearestHex] = true
 	return nearestHex
 }
 
