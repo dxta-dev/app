@@ -30,7 +30,6 @@ type User struct {
 }
 
 type JoinedData struct {
-	Id                int
 	MergedDate        Date
 	OpenedDate        Date
 	ClosedDate        Date
@@ -141,7 +140,6 @@ func (a *App) Database(c echo.Context) error {
 
 	selectQuery := fmt.Sprintf(`
 		SELECT
-		merge_request_metrics.id,
 		merged_date.day, merged_date.month, merged_date.year,
 		opened_date.day, opened_date.month, opened_date.year,
 		closed_date.day, closed_date.month, closed_date.year,
@@ -298,7 +296,6 @@ func (a *App) Database(c echo.Context) error {
 		reviewers = append(reviewers, data.Reviewer1.Name, data.Reviewer2.Name, data.Reviewer3.Name, data.Reviewer4.Name, data.Reviewer5.Name, data.Reviewer6.Name, data.Reviewer7.Name, data.Reviewer8.Name, data.Reviewer9.Name, data.Reviewer10.Name)
 
 		metrics = append(metrics, templates.MergeRequestMetrics{
-			Id:              data.Id,
 			MergedAt:        time.Date(data.MergedDate.Year, time.Month(data.MergedDate.Month), data.MergedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
 			OpenedAt:        time.Date(data.OpenedDate.Year, time.Month(data.OpenedDate.Month), data.OpenedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
 			ClosedAt:        time.Date(data.ClosedDate.Year, time.Month(data.OpenedDate.Month), data.ClosedDate.Day, 0, 0, 0, 0, time.UTC).Format("Mon, 02-01-2006"),
@@ -320,8 +317,7 @@ func (a *App) Database(c echo.Context) error {
 		res.Header().Set("HX-Push-Url", "/database/"+weekParam)
 	}
 
-	// ToDo See if there is a better way to check this
-	if h.HxRequest && weekParam != "" || weekQuery != "" {
+	if h.HxRequest && h.HxTrigger != "" {
 		components := templates.DatabaseContent(metrics)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
