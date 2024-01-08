@@ -14,7 +14,7 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.0.15
+          bun-version: 1.0.21
 
       - name: Setup go
         uses: actions/setup-go@v4
@@ -112,3 +112,26 @@ jobs:
           context: .
           load: true
           tags: ${{ env.TEST_TAG }}
+
+  run_docker:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Docker Image
+        run: docker run -a 3000:3000 user/app:test
+
+  e2e:
+    needs: run_docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      - name: Upload Test Artifact (if tests fail)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: test-results/
+
+
