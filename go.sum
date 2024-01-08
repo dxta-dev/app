@@ -7,8 +7,8 @@ github.com/blend/go-sdk v1.20220411.3/go.mod h1:7lnH8fTi6U4i1fArEXRyOIY2E1X4MALg
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/donseba/go-htmx v1.1.0 h1:DOrUoa5FpmfdFok0RgKlU88Yoe5PDh20kYpbHCP0o78=
-github.com/donseba/go-htmx v1.1.0/go.mod h1:SVMQJFOsH2GQyQqV/d0tdtgXVX6FMuVMQLlEqbPupnw=
+github.com/donseba/go-htmx v1.2.0 h1:N91x/8DQNyWhpGXpPxM5Gj+igoKRFnLZNHqcZjuyn1U=
+github.com/donseba/go-htmx v1.2.0/go.mod h1:SVMQJFOsH2GQyQqV/d0tdtgXVX6FMuVMQLlEqbPupnw=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
