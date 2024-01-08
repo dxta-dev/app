@@ -1,0 +1,81 @@
+name: BENCH
+
+on: [pull_request]
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: 1.0.15
+
+      - name: Setup go
+        uses: actions/setup-go@v4
+        with:
+          go-version: 1.21.5
+
+      - name: bun install
+        if: steps.bun-cache.outputs.cache-hit != 'true'
+        run: |
+          bun i
+
+      - name: Generate
+        run: |
+          mkdir -p bin/
+          go install github.com/a-h/templ/cmd/templ@latest
+          templ generate
+          ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
+
+      - name: Bench
+        run: |
+          go test -bench=. -count=10 ./... > benchmark-new.txt
+
+      - name: Move to tmp
+        run: |
+          mv ./benchmark-new.txt /tmp/
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: 'main'
+
+      - name: bun install
+        if: steps.bun-cache.outputs.cache-hit != 'true'
+        run: |
+          bun i
+
+      - name: Generate
+        run: |
+          mkdir -p bin/
+          go install github.com/a-h/templ/cmd/templ@latest
+          templ generate
+          ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
+
+      - name: Bench main
+        run: go test -bench=. -count=10 ./... > benchmark-main.txt
+
+      - name: Install benchstat
+        run: go install golang.org/x/perf/cmd/benchstat@latest
+
+      - name: Move from tmp
+        run: |
+          mv /tmp/benchmark-new.txt ./
+
+      - name: Compare Benchmarks with benchstat
+        run: benchstat benchmark-main.txt benchmark-new.txt > bench-diff.txt
+
+      - name: Cat
+        run: |
+          cat benchmark-new.txt
+          cat benchmark-main.txt
+          cat bench-diff.txt
+
+      - name: Upload Benchmark Comparison as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-comparison
+          path: bench-diff.txt
