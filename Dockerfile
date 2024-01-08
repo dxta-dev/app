@@ -26,13 +26,14 @@ RUN useradd -u 1001 dxta
 
 COPY . .
 
+COPY --from=bun /app/public/style.css /public/style.css
+
 RUN go install github.com/a-h/templ/cmd/templ@v0.2.513
 
 RUN templ generate
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
-  -tags netgo \
   -o web \
   ./cmd/web/main.go
 
@@ -43,10 +44,6 @@ FROM scratch
 WORKDIR /
 
 COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-COPY --from=bun /app/public/style.css /public/style.css
-
-COPY --from=build /app/public/fonts/* /public/fonts/
 
 COPY --from=build /etc/passwd /etc/passwd
 
