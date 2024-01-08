@@ -9,6 +9,8 @@ import (
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
+
+
 func main() {
 	app := &handlers.App{
 		HTMX: htmx.New(),
@@ -20,7 +22,7 @@ func main() {
 	e.Use(middlewares.TenantMiddleware)
 	e.Use(middlewares.HtmxMiddleware)
 
-	e.Static("/", "public")
+	e.GET("/*", handlers.PublicHandler())
 
 	e.GET("/", app.Home)
 
