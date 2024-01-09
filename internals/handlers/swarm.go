@@ -2,17 +2,125 @@ package handlers
 
 import (
 	"context"
-	"dxta-dev/app/internals/templates"
-	"dxta-dev/app/internals/data"
+	"database/sql"
 	"dxta-dev/app/internals/graphs"
-	"time"
+	"dxta-dev/app/internals/templates"
+	"fmt"
+	"os"
 	"sort"
+	"time"
+	"log"
 
 	"github.com/donseba/go-htmx"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	"github.com/wcharczuk/go-chart/v2/drawing"
+
+	_ "github.com/libsql/libsql-client-go/libsql"
+	_ "modernc.org/sqlite"
 )
 
+type EventType int
+
+const (
+	UNKNOWN EventType = iota
+	OPENED
+	STARTED_CODING
+	STARTED_PICKUP
+	STARTED_REVIEW
+	NOTED
+	ASSIGNED
+	CLOSED
+	COMMENTED
+	COMMITTED
+	CONVERT_TO_DRAFT
+	MERGED
+	READY_FOR_REVIEW
+	REVIEW_REQUEST_REMOVED
+	REVIEW_REQUESTED
+	REVIEWED
+	UNASSIGNED
+)
+
+type Event struct {
+	Timestamp int64
+	Type      EventType
+}
+
+
+type EventSlice []Event
+
+func (d EventSlice) Len() int {
+	return len(d)
+}
+
+func (d EventSlice) Less(i, j int) bool {
+	return d[i].Timestamp < d[j].Timestamp
+}
+
+func (d EventSlice) Swap(i, j int) {
+	d[i], d[j] = d[j], d[i]
+}
+
+func getData() (EventSlice, error) {
+
+	err := godotenv.Load()
+
+	if err != nil {
+		return nil, err
+	}
+
+	db, err := sql.Open("libsql", os.Getenv("DATABASE_URL"))
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		return nil, err
+	}
+
+	query := `
+		SELECT
+			ev.timestamp,
+			ev.merge_request_event_type
+		FROM transform_merge_request_events as ev
+		JOIN transform_dates as d ON d.id = ev.occured_on
+		WHERE d.week = 40 AND d.year=2023;
+	`
+
+	rows, err := db.Query(query)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var events []Event
+
+	for rows.Next() {
+		var event Event
+
+		var timestamp int64
+
+		var eventType int
+
+		if err := rows.Scan(&timestamp, &eventType); err != nil {
+			log.Fatal(err)
+		}
+
+		event.Type = EventType(eventType)
+		event.Timestamp = timestamp
+		fmt.Println(event)
+		events = append(events, event)
+	}
+
+	return events, nil
+}
 
 func series1() templates.SwarmSeries {
 	var xvalues []float64
@@ -22,9 +130,13 @@ func series1() templates.SwarmSeries {
 
 	var times []time.Time
 
-	sort.Sort(data.DataList)
+	events, _ := getData()
 
-	for _, d := range data.DataList {
+	sort.Sort(events)
+
+	fmt.Println(events)
+
+	for _, d := range events {
 		t := time.Unix(d.Timestamp/1000, 0)
 		times = append(times, t)
 	}
@@ -40,23 +152,19 @@ func series1() templates.SwarmSeries {
 	colors := []drawing.Color{}
 
 	for i := 0; i < len(xvalues); i++ {
-		switch data.DataList[i].EventType {
-		case data.Commited:
+		switch events[i].Type {
+		case COMMITTED:
 			colors = append(colors, drawing.ColorBlue)
-		case data.Reviewed:
-			colors = append(colors, drawing.ColorGreen)
-		case data.Merged:
-			colors = append(colors, drawing.ColorRed)
 		default:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(204, 204, 204, 255))
 		}
 	}
 
 	return templates.SwarmSeries{
-		Title:   "series 1",
+		Title:     "series 1",
 		DotColors: colors,
-		XValues: xvalues,
-		YValues: yvalues,
+		XValues:   xvalues,
+		YValues:   yvalues,
 	}
 }
 
@@ -71,7 +179,6 @@ func (a *App) Swarm(c echo.Context) error {
 	var chartData []templates.SwarmSeries
 
 	chartData = append(chartData, series1())
-
 
 	startOfWeek := time.Unix(1696204800, 0)
 
