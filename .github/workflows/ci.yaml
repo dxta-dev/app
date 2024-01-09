@@ -3,7 +3,7 @@ name: CI
 on: [pull_request]
 
 env:
-  TEST_TAG: user/app:test
+  TEST_TAG: dxta/app
   GO_VERSION: 1.21.5
   BUN_VERSION: 1.0.21
 
@@ -99,7 +99,7 @@ jobs:
         run: |
           go build -o ./tmp/main ./cmd/web/main.go
 
-  docker:
+  docker-e2e:
     needs: [test, setup, build]
     runs-on: ubuntu-latest
     steps:
@@ -112,15 +112,11 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: .
-          load: true
-          tags: ${{ env.TEST_TAG }}
+          push: false
+          tags: ${{ env.TEST_TAG }}:${{ github.sha }}
 
-  e2e:
-    needs: docker
-    runs-on: ubuntu-latest
-    steps:
       - name: Run Docker Image
-        run: docker run -p 3000:3000 user/app:test
+        run: docker run -p 3000:3000 ${{ env.TEST_TAG }}:${{ github.sha }}
 
       - name: Run Playwright Tests
         run: npx playwright test
