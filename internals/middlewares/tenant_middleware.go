@@ -1,7 +1,9 @@
 package middlewares
 
 import (
+	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -11,18 +13,14 @@ import (
 )
 
 type TenantInfo struct {
-	Name string `json:"tenant"`
+	Tenants []string `json:"tenants"`
 }
 
-type TenantsConfig struct {
-	tenants []TenantInfo
-}
-
-// TODO: just key-value store map (tenant-key)->(db-connection)
-var tenantsConfig TenantsConfig
+var tenantsMap = make(map[string]*sql.DB)
+const TenantDatabaseContext = "Tenant DB"
 
 func LoadTenants() error {
-	resp, err := http.Get(os.Getenv("OSS_TENANTS_ENPDOINT"))
+	resp, err := http.Get(os.Getenv("OSS_TENANTS_ENDPOINT"))
 	if err != nil {
 		return err
 	}
@@ -34,11 +32,23 @@ func LoadTenants() error {
 		return err
 	}
 
-	if err := json.Unmarshal(body, &tenantsConfig.tenants); err != nil {
+	var tenants TenantInfo
+
+	if err := json.Unmarshal(body, &tenants); err != nil {
 		return err
 	}
 
-	// TODO: open db connections ?
+	for _, tenant := range tenants.Tenants {
+		db, err := sql.Open("libsql", fmt.Sprintf("libsql://%s-dxta.turso.io?authToken=%s", tenant, os.Getenv("DATABASE_AUTH_TOKEN")))
+		if err != nil {
+			return err
+		}
+
+		// TODO Do we need manual clean up?
+		defer db.Close()
+		tenantsMap[tenant] = db
+	}
+
 	return nil
 }
 
