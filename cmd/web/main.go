@@ -3,17 +3,21 @@ package main
 import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
+	"fmt"
 
 	"github.com/donseba/go-htmx"
+	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
-
-
 func main() {
 	app := &handlers.App{
 		HTMX: htmx.New(),
+	}
+
+	if err := godotenv.Load(); err != nil {
+		return
 	}
 
 	e := echo.New()
@@ -35,5 +39,10 @@ func main() {
 
 	e.GET("/oss", app.OSSIndex)
 
+	err := middlewares.LoadTenants()
+	if err != nil {
+		fmt.Print("HERE", err)
+	}
 	e.Logger.Fatal(e.Start(":3000"))
+
 }
