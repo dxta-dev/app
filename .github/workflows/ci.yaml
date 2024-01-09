@@ -1,9 +1,11 @@
 name: CI
 
-on: [push]
+on: [pull_request]
 
 env:
-  TEST_TAG: user/app:test
+  TEST_TAG: dxta/app
+  GO_VERSION: 1.21.5
+  BUN_VERSION: 1.0.21
 
 jobs:
   setup:
@@ -14,12 +16,12 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@v1
         with:
-          bun-version: 1.0.15
+          bun-version: ${{ env.BUN_VERSION }}
 
       - name: Setup go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21.5
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Setup bun cache
         uses: actions/cache@v3
@@ -60,7 +62,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21.5
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Restore generate cache
         uses: actions/cache/restore@v3
@@ -83,7 +85,7 @@ jobs:
       - name: Setup go
         uses: actions/setup-go@v4
         with:
-          go-version: 1.21.5
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Restore generate cache
         uses: actions/cache/restore@v3
@@ -97,7 +99,7 @@ jobs:
         run: |
           go build -o ./tmp/main ./cmd/web/main.go
 
-  docker:
+  docker-e2e:
     needs: [test, setup, build]
     runs-on: ubuntu-latest
     steps:
@@ -111,4 +113,33 @@ jobs:
         with:
           context: .
           load: true
-          tags: ${{ env.TEST_TAG }}
+          push: false
+          tags: ${{ env.TEST_TAG }}:${{ github.sha }}
+
+      - name: Run Docker Image
+        run: docker run -p 3000:3000 ${{ env.TEST_TAG }}:${{ github.sha }}
+
+      - name: Setup bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: ${{ env.BUN_VERSION }}
+
+      - name: Restore bun cache
+        uses: actions/cache@v3
+        id: bun-cache
+        with:
+          path: |
+            ./node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('./bun.lockb') }}
+
+      - name: Run Playwright Tests
+        run: npx playwright test
+
+      - name: Upload Test Artifact (if tests fail)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: test-results/
+
+

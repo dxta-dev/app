@@ -3,6 +3,7 @@
     "bun-types": "latest"
   },
   "dependencies": {
+    "playwright": "^1.40.1",
     "tailwindcss": "^3.3.6"
   },
   "peerDependencies": {
