@@ -85,6 +85,8 @@ func getData(date time.Time) (EventSlice, error) {
 
 	year, week := date.ISOWeek()
 
+	fmt.Println("getData", year, week)
+
 	query := `
 		SELECT
 			ev.timestamp,
@@ -120,6 +122,8 @@ func getData(date time.Time) (EventSlice, error) {
 		events = append(events, event)
 	}
 
+	fmt.Println(events)
+
 	return events, nil
 }
 
@@ -131,7 +135,7 @@ func getSeries(date time.Time) templates.SwarmSeries {
 
 	var times []time.Time
 
-	events, _ := getData(time.Now())
+	events, _ := getData(date)
 
 	sort.Sort(events)
 
@@ -241,9 +245,8 @@ func (a *App) Swarm(c echo.Context) error {
 
 		if err == nil {
 			date = dateTime
-		} else {
-			res := c.Response()
 
+			res := c.Response()
 			res.Header().Set("HX-Push-Url", "/swarm?week="+weekString)
 		}
 	}
@@ -251,7 +254,6 @@ func (a *App) Swarm(c echo.Context) error {
 	fmt.Println(date)
 	startOfWeek := GetStartOfWeek(date)
 	fmt.Println(startOfWeek)
-
 
 	if h.HxRequest && h.HxTrigger != "" {
 		components := templates.SwarmChart(getSeries(date), startOfWeek)
