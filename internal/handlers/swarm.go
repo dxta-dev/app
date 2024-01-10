@@ -199,7 +199,9 @@ func (a *App) Swarm(c echo.Context) error {
 		return components.Render(context.Background(), c.Response().Writer)
 	}
 
-	components := templates.Swarm(page, getSeries(date), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()))
+	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
+
+	components := templates.Swarm(page, getSeries(date), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

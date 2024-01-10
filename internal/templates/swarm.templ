@@ -5,17 +5,21 @@ import (
 )
 
 templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
-		<div id="swarm-chart">
-			@SwarmChart(series, startOfTheWeek)
-		</div>
+	<div id="swarm-chart">
+		@SwarmChart(series, startOfTheWeek)
+	</div>
 }
 
-templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string) {
+templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string) {
 	@Layout(page) {
 		<form>
 			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 			<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
 		</form>
+		<div hx-boost="true" hx-target="#swarm-chart">
+			<a href={ templ.SafeURL("/swarm?week=" + previousWeek) }>Previous Week</a>
+			<a href={ templ.SafeURL("/swarm?week=" + nextWeek) }>Next Week</a>
+		</div>
 		@swarmChart(series, startOfTheWeek)
 	}
 }
