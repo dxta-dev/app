@@ -1,12 +1,20 @@
 package templates
 
-import "time"
+import (
+	"time"
+)
 
-templ Swarm(page *Page, chartData []SwarmSeries, timeOfWeek time.Time) {
-	@Layout(page) {
-		for _, item := range chartData {
-			@SwarmChart(item, timeOfWeek)
-		}
-	}
+templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
+		<div id="swarm-chart">
+			@SwarmChart(series, startOfTheWeek)
+		</div>
 }
 
+templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string) {
+	@Layout(page) {
+		<form>
+			<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week }/>
+		</form>
+		@swarmChart(series, startOfTheWeek)
+	}
+}
