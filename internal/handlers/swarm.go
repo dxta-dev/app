@@ -6,7 +6,6 @@ import (
 	"dxta-dev/app/internal/graphs"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
-	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -182,10 +181,9 @@ func (a *App) Swarm(c echo.Context) error {
 
 	weekString := r.URL.Query().Get("week")
 
+
 	if weekString != "" {
 		dateTime, err := utils.ParseYearWeek(weekString)
-		fmt.Println("dateTime", dateTime)
-
 		if err == nil {
 			date = dateTime
 
@@ -200,12 +198,6 @@ func (a *App) Swarm(c echo.Context) error {
 		components := templates.SwarmChart(getSeries(date), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
-
-	fmt.Println("date", date)
-
-	formattedWeek := utils.GetFormattedWeek(date)
-
-	fmt.Println("formattedWeek", formattedWeek)
 
 	components := templates.Swarm(page, getSeries(date), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()))
 
