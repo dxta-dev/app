@@ -186,8 +186,6 @@ func (a *App) Swarm(c echo.Context) error {
 	if weekString != "" {
 		dateTime, err := utils.ParseYearWeek(weekString)
 
-		fmt.Println("parsed date", dateTime)
-
 		if err == nil {
 			date = dateTime
 
