@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"dxta-dev/app/internals/templates"
+	"dxta-dev/app/internal/templates"
 	"fmt"
 	"os"
 	"reflect"
@@ -138,7 +138,7 @@ func (a *App) Database(c echo.Context) error {
 
 	attributes = append(attributes, week, year)
 
-	selectQuery := fmt.Sprintf(`
+	selectQuery := `
 		SELECT
 		merged_date.day, merged_date.month, merged_date.year,
 		opened_date.day, opened_date.month, opened_date.year,
@@ -237,7 +237,7 @@ func (a *App) Database(c echo.Context) error {
 		WHERE last_updated_date.week = ?
 		AND last_updated_date.year = ?
 		;
-	`)
+	`
 
 	mrStmt, err := db.Prepare(selectQuery)
 	if err != nil {
