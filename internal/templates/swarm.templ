@@ -16,7 +16,7 @@ templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week strin
 			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 			<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
 		</form>
-		<div hx-boost="true" hx-target="#swarm-chart">
+		<div hx-boost="true" hx-target="main" hx-swap="outerHTML">
 			<a href={ templ.SafeURL("/swarm?week=" + previousWeek) }>Previous Week</a>
 			<a href={ templ.SafeURL("/swarm?week=" + nextWeek) }>Next Week</a>
 		</div>
