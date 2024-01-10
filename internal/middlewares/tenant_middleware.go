@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -16,14 +15,24 @@ type TenantInfo struct {
 	Tenants []string `json:"tenants"`
 }
 
-var tenantsMap = make(map[string]bool)
+type TenantMap map[string]bool
 
-const SubdomainContextKey = string("subdomain")
-const IsRootContextKey = string("is_root")
-const TenantContextKey = string("tenant")
+var tenantsMap = make(TenantMap)
 
-func LoadTenants() error {
-	resp, err := http.Get(os.Getenv("OSS_TENANTS_ENDPOINT"))
+type subdomainContextKey string
+type isRootContextKey string
+type tenantContextKey string
+
+const SubdomainContext subdomainContextKey = "subdomain"
+const IsRootContext isRootContextKey = "is_root"
+const TenantContext tenantContextKey = "tenant"
+
+func LoadTenantsDummy(tenantsMapArg TenantMap) {
+	tenantsMap = tenantsMapArg
+}
+
+func LoadTenantsFromAPI(ossTenantsEndpoint string) error {
+	resp, err := http.Get(ossTenantsEndpoint)
 	if err != nil {
 		return err
 	}
@@ -55,22 +64,22 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		parts := strings.Split(hostName, ".")
 
 		if len(parts) <= 2 {
-			ctx = context.WithValue(ctx, SubdomainContextKey, "root")
-			ctx = context.WithValue(ctx, IsRootContextKey, true)
+			ctx = context.WithValue(ctx, SubdomainContext, "root")
+			ctx = context.WithValue(ctx, IsRootContext, true)
 			c.SetRequest(c.Request().WithContext(ctx))
 			return next(c)
 		}
 		tenant := parts[0]
 
 		if _, exists := tenantsMap[tenant]; !exists {
+			// TODO: http/https
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("http://%s", strings.Join(parts[1:], ".")))
 		}
 
-		ctx = context.WithValue(ctx, SubdomainContextKey, tenant)
-		ctx = context.WithValue(ctx, TenantContextKey, tenant)
-		ctx = context.WithValue(ctx, IsRootContextKey, false)
+		ctx = context.WithValue(ctx, SubdomainContext, tenant)
+		ctx = context.WithValue(ctx, TenantContext, tenant)
+		ctx = context.WithValue(ctx, IsRootContext, false)
 
-		// Use the new context in the request
 		c.SetRequest(c.Request().WithContext(ctx))
 
 		return next(c)
