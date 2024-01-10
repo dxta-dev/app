@@ -6,7 +6,6 @@ import (
 	"dxta-dev/app/internal/graphs"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
-	"fmt"
 	"log"
 	"os"
 	"sort"
@@ -169,7 +168,6 @@ func getSeries(date time.Time) templates.SwarmSeries {
 		YValues:   yvalues,
 	}
 }
-
 
 func (a *App) Swarm(c echo.Context) error {
 	r := c.Request()
