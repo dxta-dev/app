@@ -1,6 +1,6 @@
 name: BENCH
 
-on: [pull_request]
+on: [workflow_dispatch]
 
 jobs:
   bench:
