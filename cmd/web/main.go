@@ -1,8 +1,8 @@
 package main
 
 import (
-	"dxta-dev/app/internals/handlers"
-	"dxta-dev/app/internals/middlewares"
+	"dxta-dev/app/internal/handlers"
+	"dxta-dev/app/internal/middlewares"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"

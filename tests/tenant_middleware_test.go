@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"dxta-dev/app/internals/middlewares"
+	"dxta-dev/app/internal/middlewares"
 
 	"github.com/labstack/echo/v4"
 )
