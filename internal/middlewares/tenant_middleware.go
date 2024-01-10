@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -17,9 +16,11 @@ type TenantInfo struct {
 	Tenants []string `json:"tenants"`
 }
 
-var tenantsMap = make(map[string]*sql.DB)
+var tenantsMap = make(map[string]bool)
 
-const TenantDatabaseContext = "Tenant DB"
+const SubdomainContextKey = string("subdomain")
+const IsRootContextKey = string("is_root")
+const TenantContextKey = string("tenant")
 
 func LoadTenants() error {
 	resp, err := http.Get(os.Getenv("OSS_TENANTS_ENDPOINT"))
@@ -41,14 +42,7 @@ func LoadTenants() error {
 	}
 
 	for _, tenant := range tenants.Tenants {
-		db, err := sql.Open("libsql", fmt.Sprintf("libsql://%s-dxta.turso.io?authToken=%s", tenant, os.Getenv("DATABASE_AUTH_TOKEN")))
-		if err != nil {
-			return err
-		}
-
-		// TODO Do we need manual clean up?
-		defer db.Close()
-		tenantsMap[tenant] = db
+		tenantsMap[tenant] = true
 	}
 
 	return nil
@@ -61,20 +55,20 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		parts := strings.Split(hostName, ".")
 
 		if len(parts) <= 2 {
-			ctx = context.WithValue(ctx, "subdomain", "root")
-			ctx = context.WithValue(ctx, "is_root", true)
+			ctx = context.WithValue(ctx, SubdomainContextKey, "root")
+			ctx = context.WithValue(ctx, IsRootContextKey, true)
 			c.SetRequest(c.Request().WithContext(ctx))
 			return next(c)
 		}
 		tenant := parts[0]
-		db, tenantExists := tenantsMap[tenant]
-		if !tenantExists {
+
+		if _, exists := tenantsMap[tenant]; !exists {
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("http://%s", strings.Join(parts[1:], ".")))
 		}
 
-		ctx = context.WithValue(ctx, "subdomain", tenant)
-		ctx = context.WithValue(ctx, "is_root", false)
-		ctx = context.WithValue(ctx, TenantDatabaseContext, db)
+		ctx = context.WithValue(ctx, SubdomainContextKey, tenant)
+		ctx = context.WithValue(ctx, TenantContextKey, tenant)
+		ctx = context.WithValue(ctx, IsRootContextKey, false)
 
 		// Use the new context in the request
 		c.SetRequest(c.Request().WithContext(ctx))
