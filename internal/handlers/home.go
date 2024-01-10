@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"context"
-	"dxta-dev/app/internals/templates"
+	"dxta-dev/app/internal/templates"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"

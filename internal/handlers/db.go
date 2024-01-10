@@ -3,7 +3,7 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"dxta-dev/app/internals/templates"
+	"dxta-dev/app/internal/templates"
 	"fmt"
 	"os"
 	"reflect"

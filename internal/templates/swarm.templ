@@ -1,0 +1,21 @@
+package templates
+
+import (
+	"time"
+)
+
+templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
+		<div id="swarm-chart">
+			@SwarmChart(series, startOfTheWeek)
+		</div>
+}
+
+templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string) {
+	@Layout(page) {
+		<form>
+			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
+			<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
+		</form>
+		@swarmChart(series, startOfTheWeek)
+	}
+}

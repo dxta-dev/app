@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"dxta-dev/app/internals/data"
+	"dxta-dev/app/internal/data"
 )
 
 func BenchmarkGenerateHexagonGrid(b *testing.B) {

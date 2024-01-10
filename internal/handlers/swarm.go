@@ -3,14 +3,13 @@ package handlers
 import (
 	"context"
 	"database/sql"
-	"dxta-dev/app/internals/graphs"
-	"dxta-dev/app/internals/templates"
+	"dxta-dev/app/internal/graphs"
+	"dxta-dev/app/internal/templates"
+	"dxta-dev/app/internal/utils"
 	"fmt"
 	"log"
 	"os"
 	"sort"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -85,8 +84,6 @@ func getData(date time.Time) (EventSlice, error) {
 
 	year, week := date.ISOWeek()
 
-	fmt.Println("getData", year, week)
-
 	query := `
 		SELECT
 			ev.timestamp,
@@ -122,8 +119,6 @@ func getData(date time.Time) (EventSlice, error) {
 		events = append(events, event)
 	}
 
-	fmt.Println(events)
-
 	return events, nil
 }
 
@@ -131,7 +126,7 @@ func getSeries(date time.Time) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
-	startOfWeek := GetStartOfWeek(date)
+	startOfWeek := utils.GetStartOfWeek(date)
 
 	var times []time.Time
 
@@ -175,56 +170,6 @@ func getSeries(date time.Time) templates.SwarmSeries {
 	}
 }
 
-func GetStartOfWeek(date time.Time) time.Time {
-	offset := int(time.Monday - date.Weekday())
-
-	if offset > 0 {
-		offset = -6
-	}
-
-	startOfWeek := date.AddDate(0, 0, offset)
-
-	startOfWeek = startOfWeek.Truncate(24 * time.Hour)
-
-	return startOfWeek
-}
-
-func GetCurrentWeek(date time.Time) string {
-	year, week := date.ISOWeek()
-
-	formattedWeek := fmt.Sprintf("%d-W%02d", year, week)
-
-	return formattedWeek
-}
-
-func parseYearWeek(yw string) (time.Time, error) {
-	parts := strings.Split(yw, "-W")
-	if len(parts) != 2 {
-		return time.Time{}, fmt.Errorf("invalid format")
-	}
-
-	year, err := strconv.Atoi(parts[0])
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	week, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return time.Time{}, err
-	}
-
-	firstDayOfYear := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
-
-	offset := int(time.Monday - firstDayOfYear.Weekday())
-	if offset > 0 {
-		offset -= 7
-	}
-
-	daysToStartOfWeek := (week-1)*7 + offset
-	startOfWeek := firstDayOfYear.AddDate(0, 0, daysToStartOfWeek)
-
-	return startOfWeek, nil
-}
 
 func (a *App) Swarm(c echo.Context) error {
 	r := c.Request()
@@ -238,10 +183,10 @@ func (a *App) Swarm(c echo.Context) error {
 
 	weekString := r.URL.Query().Get("week")
 
-	fmt.Println("weekString", weekString)
-
 	if weekString != "" {
-		dateTime, err := parseYearWeek(weekString)
+		dateTime, err := utils.ParseYearWeek(weekString)
+
+		fmt.Println("parsed date", dateTime)
 
 		if err == nil {
 			date = dateTime
@@ -251,16 +196,14 @@ func (a *App) Swarm(c echo.Context) error {
 		}
 	}
 
-	fmt.Println(date)
-	startOfWeek := GetStartOfWeek(date)
-	fmt.Println(startOfWeek)
+	startOfWeek := utils.GetStartOfWeek(date)
 
 	if h.HxRequest && h.HxTrigger != "" {
 		components := templates.SwarmChart(getSeries(date), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
 
-	components := templates.Swarm(page, getSeries(date), startOfWeek, GetCurrentWeek(date))
+	components := templates.Swarm(page, getSeries(date), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()))
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
