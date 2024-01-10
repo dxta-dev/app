@@ -39,6 +39,12 @@ func LoadTenantsFromAPI(ossTenantsEndpoint string) error {
 
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		// TODO: client errors ? how
+		fmt.Println("Failed to load tenants from API. status:", resp.StatusCode)
+		return nil
+	}
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
@@ -59,9 +65,15 @@ func LoadTenantsFromAPI(ossTenantsEndpoint string) error {
 
 func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
+		hostProtocolSchema := "https"
 		ctx := c.Request().Context()
+		tls := c.Request().TLS
 		hostName := c.Request().Host
 		parts := strings.Split(hostName, ".")
+
+		if tls == nil {
+			hostProtocolSchema = "http"
+		}
 
 		if len(parts) <= 2 {
 			ctx = context.WithValue(ctx, SubdomainContext, "root")
@@ -72,8 +84,8 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		tenant := parts[0]
 
 		if _, exists := tenantsMap[tenant]; !exists {
-			// TODO: http/https
-			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("http://%s", strings.Join(parts[1:], ".")))
+			// TODO: redirect to oss-index
+			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s", hostProtocolSchema, strings.Join(parts[1:], ".")))
 		}
 
 		ctx = context.WithValue(ctx, SubdomainContext, tenant)
