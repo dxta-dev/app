@@ -181,9 +181,9 @@ func (a *App) Swarm(c echo.Context) error {
 
 	weekString := r.URL.Query().Get("week")
 
+
 	if weekString != "" {
 		dateTime, err := utils.ParseYearWeek(weekString)
-
 		if err == nil {
 			date = dateTime
 
