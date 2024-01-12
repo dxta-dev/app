@@ -4,7 +4,7 @@ go 1.21.5
 
 require (
 	github.com/a-h/templ v0.2.513
-	github.com/donseba/go-htmx v1.2.0
+	github.com/donseba/go-htmx v1.3.0
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
