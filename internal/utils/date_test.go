@@ -78,6 +78,21 @@ func TestParseYearWeek(t *testing.T) {
 		input    string
 	}{
 		{
+			name: "first week of 1980",
+			expected: time.Date(1979, time.December, 31, 0, 0, 0, 0, time.UTC),
+			input: "1980-W01",
+		},
+		{
+			name: "first week of 1981",
+			expected: time.Date(1980, time.December, 29, 0, 0, 0, 0, time.UTC),
+			input: "1981-W01",
+		},
+		{
+			name: "first week of 2015",
+			expected: time.Date(2014, time.December, 29, 0, 0, 0, 0, time.UTC),
+			input: "2015-W01",
+		},
+		{
 			name:     "first week of 2022",
 			expected: time.Date(2022, time.January, 3, 0, 0, 0, 0, time.UTC),
 			input:    "2022-W01",
