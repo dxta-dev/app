@@ -45,10 +45,30 @@ func ParseYearWeek(yw string) (time.Time, error) {
 		return time.Time{}, err
 	}
 
-	firstDayOfYear := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	firstDayOfYear := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
 
-	daysToStartOfWeek := week*7-6
-	startOfWeek := firstDayOfYear.AddDate(0, 0, daysToStartOfWeek)
+	if firstDayOfYear.Weekday() != time.Monday {
+		for i := 1; i < 4; i++ {
+			p := firstDayOfYear.AddDate(0, 0, -i)
+			n := firstDayOfYear.AddDate(0, 0, i)
+
+			if p.Weekday() == time.Monday {
+				firstDayOfYear = p
+				break
+			}
+
+			if n.Weekday() == time.Monday {
+				firstDayOfYear = n
+				break
+			}
+		}
+	}
+
+	startOfWeek := firstDayOfYear.AddDate(0, 0, (week-1)*7)
+
+	if startOfWeek.Year() > year {
+		return time.Time{}, fmt.Errorf("invalid week")
+	}
 
 	return startOfWeek, nil
 }
