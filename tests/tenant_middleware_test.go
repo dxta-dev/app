@@ -12,7 +12,6 @@ import (
 
 func TestTenantMiddleware(t *testing.T) {
 	e := echo.New()
-	// e.Use(middlewares.TenantMiddleware)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
