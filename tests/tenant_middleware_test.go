@@ -37,11 +37,12 @@ func TestTenantMiddleware(t *testing.T) {
 			e.ServeHTTP(rec, req)
 
 			echoContext := e.NewContext(req, rec)
-			var dummyTenantsMap = make(middlewares.TenantMap)
+
+			var mockTenantToDatabaseURLMap = make(middlewares.TenantDbUrlMap)
 			if !tc.expectedIsRoot {
-				dummyTenantsMap[tc.expectedSubdomain] = true
+				mockTenantToDatabaseURLMap[tc.expectedSubdomain] = "libsql://john-cena"
 			}
-			middlewares.LoadTenantsDummy(dummyTenantsMap)
+			echoContext.Set(middlewares.TenantDatabasesGlobalContext, mockTenantToDatabaseURLMap)
 
 			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
@@ -65,15 +66,12 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected subdomain to be %v, got %v", tc.expectedSubdomain, subdomain)
 			}
 
-			tenant, ok := context.Value(middlewares.TenantContext).(string)
+			_, ok = context.Value(middlewares.TenantDatabaseURLContext).(string)
 			if !ok && !tc.expectedIsRoot {
-				t.Errorf("tenant not set correctly")
+				t.Errorf("tenant database url not set correctly")
 			}
 			if ok && tc.expectedIsRoot {
-				t.Errorf("tenant root shouldn't be set")
-			}
-			if !tc.expectedIsRoot && tenant != tc.expectedSubdomain {
-				t.Errorf("Expected tenant to be %v, got %v", tc.expectedSubdomain, tenant)
+				t.Errorf("tenant database url shouldn't be set for root")
 			}
 		})
 	}
