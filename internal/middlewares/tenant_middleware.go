@@ -84,7 +84,6 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		tenant := parts[0]
 
 		if _, exists := tenantsMap[tenant]; !exists {
-			// TODO: redirect to oss-index
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s", hostProtocolSchema, strings.Join(parts[1:], ".")))
 		}
 

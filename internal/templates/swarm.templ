@@ -4,20 +4,65 @@ import (
 	"time"
 )
 
+script getChart() {
+	const svg = document.querySelector("#swarm-chart > svg");
+	const circles = document.querySelectorAll("#swarm-chart > svg > circle");
+	function moveToTop(element) {
+		element.parentNode.appendChild(element);
+	}
+	const cs = [...circles].map(c => {
+		c.onclick = () => {
+			svg.appendChild(createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r")+3, "white", "red", 1));
+			moveToTop(c);
+		};
+		return {
+			circle: c,
+			cx: c.getAttribute("cx"),
+			cy: c.getAttribute("cy"),
+			r: c.getAttribute("r"),
+			fill: c.getAttribute("fill"),
+			stroke: c.getAttribute("stroke"),
+			strokeWidth: c.getAttribute("stroke-width"),
+			opacity: c.getAttribute("opacity"),
+			data: c.getAttribute("data"),
+		};
+	});
+
+
+	const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
+		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		circle.setAttribute("cx", cx);
+		circle.setAttribute("cy", cy);
+		circle.setAttribute("r", r);
+		circle.setAttribute("fill", fill);
+		circle.setAttribute("stroke", stroke);
+		circle.setAttribute("stroke-width", strokeWidth);
+		return circle;
+	};
+
+}
+
 templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
 	<div id="swarm-chart">
+		<style text="text/css">
+			svg > circle:hover {
+				cursor: pointer;
+			}
+		</style>
 		@SwarmChart(series, startOfTheWeek)
+		@getChart()
 	</div>
 }
 
 templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string) {
 	@Layout(page) {
 		<div hx-boost="true" hx-target="main" hx-swap="innerHTML">
-		<form>
-			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
-			<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
-		</form>
+			<form>
+				//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
+				<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
+			</form>
 			<a href={ templ.SafeURL("/swarm?week=" + previousWeek) }>Previous Week</a>
+			<a href={ templ.SafeURL("/swarm?week=" + currentWeek) }>Current Week</a>
 			<a href={ templ.SafeURL("/swarm?week=" + nextWeek) }>Next Week</a>
 		</div>
 		@swarmChart(series, startOfTheWeek)
