@@ -3,7 +3,6 @@ package main
 import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
-	"fmt"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
