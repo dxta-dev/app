@@ -15,4 +15,5 @@ internal/templates/*_templ.go
 
 #local toml files
 
-config?.toml
+config*.toml
+!config.toml
