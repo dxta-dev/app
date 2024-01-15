@@ -61,7 +61,7 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func getData(date time.Time, tenant string) (EventSlice, error) {
+func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	err := godotenv.Load()
 
@@ -69,7 +69,7 @@ func getData(date time.Time, tenant string) (EventSlice, error) {
 		return nil, err
 	}
 
-	db, err := sql.Open("libsql", utils.GetTenantDatabaseUrl(tenant))
+	db, err := sql.Open("libsql", dbUrl)
 
 	if err != nil {
 		return nil, err
@@ -121,7 +121,7 @@ func getData(date time.Time, tenant string) (EventSlice, error) {
 	return events, nil
 }
 
-func getSeries(date time.Time, tenant string) templates.SwarmSeries {
+func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
@@ -129,7 +129,7 @@ func getSeries(date time.Time, tenant string) templates.SwarmSeries {
 
 	var times []time.Time
 
-	events, _ := getData(date, tenant)
+	events, _ := getData(date, dbUrl)
 
 	sort.Sort(events)
 
@@ -172,7 +172,7 @@ func getSeries(date time.Time, tenant string) templates.SwarmSeries {
 func (a *App) Swarm(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenant := r.Context().Value(middlewares.TenantContext).(string)
+	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
 	page := &templates.Page{
 		Title:   "Charts",
@@ -182,7 +182,6 @@ func (a *App) Swarm(c echo.Context) error {
 	date := time.Now()
 
 	weekString := r.URL.Query().Get("week")
-
 
 	if weekString != "" {
 		dateTime, err := utils.ParseYearWeek(weekString)
@@ -197,11 +196,11 @@ func (a *App) Swarm(c echo.Context) error {
 	startOfWeek := utils.GetStartOfWeek(date)
 
 	if h.HxRequest && h.HxTrigger != "" {
-		components := templates.SwarmChart(getSeries(date, tenant), startOfWeek)
+		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
 
-	components := templates.Swarm(page, getSeries(date, tenant), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()))
+	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()))
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
