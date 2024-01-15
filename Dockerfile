@@ -1,4 +1,4 @@
-FROM oven/bun:1.0.21-debian AS bun
+FROM oven/bun:1.0.22-debian AS bun
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
 
 
-FROM golang:1.21.5-bullseye AS build
+FROM golang:1.21.6-bullseye AS build
 
 WORKDIR /app
 
