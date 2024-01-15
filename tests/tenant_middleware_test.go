@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,7 +13,6 @@ import (
 
 func TestTenantMiddleware(t *testing.T) {
 	e := echo.New()
-	e.Use(middlewares.TenantMiddleware)
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
@@ -37,19 +37,23 @@ func TestTenantMiddleware(t *testing.T) {
 			e.ServeHTTP(rec, req)
 
 			echoContext := e.NewContext(req, rec)
-			var dummyTenantsMap = make(middlewares.TenantMap)
+
+			var mockTenantToDatabaseURLMap = make(middlewares.TenantDbUrlMap)
 			if !tc.expectedIsRoot {
-				dummyTenantsMap[tc.expectedSubdomain] = true
+				mockTenantToDatabaseURLMap[tc.expectedSubdomain] = "libsql://john-cena"
 			}
-			middlewares.LoadTenantsDummy(dummyTenantsMap)
+
+			requestContext := echoContext.Request().Context()
+			requestContext = context.WithValue(requestContext, middlewares.TenantDatabasesGlobalContext, mockTenantToDatabaseURLMap)
+			echoContext.SetRequest(echoContext.Request().WithContext(requestContext))
 
 			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
 			}
 
-			context := echoContext.Request().Context()
+			requestContext = echoContext.Request().Context()
 
-			isRoot, ok := context.Value(middlewares.IsRootContext).(bool)
+			isRoot, ok := requestContext.Value(middlewares.IsRootContext).(bool)
 			if !ok {
 				t.Errorf("is_root not set correctly")
 			}
@@ -57,7 +61,7 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected is_root to be %v, got %v", tc.expectedIsRoot, isRoot)
 			}
 
-			subdomain, ok := context.Value(middlewares.SubdomainContext).(string)
+			subdomain, ok := requestContext.Value(middlewares.SubdomainContext).(string)
 			if !ok {
 				t.Errorf("subdomain not set correctly")
 			}
@@ -65,15 +69,12 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected subdomain to be %v, got %v", tc.expectedSubdomain, subdomain)
 			}
 
-			tenant, ok := context.Value(middlewares.TenantContext).(string)
+			_, ok = requestContext.Value(middlewares.TenantDatabaseURLContext).(string)
 			if !ok && !tc.expectedIsRoot {
-				t.Errorf("tenant not set correctly")
+				t.Errorf("tenant database url not set correctly")
 			}
 			if ok && tc.expectedIsRoot {
-				t.Errorf("tenant root shouldn't be set")
-			}
-			if !tc.expectedIsRoot && tenant != tc.expectedSubdomain {
-				t.Errorf("Expected tenant to be %v, got %v", tc.expectedSubdomain, tenant)
+				t.Errorf("tenant database url shouldn't be set for root")
 			}
 		})
 	}
