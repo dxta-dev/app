@@ -26,7 +26,6 @@ const TenantDatabasesGlobalContext string = "tenant_db_map"
 
 // TODO(scalability?): change from const map fetch to LRU cache filling
 func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
-	fmt.Println("CALLING GET DB URL MAP")
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
 	db, err := sql.Open("libsql", os.Getenv("SUPER_DATABASE_URL"))
