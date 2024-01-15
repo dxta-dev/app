@@ -1,8 +1,9 @@
 module dxta-dev/app
 
-go 1.21.5
+go 1.21.6
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/a-h/templ v0.2.513
 	github.com/donseba/go-htmx v1.3.0
 	github.com/joho/godotenv v1.5.1
@@ -13,7 +14,6 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
 	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
