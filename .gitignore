@@ -12,3 +12,7 @@ bin/*
 internal/templates/*_templ.go
 
 .env
+
+#local toml files
+
+config?.toml

@@ -85,7 +85,11 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 }
 
 func GetConfig() (*Config, error) {
-	conf, _ := LoadConfigToml("config.toml")
+	path := os.Getenv("CONFIG_PATH")
+	if(path == "") {
+		path = "config.toml"
+	}
+	conf, _ := LoadConfigToml(path)
 
 	config, err := ValidateConfig(conf)
 
