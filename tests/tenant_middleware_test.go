@@ -24,8 +24,8 @@ func TestTenantMiddleware(t *testing.T) {
 		expectedIsRoot    bool
 		expectedSubdomain string
 	}{
-		{"RootDomain", "dxta.dev", true, "root"},
-		{"SubDomain", "crocoder.dxta.dev", false, "crocoder"},
+		{"root_domain", "dxta.dev", true, "root"},
+		{"subdomain", "crocoder.dxta.dev", false, "crocoder"},
 	}
 
 	for _, tc := range testCases {

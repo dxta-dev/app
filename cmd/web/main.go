@@ -3,10 +3,8 @@ package main
 import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
-	"fmt"
 
 	"github.com/donseba/go-htmx"
-	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
@@ -14,11 +12,6 @@ import (
 func main() {
 	app := &handlers.App{
 		HTMX: htmx.New(),
-	}
-
-	if err := godotenv.Load(); err != nil {
-		fmt.Print("Failed to load .env ", err)
-		return
 	}
 
 	e := echo.New()
