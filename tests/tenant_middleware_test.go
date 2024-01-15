@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -41,15 +42,18 @@ func TestTenantMiddleware(t *testing.T) {
 			if !tc.expectedIsRoot {
 				mockTenantToDatabaseURLMap[tc.expectedSubdomain] = "libsql://john-cena"
 			}
-			echoContext.Set(middlewares.TenantDatabasesGlobalContext, mockTenantToDatabaseURLMap)
+
+			requestContext := echoContext.Request().Context()
+			requestContext = context.WithValue(requestContext, middlewares.TenantDatabasesGlobalContext, mockTenantToDatabaseURLMap)
+			echoContext.SetRequest(echoContext.Request().WithContext(requestContext))
 
 			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
 			}
 
-			context := echoContext.Request().Context()
+			requestContext = echoContext.Request().Context()
 
-			isRoot, ok := context.Value(middlewares.IsRootContext).(bool)
+			isRoot, ok := requestContext.Value(middlewares.IsRootContext).(bool)
 			if !ok {
 				t.Errorf("is_root not set correctly")
 			}
@@ -57,7 +61,7 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected is_root to be %v, got %v", tc.expectedIsRoot, isRoot)
 			}
 
-			subdomain, ok := context.Value(middlewares.SubdomainContext).(string)
+			subdomain, ok := requestContext.Value(middlewares.SubdomainContext).(string)
 			if !ok {
 				t.Errorf("subdomain not set correctly")
 			}
@@ -65,7 +69,7 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected subdomain to be %v, got %v", tc.expectedSubdomain, subdomain)
 			}
 
-			_, ok = context.Value(middlewares.TenantDatabaseURLContext).(string)
+			_, ok = requestContext.Value(middlewares.TenantDatabaseURLContext).(string)
 			if !ok && !tc.expectedIsRoot {
 				t.Errorf("tenant database url not set correctly")
 			}

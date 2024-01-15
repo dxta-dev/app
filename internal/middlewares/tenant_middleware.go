@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -25,7 +26,7 @@ const TenantDatabasesGlobalContext string = "tenant_db_map"
 
 // TODO(scalability?): change from const map fetch to LRU cache filling
 func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
-
+	fmt.Println("CALLING GET DB URL MAP")
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
 	db, err := sql.Open("libsql", os.Getenv("SUPER_DATABASE_URL"))
@@ -69,22 +70,7 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 	return tenantToDatabaseURLMap, nil
 }
 
-func lazyloadTenantToDatabaseURLMap(c echo.Context) (TenantDbUrlMap, error) {
-	tenantToDatabaseURLMap, exists := c.Get(TenantDatabasesGlobalContext).(TenantDbUrlMap)
-
-	if exists {
-		return tenantToDatabaseURLMap, nil
-	}
-	// TODO: exists is never true
-
-	tenantToDatabaseURLMap, err := getTenantToDatabaseURLMap()
-	if err != nil {
-		return nil, err
-	}
-	c.Set(TenantDatabasesGlobalContext, tenantToDatabaseURLMap)
-
-	return tenantToDatabaseURLMap, nil
-}
+var syncGetTenantToDatabaseUrlMap = sync.OnceValues[TenantDbUrlMap, error](getTenantToDatabaseURLMap)
 
 func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
@@ -97,6 +83,12 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			hostProtocolScheme = "http"
 		}
 
+		// TODO: temporary code
+		singleDatabaseUrl := os.Getenv("DATABASE_URL")
+		if singleDatabaseUrl != "" {
+			ctx = context.WithValue(ctx, TenantDatabaseURLContext, singleDatabaseUrl)
+		}
+
 		if len(parts) <= 2 {
 			ctx = context.WithValue(ctx, SubdomainContext, "root")
 			ctx = context.WithValue(ctx, IsRootContext, true)
@@ -106,8 +98,26 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		tenant := parts[0]
+		ctx = context.WithValue(ctx, SubdomainContext, tenant)
+		ctx = context.WithValue(ctx, IsRootContext, false)
 
-		tenantToDatabaseURLMap, err := lazyloadTenantToDatabaseURLMap(c)
+		_, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
+
+		// TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
+		if singleDatabase {
+			c.SetRequest(c.Request().WithContext(ctx))
+
+			return next(c)
+		}
+
+		tenantToDatabaseURLMap, overrideDatabaseUrlMap := ctx.Value(TenantDatabasesGlobalContext).(TenantDbUrlMap)
+		var err error
+
+		if !overrideDatabaseUrlMap {
+			// Issue: caches error from db forever
+			tenantToDatabaseURLMap, err = syncGetTenantToDatabaseUrlMap()
+		}
+
 		if err != nil {
 			// TODO(error-handling): log or something
 			// Ideas: https://echo.labstack.com/docs/error-handling
@@ -119,9 +129,7 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s/oss", hostProtocolScheme, strings.Join(parts[1:], ".")))
 		}
 
-		ctx = context.WithValue(ctx, SubdomainContext, tenant)
 		ctx = context.WithValue(ctx, TenantDatabaseURLContext, fmt.Sprintf("%s?authToken=%s", tenantDatabaseUrl, os.Getenv("TENANT_DATABASE_AUTH_TOKEN")))
-		ctx = context.WithValue(ctx, IsRootContext, false)
 
 		c.SetRequest(c.Request().WithContext(ctx))
 
