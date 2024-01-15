@@ -19,7 +19,7 @@ type Config struct {
 	IsMultiTenant bool
 	ShouldUseSuperDatabase bool
 	SuperDatabaseUrl *string
-	TenantUrlTemplate *string
+	TenantDatabaseUrlTemplate *string
 	Tenants map[string]Tenant
 }
 
@@ -62,15 +62,27 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 	}
 
 	shouldUseSuperDatabase := false
+	isMultiTenant := false
+
+
+	var tenantDatabaseUrlTemplate *string
+	tenantDatabaseUrlTemplate = nil
 
 	if superDatabaseUrl != nil && config.Tenants == nil {
 		shouldUseSuperDatabase = true
+		isMultiTenant = true
+		if (config.TenantDatabaseUrlTemplate != nil) {
+			tenantDatabaseUrlTemplate = config.TenantDatabaseUrlTemplate
+		}
+		if (config.TenantDatabaseUrlTemplate != nil && config.TenantDatabaseGroupAuth != nil) {
+			newTenantDatabaseUrlTemplate := *tenantDatabaseUrlTemplate + "?auth_token=" + *config.TenantDatabaseGroupAuth
+			tenantDatabaseUrlTemplate = &newTenantDatabaseUrlTemplate
+		}
 	} else {
 		superDatabaseUrl = nil
 	}
 
 
-	isMultiTenant := false
 
 	if len(config.Tenants) > 1 {
 		isMultiTenant = true
@@ -80,6 +92,7 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 		IsMultiTenant: isMultiTenant,
 		ShouldUseSuperDatabase: shouldUseSuperDatabase,
 		SuperDatabaseUrl: superDatabaseUrl,
+		TenantDatabaseUrlTemplate: tenantDatabaseUrlTemplate,
 		Tenants: config.Tenants,
 	}, nil
 }

@@ -31,6 +31,7 @@ func TestValidateConfig(t *testing.T) {
 	authToken := "auth_token"
 
 	databaseUrl := "sqlite://one.db?auth_token=auth_token"
+	templateDatabaseUrl := "sqlite://%s.db?auth_token=auth_token"
 
 	tests := []struct {
 		name      string
@@ -49,9 +50,10 @@ func TestValidateConfig(t *testing.T) {
 				},
 			},
 			expected: &Config{
-				IsMultiTenant:          false,
-				ShouldUseSuperDatabase: false,
-				SuperDatabaseUrl:       nil,
+				IsMultiTenant:             false,
+				ShouldUseSuperDatabase:    false,
+				SuperDatabaseUrl:          nil,
+				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
 				},
@@ -69,9 +71,10 @@ func TestValidateConfig(t *testing.T) {
 				},
 			},
 			expected: &Config{
-				IsMultiTenant:          false,
-				ShouldUseSuperDatabase: false,
-				SuperDatabaseUrl:       nil,
+				IsMultiTenant:             false,
+				ShouldUseSuperDatabase:    false,
+				SuperDatabaseUrl:          nil,
+				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
 				},
@@ -89,9 +92,10 @@ func TestValidateConfig(t *testing.T) {
 				},
 			},
 			expected: &Config{
-				IsMultiTenant:          false,
-				ShouldUseSuperDatabase: false,
-				SuperDatabaseUrl:       nil,
+				IsMultiTenant:             false,
+				ShouldUseSuperDatabase:    false,
+				SuperDatabaseUrl:          nil,
+				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &databaseUrl},
 				},
@@ -109,9 +113,10 @@ func TestValidateConfig(t *testing.T) {
 				},
 			},
 			expected: &Config{
-				IsMultiTenant:          false,
-				ShouldUseSuperDatabase: false,
-				SuperDatabaseUrl:       nil,
+				IsMultiTenant:             false,
+				ShouldUseSuperDatabase:    false,
+				SuperDatabaseUrl:          nil,
+				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "tenant1", SubdomainName: "tenant1", DatabaseName: "tenant1", DatabaseUrl: nil},
 				},
@@ -130,6 +135,7 @@ func TestValidateConfig(t *testing.T) {
 				IsMultiTenant:          true,
 				ShouldUseSuperDatabase: true,
 				SuperDatabaseUrl:       &superDatabaseUrl,
+				TenantDatabaseUrlTemplate: &templateDatabaseUrl,
 				Tenants:                nil,
 			},
 			expectErr: false,
