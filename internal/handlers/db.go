@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
-	"dxta-dev/app/internal/utils"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -85,7 +84,7 @@ func (a *App) Database(c echo.Context) error {
 
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenant := r.Context().Value(middlewares.TenantContext).(string)
+	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
 	weekParam := c.Param("week")
 
@@ -124,7 +123,7 @@ func (a *App) Database(c echo.Context) error {
 		return err
 	}
 
-	db, err := sql.Open("libsql", utils.GetTenantDatabaseUrl(tenant))
+	db, err := sql.Open("libsql", tenantDatabaseUrl)
 
 	if err != nil {
 		return err
