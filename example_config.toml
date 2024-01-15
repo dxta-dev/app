@@ -1,0 +1,9 @@
+[tenants.crocoder]
+  subdomain = "crocoder"
+  name = "crocoder"
+  database_url = "sqlite://crocoder.db"
+
+[tenants.acme]
+  subdomain = "acme"
+  name = "acme"
+  database_url = "sqlite://acme.db"

@@ -7,6 +7,17 @@ import (
 	"time"
 )
 
+func GetPrevNextWeek(date time.Time) (string, string) {
+	startOfWeek := GetStartOfWeek(date)
+	prevStartOfWeek := startOfWeek.AddDate(0, 0, -7)
+	nextStartOfWeek := startOfWeek.AddDate(0, 0, 7)
+
+	prevWeek := GetFormattedWeek(prevStartOfWeek)
+	nextWeek := GetFormattedWeek(nextStartOfWeek)
+
+	return prevWeek, nextWeek
+}
+
 func GetStartOfWeek(date time.Time) time.Time {
 	offset := int(time.Monday - date.Weekday())
 
