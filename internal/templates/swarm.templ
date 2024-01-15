@@ -43,7 +43,7 @@ script getChart() {
 }
 
 templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
-	<div id="swarm-chart">
+	<div class="flex items-center justify-center" id="swarm-chart">
 		<style text="text/css">
 			svg > circle:hover {
 				cursor: pointer;
@@ -61,9 +61,12 @@ templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week strin
 				//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 				<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
 			</form>
-			<a href={ templ.SafeURL("/swarm?week=" + previousWeek) }>Previous Week</a>
-			<a href={ templ.SafeURL("/swarm?week=" + currentWeek) }>Current Week</a>
-			<a href={ templ.SafeURL("/swarm?week=" + nextWeek) }>Next Week</a>
+
+			<div class="relative h-8 flex items-center justify-center">
+				<a href={ templ.SafeURL("/swarm?week=" + previousWeek) } class="inset-y-0 left-0 w-32">Previous Week</a>
+				<a href={ templ.SafeURL("/swarm?week=" + currentWeek) } class="inset-y-0 top-0 w-32">Current Week</a>
+				<a href={ templ.SafeURL("/swarm?week=" + nextWeek) } class="inset-y-0 right-0 w-32">Next Week</a>
+			</div>
 		</div>
 		@swarmChart(series, startOfTheWeek)
 	}
