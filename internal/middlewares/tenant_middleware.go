@@ -72,13 +72,16 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 func lazyloadTenantToDatabaseURLMap(c echo.Context) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap, exists := c.Get(TenantDatabasesGlobalContext).(TenantDbUrlMap)
 
-	if !exists {
-		tenantToDatabaseURLMap, err := getTenantToDatabaseURLMap()
-		if err != nil {
-			return nil, err
-		}
-		c.Set(TenantDatabasesGlobalContext, tenantToDatabaseURLMap)
+	if exists {
+		return tenantToDatabaseURLMap, nil
 	}
+	// TODO: exists is never true
+
+	tenantToDatabaseURLMap, err := getTenantToDatabaseURLMap()
+	if err != nil {
+		return nil, err
+	}
+	c.Set(TenantDatabasesGlobalContext, tenantToDatabaseURLMap)
 
 	return tenantToDatabaseURLMap, nil
 }
