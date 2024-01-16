@@ -3,6 +3,8 @@ package main
 import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
+	"dxta-dev/app/internal/utils"
+	"log"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -10,6 +12,20 @@ import (
 )
 
 func main() {
+
+	// TODO: GetConfig panics
+	tomlConfig, err := utils.LoadConfigToml("./config.dev.toml")
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	config, err := utils.ValidateConfig(tomlConfig)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := &handlers.App{
 		HTMX: htmx.New(),
 	}
@@ -17,7 +33,12 @@ func main() {
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
-	e.Use(middlewares.TenantMiddleware)
+	e.Use(middlewares.ConfigMiddleware(config))
+
+	if config.IsMultiTenant {
+		e.Use(middlewares.MultiTenantMiddleware)
+	}
+
 	e.Use(middlewares.HtmxMiddleware)
 
 	e.GET("/*", handlers.PublicHandler())

@@ -71,7 +71,7 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 
 var syncGetTenantToDatabaseUrlMap = sync.OnceValues[TenantDbUrlMap, error](getTenantToDatabaseURLMap)
 
-func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		tls := c.Request().TLS
@@ -83,10 +83,10 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		}
 
 		// TODO: temporary code
-		singleDatabaseUrl := os.Getenv("DATABASE_URL")
-		if singleDatabaseUrl != "" {
-			ctx = context.WithValue(ctx, TenantDatabaseURLContext, singleDatabaseUrl)
-		}
+		// singleDatabaseUrl := os.Getenv("DATABASE_URL")
+		// if singleDatabaseUrl != "" {
+		// 	ctx = context.WithValue(ctx, TenantDatabaseURLContext, singleDatabaseUrl)
+		// }
 
 		if len(parts) <= 2 {
 			ctx = context.WithValue(ctx, SubdomainContext, "root")
@@ -100,14 +100,14 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx = context.WithValue(ctx, SubdomainContext, tenant)
 		ctx = context.WithValue(ctx, IsRootContext, false)
 
-		_, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
+		// _, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
 
-		// TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
-		if singleDatabase {
-			c.SetRequest(c.Request().WithContext(ctx))
+		// // TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
+		// if singleDatabase {
+		// 	c.SetRequest(c.Request().WithContext(ctx))
 
-			return next(c)
-		}
+		// 	return next(c)
+		// }
 
 		tenantToDatabaseURLMap, overrideDatabaseUrlMap := ctx.Value(TenantDatabasesGlobalContext).(TenantDbUrlMap)
 		var err error
