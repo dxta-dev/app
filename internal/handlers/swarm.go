@@ -1,10 +1,8 @@
 package handlers
 
 import (
-	"context"
 	"database/sql"
 	"dxta-dev/app/internal/graphs"
-	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
 	"log"
@@ -91,7 +89,6 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 		JOIN transform_dates as d ON d.id = ev.occured_on
 		WHERE d.week=? AND d.year=?;
 	`
-
 	rows, err := db.Query(query, week, year)
 
 	if err != nil {
@@ -121,7 +118,7 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 	return events, nil
 }
 
-func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
+func GetSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
@@ -169,19 +166,10 @@ func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	}
 }
 
-func (a *App) Swarm(c echo.Context) error {
-	r := c.Request()
-	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
-
-	page := &templates.Page{
-		Title:   "Charts",
-		Boosted: h.HxBoosted,
-	}
-
+func processWeekPerameters(c echo.Context, h htmx.HxRequestHeader, tenantDatabaseUrl string) (time.Time, time.Time, string, string) {
 	date := time.Now()
 
-	weekString := r.URL.Query().Get("week")
+	weekString := c.Request().URL.Query().Get("week")
 
 	if weekString != "" {
 		dateTime, err := utils.ParseYearWeek(weekString)
@@ -189,20 +177,16 @@ func (a *App) Swarm(c echo.Context) error {
 			date = dateTime
 
 			res := c.Response()
-			res.Header().Set("HX-Push-Url", "/swarm?week="+weekString)
+			res.Header().Set("HX-Push-Url", "/dashboard?week="+weekString)
 		}
 	}
-
 	startOfWeek := utils.GetStartOfWeek(date)
 
+	var prevWeek, nextWeek string
 	if h.HxRequest && h.HxTrigger != "" {
-		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
-		return components.Render(context.Background(), c.Response().Writer)
+		prevWeek, nextWeek = "", ""
+	} else {
+		prevWeek, nextWeek = utils.GetPrevNextWeek(date)
 	}
-  
-	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
-
-	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
-
-	return components.Render(context.Background(), c.Response().Writer)
+	return date, startOfWeek, prevWeek, nextWeek
 }
