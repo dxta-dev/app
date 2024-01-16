@@ -34,7 +34,7 @@ func (a *App) Dashboard(c echo.Context) error {
 			date = dateTime
 
 			res := c.Response()
-			res.Header().Set("HX-Push-Url", "/swarm?week="+weekString)
+			res.Header().Set("HX-Push-Url", "/dashboard?week="+weekString)
 		}
 	}
 
