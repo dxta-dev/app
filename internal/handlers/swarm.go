@@ -118,7 +118,7 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 	return events, nil
 }
 
-func GetSeries(date time.Time, dbUrl string) templates.SwarmSeries {
+func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 

@@ -27,11 +27,11 @@ func (a *App) Dashboard(c echo.Context) error {
 	date, startOfWeek, prevWeek, nextWeek := processWeekPerameters(c, h, tenantDatabaseUrl)
 
 	if h.HxRequest && h.HxTrigger != "" {
-		components := templates.SwarmChart(GetSeries(date, tenantDatabaseUrl), startOfWeek)
+		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
 
-	components := templates.Swarm(page, GetSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
+	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
