@@ -11,7 +11,6 @@ import (
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
-
 type SwarmSeries struct {
 	Title     string
 	DotColors []drawing.Color
@@ -42,13 +41,21 @@ func SwarmChart(series SwarmSeries, startOfWeek time.Time) templ.Component {
 	graph := chart.Chart{
 		XAxis: chart.XAxis{
 			TickPosition: chart.TickPositionBetweenTicks,
-			GridMajorStyle: chart.Style{
-				StrokeColor: chart.ColorAlternateGray,
-				StrokeWidth: 1.0,
+			Style: chart.Style{
+				StrokeColor: chart.ColorBlack,
 			},
+			GridMajorStyle: chart.Hidden(),
+			GridMinorStyle: chart.Hidden(),
 		},
 		YAxis: chart.YAxis{
 			Style: chart.Hidden(),
+			GridMajorStyle: chart.Hidden(),
+			GridMinorStyle: chart.Hidden(),
+		},
+		YAxisSecondary: chart.YAxis{
+			Style: chart.Hidden(),
+			GridMajorStyle: chart.Hidden(),
+			GridMinorStyle: chart.Hidden(),
 		},
 		Series: []chart.Series{
 			mainSeries,
@@ -61,7 +68,7 @@ func SwarmChart(series SwarmSeries, startOfWeek time.Time) templ.Component {
 	for i := 0; i < 8; i++ {
 		secondsFromStartOfWeek := startOfWeekSeconds + int64(i*24*60*60)
 		secondsForEachDay := int64(i * 24 * 60 * 60)
-		dateLabel := time.Unix(secondsFromStartOfWeek - 24*60*60, 0).Format("Mon 02")
+		dateLabel := time.Unix(secondsFromStartOfWeek-24*60*60, 0).Format("Mon 02")
 		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{
 			Value: float64(secondsForEachDay),
 			Label: dateLabel,
@@ -71,10 +78,10 @@ func SwarmChart(series SwarmSeries, startOfWeek time.Time) templ.Component {
 	for _, tick := range graph.XAxis.Ticks {
 		gridLine := chart.ContinuousSeries{
 			XValues: []float64{tick.Value, tick.Value},
-			YValues: []float64{0, 60 * 60 * 24},
+			YValues: []float64{0, 24*60*60},
 			Style: chart.Style{
-				StrokeColor: chart.ColorAlternateGray,
 				StrokeWidth: 1.0,
+				StrokeColor: chart.ColorBlack,
 			},
 		}
 		graph.Series = append(graph.Series, gridLine)
