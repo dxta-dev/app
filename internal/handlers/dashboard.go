@@ -20,16 +20,32 @@ func (a *App) Dashboard(c echo.Context) error {
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
 	page := &templates.Page{
-		Title:   "Dashboard",
+		Title:   "Charts",
 		Boosted: h.HxBoosted,
 	}
 
-	date, startOfWeek, prevWeek, nextWeek := processWeekPerameters(c, h, tenantDatabaseUrl)
+	date := time.Now()
+
+	weekString := r.URL.Query().Get("week")
+
+	if weekString != "" {
+		dateTime, err := utils.ParseYearWeek(weekString)
+		if err == nil {
+			date = dateTime
+
+			res := c.Response()
+			res.Header().Set("HX-Push-Url", "/swarm?week="+weekString)
+		}
+	}
+
+	startOfWeek := utils.GetStartOfWeek(date)
 
 	if h.HxRequest && h.HxTrigger != "" {
 		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
+
+	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
 	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
 

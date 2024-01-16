@@ -9,9 +9,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/donseba/go-htmx"
 	"github.com/joho/godotenv"
-	"github.com/labstack/echo/v4"
 	"github.com/wcharczuk/go-chart/v2/drawing"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
@@ -164,29 +162,4 @@ func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 		XValues:   xvalues,
 		YValues:   yvalues,
 	}
-}
-
-func processWeekPerameters(c echo.Context, h htmx.HxRequestHeader, tenantDatabaseUrl string) (time.Time, time.Time, string, string) {
-	date := time.Now()
-
-	weekString := c.Request().URL.Query().Get("week")
-
-	if weekString != "" {
-		dateTime, err := utils.ParseYearWeek(weekString)
-		if err == nil {
-			date = dateTime
-
-			res := c.Response()
-			res.Header().Set("HX-Push-Url", "/dashboard?week="+weekString)
-		}
-	}
-	startOfWeek := utils.GetStartOfWeek(date)
-
-	var prevWeek, nextWeek string
-	if h.HxRequest && h.HxTrigger != "" {
-		prevWeek, nextWeek = "", ""
-	} else {
-		prevWeek, nextWeek = utils.GetPrevNextWeek(date)
-	}
-	return date, startOfWeek, prevWeek, nextWeek
 }
