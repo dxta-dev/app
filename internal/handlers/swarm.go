@@ -16,10 +16,8 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type EventType int
-
 const (
-	UNKNOWN EventType = iota
+	UNKNOWN templates.EventType = iota
 	OPENED
 	STARTED_CODING
 	STARTED_PICKUP
@@ -38,12 +36,7 @@ const (
 	UNASSIGNED
 )
 
-type Event struct {
-	Timestamp int64
-	Type      EventType
-}
-
-type EventSlice []Event
+type EventSlice []templates.Event
 
 func (d EventSlice) Len() int {
 	return len(d)
@@ -81,6 +74,7 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	query := `
 		SELECT
+			ev.actor,
 			ev.timestamp,
 			ev.merge_request_event_type
 		FROM transform_merge_request_events as ev
@@ -95,21 +89,25 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	defer rows.Close()
 
-	var events []Event
+	var events []templates.Event
 
 	for rows.Next() {
-		var event Event
+		var event templates.Event
 
 		var timestamp int64
 
 		var eventType int
 
-		if err := rows.Scan(&timestamp, &eventType); err != nil {
+		var actor int64
+
+		if err := rows.Scan(&actor, &timestamp, &eventType); err != nil {
 			log.Fatal(err)
 		}
 
-		event.Type = EventType(eventType)
+		event.Type = templates.EventType(eventType)
 		event.Timestamp = timestamp
+		event.Actor = actor
+
 		events = append(events, event)
 	}
 

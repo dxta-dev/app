@@ -47,7 +47,8 @@ func (a *App) Dashboard(c echo.Context) error {
 
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
-	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)
+	eventInfo, _ := getData(date, tenantDatabaseUrl)
+	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek, eventInfo)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

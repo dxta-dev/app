@@ -2,7 +2,16 @@ package templates
 
 import (
 	"time"
+	"fmt"
 )
+
+type EventType int
+
+type Event struct {
+	Timestamp int64
+	Type      EventType
+	Actor     int64
+}
 
 script getChart() {
 	const svg = document.querySelector("#swarm-chart > svg");
@@ -54,7 +63,7 @@ templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
 	</div>
 }
 
-templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string) {
+templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string, eventsInfo []Event) {
 	@Layout(page) {
 		<div hx-boost="true" hx-target="main" hx-swap="innerHTML">
 			<form>
@@ -69,5 +78,11 @@ templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week strin
 			</div>
 		</div>
 		@swarmChart(series, startOfTheWeek)
+
+		<div class="bg-white" id="database-content">
+		for _, eventInfo := range eventsInfo {
+			<pre>{ fmt.Sprintf("%v", eventInfo) }</pre>
+		}
+	</div>
 	}
 }
