@@ -1,4 +1,4 @@
-### Important Note: example configurations are nested inside fictitious example namespace to avoid parsable
+### Important Note: example configurations are nested inside fictitious example namespaces in order to avoid naming collisions
 ###                 When reusing example configs, take care to remove the example namespace in property paths
 
 ## 1. Multi-tenant setup with explicit database_urls
