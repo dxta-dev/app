@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"context"
+	"dxta-dev/app/internal/data"
 	"dxta-dev/app/internal/graphs"
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
@@ -21,7 +22,7 @@ func getSwarmSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
-	events, _ := getData(date, dbUrl)
+	events, _ := data.GetSwarmData(date, dbUrl)
 
 	startOfWeek := utils.GetStartOfTheWeek(date)
 
@@ -46,11 +47,11 @@ func getSwarmSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 
 	for i := 0; i < len(xvalues); i++ {
 		switch events[i].Type {
-		case COMMITTED:
+		case data.COMMITTED:
 			colors = append(colors, drawing.ColorBlue)
-		case MERGED:
+		case data.MERGED:
 			colors = append(colors, drawing.ColorRed)
-		case REVIEWED:
+		case data.REVIEWED:
 			colors = append(colors, drawing.ColorGreen)
 		default:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(204, 204, 204, 255))

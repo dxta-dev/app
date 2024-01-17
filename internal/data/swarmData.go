@@ -1,4 +1,4 @@
-package handlers
+package data
 
 import (
 	"database/sql"
@@ -53,7 +53,7 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func getData(date time.Time, dbUrl string) (EventSlice, error) {
+func GetSwarmData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	err := godotenv.Load()
 
@@ -116,4 +116,3 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	return events, nil
 }
-
