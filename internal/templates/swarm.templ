@@ -12,6 +12,11 @@ type Event struct {
 	Actor     int64
 }
 
+type SwarmProps struct {
+	Series         SwarmSeries
+	StartOfTheWeek time.Time
+}
+
 script getChart() {
 	const svg = document.querySelector("#swarm-chart > svg");
 	const circles = document.querySelectorAll("#swarm-chart > svg > circle");
@@ -50,14 +55,14 @@ script getChart() {
 
 }
 
-templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
+templ swarm(props SwarmProps) {
 	<div class="flex items-center justify-center" id="swarm-chart">
 		<style text="text/css">
 			svg > circle:hover {
 				cursor: pointer;
 			}
 		</style>
-		@SwarmChart(series, startOfTheWeek)
+		@swarmChartComponent(props.Series, props.StartOfTheWeek)
 		@getChart()
 	</div>
 }

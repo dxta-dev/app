@@ -18,7 +18,7 @@ type SwarmSeries struct {
 	YValues   []float64
 }
 
-func SwarmChart(series SwarmSeries, startOfWeek time.Time) templ.Component {
+func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Component {
 
 	colorProvider := func(xr, yr chart.Range, index int, x, y float64) drawing.Color {
 		if len(series.DotColors) > index {

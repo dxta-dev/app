@@ -39,12 +39,23 @@ func (a *App) Dashboard(c echo.Context) error {
 		}
 	}
 
-	startOfWeek := utils.GetStartOfWeek(date)
-
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
 	eventInfo, _ := getData(date, tenantDatabaseUrl)
-	components := templates.DashboardPage(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek, eventInfo)
+	weekPickerProps := templates.WeekPickerProps{
+		Week: utils.GetFormattedWeek(date),
+		CurrentWeek: utils.GetFormattedWeek(time.Now()),
+		NextWeek: nextWeek,
+		PreviousWeek: prevWeek,
+	}
+
+	swarmProps := templates.SwarmProps{
+		Series: getSeries(date, tenantDatabaseUrl),
+		StartOfTheWeek: utils.GetStartOfWeek(date),
+	}
+
+
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, eventInfo)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
