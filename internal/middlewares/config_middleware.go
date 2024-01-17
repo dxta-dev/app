@@ -11,12 +11,16 @@ type configContextKey string
 
 const ConfigContext configContextKey = "app_config"
 
+func WithConfigContext(parent context.Context, config *utils.Config) context.Context {
+	return context.WithValue(parent, ConfigContext, config)
+}
+
 func ConfigMiddleware(config *utils.Config) func(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			ctx := r.Context()
-			ctx = context.WithValue(ctx, ConfigContext, config)
+			ctx = WithConfigContext(ctx, config)
 			c.SetRequest(r.WithContext(ctx))
 			return next(c)
 		}

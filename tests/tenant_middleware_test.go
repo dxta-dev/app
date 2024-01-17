@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"dxta-dev/app/internal/middlewares"
+	"dxta-dev/app/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )
@@ -17,6 +17,8 @@ func TestTenantMiddleware(t *testing.T) {
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "OK")
 	})
+
+	var mockDatabaseUrl = "libsql://john-cena"
 
 	testCases := []struct {
 		name              string
@@ -38,16 +40,28 @@ func TestTenantMiddleware(t *testing.T) {
 
 			echoContext := e.NewContext(req, rec)
 
-			var mockTenantToDatabaseURLMap = make(middlewares.TenantDbUrlMap)
+			var mockConfigTenants = make(map[string]utils.Tenant)
 			if !tc.expectedIsRoot {
-				mockTenantToDatabaseURLMap[tc.expectedSubdomain] = "libsql://john-cena"
+				mockConfigTenants[tc.expectedSubdomain] = utils.Tenant{
+					Name:          tc.name,
+					SubdomainName: tc.expectedSubdomain,
+					DatabaseName:  tc.name,
+					DatabaseUrl:   &mockDatabaseUrl,
+				}
+			}
+			var mockConfig = utils.Config{
+				IsMultiTenant:             true,
+				ShouldUseSuperDatabase:    false,
+				SuperDatabaseUrl:          nil,
+				TenantDatabaseUrlTemplate: nil,
+				Tenants:                   mockConfigTenants,
 			}
 
 			requestContext := echoContext.Request().Context()
-			requestContext = context.WithValue(requestContext, middlewares.TenantDatabasesGlobalContext, mockTenantToDatabaseURLMap)
+			requestContext = middlewares.WithConfigContext(requestContext, &mockConfig)
 			echoContext.SetRequest(echoContext.Request().WithContext(requestContext))
 
-			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
+			if err := middlewares.MultiTenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
 			}
 
