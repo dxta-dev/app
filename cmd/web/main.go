@@ -26,11 +26,7 @@ func main() {
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(middlewares.ConfigMiddleware(config))
-
-	if config.IsMultiTenant {
-		e.Use(middlewares.MultiTenantMiddleware)
-	}
-
+	e.Use(middlewares.TenantMiddleware)
 	e.Use(middlewares.HtmxMiddleware)
 
 	e.GET("/*", handlers.PublicHandler())

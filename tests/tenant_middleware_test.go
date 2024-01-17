@@ -50,7 +50,7 @@ func TestTenantMiddleware(t *testing.T) {
 				}
 			}
 			var mockConfig = utils.Config{
-				IsMultiTenant:             true,
+				IsMultiTenant:             true, // bypass: set to true since we are testing multi-tenant config
 				ShouldUseSuperDatabase:    false,
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
@@ -61,7 +61,7 @@ func TestTenantMiddleware(t *testing.T) {
 			requestContext = middlewares.WithConfigContext(requestContext, &mockConfig)
 			echoContext.SetRequest(echoContext.Request().WithContext(requestContext))
 
-			if err := middlewares.MultiTenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
+			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
 			}
 

@@ -96,7 +96,7 @@ func getTenantDatabaseURL(config *utils.Config, tenantKey string) (string, bool,
 	return fmt.Sprintf(*config.TenantDatabaseUrlTemplate, tenantDatabaseURL), true, nil
 }
 
-func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
 		config := ctx.Value(ConfigContext).(*utils.Config)
