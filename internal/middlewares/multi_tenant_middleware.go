@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -69,8 +68,6 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 	return tenantToDatabaseURLMap, nil
 }
 
-var syncGetTenantToDatabaseUrlMap = sync.OnceValues[TenantDbUrlMap, error](getTenantToDatabaseURLMap)
-
 func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
@@ -114,11 +111,11 @@ func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 		if !overrideDatabaseUrlMap {
 			// Issue: caches error from db forever
-			tenantToDatabaseURLMap, err = syncGetTenantToDatabaseUrlMap()
+			tenantToDatabaseURLMap, err = getTenantToDatabaseURLMap()
 		}
 
 		if err != nil {
-			// TODO(error-handling): log or something
+			fmt.Println("Error multi_tenant_middleware.go: TODO(error-handling) - log or something when super database fails")
 			// Ideas: https://echo.labstack.com/docs/error-handling
 			return echo.ErrInternalServerError
 		}
