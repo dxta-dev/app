@@ -32,5 +32,6 @@
   database_url = "sqlite://acme.db"
 
 ## 4. Super database setup.
-super_database_url = "sqlite://super.db"
-tenant_database_url_template = "%s" # %s is super_database.tenants[db_url]
+[example4]
+  super_database_url = "sqlite://super.db"
+  tenant_database_url_template = "%s" # %s is super_database.tenants[db_url]
