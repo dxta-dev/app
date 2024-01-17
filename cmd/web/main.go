@@ -13,15 +13,7 @@ import (
 
 func main() {
 
-	// TODO: GetConfig panics
-	tomlConfig, err := utils.LoadConfigToml("./config.dev.toml")
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	config, err := utils.ValidateConfig(tomlConfig)
-
+	config, err := utils.GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
