@@ -2,22 +2,17 @@ package handlers
 
 import (
 	"database/sql"
-	"dxta-dev/app/internal/graphs"
-	"dxta-dev/app/internal/templates"
-	"dxta-dev/app/internal/utils"
 	"log"
-	"sort"
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/wcharczuk/go-chart/v2/drawing"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
 
 const (
-	UNKNOWN templates.EventType = iota
+	UNKNOWN EventType = iota
 	OPENED
 	STARTED_CODING
 	STARTED_PICKUP
@@ -36,7 +31,15 @@ const (
 	UNASSIGNED
 )
 
-type EventSlice []templates.Event
+type EventType int
+
+type Event struct {
+	Timestamp int64
+	Type      EventType
+	Actor     int64
+}
+
+type EventSlice []Event
 
 func (d EventSlice) Len() int {
 	return len(d)
@@ -89,10 +92,10 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	defer rows.Close()
 
-	var events []templates.Event
+	var events []Event
 
 	for rows.Next() {
-		var event templates.Event
+		var event Event
 
 		var timestamp int64
 
@@ -104,7 +107,7 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 			log.Fatal(err)
 		}
 
-		event.Type = templates.EventType(eventType)
+		event.Type = EventType(eventType)
 		event.Timestamp = timestamp
 		event.Actor = actor
 
@@ -114,50 +117,3 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 	return events, nil
 }
 
-func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
-	var xvalues []float64
-	var yvalues []float64
-
-	startOfWeek := utils.GetStartOfTheWeek(date)
-
-	var times []time.Time
-
-	events, _ := getData(date, dbUrl)
-
-	sort.Sort(events)
-
-	for _, d := range events {
-		t := time.Unix(d.Timestamp/1000, 0)
-		times = append(times, t)
-	}
-
-	for _, t := range times {
-		xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
-		xvalues = append(xvalues, xSecondsValue)
-		yvalues = append(yvalues, 60*60*12)
-	}
-
-	xvalues, yvalues = graphs.Beehive(xvalues, yvalues, 1400, 200, 5)
-
-	colors := []drawing.Color{}
-
-	for i := 0; i < len(xvalues); i++ {
-		switch events[i].Type {
-		case COMMITTED:
-			colors = append(colors, drawing.ColorBlue)
-		case MERGED:
-			colors = append(colors, drawing.ColorRed)
-		case REVIEWED:
-			colors = append(colors, drawing.ColorGreen)
-		default:
-			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(204, 204, 204, 255))
-		}
-	}
-
-	return templates.SwarmSeries{
-		Title:     "series 1",
-		DotColors: colors,
-		XValues:   xvalues,
-		YValues:   yvalues,
-	}
-}

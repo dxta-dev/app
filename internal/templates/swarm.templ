@@ -4,14 +4,6 @@ import (
 	"time"
 )
 
-type EventType int
-
-type Event struct {
-	Timestamp int64
-	Type      EventType
-	Actor     int64
-}
-
 type SwarmProps struct {
 	Series         SwarmSeries
 	StartOfTheWeek time.Time

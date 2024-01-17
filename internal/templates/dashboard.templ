@@ -1,9 +1,5 @@
 package templates
 
-import (
-	"fmt"
-)
-
 type WeekPickerProps struct {
 	Week         string
 	CurrentWeek  string
@@ -23,14 +19,9 @@ templ weekPicker(props WeekPickerProps) {
 	</div>
 }
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, eventsInfo []Event) {
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps) {
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
-		<pre class="bg-white overflow-auto h-1/4">
-			for _, eventInfo := range eventsInfo {
-				{ fmt.Sprintf("%v\n", eventInfo) }
-			}
-		</pre>
 	}
 }

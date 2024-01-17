@@ -2,17 +2,69 @@ package handlers
 
 import (
 	"context"
+	"dxta-dev/app/internal/graphs"
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
+	"sort"
 	"time"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
+	"github.com/wcharczuk/go-chart/v2/drawing"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
+
+func getSwarmSeries(date time.Time, dbUrl string) templates.SwarmSeries {
+	var xvalues []float64
+	var yvalues []float64
+
+	events, _ := getData(date, dbUrl)
+
+	startOfWeek := utils.GetStartOfTheWeek(date)
+
+	var times []time.Time
+
+	sort.Sort(events)
+
+	for _, d := range events {
+		t := time.Unix(d.Timestamp/1000, 0)
+		times = append(times, t)
+	}
+
+	for _, t := range times {
+		xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
+		xvalues = append(xvalues, xSecondsValue)
+		yvalues = append(yvalues, 60*60*12)
+	}
+
+	xvalues, yvalues = graphs.Beehive(xvalues, yvalues, 1400, 200, 5)
+
+	colors := []drawing.Color{}
+
+	for i := 0; i < len(xvalues); i++ {
+		switch events[i].Type {
+		case COMMITTED:
+			colors = append(colors, drawing.ColorBlue)
+		case MERGED:
+			colors = append(colors, drawing.ColorRed)
+		case REVIEWED:
+			colors = append(colors, drawing.ColorGreen)
+		default:
+			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(204, 204, 204, 255))
+		}
+	}
+
+	return templates.SwarmSeries{
+		XValues:   xvalues,
+		YValues:   yvalues,
+		DotColors: colors,
+		Title:     "Swarm",
+	}
+
+}
 
 func (a *App) Dashboard(c echo.Context) error {
 	r := c.Request()
@@ -20,8 +72,8 @@ func (a *App) Dashboard(c echo.Context) error {
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
 	page := &templates.Page{
-		Title:   "Charts",
-		Boosted: h.HxBoosted,
+		Title:     "Charts",
+		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
 	}
 
@@ -41,21 +93,19 @@ func (a *App) Dashboard(c echo.Context) error {
 
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
-	eventInfo, _ := getData(date, tenantDatabaseUrl)
 	weekPickerProps := templates.WeekPickerProps{
-		Week: utils.GetFormattedWeek(date),
-		CurrentWeek: utils.GetFormattedWeek(time.Now()),
-		NextWeek: nextWeek,
+		Week:         utils.GetFormattedWeek(date),
+		CurrentWeek:  utils.GetFormattedWeek(time.Now()),
+		NextWeek:     nextWeek,
 		PreviousWeek: prevWeek,
 	}
 
 	swarmProps := templates.SwarmProps{
-		Series: getSeries(date, tenantDatabaseUrl),
+		Series:         getSwarmSeries(date, tenantDatabaseUrl),
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 	}
 
-
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, eventInfo)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
