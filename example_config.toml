@@ -2,6 +2,7 @@
 ###                 When reusing example configs, take care to remove the example namespace in property paths
 
 ## 1. Multi-tenant setup with explicit database_urls
+
 [example1.tenants.crocoder]
   subdomain = "crocoder"
   name = "crocoder"
@@ -13,6 +14,7 @@
   database_url = "sqlite://acme.db"
 
 ## 2. Multi-tenant setup with templating. 
+
 [example2]
   tenant_database_url_template = "sqlite://%s.db" # %s is tenants[key in tenants][database_name] || [key in tenants]
 
@@ -26,12 +28,14 @@
   # database_url == sqlite://acme_local.db
 
 ## 3. Single-tenant setup. For use with localhost
+
 [example3.tenants.acme]
   subdomain = "acme"
   name = "acme"
   database_url = "sqlite://acme.db"
 
 ## 4. Super database setup.
+
 [example4]
   super_database_url = "sqlite://super.db"
   tenant_database_url_template = "%s" # %s is super_database.tenants[db_url]
