@@ -65,7 +65,7 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 		}
 
 		return &Config{
-			IsMultiTenant:             true,
+			IsMultiTenant:             configTenantsSize > 1,
 			ShouldUseSuperDatabase:    false,
 			SuperDatabaseUrl:          nil,
 			TenantDatabaseUrlTemplate: config.TenantDatabaseUrlTemplate,
