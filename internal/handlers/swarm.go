@@ -118,7 +118,7 @@ func getSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 	var xvalues []float64
 	var yvalues []float64
 
-	startOfWeek := utils.GetStartOfWeek(date)
+	startOfWeek := utils.GetStartOfTheWeek(date)
 
 	var times []time.Time
 

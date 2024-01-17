@@ -51,7 +51,7 @@ func (a *App) Dashboard(c echo.Context) error {
 
 	swarmProps := templates.SwarmProps{
 		Series: getSeries(date, tenantDatabaseUrl),
-		StartOfTheWeek: utils.GetStartOfWeek(date),
+		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 	}
 
 
