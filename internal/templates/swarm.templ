@@ -2,7 +2,6 @@ package templates
 
 import (
 	"time"
-	"fmt"
 )
 
 type EventType int
@@ -61,28 +60,4 @@ templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
 		@SwarmChart(series, startOfTheWeek)
 		@getChart()
 	</div>
-}
-
-templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string, eventsInfo []Event) {
-	@Layout(page) {
-		<div hx-boost="true" hx-target="main" hx-swap="innerHTML">
-			<form>
-				//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
-				<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/dashboard" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
-			</form>
-
-			<div class="relative h-8 flex items-center justify-center">
-				<a href={ templ.SafeURL("/dashboard?week=" + previousWeek) } class="inset-y-0 left-0 w-32">Previous Week</a>
-				<a href={ templ.SafeURL("/dashboard?week=" + currentWeek) } class="inset-y-0 top-0 w-32">Current Week</a>
-				<a href={ templ.SafeURL("/dashboard?week=" + nextWeek) } class="inset-y-0 right-0 w-32">Next Week</a>
-			</div>
-		</div>
-		@swarmChart(series, startOfTheWeek)
-
-		<div class="bg-white" id="database-content">
-		for _, eventInfo := range eventsInfo {
-			<pre>{ fmt.Sprintf("%v", eventInfo) }</pre>
-		}
-	</div>
-	}
 }

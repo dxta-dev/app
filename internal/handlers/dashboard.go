@@ -22,6 +22,7 @@ func (a *App) Dashboard(c echo.Context) error {
 	page := &templates.Page{
 		Title:   "Charts",
 		Boosted: h.HxBoosted,
+		Requested: h.HxRequest,
 	}
 
 	date := time.Now()
@@ -40,15 +41,10 @@ func (a *App) Dashboard(c echo.Context) error {
 
 	startOfWeek := utils.GetStartOfWeek(date)
 
-	if h.HxRequest && h.HxTrigger != "" {
-		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
-		return components.Render(context.Background(), c.Response().Writer)
-	}
-
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
 	eventInfo, _ := getData(date, tenantDatabaseUrl)
-	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek, eventInfo)
+	components := templates.DashboardPage(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek, eventInfo)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

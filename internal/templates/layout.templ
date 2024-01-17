@@ -3,12 +3,13 @@ package templates
 type Page struct {
 	Title   string
 	Boosted bool
+	Requested bool
 }
 
 templ Layout(page *Page) {
 	<html>
 		@Head(page.Title)
-		if !page.Boosted {
+		if !page.Boosted && !page.Requested {
 			@Navigation(false)
 		}
 		<body>
