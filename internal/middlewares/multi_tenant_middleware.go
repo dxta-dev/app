@@ -3,6 +3,7 @@ package middlewares
 import (
 	"context"
 	"database/sql"
+	"dxta-dev/app/internal/utils"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,7 +24,7 @@ const IsRootContext isRootContextKey = "is_root"
 const TenantDatabaseURLContext tenantContextKey = "tenant_db_url"
 const TenantDatabasesGlobalContext string = "tenant_db_map"
 
-// TODO(scalability?): change from const map fetch to LRU cache filling
+// TODO(scalability?): change from const map fetch to cache per tenant?
 func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
@@ -68,9 +69,37 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 	return tenantToDatabaseURLMap, nil
 }
 
+func getTenantDatabaseURL(config *utils.Config, tenantKey string) (string, bool, error) {
+
+	if !config.ShouldUseSuperDatabase {
+		configTenant, configContainsTenant := config.Tenants[tenantKey]
+
+		if !configContainsTenant {
+			return "", false, nil
+		}
+
+		return *configTenant.DatabaseUrl, true, nil
+	}
+
+	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap()
+
+	if err != nil {
+		return "", false, err
+	}
+
+	tenantDatabaseURL, databaseContainsTenant := tenantsToDatabaseURLMap[tenantKey]
+
+	if !databaseContainsTenant {
+		return "", false, nil
+	}
+
+	return fmt.Sprintf(*config.TenantDatabaseUrlTemplate, tenantDatabaseURL), true, nil
+}
+
 func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
+		config := ctx.Value(ConfigContext).(*utils.Config)
 		tls := c.Request().TLS
 		hostName := c.Request().Host
 		parts := strings.Split(hostName, ".")
@@ -97,22 +126,16 @@ func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx = context.WithValue(ctx, SubdomainContext, tenant)
 		ctx = context.WithValue(ctx, IsRootContext, false)
 
+		// // TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
 		// _, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
 
-		// // TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
 		// if singleDatabase {
 		// 	c.SetRequest(c.Request().WithContext(ctx))
 
 		// 	return next(c)
 		// }
 
-		tenantToDatabaseURLMap, overrideDatabaseUrlMap := ctx.Value(TenantDatabasesGlobalContext).(TenantDbUrlMap)
-		var err error
-
-		if !overrideDatabaseUrlMap {
-			// Issue: caches error from db forever
-			tenantToDatabaseURLMap, err = getTenantToDatabaseURLMap()
-		}
+		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, tenant)
 
 		if err != nil {
 			fmt.Println("Error multi_tenant_middleware.go: TODO(error-handling) - log or something when super database fails")
@@ -120,12 +143,11 @@ func MultiTenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.ErrInternalServerError
 		}
 
-		tenantDatabaseUrl, tenantDatabaseUrlExists := tenantToDatabaseURLMap[tenant]
 		if !tenantDatabaseUrlExists {
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s/oss", hostProtocolScheme, strings.Join(parts[1:], ".")))
 		}
 
-		ctx = context.WithValue(ctx, TenantDatabaseURLContext, fmt.Sprintf("%s?authToken=%s", tenantDatabaseUrl, os.Getenv("TENANT_DATABASE_AUTH_TOKEN")))
+		ctx = context.WithValue(ctx, TenantDatabaseURLContext, tenantDatabaseUrl)
 
 		c.SetRequest(c.Request().WithContext(ctx))
 
