@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
+	"golang.org/x/exp/maps"
 )
 
 type TenantDbUrlMap map[string]string
@@ -108,34 +109,30 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			hostProtocolScheme = "http"
 		}
 
-		// TODO: temporary code
-		// singleDatabaseUrl := os.Getenv("DATABASE_URL")
-		// if singleDatabaseUrl != "" {
-		// 	ctx = context.WithValue(ctx, TenantDatabaseURLContext, singleDatabaseUrl)
-		// }
+		subdomain, isRoot := parts[0], false
 
 		if len(parts) <= 2 {
-			ctx = context.WithValue(ctx, SubdomainContext, "root")
-			ctx = context.WithValue(ctx, IsRootContext, true)
+			subdomain = "root"
+			isRoot = true
+		}
+
+		ctx = context.WithValue(ctx, SubdomainContext, subdomain)
+		ctx = context.WithValue(ctx, IsRootContext, isRoot)
+
+		if !config.IsMultiTenant {
+			ctx = context.WithValue(ctx, TenantDatabaseURLContext, *maps.Values(config.Tenants)[0].DatabaseUrl)
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
 		}
 
-		tenant := parts[0]
-		ctx = context.WithValue(ctx, SubdomainContext, tenant)
-		ctx = context.WithValue(ctx, IsRootContext, false)
+		if isRoot {
+			c.SetRequest(c.Request().WithContext(ctx))
 
-		// // TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
-		// _, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
+			return next(c)
+		}
 
-		// if singleDatabase {
-		// 	c.SetRequest(c.Request().WithContext(ctx))
-
-		// 	return next(c)
-		// }
-
-		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, tenant)
+		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, subdomain)
 
 		if err != nil {
 			fmt.Println("Error multi_tenant_middleware.go: TODO(error-handling) - log or something when super database fails")
