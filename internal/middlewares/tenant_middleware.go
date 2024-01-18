@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/labstack/echo/v4"
-	"golang.org/x/exp/maps"
 )
 
 type TenantDbUrlMap map[string]string
@@ -119,8 +118,11 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		ctx = context.WithValue(ctx, SubdomainContext, subdomain)
 		ctx = context.WithValue(ctx, IsRootContext, isRoot)
 
-		if !config.IsMultiTenant {
-			ctx = context.WithValue(ctx, TenantDatabaseURLContext, *maps.Values(config.Tenants)[0].DatabaseUrl)
+		if !config.IsMultiTenant && len(config.Tenants) == 1 {
+			for _, v := range config.Tenants {
+				ctx = context.WithValue(ctx, TenantDatabaseURLContext, *v.DatabaseUrl)
+			}
+
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
