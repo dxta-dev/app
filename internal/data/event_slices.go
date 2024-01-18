@@ -32,9 +32,11 @@ const (
 type EventType int
 
 type Event struct {
-	Timestamp int64
-	Type      EventType
-	Actor     int64
+	Timestamp       int64
+	Type            EventType
+	Actor           string
+	MergeRequest    string
+	MergeRequestUrl string
 }
 
 type EventSlice []Event
@@ -68,11 +70,15 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	query := `
 		SELECT
-			ev.actor,
+			u.name,
+			mr.title,
+			mr.web_url,
 			ev.timestamp,
 			ev.merge_request_event_type
 		FROM transform_merge_request_events as ev
 		JOIN transform_dates as d ON d.id = ev.occured_on
+		JOIN transform_forge_users as u ON u.id = ev.actor
+		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
 		WHERE d.week=? AND d.year=?;
 	`
 	rows, err := db.Query(query, week, year)
@@ -92,15 +98,21 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 		var eventType int
 
-		var actor int64
+		var actor string
 
-		if err := rows.Scan(&actor, &timestamp, &eventType); err != nil {
+		var mergeRequest string
+
+		var mergeRequestUrl string
+
+		if err := rows.Scan(&actor, &mergeRequest, &mergeRequestUrl, &timestamp, &eventType); err != nil {
 			log.Fatal(err)
 		}
 
 		event.Type = EventType(eventType)
 		event.Timestamp = timestamp
 		event.Actor = actor
+		event.MergeRequest = mergeRequest
+		event.MergeRequestUrl = mergeRequestUrl
 
 		events = append(events, event)
 	}
