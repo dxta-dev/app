@@ -5,8 +5,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/joho/godotenv"
-
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
@@ -53,15 +51,12 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func GetSwarmData(date time.Time, dbUrl string) (EventSlice, error) {
+type Store struct {
+	DbUrl string
+}
 
-	err := godotenv.Load()
-
-	if err != nil {
-		return nil, err
-	}
-
-	db, err := sql.Open("libsql", dbUrl)
+func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
+	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
 		return nil, err

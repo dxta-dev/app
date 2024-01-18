@@ -18,11 +18,19 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func getSwarmSeries(date time.Time, dbUrl string) templates.SwarmSeries {
+func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
-	events, _ := data.GetSwarmData(date, dbUrl)
+	store := &data.Store{
+		DbUrl: dbUrl,
+	}
+
+	events, err := store.GetEventSlices(date)
+
+	if err != nil {
+		return templates.SwarmSeries{}, err
+	}
 
 	startOfWeek := utils.GetStartOfTheWeek(date)
 
@@ -63,7 +71,7 @@ func getSwarmSeries(date time.Time, dbUrl string) templates.SwarmSeries {
 		YValues:   yvalues,
 		DotColors: colors,
 		Title:     "Swarm",
-	}
+	}, nil
 
 }
 
@@ -101,8 +109,14 @@ func (a *App) Dashboard(c echo.Context) error {
 		PreviousWeek: prevWeek,
 	}
 
+	swarmSeries, err := getSwarmSeries(date, tenantDatabaseUrl)
+
+	if err != nil {
+		return err
+	}
+
 	swarmProps := templates.SwarmProps{
-		Series:         getSwarmSeries(date, tenantDatabaseUrl),
+		Series:         swarmSeries,
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 	}
 
