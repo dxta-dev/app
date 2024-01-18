@@ -94,25 +94,9 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 	for rows.Next() {
 		var event Event
 
-		var timestamp int64
-
-		var eventType int
-
-		var actor string
-
-		var mergeRequest string
-
-		var mergeRequestUrl string
-
-		if err := rows.Scan(&actor, &mergeRequest, &mergeRequestUrl, &timestamp, &eventType); err != nil {
+		if err := rows.Scan(&event.Actor, &event.MergeRequest, &event.MergeRequestUrl, &event.Timestamp, &event.Type); err != nil {
 			log.Fatal(err)
 		}
-
-		event.Type = EventType(eventType)
-		event.Timestamp = timestamp
-		event.Actor = actor
-		event.MergeRequest = mergeRequest
-		event.MergeRequestUrl = mergeRequestUrl
 
 		events = append(events, event)
 	}
