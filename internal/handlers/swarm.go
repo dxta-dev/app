@@ -7,8 +7,10 @@ import (
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
+	"fmt"
 	"log"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -83,6 +85,8 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 
 	year, week := date.ISOWeek()
 
+	searchWeek := fmt.Sprintf("%s-W%s", strconv.Itoa(year), strconv.Itoa(week))
+
 	query := `
 		SELECT
 			ev.timestamp,
@@ -92,7 +96,7 @@ func getData(date time.Time, dbUrl string) (EventSlice, error) {
 		WHERE d.week=? AND d.year=?;
 	`
 
-	rows, err := db.Query(query, week, year)
+	rows, err := db.Query(query, searchWeek, year)
 
 	if err != nil {
 		return nil, err
@@ -199,7 +203,7 @@ func (a *App) Swarm(c echo.Context) error {
 		components := templates.SwarmChart(getSeries(date, tenantDatabaseUrl), startOfWeek)
 		return components.Render(context.Background(), c.Response().Writer)
 	}
-  
+
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
 	components := templates.Swarm(page, getSeries(date, tenantDatabaseUrl), startOfWeek, utils.GetFormattedWeek(date), utils.GetFormattedWeek(time.Now()), prevWeek, nextWeek)

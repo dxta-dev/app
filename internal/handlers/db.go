@@ -137,7 +137,7 @@ func (a *App) Database(c echo.Context) error {
 
 	var attributes []interface{}
 
-	attributes = append(attributes, week, year)
+	attributes = append(attributes, currentWeek, year)
 
 	selectQuery := `
 		SELECT
