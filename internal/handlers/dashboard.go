@@ -7,6 +7,7 @@ import (
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
+	"fmt"
 	"sort"
 	"time"
 
@@ -31,6 +32,8 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 	if err != nil {
 		return templates.SwarmSeries{}, err
 	}
+
+	fmt.Println("EVENTOVIiiiiiiiiiiii", events)
 
 	startOfWeek := utils.GetStartOfTheWeek(date)
 
@@ -71,6 +74,7 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 		YValues:   yvalues,
 		DotColors: colors,
 		Title:     "Swarm",
+		Events:    events,
 	}, nil
 
 }
@@ -120,7 +124,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 	}
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, "true", swarmSeries.Events)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

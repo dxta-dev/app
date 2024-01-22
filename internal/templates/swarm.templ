@@ -2,12 +2,17 @@ package templates
 
 import (
 	"time"
+	"dxta-dev/app/internal/data"
+	"fmt"
+
+
 )
 
 type SwarmProps struct {
 	Series         SwarmSeries
 	StartOfTheWeek time.Time
 }
+
 
 script getChart() {
     const svg = document.querySelector("#swarm-chart > svg");
@@ -17,26 +22,30 @@ script getChart() {
     }
     const createdCircles = [];
 
+    const deselectCircles = () => {
+        createdCircles.forEach(entry => {
+            svg.removeChild(entry.circle);
+            entry.original.removeAttribute("data-clicked");
+        });
+        createdCircles.length = 0;
+    };
+
     const cs = [...circles].map(c => {
         c.onclick = () => {
             const isClicked = c.getAttribute("data-clicked") === "true";
             console.log(isClicked);
 
-            if (isClicked) {
-                const newCircle = createdCircles.pop();
-                if (newCircle) {
-                    svg.removeChild(newCircle);
-                }
-                c.removeAttribute("data-clicked");
-            } else {
+            deselectCircles();
 
-                const newCircle = createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r")+3, "white", "red", 1);
+            if (!isClicked) {
+                const newCircle = createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r") + 3, "white", "red", 1);
                 svg.appendChild(newCircle);
                 moveToTop(c);
                 c.setAttribute("data-clicked", "true");
-                createdCircles.push(newCircle);
+                createdCircles.push({ circle: newCircle, original: c });
             }
         };
+		console.log(c.getAttribute("data-clicked"));
         return {
             circle: c,
             cx: c.getAttribute("cx"),
@@ -47,6 +56,7 @@ script getChart() {
             strokeWidth: c.getAttribute("stroke-width"),
             opacity: c.getAttribute("opacity"),
             data: c.getAttribute("data"),
+			isClicked: c.getAttribute("data-clicked"),
         };
     });
 
@@ -61,6 +71,16 @@ script getChart() {
         return circle;
     };
 }
+
+
+templ circleInfo(eventInfo []data.Event) {
+        <div>
+            <p>Clicked!</p>
+            for _, metric := range eventInfo {
+                <pre>{ fmt.Sprintf("%v", metric) }</pre>
+            }
+        </div>
+    }
 
 
 templ swarm(props SwarmProps) {

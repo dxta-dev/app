@@ -3,6 +3,7 @@ package templates
 import (
 	"bytes"
 	"context"
+	"dxta-dev/app/internal/data"
 	"io"
 	"time"
 
@@ -16,6 +17,7 @@ type SwarmSeries struct {
 	DotColors []drawing.Color
 	XValues   []float64
 	YValues   []float64
+	Events    []data.Event
 }
 
 func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Component {
@@ -48,12 +50,12 @@ func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Compon
 			GridMinorStyle: chart.Hidden(),
 		},
 		YAxis: chart.YAxis{
-			Style: chart.Hidden(),
+			Style:          chart.Hidden(),
 			GridMajorStyle: chart.Hidden(),
 			GridMinorStyle: chart.Hidden(),
 		},
 		YAxisSecondary: chart.YAxis{
-			Style: chart.Hidden(),
+			Style:          chart.Hidden(),
 			GridMajorStyle: chart.Hidden(),
 			GridMinorStyle: chart.Hidden(),
 		},
@@ -78,7 +80,7 @@ func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Compon
 	for _, tick := range graph.XAxis.Ticks {
 		gridLine := chart.ContinuousSeries{
 			XValues: []float64{tick.Value, tick.Value},
-			YValues: []float64{0, 24*60*60},
+			YValues: []float64{0, 24 * 60 * 60},
 			Style: chart.Style{
 				StrokeWidth: 1.0,
 				StrokeColor: chart.ColorBlack,
