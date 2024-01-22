@@ -10,42 +10,58 @@ type SwarmProps struct {
 }
 
 script getChart() {
-	const svg = document.querySelector("#swarm-chart > svg");
-	const circles = document.querySelectorAll("#swarm-chart > svg > circle");
-	function moveToTop(element) {
-		element.parentNode.appendChild(element);
-	}
-	const cs = [...circles].map(c => {
-		c.onclick = () => {
-			svg.appendChild(createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r")+3, "white", "red", 1));
-			moveToTop(c);
-		};
-		return {
-			circle: c,
-			cx: c.getAttribute("cx"),
-			cy: c.getAttribute("cy"),
-			r: c.getAttribute("r"),
-			fill: c.getAttribute("fill"),
-			stroke: c.getAttribute("stroke"),
-			strokeWidth: c.getAttribute("stroke-width"),
-			opacity: c.getAttribute("opacity"),
-			data: c.getAttribute("data"),
-		};
-	});
+    const svg = document.querySelector("#swarm-chart > svg");
+    const circles = document.querySelectorAll("#swarm-chart > svg > circle");
+    function moveToTop(element) {
+        element.parentNode.appendChild(element);
+    }
+    const createdCircles = [];
 
+    const cs = [...circles].map(c => {
+        c.onclick = () => {
+            const isClicked = c.getAttribute("data-clicked") === "true";
+            console.log(isClicked);
 
-	const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
-		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-		circle.setAttribute("cx", cx);
-		circle.setAttribute("cy", cy);
-		circle.setAttribute("r", r);
-		circle.setAttribute("fill", fill);
-		circle.setAttribute("stroke", stroke);
-		circle.setAttribute("stroke-width", strokeWidth);
-		return circle;
-	};
+            if (isClicked) {
+                const newCircle = createdCircles.pop();
+                if (newCircle) {
+                    svg.removeChild(newCircle);
+                }
+                c.removeAttribute("data-clicked");
+            } else {
 
+                const newCircle = createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r")+3, "white", "red", 1);
+                svg.appendChild(newCircle);
+                moveToTop(c);
+                c.setAttribute("data-clicked", "true");
+                createdCircles.push(newCircle);
+            }
+        };
+        return {
+            circle: c,
+            cx: c.getAttribute("cx"),
+            cy: c.getAttribute("cy"),
+            r: c.getAttribute("r"),
+            fill: c.getAttribute("fill"),
+            stroke: c.getAttribute("stroke"),
+            strokeWidth: c.getAttribute("stroke-width"),
+            opacity: c.getAttribute("opacity"),
+            data: c.getAttribute("data"),
+        };
+    });
+
+    const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
+        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        circle.setAttribute("cx", cx);
+        circle.setAttribute("cy", cy);
+        circle.setAttribute("r", r);
+        circle.setAttribute("fill", fill);
+        circle.setAttribute("stroke", stroke);
+        circle.setAttribute("stroke-width", strokeWidth);
+        return circle;
+    };
 }
+
 
 templ swarm(props SwarmProps) {
 	<div class="flex items-center justify-center" id="swarm-chart">
