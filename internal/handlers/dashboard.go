@@ -7,7 +7,6 @@ import (
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
-	"fmt"
 	"sort"
 	"time"
 
@@ -87,8 +86,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
 	}
-	isClicked := r.Header.Get("IsClicked")
-	fmt.Println("isClicked", isClicked)
+
 	date := time.Now()
 
 	weekString := r.URL.Query().Get("week")
@@ -117,13 +115,18 @@ func (a *App) Dashboard(c echo.Context) error {
 	if err != nil {
 		return err
 	}
+	var eventIds []int64
+	for _, event := range swarmSeries.Events {
+		eventIds = append(eventIds, event.Id)
+	}
 
 	swarmProps := templates.SwarmProps{
 		Series:         swarmSeries,
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
+		EventIds:       eventIds,
 	}
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, isClicked, swarmSeries.Events)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, swarmSeries.Events)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

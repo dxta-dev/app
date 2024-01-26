@@ -32,6 +32,7 @@ const (
 type EventType int
 
 type Event struct {
+	Id              int64
 	Timestamp       int64
 	Type            EventType
 	Actor           string
@@ -70,6 +71,7 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	query := `
 		SELECT
+			ev.id,
 			u.name,
 			mr.title,
 			mr.web_url,
@@ -94,7 +96,7 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 	for rows.Next() {
 		var event Event
 
-		if err := rows.Scan(&event.Actor, &event.MergeRequest, &event.MergeRequestUrl, &event.Timestamp, &event.Type); err != nil {
+		if err := rows.Scan(&event.Id, &event.Actor, &event.MergeRequest, &event.MergeRequestUrl, &event.Timestamp, &event.Type); err != nil {
 			log.Fatal(err)
 		}
 

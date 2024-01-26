@@ -11,75 +11,54 @@ import (
 type SwarmProps struct {
 	Series         SwarmSeries
 	StartOfTheWeek time.Time
+	EventIds	[]int64
 }
 
 
-script getChart() {
-    const svg = document.querySelector("#swarm-chart > svg");
-    const circles = document.querySelectorAll("#swarm-chart > svg > circle");
+script getChart(chartId string, endpoint string, circleIds []int64) {
+
+	if (circleIds === null) {
+		return;
+	}
+
+	const svg = document.querySelector(`${chartId} > svg`);
+    const circles = document.querySelectorAll(`${chartId} > svg > circle`);
+
+	for (let i = 0; i < circles.length; i++) {
+		circles[i].setAttribute("data-id", circleIds[i]);
+	}
+
     function moveToTop(element) {
         element.parentNode.appendChild(element);
     }
-    const createdCircles = [];
 
-    const deselectCircles = () => {
-        createdCircles.forEach(entry => {
-            svg.removeChild(entry.circle);
-            entry.original.removeAttribute("data-clicked");
-        });
-        createdCircles.length = 0;
-    };
+	function getCircleInfo(circleId) {
+		console.log(circleId);
+	}
 
-    const cs = [...circles].map(c => {
-        c.onclick = () => {
-            const isClicked = c.getAttribute("data-clicked") === "true";
+	const redCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
 
-            deselectCircles();
+	redCircle.setAttribute("fill", "white");
+	redCircle.setAttribute("stroke", "red");
+	redCircle.setAttribute("stroke-width", "1");
+	redCircle.setAttribute("r", +circles[0].getAttribute("r") + 3);
 
-            if (!isClicked) {
-                const newCircle = createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r") + 3, "white", "red", 1);
-                svg.appendChild(newCircle);
-                moveToTop(c);
-                c.setAttribute("data-clicked", "true");
-                createdCircles.push({ circle: newCircle, original: c });
-            }
-			const isClickedValue = isClicked ? "true" : "false";
-			const currURL = window.location.href;
-			const endpoint = currURL.split("3000");
+	circles.forEach((circle, i) => {
+		circle.addEventListener("click", (e) => {
+			redCircle.setAttribute("cx", circle.getAttribute("cx"));
+			redCircle.setAttribute("cy", circle.getAttribute("cy"));
+			if(!redCircle.parentNode) {
+				svg.appendChild(redCircle);
+			}
+			moveToTop(redCircle);
+			moveToTop(circle);
+			getCircleInfo(Number(circle.getAttribute("data-id")));
+		})
+	});
 
-			htmx.ajax('GET', endpoint[1], {
-				headers: {
-					'IsClicked': isClickedValue,
-				},
-				target: '#circle-info-container',
-				swap: 'innerHTML'
-			}).then(() => {
-				console.log("htmx response:", isClickedValue);
-			});
-			};
-        return {
-            circle: c,
-            cx: c.getAttribute("cx"),
-            cy: c.getAttribute("cy"),
-            r: c.getAttribute("r"),
-            fill: c.getAttribute("fill"),
-            stroke: c.getAttribute("stroke"),
-            strokeWidth: c.getAttribute("stroke-width"),
-            opacity: c.getAttribute("opacity"),
-            data: c.getAttribute("data"),
-        };
-    });
-    const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", cx);
-        circle.setAttribute("cy", cy);
-        circle.setAttribute("r", r);
-        circle.setAttribute("fill", fill);
-        circle.setAttribute("stroke", stroke);
-        circle.setAttribute("stroke-width", strokeWidth);
-        return circle;
-    };
+
 }
+
 
 
 templ circleInfo(eventInfo []data.Event) {
@@ -100,6 +79,6 @@ templ swarm(props SwarmProps) {
 				}
 			</style>
 			@swarmChartComponent(props.Series, props.StartOfTheWeek)
-			@getChart()
+			@getChart("#swarm-chart", "", props.EventIds)
 		</div>
 }
