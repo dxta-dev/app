@@ -28,10 +28,8 @@ func TestValidateConfig(t *testing.T) {
 	superDatabaseUrl := "sqlite://super.db"
 
 	dbTemplate := "sqlite://%s.db"
-	authToken := "auth_token"
 
-	databaseUrl := "sqlite://one.db?auth_token=auth_token"
-	templateDatabaseUrl := "sqlite://%s.db?auth_token=auth_token"
+	templateDatabaseUrl := "sqlite://%s.db"
 
 	tests := []struct {
 		name      string
@@ -44,7 +42,6 @@ func TestValidateConfig(t *testing.T) {
 			config: &TomlConfig{
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
-				TenantDatabaseGroupAuth:   nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
 				},
@@ -65,7 +62,6 @@ func TestValidateConfig(t *testing.T) {
 			config: &TomlConfig{
 				SuperDatabaseUrl:          &superDatabaseUrl,
 				TenantDatabaseUrlTemplate: nil,
-				TenantDatabaseGroupAuth:   nil,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
 				},
@@ -86,7 +82,6 @@ func TestValidateConfig(t *testing.T) {
 			config: &TomlConfig{
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: &dbTemplate,
-				TenantDatabaseGroupAuth:   &authToken,
 				Tenants: map[string]Tenant{
 					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: nil},
 				},
@@ -95,9 +90,9 @@ func TestValidateConfig(t *testing.T) {
 				IsMultiTenant:             false,
 				ShouldUseSuperDatabase:    false,
 				SuperDatabaseUrl:          nil,
-				TenantDatabaseUrlTemplate: nil,
+				TenantDatabaseUrlTemplate: &dbTemplate,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &databaseUrl},
+					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
 				},
 			},
 			expectErr: false,
@@ -107,9 +102,8 @@ func TestValidateConfig(t *testing.T) {
 			config: &TomlConfig{
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
-				TenantDatabaseGroupAuth:   nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "", SubdomainName: "", DatabaseName: "", DatabaseUrl: nil},
+					"tenant1": {Name: "", SubdomainName: "", DatabaseName: "", DatabaseUrl: &oneDatabaseUrl},
 				},
 			},
 			expected: &Config{
@@ -118,7 +112,7 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "tenant1", SubdomainName: "tenant1", DatabaseName: "tenant1", DatabaseUrl: nil},
+					"tenant1": {Name: "tenant1", SubdomainName: "tenant1", DatabaseName: "tenant1", DatabaseUrl: &oneDatabaseUrl},
 				},
 			},
 			expectErr: false,
@@ -128,15 +122,14 @@ func TestValidateConfig(t *testing.T) {
 			config: &TomlConfig{
 				SuperDatabaseUrl:          &superDatabaseUrl,
 				TenantDatabaseUrlTemplate: &dbTemplate,
-				TenantDatabaseGroupAuth:   &authToken,
 				Tenants:                   nil,
 			},
 			expected: &Config{
-				IsMultiTenant:          true,
-				ShouldUseSuperDatabase: true,
-				SuperDatabaseUrl:       &superDatabaseUrl,
+				IsMultiTenant:             true,
+				ShouldUseSuperDatabase:    true,
+				SuperDatabaseUrl:          &superDatabaseUrl,
 				TenantDatabaseUrlTemplate: &templateDatabaseUrl,
-				Tenants:                nil,
+				Tenants:                   nil,
 			},
 			expectErr: false,
 		},
@@ -150,7 +143,7 @@ func TestValidateConfig(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(cfg, test.expected) {
-				t.Errorf("Expected %+v, got %+v", test.expected, cfg)
+				t.Errorf("\n\tExpected %+v\n\tReceived %+v", test.expected, cfg)
 			}
 		})
 	}
@@ -313,35 +306,4 @@ tenant_database_url_template = "sqlite://%s.db"
 
 	})
 
-	t.Run("tenant_database_template_group_auth_example", func(t *testing.T) {
-		content := `
-super_database_url = "sqlite://super.db"
-tenant_database_url_template = "sqlite://%s.db"
-tenant_database_group_auth = "group_auth"
-`
-		tmpfile, err := createTempFile(content)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		defer os.Remove(tmpfile.Name())
-
-		superDatabaseUrl := "sqlite://super.db"
-		tenantDatabaseUrlTemplate := "sqlite://%s.db"
-		groupAuth := "group_auth"
-		expected := &TomlConfig{
-			SuperDatabaseUrl:          &superDatabaseUrl,
-			TenantDatabaseUrlTemplate: &tenantDatabaseUrlTemplate,
-			TenantDatabaseGroupAuth:   &groupAuth,
-		}
-
-		cfg, err := LoadConfigToml(tmpfile.Name())
-		if err != nil {
-			t.Fatalf("Failed to load config: %v", err)
-		}
-
-		if !reflect.DeepEqual(cfg, expected) {
-			t.Errorf("Expected %+v, got %+v", expected, cfg)
-		}
-	})
 }
