@@ -143,7 +143,7 @@ func TestValidateConfig(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(cfg, test.expected) {
-				t.Errorf("\n\tExpected %+v\n\tReceived %+v", test.expected, cfg)
+				t.Errorf("Expected %+v, got %+v", test.expected, cfg)
 			}
 		})
 	}
