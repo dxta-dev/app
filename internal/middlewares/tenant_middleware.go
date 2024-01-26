@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/labstack/echo/v4"
@@ -25,10 +24,10 @@ const TenantDatabaseURLContext tenantContextKey = "tenant_db_url"
 const TenantDatabasesGlobalContext string = "tenant_db_map"
 
 // TODO(scalability?): change from const map fetch to cache per tenant?
-func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
+func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
-	db, err := sql.Open("libsql", os.Getenv("SUPER_DATABASE_URL"))
+	db, err := sql.Open("libsql", superDatabaseUrl)
 
 	if err != nil {
 		return nil, err
@@ -81,7 +80,7 @@ func getTenantDatabaseURL(config *utils.Config, tenantKey string) (string, bool,
 		return *configTenant.DatabaseUrl, true, nil
 	}
 
-	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap()
+	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap(*config.SuperDatabaseUrl)
 
 	if err != nil {
 		return "", false, err
