@@ -33,8 +33,6 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 		return templates.SwarmSeries{}, err
 	}
 
-	fmt.Println("EVENTOVIiiiiiiiiiiii", events)
-
 	startOfWeek := utils.GetStartOfTheWeek(date)
 
 	var times []time.Time
@@ -89,7 +87,8 @@ func (a *App) Dashboard(c echo.Context) error {
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
 	}
-
+	isClicked := r.Header.Get("IsClicked")
+	fmt.Println("isClicked", isClicked)
 	date := time.Now()
 
 	weekString := r.URL.Query().Get("week")
@@ -124,7 +123,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 	}
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, "true", swarmSeries.Events)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, isClicked, swarmSeries.Events)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

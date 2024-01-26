@@ -33,7 +33,6 @@ script getChart() {
     const cs = [...circles].map(c => {
         c.onclick = () => {
             const isClicked = c.getAttribute("data-clicked") === "true";
-            console.log(isClicked);
 
             deselectCircles();
 
@@ -44,8 +43,20 @@ script getChart() {
                 c.setAttribute("data-clicked", "true");
                 createdCircles.push({ circle: newCircle, original: c });
             }
-        };
-		console.log(c.getAttribute("data-clicked"));
+			const isClickedValue = isClicked ? "true" : "false";
+			const currURL = window.location.href;
+			const endpoint = currURL.split("3000");
+
+			htmx.ajax('GET', endpoint[1], {
+				headers: {
+					'IsClicked': isClickedValue,
+				},
+				target: '#circle-info-container',
+				swap: 'innerHTML'
+			}).then(() => {
+				console.log("htmx response:", isClickedValue);
+			});
+			};
         return {
             circle: c,
             cx: c.getAttribute("cx"),
@@ -56,10 +67,8 @@ script getChart() {
             strokeWidth: c.getAttribute("stroke-width"),
             opacity: c.getAttribute("opacity"),
             data: c.getAttribute("data"),
-			isClicked: c.getAttribute("data-clicked"),
         };
     });
-
     const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
         circle.setAttribute("cx", cx);
@@ -74,23 +83,23 @@ script getChart() {
 
 
 templ circleInfo(eventInfo []data.Event) {
-        <div>
+        <div id="circle-info-container">
             <p>Clicked!</p>
             for _, metric := range eventInfo {
                 <pre>{ fmt.Sprintf("%v", metric) }</pre>
             }
         </div>
-    }
+}
 
 
 templ swarm(props SwarmProps) {
-	<div class="flex items-center justify-center" id="swarm-chart">
-		<style text="text/css">
-			svg > circle:hover {
-				cursor: pointer;
-			}
-		</style>
-		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart()
-	</div>
+		<div class="flex items-center justify-center" id="swarm-chart">
+			<style text="text/css">
+				svg > circle:hover {
+					cursor: pointer;
+				}
+			</style>
+			@swarmChartComponent(props.Series, props.StartOfTheWeek)
+			@getChart()
+		</div>
 }

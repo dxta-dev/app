@@ -28,8 +28,9 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
-		if isClicked == "true" {
-			@circleInfo(events)
-		}
+		if isClicked == "false" {
+            @circleInfo(events)
+        }
+
 	}
 }
