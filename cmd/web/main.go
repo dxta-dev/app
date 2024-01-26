@@ -29,9 +29,9 @@ func main() {
 
 	e.GET("/charts", app.Charts)
 
-	e.GET("/swarm", app.Swarm)
-
 	e.GET("/oss", app.OSSIndex)
+
+	e.GET("/dashboard", app.Dashboard)
 
 	e.Logger.Fatal(e.Start(":3000"))
 

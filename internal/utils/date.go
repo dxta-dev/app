@@ -8,7 +8,7 @@ import (
 )
 
 func GetPrevNextWeek(date time.Time) (string, string) {
-	startOfWeek := GetStartOfWeek(date)
+	startOfWeek := GetStartOfTheWeek(date)
 	prevStartOfWeek := startOfWeek.AddDate(0, 0, -7)
 	nextStartOfWeek := startOfWeek.AddDate(0, 0, 7)
 
@@ -18,7 +18,7 @@ func GetPrevNextWeek(date time.Time) (string, string) {
 	return prevWeek, nextWeek
 }
 
-func GetStartOfWeek(date time.Time) time.Time {
+func GetStartOfTheWeek(date time.Time) time.Time {
 	offset := int(time.Monday - date.Weekday())
 
 	if offset > 0 {
