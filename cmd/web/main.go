@@ -3,6 +3,8 @@ package main
 import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
+	"dxta-dev/app/internal/utils"
+	"log"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -10,6 +12,12 @@ import (
 )
 
 func main() {
+
+	config, err := utils.GetConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	app := &handlers.App{
 		HTMX: htmx.New(),
 	}
@@ -17,6 +25,7 @@ func main() {
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
+	e.Use(middlewares.ConfigMiddleware(config))
 	e.Use(middlewares.TenantMiddleware)
 	e.Use(middlewares.HtmxMiddleware)
 
