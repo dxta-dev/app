@@ -1,0 +1,34 @@
+package templates
+
+import (
+	"dxta-dev/app/internal/data"
+
+)
+
+type WeekPickerProps struct {
+	Week         string
+	CurrentWeek  string
+	PreviousWeek string
+	NextWeek     string
+}
+
+templ weekPicker(props WeekPickerProps) {
+	<form>
+		//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
+		<input hx-target="main" hx-swap="innerHTML" hx-get="/dashboard" id="week" type="week" name="week" value={ props.Week } max={ props.CurrentWeek }/>
+	</form>
+	<div class="relative h-8 flex items-center justify-center">
+		<a href={ templ.SafeURL("/dashboard?week=" + props.PreviousWeek) } class="inset-y-0 left-0 w-32">Previous Week</a>
+		<a href={ templ.SafeURL("/dashboard?week=" + props.CurrentWeek) } class="inset-y-0 top-0 w-32">Current Week</a>
+		<a href={ templ.SafeURL("/dashboard?week=" + props.NextWeek) } class="inset-y-0 right-0 w-32">Next Week</a>
+	</div>
+}
+
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, events []data.Event) {
+	@Layout(page) {
+		@weekPicker(weekPickerProps)
+		@swarm(swarmProps)
+        @circleInfo(events)
+
+	}
+}
