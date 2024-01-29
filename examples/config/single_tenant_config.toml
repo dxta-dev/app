@@ -1,0 +1,5 @@
+# when defining only a single tenant, middleware switching based on subdomains is turned off
+
+[tenants.crocoder]
+  name = "Crocoder" # optional
+  database_url = "sqlite://crocoder.db"
