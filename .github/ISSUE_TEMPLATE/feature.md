@@ -1,5 +1,5 @@
 ---
-name: FEATURE
+name: Feature template
 about: Template for feature definitions
 title: "[FEAT] - "
 labels: 'feature'
