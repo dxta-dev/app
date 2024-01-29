@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func TestGetStartOfWeek(t *testing.T) {
+func TestGetStartOfTheWeek(t *testing.T) {
 	tests := []struct {
 		name     string
 		expected time.Time
@@ -14,23 +14,23 @@ func TestGetStartOfWeek(t *testing.T) {
 		{
 			name:     "middle of the week",
 			expected: time.Date(2024, time.January, 8, 0, 0, 0, 0, time.UTC),
-			input:    GetStartOfWeek(time.Date(2024, time.January, 10, 0, 0, 0, 0, time.UTC)),
+			input:    GetStartOfTheWeek(time.Date(2024, time.January, 10, 0, 0, 0, 0, time.UTC)),
 		},
 		{
 			name:     "beginning of the week",
 			expected: time.Date(2024, time.January, 8, 0, 0, 0, 0, time.UTC),
-			input:    GetStartOfWeek(time.Date(2024, time.January, 8, 0, 0, 0, 0, time.UTC)),
+			input:    GetStartOfTheWeek(time.Date(2024, time.January, 8, 0, 0, 0, 0, time.UTC)),
 		},
 		{
 			name:     "end of the week",
 			expected: time.Date(2024, time.January, 8, 0, 0, 0, 0, time.UTC),
-			input:    GetStartOfWeek(time.Date(2024, time.January, 14, 0, 0, 0, 0, time.UTC)),
+			input:    GetStartOfTheWeek(time.Date(2024, time.January, 14, 0, 0, 0, 0, time.UTC)),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := GetStartOfWeek(tt.input)
+			got := GetStartOfTheWeek(tt.input)
 			if tt.expected != got {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}

@@ -2,69 +2,83 @@ package templates
 
 import (
 	"time"
+	"dxta-dev/app/internal/data"
+	"fmt"
+
+
 )
 
-script getChart() {
-	const svg = document.querySelector("#swarm-chart > svg");
-	const circles = document.querySelectorAll("#swarm-chart > svg > circle");
-	function moveToTop(element) {
-		element.parentNode.appendChild(element);
+type SwarmProps struct {
+	Series         SwarmSeries
+	StartOfTheWeek time.Time
+	EventIds	[]int64
+}
+
+
+script getChart(chartId string, endpoint string, circleIds []int64) {
+
+	if (circleIds === null) {
+		return;
 	}
-	const cs = [...circles].map(c => {
-		c.onclick = () => {
-			svg.appendChild(createCircle(c.getAttribute("cx"), c.getAttribute("cy"), +c.getAttribute("r")+3, "white", "red", 1));
-			moveToTop(c);
-		};
-		return {
-			circle: c,
-			cx: c.getAttribute("cx"),
-			cy: c.getAttribute("cy"),
-			r: c.getAttribute("r"),
-			fill: c.getAttribute("fill"),
-			stroke: c.getAttribute("stroke"),
-			strokeWidth: c.getAttribute("stroke-width"),
-			opacity: c.getAttribute("opacity"),
-			data: c.getAttribute("data"),
-		};
+
+	const svg = document.querySelector(`${chartId} > svg`);
+    const circles = document.querySelectorAll(`${chartId} > svg > circle`);
+
+	for (let i = 0; i < circles.length; i++) {
+		circles[i].setAttribute("data-id", circleIds[i]);
+	}
+
+    function moveToTop(element) {
+        element.parentNode.appendChild(element);
+    }
+
+	function getCircleInfo(circleId) {
+		console.log(circleId);
+	}
+
+	const redCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+
+	redCircle.setAttribute("fill", "white");
+	redCircle.setAttribute("stroke", "red");
+	redCircle.setAttribute("stroke-width", "1");
+	redCircle.setAttribute("r", +circles[0].getAttribute("r") + 3);
+
+	circles.forEach((circle, i) => {
+		circle.addEventListener("click", (e) => {
+			redCircle.setAttribute("cx", circle.getAttribute("cx"));
+			redCircle.setAttribute("cy", circle.getAttribute("cy"));
+			if(!redCircle.parentNode) {
+				svg.appendChild(redCircle);
+			}
+			moveToTop(redCircle);
+			moveToTop(circle);
+			getCircleInfo(Number(circle.getAttribute("data-id")));
+		})
 	});
 
 
-	const createCircle = (cx, cy, r, fill, stroke, strokeWidth) => {
-		const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-		circle.setAttribute("cx", cx);
-		circle.setAttribute("cy", cy);
-		circle.setAttribute("r", r);
-		circle.setAttribute("fill", fill);
-		circle.setAttribute("stroke", stroke);
-		circle.setAttribute("stroke-width", strokeWidth);
-		return circle;
-	};
-
 }
 
-templ swarmChart(series SwarmSeries, startOfTheWeek time.Time) {
-	<div id="swarm-chart">
-		<style text="text/css">
-			svg > circle:hover {
-				cursor: pointer;
-			}
-		</style>
-		@SwarmChart(series, startOfTheWeek)
-		@getChart()
-	</div>
+
+
+templ circleInfo(eventInfo []data.Event) {
+        <div id="circle-info-container">
+            <p>Clicked!</p>
+            for _, metric := range eventInfo {
+                <pre>{ fmt.Sprintf("%v", metric) }</pre>
+            }
+        </div>
 }
 
-templ Swarm(page *Page, series SwarmSeries, startOfTheWeek time.Time, week string, currentWeek string, previousWeek string, nextWeek string) {
-	@Layout(page) {
-		<div hx-boost="true" hx-target="main" hx-swap="innerHTML">
-			<form>
-				//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
-				<input hx-target="#swarm-chart" hx-swap="innerHTML" hx-get="/swarm" id="week" type="week" name="week" value={ week } max={ currentWeek }/>
-			</form>
-			<a href={ templ.SafeURL("/swarm?week=" + previousWeek) }>Previous Week</a>
-			<a href={ templ.SafeURL("/swarm?week=" + currentWeek) }>Current Week</a>
-			<a href={ templ.SafeURL("/swarm?week=" + nextWeek) }>Next Week</a>
+
+templ swarm(props SwarmProps) {
+		<div class="flex items-center justify-center" id="swarm-chart">
+			<style text="text/css">
+				svg > circle:hover {
+					cursor: pointer;
+				}
+			</style>
+			@swarmChartComponent(props.Series, props.StartOfTheWeek)
+			@getChart("#swarm-chart", "", props.EventIds)
 		</div>
-		@swarmChart(series, startOfTheWeek)
-	}
 }
