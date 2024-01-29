@@ -2,6 +2,8 @@ package data
 
 import (
 	"database/sql"
+	"dxta-dev/app/internal/utils"
+	"fmt"
 	"log"
 	"time"
 
@@ -67,23 +69,25 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 		return nil, err
 	}
 
-	year, week := date.ISOWeek()
+	week := utils.GetFormattedWeek(date)
+
+	fmt.Println("week nam je", week)
 
 	query := `
 		SELECT
 			ev.id,
-			u.name,
+			user.name,
 			mr.title,
 			mr.web_url,
 			ev.timestamp,
 			ev.merge_request_event_type
 		FROM transform_merge_request_events as ev
-		JOIN transform_dates as d ON d.id = ev.occured_on
-		JOIN transform_forge_users as u ON u.id = ev.actor
+		JOIN transform_dates as date ON date.id = ev.occured_on
+		JOIN transform_forge_users as user ON user.id = ev.actor
 		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
-		WHERE d.week=? AND d.year=?;
+		WHERE date.week=?;
 	`
-	rows, err := db.Query(query, week, year)
+	rows, err := db.Query(query, week)
 
 	if err != nil {
 		return nil, err
