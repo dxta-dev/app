@@ -7,36 +7,28 @@ import (
 	"github.com/BurntSushi/toml"
 )
 
-
 type Tenant struct {
-	Name string `toml:"name"`
-	SubdomainName string `toml:"subdomain"`
-	DatabaseName string `toml:"database_name"`
-	DatabaseUrl *string `toml:"database_url"`
+	Name          string  `toml:"name"`
+	SubdomainName string  `toml:"subdomain"`
+	DatabaseName  string  `toml:"database_name"`
+	DatabaseUrl   *string `toml:"database_url"`
 }
 
 type Config struct {
-	IsMultiTenant bool
-	ShouldUseSuperDatabase bool
-	SuperDatabaseUrl *string
+	IsMultiTenant             bool
+	ShouldUseSuperDatabase    bool
+	SuperDatabaseUrl          *string
 	TenantDatabaseUrlTemplate *string
-	Tenants map[string]Tenant
+	Tenants                   map[string]Tenant
 }
 
 type TomlConfig struct {
-	TenantDatabaseUrlTemplate *string `toml:"tenant_database_url_template"`
-	TenantDatabaseGroupAuth *string `toml:"tenant_database_group_auth"`
-	SuperDatabaseUrl *string `toml:"super_database_url"`
-	Tenants map[string]Tenant `toml:"tenants"`
+	TenantDatabaseUrlTemplate *string           `toml:"tenant_database_url_template"`
+	SuperDatabaseUrl          *string           `toml:"super_database_url"`
+	Tenants                   map[string]Tenant `toml:"tenants"`
 }
 
 func ValidateConfig(config *TomlConfig) (*Config, error) {
-	var superDatabaseUrl *string
-
-	if config.SuperDatabaseUrl != nil {
-		superDatabaseUrl = config.SuperDatabaseUrl
-	}
-
 	for key, tenant := range config.Tenants {
 		if tenant.Name == "" {
 			tenant.Name = key
@@ -53,56 +45,60 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 			tenant.DatabaseUrl = &databaseUrl
 		}
 
-		if tenant.DatabaseUrl != nil && config.TenantDatabaseGroupAuth != nil {
-			databaseUrl := *tenant.DatabaseUrl + "?auth_token=" + *config.TenantDatabaseGroupAuth
-			tenant.DatabaseUrl = &databaseUrl
+		if tenant.DatabaseUrl == nil {
+			return nil, fmt.Errorf("utils: config needs to define either \"[tenants.%s].database_url\" or \"tenant_database_url_template\"", key)
 		}
 
 		config.Tenants[key] = tenant
 	}
 
-	shouldUseSuperDatabase := false
-	isMultiTenant := false
+	configTenantsSize := len(config.Tenants)
 
-
-	var tenantDatabaseUrlTemplate *string
-	tenantDatabaseUrlTemplate = nil
-
-	if superDatabaseUrl != nil && config.Tenants == nil {
-		shouldUseSuperDatabase = true
-		isMultiTenant = true
-		if (config.TenantDatabaseUrlTemplate != nil) {
-			tenantDatabaseUrlTemplate = config.TenantDatabaseUrlTemplate
-		}
-		if (config.TenantDatabaseUrlTemplate != nil && config.TenantDatabaseGroupAuth != nil) {
-			newTenantDatabaseUrlTemplate := *tenantDatabaseUrlTemplate + "?auth_token=" + *config.TenantDatabaseGroupAuth
-			tenantDatabaseUrlTemplate = &newTenantDatabaseUrlTemplate
-		}
-	} else {
-		superDatabaseUrl = nil
+	if configTenantsSize == 0 && config.SuperDatabaseUrl == nil {
+		return nil, fmt.Errorf("utils: config needs to define either \"[tenants.*]\" or \"super_database_url\"")
 	}
 
+	if configTenantsSize > 0 {
+		if config.SuperDatabaseUrl != nil {
+			// TODO: logger ? after echo starts ?
+			fmt.Printf("utils: using %d config \"[tenants.*]\", ignoring config \"super_database_url\"\n", configTenantsSize)
+		}
 
+		return &Config{
+			IsMultiTenant:             configTenantsSize > 1,
+			ShouldUseSuperDatabase:    false,
+			SuperDatabaseUrl:          nil,
+			TenantDatabaseUrlTemplate: config.TenantDatabaseUrlTemplate,
+			Tenants:                   config.Tenants,
+		}, nil
+	}
 
-	if len(config.Tenants) > 1 {
-		isMultiTenant = true
+	var tenantDatabaseUrlTemplate = config.TenantDatabaseUrlTemplate
+	var stringIdentityTemplate = "%s"
+
+	if tenantDatabaseUrlTemplate == nil {
+		tenantDatabaseUrlTemplate = &stringIdentityTemplate
 	}
 
 	return &Config{
-		IsMultiTenant: isMultiTenant,
-		ShouldUseSuperDatabase: shouldUseSuperDatabase,
-		SuperDatabaseUrl: superDatabaseUrl,
+		IsMultiTenant:             true,
+		ShouldUseSuperDatabase:    true,
+		SuperDatabaseUrl:          config.SuperDatabaseUrl,
 		TenantDatabaseUrlTemplate: tenantDatabaseUrlTemplate,
-		Tenants: config.Tenants,
+		Tenants:                   config.Tenants,
 	}, nil
 }
 
 func GetConfig() (*Config, error) {
 	path := os.Getenv("CONFIG_PATH")
-	if(path == "") {
+	if path == "" {
 		path = "config.toml"
 	}
-	conf, _ := LoadConfigToml(path)
+	conf, err := LoadConfigToml(path)
+
+	if err != nil {
+		return nil, err
+	}
 
 	config, err := ValidateConfig(conf)
 

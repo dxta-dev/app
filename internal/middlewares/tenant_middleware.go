@@ -3,12 +3,11 @@ package middlewares
 import (
 	"context"
 	"database/sql"
+	"dxta-dev/app/internal/utils"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"strings"
-	"sync"
 
 	"github.com/labstack/echo/v4"
 )
@@ -24,11 +23,11 @@ const IsRootContext isRootContextKey = "is_root"
 const TenantDatabaseURLContext tenantContextKey = "tenant_db_url"
 const TenantDatabasesGlobalContext string = "tenant_db_map"
 
-// TODO(scalability?): change from const map fetch to LRU cache filling
-func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
+// TODO(scalability?): change from const map fetch to cache per tenant?
+func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
-	db, err := sql.Open("libsql", os.Getenv("SUPER_DATABASE_URL"))
+	db, err := sql.Open("libsql", superDatabaseUrl)
 
 	if err != nil {
 		return nil, err
@@ -69,11 +68,37 @@ func getTenantToDatabaseURLMap() (TenantDbUrlMap, error) {
 	return tenantToDatabaseURLMap, nil
 }
 
-var syncGetTenantToDatabaseUrlMap = sync.OnceValues[TenantDbUrlMap, error](getTenantToDatabaseURLMap)
+func getTenantDatabaseURL(config *utils.Config, tenantKey string) (string, bool, error) {
+
+	if !config.ShouldUseSuperDatabase {
+		configTenant, configContainsTenant := config.Tenants[tenantKey]
+
+		if !configContainsTenant {
+			return "", false, nil
+		}
+
+		return *configTenant.DatabaseUrl, true, nil
+	}
+
+	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap(*config.SuperDatabaseUrl)
+
+	if err != nil {
+		return "", false, err
+	}
+
+	tenantDatabaseURL, databaseContainsTenant := tenantsToDatabaseURLMap[tenantKey]
+
+	if !databaseContainsTenant {
+		return "", false, nil
+	}
+
+	return fmt.Sprintf(*config.TenantDatabaseUrlTemplate, tenantDatabaseURL), true, nil
+}
 
 func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		ctx := c.Request().Context()
+		config := ctx.Value(ConfigContext).(*utils.Config)
 		tls := c.Request().TLS
 		hostName := c.Request().Host
 		parts := strings.Split(hostName, ".")
@@ -82,53 +107,45 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			hostProtocolScheme = "http"
 		}
 
-		// TODO: temporary code
-		singleDatabaseUrl := os.Getenv("DATABASE_URL")
-		if singleDatabaseUrl != "" {
-			ctx = context.WithValue(ctx, TenantDatabaseURLContext, singleDatabaseUrl)
-		}
+		subdomain, isRoot := parts[0], false
 
 		if len(parts) <= 2 {
-			ctx = context.WithValue(ctx, SubdomainContext, "root")
-			ctx = context.WithValue(ctx, IsRootContext, true)
+			subdomain = "root"
+			isRoot = true
+		}
+
+		ctx = context.WithValue(ctx, SubdomainContext, subdomain)
+		ctx = context.WithValue(ctx, IsRootContext, isRoot)
+
+		if !config.IsMultiTenant && len(config.Tenants) == 1 {
+			for _, v := range config.Tenants {
+				ctx = context.WithValue(ctx, TenantDatabaseURLContext, *v.DatabaseUrl)
+			}
+
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
 		}
 
-		tenant := parts[0]
-		ctx = context.WithValue(ctx, SubdomainContext, tenant)
-		ctx = context.WithValue(ctx, IsRootContext, false)
-
-		_, singleDatabase := ctx.Value(TenantDatabaseURLContext).(string)
-
-		// TODO: add middleware for this?; rename TenantDatabase for semantics (can be a tenant owned database, but also not)
-		if singleDatabase {
+		if isRoot {
 			c.SetRequest(c.Request().WithContext(ctx))
 
 			return next(c)
 		}
 
-		tenantToDatabaseURLMap, overrideDatabaseUrlMap := ctx.Value(TenantDatabasesGlobalContext).(TenantDbUrlMap)
-		var err error
-
-		if !overrideDatabaseUrlMap {
-			// Issue: caches error from db forever
-			tenantToDatabaseURLMap, err = syncGetTenantToDatabaseUrlMap()
-		}
+		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, subdomain)
 
 		if err != nil {
-			// TODO(error-handling): log or something
+			fmt.Println("Error multi_tenant_middleware.go: TODO(error-handling) - log or something when super database fails")
 			// Ideas: https://echo.labstack.com/docs/error-handling
 			return echo.ErrInternalServerError
 		}
 
-		tenantDatabaseUrl, tenantDatabaseUrlExists := tenantToDatabaseURLMap[tenant]
 		if !tenantDatabaseUrlExists {
 			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s/oss", hostProtocolScheme, strings.Join(parts[1:], ".")))
 		}
 
-		ctx = context.WithValue(ctx, TenantDatabaseURLContext, fmt.Sprintf("%s?authToken=%s", tenantDatabaseUrl, os.Getenv("TENANT_DATABASE_AUTH_TOKEN")))
+		ctx = context.WithValue(ctx, TenantDatabaseURLContext, tenantDatabaseUrl)
 
 		c.SetRequest(c.Request().WithContext(ctx))
 
