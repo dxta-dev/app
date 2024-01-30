@@ -4,7 +4,7 @@ go 1.21.6
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/a-h/templ v0.2.513
+	github.com/a-h/templ v0.2.543
 	github.com/donseba/go-htmx v1.5.2
 	github.com/joho/godotenv v1.5.1
 	github.com/labstack/echo/v4 v4.11.4
