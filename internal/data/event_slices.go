@@ -3,7 +3,6 @@ package data
 import (
 	"database/sql"
 	"dxta-dev/app/internal/utils"
-	"fmt"
 	"log"
 	"time"
 
@@ -70,8 +69,6 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 	}
 
 	week := utils.GetFormattedWeek(date)
-
-	fmt.Println("week nam je", week)
 
 	query := `
 		SELECT
