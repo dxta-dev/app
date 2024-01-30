@@ -137,7 +137,7 @@ func (a *App) Database(c echo.Context) error {
 
 	var attributes []interface{}
 
-	attributes = append(attributes, week, year)
+	attributes = append(attributes, weekParam)
 
 	selectQuery := `
 		SELECT
@@ -236,7 +236,6 @@ func (a *App) Database(c echo.Context) error {
 		JOIN transform_forge_users AS reviewer10
 		ON reviewer10.id = transform_merge_request_fact_users_junk.reviewer10
 		WHERE last_updated_date.week = ?
-		AND last_updated_date.year = ?
 		;
 	`
 
