@@ -41,7 +41,6 @@ func main() {
 	e.GET("/oss", app.OSSIndex)
 
 	e.GET("/dashboard", app.Dashboard)
-	e.GET("/dashboard/:event", app.Dashboard)
 
 	e.Logger.Fatal(e.Start(":3000"))
 
