@@ -87,7 +87,6 @@ func (a *App) Database(c echo.Context) error {
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
 	weekParam := c.Param("week")
-	fmt.Println("weekParam", weekParam)
 
 	var currentWeek string
 
