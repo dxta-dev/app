@@ -26,7 +26,8 @@ func PublicHandler() echo.HandlerFunc {
 
 		path := c.Request().URL.Path
 
-		path = "style.css"
+		path = strings.TrimPrefix(path, "/")
+
 		file, err := publicFS.Open(path)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusNotFound)
