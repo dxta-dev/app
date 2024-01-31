@@ -53,6 +53,7 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 			moveToTop(redCircle);
 			moveToTop(circle);
 			getCircleInfo(Number(circle.getAttribute("data-id")));
+
 		})
 	});
 
@@ -61,12 +62,9 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 
 
 
-templ circleInfo(eventInfo []data.Event) {
+templ circleInfo(eventInfo data.Event) {
         <div id="circle-info-container">
-            <p>Clicked!</p>
-            for _, metric := range eventInfo {
-                <pre>{ fmt.Sprintf("%v", metric) }</pre>
-            }
+                <pre>{ fmt.Sprintf("%v", eventInfo) }</pre>
         </div>
 }
 

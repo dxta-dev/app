@@ -7,7 +7,10 @@ import (
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
+	"fmt"
+	"net/url"
 	"sort"
+	"strconv"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -17,6 +20,11 @@ import (
 	_ "github.com/libsql/libsql-client-go/libsql"
 	_ "modernc.org/sqlite"
 )
+
+type DashboardState struct {
+	week  string
+	event *int64
+}
 
 func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
 	var xvalues []float64
@@ -76,6 +84,18 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 
 }
 
+func getNextUrl(state DashboardState) string {
+	params := url.Values{}
+	if state.week != "" {
+		params.Add("week", state.week)
+	}
+	if state.event != nil {
+		params.Add("event", fmt.Sprintf("%d", *state.event))
+	}
+	baseUrl := "/dashboard"
+	return fmt.Sprintf("%s?%s", baseUrl, params.Encode())
+}
+
 func (a *App) Dashboard(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
@@ -88,18 +108,27 @@ func (a *App) Dashboard(c echo.Context) error {
 	}
 
 	date := time.Now()
+	var err error
+	var event *int64 = new(int64)
+	*event, err = strconv.ParseInt(r.URL.Query().Get("event"), 10, 64)
+	if err != nil {
+		event = nil
+	}
+	state := DashboardState{
+		week:  r.URL.Query().Get("week"),
+		event: event,
+	}
 
-	weekString := r.URL.Query().Get("week")
-
-	if weekString != "" {
-		dateTime, err := utils.ParseYearWeek(weekString)
+	if state.week != "" {
+		dateTime, err := utils.ParseYearWeek(state.week)
 		if err == nil {
 			date = dateTime
-
-			res := c.Response()
-			res.Header().Set("HX-Push-Url", "/dashboard?week="+weekString)
 		}
 	}
+
+	nextUrl := getNextUrl(state)
+
+	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
 	prevWeek, nextWeek := utils.GetPrevNextWeek(date)
 
@@ -125,8 +154,17 @@ func (a *App) Dashboard(c echo.Context) error {
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 		EventIds:       eventIds,
 	}
+	fmt.Println("swarmpropsId", swarmProps.EventIds)
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, swarmSeries.Events)
+	selectedEvent := data.Event{}
+
+	for _, e := range swarmSeries.Events {
+		if e.Id == *event {
+			selectedEvent = e
+		}
+	}
+
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvent)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
