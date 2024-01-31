@@ -24,16 +24,17 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 	const svg = document.querySelector(`${chartId} > svg`);
     const circles = document.querySelectorAll(`${chartId} > svg > circle`);
 
-	for (let i = 0; i < circles.length; i++) {
-		circles[i].setAttribute("data-id", circleIds[i]);
-	}
 
     function moveToTop(element) {
         element.parentNode.appendChild(element);
     }
 
 	function getCircleInfo(circleId) {
-		console.log(circleId);
+		const paramsString = document.location.search;
+		const searchParams = new URLSearchParams(paramsString);
+	    searchParams.set('event', circleId);
+		const url = new URL(`${endpoint}?${searchParams.toString()}`, document.location.origin);
+		htmx.ajax('GET', url.toString(), 'main')
 	}
 
 	const redCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
@@ -42,6 +43,20 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 	redCircle.setAttribute("stroke", "red");
 	redCircle.setAttribute("stroke-width", "1");
 	redCircle.setAttribute("r", +circles[0].getAttribute("r") + 3);
+
+	const searchParams = new URLSearchParams(document.location.search);
+	const eventId = searchParams.get('event');
+
+	for (let i = 0; i < circles.length; i++) {
+		circles[i].setAttribute("data-id", circleIds[i]);
+		if (Number(eventId) === circleIds[i]) {
+			redCircle.setAttribute("cx", circles[i].getAttribute("cx"));
+			redCircle.setAttribute("cy", circles[i].getAttribute("cy"));
+			svg.appendChild(redCircle);
+			moveToTop(redCircle);
+			moveToTop(circles[i]);
+		}
+	}
 
 	circles.forEach((circle, i) => {
 		circle.addEventListener("click", (e) => {
@@ -53,20 +68,15 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 			moveToTop(redCircle);
 			moveToTop(circle);
 			getCircleInfo(Number(circle.getAttribute("data-id")));
+
 		})
 	});
-
-
 }
 
 
-
-templ circleInfo(eventInfo []data.Event) {
+templ circleInfo(eventInfo data.Event) {
         <div id="circle-info-container">
-            <p>Clicked!</p>
-            for _, metric := range eventInfo {
-                <pre>{ fmt.Sprintf("%v", metric) }</pre>
-            }
+                <pre>{ fmt.Sprintf("%v", eventInfo) }</pre>
         </div>
 }
 
@@ -79,6 +89,6 @@ templ swarm(props SwarmProps) {
 				}
 			</style>
 			@swarmChartComponent(props.Series, props.StartOfTheWeek)
-			@getChart("#swarm-chart", "", props.EventIds)
+			@getChart("#swarm-chart", "dashboard", props.EventIds)
 		</div>
 }
