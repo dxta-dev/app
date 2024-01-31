@@ -154,13 +154,13 @@ func (a *App) Dashboard(c echo.Context) error {
 		StartOfTheWeek: utils.GetStartOfTheWeek(date),
 		EventIds:       eventIds,
 	}
-	fmt.Println("swarmpropsId", swarmProps.EventIds)
 
 	selectedEvent := data.Event{}
-
-	for _, e := range swarmSeries.Events {
-		if e.Id == *event {
-			selectedEvent = e
+	if event != nil {
+		for _, e := range swarmSeries.Events {
+			if e.Id == *event {
+				selectedEvent = e
+			}
 		}
 	}
 
