@@ -72,7 +72,7 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 
 
 templ circleInfo(eventInfo data.Event) {
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="close">
+	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
 		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
 		<div class="fixed inset-0 overflow-hidden">
@@ -82,7 +82,7 @@ templ circleInfo(eventInfo data.Event) {
 				<div class="pointer-events-auto relative w-screen max-w-md">
 
 				<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-					<button type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup('eventInfo.Id')">
+					<button type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup()">
 					<span class="absolute -inset-2.5"></span>
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -109,8 +109,8 @@ templ circleInfo(eventInfo data.Event) {
 
 	<script>
 
-		function closePopup(eventId) {
-			document.getElementById('close').style.display = 'none';
+		function closePopup() {
+			document.getElementById('slide-over').style.display = 'none';
 
 			const searchParams = new URLSearchParams(document.location.search);
 			searchParams.delete('event');
