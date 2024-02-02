@@ -28,7 +28,8 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
-        @circleInfo(selectedEvent)
-
+		if selectedEvent != (data.Event{}) {
+   			@circleInfo(selectedEvent)
+		}
 	}
 }
