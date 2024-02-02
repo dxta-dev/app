@@ -24,7 +24,6 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 	const svg = document.querySelector(`${chartId} > svg`);
     const circles = document.querySelectorAll(`${chartId} > svg > circle`);
 
-
     function moveToTop(element) {
         element.parentNode.appendChild(element);
     }
@@ -75,13 +74,14 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
 
 
 templ circleInfo(eventInfo data.Event) {
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+	<pre>Author: { fmt.Sprintf("%v", eventInfo.Id) }</pre>
+	<div class="relative z-10" aria-labelledby="slide-over-title" id="close" role="dialog" aria-modal="true">
 			<div class="fixed inset-0 overflow-hidden">
 				<div class="absolute inset-0 overflow-hidden">
 					<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-						<div class="pointer-events-auto relative w-screen max-w-md">
+						<div class="pointer-events-auto relative w-screen max-w-md" id="close">
 							<div class="absolute right-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-								<button type="button" class="relative rounded-md text-gray-300 hover:text-black focus:outline-none focus:ring-2 focus:ring-white">
+								<button type="button" class="relative rounded-md text-gray-300 hover:text-black focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup('eventInfo.Id')">
 									<span class="absolute -inset-2.5"></span>
 									<span class="sr-only">Close panel</span>
 									<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -110,7 +110,15 @@ templ circleInfo(eventInfo data.Event) {
 
 	<script>
 
-	</script>
+		function closePopup(eventId) {
+			document.getElementById('close').style.display = 'none';
+
+			const searchParams = new URLSearchParams(document.location.search);
+			searchParams.delete('event');
+            const newUrl = `${document.location.origin}${document.location.pathname}?${searchParams.toString()}`;
+			history.replaceState(null, '', newUrl);
+		}
+        </script>
 }
 
 
