@@ -47,6 +47,7 @@ templ NarrowCard(card Card) {
 			<div class="relative lg:col-span-1">
 				<span>
 					<img
+						class="h-8"
  						src={ card.Logo }
  						alt={ card.LogoAlt }
 					/>
@@ -88,6 +89,7 @@ templ WideCard(card Card) {
 			<div class="relative lg:col-span-1">
 				<span>
 					<img
+						class="h-8"
  						src={ card.Logo }
  						alt={ card.LogoAlt }
 					/>
@@ -116,13 +118,13 @@ templ OSSIndex(page *Page, cardGroups []CardGroup) {
 	@Layout(page) {
 	<section class="bg-white">
 		<div
-			class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-24 items-center"
+			class="mx-auto max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24 py-8 items-center"
 		>
 			<div class="max-w-xl">
 				<h2
 					class="text-purple-900 font-semibold tracking-tighter lg:text-5xl mt-6 text-3xl"
 				>
-					Something something Open Source
+					Check out these open source project dashboards
 				</h2>
 			</div>
 			<div class="mx-auto mt-12">

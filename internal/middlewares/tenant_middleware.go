@@ -41,7 +41,7 @@ func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) 
 
 	query := `
 		SELECT
-			name,
+			subdomain_name,
 			db_url
 		FROM tenants
 	`
