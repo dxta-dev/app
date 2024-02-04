@@ -23,7 +23,7 @@ RUN go mod download
 
 COPY . .
 
-COPY --from=bun /app/public/style.css /public/style.css
+COPY --from=bun /app/public/style.css /app/public/style.css
 
 RUN go install github.com/a-h/templ/cmd/templ@v0.2.543
 
