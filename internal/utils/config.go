@@ -114,6 +114,7 @@ func GetConfigFromEnv() (*Config, error) {
 
 func GetConfig() (*Config, error) {
 	useEnv := os.Getenv("USE_SUPER_ENV")
+	fmt.Println("useEnv value: ", useEnv)
 	if useEnv == "true" {
 		return GetConfigFromEnv()
 	}
