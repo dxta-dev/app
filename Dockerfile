@@ -49,6 +49,8 @@ COPY --from=build /app/web /web
 
 USER dxta
 
-EXPOSE 3000
+EXPOSE 80
+
+EXPOSE 443
 
 CMD ["/web"]
