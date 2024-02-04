@@ -18,11 +18,10 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-  --mount=type=cache,target=/root/.cache/go-build \
+RUN --mount=type=cache,id=go-pkg-mod,target=/go/pkg/mod \
+  --mount=type=cache,id=root-cache-go-build,target=/root/.cache/go-build \
   go mod download
 
-RUN useradd -u 1001 dxta
 
 COPY . .
 
@@ -37,6 +36,7 @@ RUN go build \
   -o web \
   ./cmd/web/main.go
 
+RUN useradd -u 1001 dxta
 
 
 FROM scratch
