@@ -90,7 +90,6 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 }
 
 func GetConfigFromEnv() (*Config, error) {
-
 	superDatabaseUrl := os.Getenv("SUPER_DATABASE_URL")
 	if superDatabaseUrl == "" {
 		return nil, fmt.Errorf("missing environment variable \"SUPER_DATABASE_URL\"")
