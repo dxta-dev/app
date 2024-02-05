@@ -40,8 +40,6 @@ func main() {
 
 	e.GET("/charts", app.Charts)
 
-	e.GET("/oss", app.OSSIndex)
-
 	e.GET("/dashboard", app.Dashboard)
 
 	port := os.Getenv("PORT")

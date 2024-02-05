@@ -33,12 +33,13 @@ const (
 type EventType int
 
 type Event struct {
-	Id              int64
-	Timestamp       int64
-	Type            EventType
-	Actor           string
-	MergeRequest    string
-	MergeRequestUrl string
+	Id                int64
+	Timestamp         int64
+	Type              EventType
+	Actor             int64
+	MergeRequestId    int64
+	MergeRequestTitle string
+	MergeRequestUrl   string
 }
 
 type EventSlice []Event
@@ -70,10 +71,15 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	week := utils.GetFormattedWeek(date)
 
+	if err != nil {
+		return nil, err
+	}
+
 	query := `
 		SELECT
 			ev.id,
-			user.name,
+			user.id,
+			mr.id,
 			mr.title,
 			mr.web_url,
 			ev.timestamp,
@@ -97,7 +103,11 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 	for rows.Next() {
 		var event Event
 
-		if err := rows.Scan(&event.Id, &event.Actor, &event.MergeRequest, &event.MergeRequestUrl, &event.Timestamp, &event.Type); err != nil {
+		if err := rows.Scan(
+			&event.Id, &event.Actor, &event.MergeRequestId,
+			&event.MergeRequestTitle, &event.MergeRequestUrl,
+			&event.Timestamp, &event.Type,
+		); err != nil {
 			log.Fatal(err)
 		}
 
