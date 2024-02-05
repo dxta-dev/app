@@ -65,16 +65,16 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 		switch events[i].Type {
 		case data.COMMITTED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(33, 150, 243, 255)) // Deep Sky Blue
-		case data.MERGED:
-			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(156, 39, 176, 255)) // Deep Purple
+		//case data.MERGED:
+		//	colors = append(colors, drawing.ColorFromAlphaMixedRGBA(156, 39, 176, 255)) // Deep Purple
 		case data.CLOSED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(233, 30, 99, 255)) // Pink
 		case data.REVIEWED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(255, 193, 7, 255)) // Amber
 		case data.STARTED_CODING:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(76, 175, 80, 255)) // Green
-		case data.ASSIGNED:
-			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(0, 150, 136, 255)) // Teal
+		//case data.ASSIGNED:
+		//	colors = append(colors, drawing.ColorFromAlphaMixedRGBA(0, 150, 136, 255)) // Teal
 		case data.COMMENTED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(158, 158, 158, 255)) // Grey
 		default:
