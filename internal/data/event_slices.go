@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"dxta-dev/app/internal/utils"
 	"log"
+	"sort"
 	"time"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
@@ -44,16 +45,32 @@ type Event struct {
 
 type EventSlice []Event
 
-func (d EventSlice) Len() int {
-	return len(d)
-}
+func (d EventSlice) GroupByMergeRequest() []EventSlice {
+	groupMap := make(map[int64]EventSlice)
+	var grouped []EventSlice
 
-func (d EventSlice) Less(i, j int) bool {
-	return d[i].Timestamp < d[j].Timestamp || (d[i].Timestamp == d[j].Timestamp && d[i].Type < d[j].Type)
-}
+	for _, event := range d {
+		groupMap[event.MergeRequestId] = append(groupMap[event.MergeRequestId], event)
+	}
 
-func (d EventSlice) Swap(i, j int) {
-	d[i], d[j] = d[j], d[i]
+	var keys []int64
+
+	for k := range groupMap {
+		keys = append(keys, k)
+	}
+
+	sort.Slice(keys, func(i, j int) bool {
+		return keys[i] < keys[j]
+	})
+
+	for _, key := range keys {
+		sort.Slice(groupMap[key], func(i, j int) bool {
+			return groupMap[key][i].Timestamp < groupMap[key][j].Timestamp
+		})
+		grouped = append(grouped, groupMap[key])
+	}
+
+	return grouped
 }
 
 func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {

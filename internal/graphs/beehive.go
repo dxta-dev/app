@@ -88,6 +88,55 @@ func setup(chartWidth, chartHeight, dotWidth int) (float64, float64, float64, fl
 	return height, width, hexHeight, hexWidth, r, rows, cols
 }
 
+type Values struct {
+	XValues []float64
+	YValues []float64
+}
+
+func BeehiveGrouped(groupedValues []Values, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
+
+	height, width, hexHeight, hexWidth, r, rows, cols := setup(chartWidth, chartHeight, dotWidth)
+	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)
+
+	takenHex := make(map[Hexagon]bool)
+
+	xvalues := []float64{}
+	yvalues := []float64{}
+
+	for _, v := range groupedValues {
+		for i := 0; i < len(v.XValues); i++ {
+			x := v.XValues[i]
+			y := v.YValues[i]
+
+			for _, hexagon := range hexagons {
+				if math.Abs(x-hexagon.X) < r && math.Abs(y-hexagon.Y) < r {
+					if _, exists := takenHex[hexagon]; exists {
+						nearHex := findNearestHex(hexagons, takenHex, x, y, r)
+						v.XValues[i] = nearHex.X
+						v.YValues[i] = nearHex.Y
+						takenHex[nearHex] = true
+						break
+					} else {
+						v.XValues[i] = hexagon.X
+						v.YValues[i] = hexagon.Y
+						takenHex[hexagon] = true
+						break
+					}
+				}
+			}
+		}
+
+
+		for i := 0; i < len(v.XValues); i++ {
+			xvalues = append(xvalues, v.XValues[i])
+			yvalues = append(yvalues, v.YValues[i])
+		}
+
+	}
+
+	return xvalues, yvalues
+}
+
 func Beehive(xValues []float64, yValues []float64, chartWidth, chartHeight, dotWidth int) ([]float64, []float64) {
 	height, width, hexHeight, hexWidth, r, rows, cols := setup(chartWidth, chartHeight, dotWidth)
 	hexagons := generateHexagonGrid(width, height, hexWidth, hexHeight, r, rows, cols)

@@ -9,7 +9,6 @@ import (
 	"dxta-dev/app/internal/utils"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"time"
 
@@ -22,13 +21,11 @@ import (
 )
 
 type DashboardState struct {
-	week  string
-	mr *int64
+	week string
+	mr   *int64
 }
 
 func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
-	var xvalues []float64
-	var yvalues []float64
 
 	store := &data.Store{
 		DbUrl: dbUrl,
@@ -46,31 +43,36 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 
 	for _, e := range events {
 		if e.Type == data.COMMITTED ||
-		e.Type == data.CLOSED ||
-		e.Type == data.REVIEWED ||
-		e.Type == data.STARTED_CODING {
+			e.Type == data.CLOSED ||
+			e.Type == data.REVIEWED ||
+			e.Type == data.STARTED_CODING {
 			filteredEvents = append(filteredEvents, e)
 		}
 	}
 
 	events = filteredEvents
 
-	var times []time.Time
+	groupedEvents := events.GroupByMergeRequest()
 
-	sort.Sort(events)
+	var values []graphs.Values
 
-	for _, d := range events {
-		t := time.Unix(d.Timestamp/1000, 0)
-		times = append(times, t)
+	for _, e := range groupedEvents {
+		var xvalues []float64
+		var yvalues []float64
+		for _, d := range e {
+			t := time.Unix(d.Timestamp/1000, 0)
+			xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
+			xvalues = append(xvalues, xSecondsValue)
+			yvalues = append(yvalues, 60*60*12)
+		}
+		values = append(values, graphs.Values{
+			XValues: xvalues,
+			YValues: yvalues,
+		})
+
 	}
 
-	for _, t := range times {
-		xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
-		xvalues = append(xvalues, xSecondsValue)
-		yvalues = append(yvalues, 60*60*12)
-	}
-
-	xvalues, yvalues = graphs.Beehive(xvalues, yvalues, 1400, 200, 5)
+	xvalues, yvalues := graphs.BeehiveGrouped(values, 1400, 200, 5)
 
 	colors := []drawing.Color{}
 
@@ -136,8 +138,8 @@ func (a *App) Dashboard(c echo.Context) error {
 		mr = nil
 	}
 	state := DashboardState{
-		week:  r.URL.Query().Get("week"),
-		mr: mr,
+		week: r.URL.Query().Get("week"),
+		mr:   mr,
 	}
 
 	if state.week != "" {
