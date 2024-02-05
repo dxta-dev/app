@@ -49,7 +49,7 @@ func (d EventSlice) Len() int {
 }
 
 func (d EventSlice) Less(i, j int) bool {
-	return d[i].Timestamp < d[j].Timestamp
+	return d[i].Timestamp < d[j].Timestamp || (d[i].Timestamp == d[j].Timestamp && d[i].Type < d[j].Type)
 }
 
 func (d EventSlice) Swap(i, j int) {

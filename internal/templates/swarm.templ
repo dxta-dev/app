@@ -13,6 +13,34 @@ type SwarmProps struct {
 	EventMergeRequestIds []int64
 }
 
+var eventTypeNames = map[data.EventType]string{
+	data.UNKNOWN:               "UNKNOWN",
+	data.OPENED:                "OPENED",
+	data.STARTED_CODING:        "STARTED_CODING",
+	data.STARTED_PICKUP:        "STARTED_PICKUP",
+	data.STARTED_REVIEW:        "STARTED_REVIEW",
+	data.NOTED:                 "NOTED",
+	data.ASSIGNED:              "ASSIGNED",
+	data.CLOSED:                "CLOSED",
+	data.COMMENTED:             "COMMENTED",
+	data.COMMITTED:             "COMMITTED",
+	data.CONVERT_TO_DRAFT:      "CONVERT_TO_DRAFT",
+	data.MERGED:                "MERGED",
+	data.READY_FOR_REVIEW:      "READY_FOR_REVIEW",
+	data.REVIEW_REQUEST_REMOVED:"REVIEW_REQUEST_REMOVED",
+	data.REVIEW_REQUESTED:      "REVIEW_REQUESTED",
+	data.REVIEWED:              "REVIEWED",
+	data.UNASSIGNED:            "UNASSIGNED",
+}
+
+
+func getEventName(eventType data.EventType) string {
+	if name, exists := eventTypeNames[eventType]; exists {
+		return name
+	}
+	return "Invalid EventType"
+}
+
 script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
 
 	if (circleIds === null) {
@@ -26,10 +54,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
         element.parentNode.appendChild(element);
     }
 
-	function getCircleInfo(circleId) {
+	function getCircleInfo(mrid) {
 		const paramsString = document.location.search;
 		const searchParams = new URLSearchParams(paramsString);
-	    searchParams.set('event', circleId);
+	    searchParams.set('mr', mrid);
 		const url = new URL(`${endpoint}?${searchParams.toString()}`, document.location.origin);
 		htmx.ajax('GET', url.toString(), 'main')
 	}
@@ -85,7 +113,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 
 	const searchParams = new URLSearchParams(document.location.search);
-	const eventId = searchParams.get('event');
 
 	for (let i = 0; i < circles.length; i++) {
 		circles[i].setAttribute("data-id", circleIds[i]);
@@ -135,18 +162,18 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		});
 
 		circle.addEventListener("click", (e) => {
-			getCircleInfo(Number(circle.getAttribute("data-id")));
+			getCircleInfo(Number(circle.getAttribute("data-merge-request-id")));
 
 		});
 	});
 }
 
-templ circleInfo(eventInfo data.Event) {
+templ circleInfo(events []data.Event) {
 	<script>
 		function closePopup() {
 			document.getElementById('slide-over').style.display = 'none';
 			const searchParams = new URLSearchParams(document.location.search);
-			searchParams.delete('event');
+			searchParams.delete('mr');
             const newUrl = `${document.location.origin}${document.location.pathname}?${searchParams.toString()}`;
 			history.replaceState(null, '', newUrl);
 		}
@@ -168,12 +195,17 @@ templ circleInfo(eventInfo data.Event) {
 						</div>
 						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
 							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", eventInfo.MergeRequestTitle) }</h2>
+								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", events[0].MergeRequestTitle) }</h2>
 							</div>
 							<div class="relative mt-6 flex-1 px-4 sm:px-6">
-								<pre>Author: { fmt.Sprintf("%v", eventInfo.Actor) }</pre>
-								<a class="text-blue-600" href={ templ.URL(eventInfo.MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", eventInfo.MergeRequestTitle) }</a>
-								<pre>Time: { fmt.Sprintf("%v", time.Unix(eventInfo.Timestamp / 1000, 0)) }</pre>
+								<a class="text-blue-600" href={ templ.URL(events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", events[0].MergeRequestUrl) }</a>
+								for _, event := range events {
+									<div>
+										{ getEventName(event.Type) }
+										{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
+										{ fmt.Sprintf("%v", event.Id) }
+									</div>
+								}
 							</div>
 						</div>
 					</div>
