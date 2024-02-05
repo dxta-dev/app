@@ -26,7 +26,7 @@ type DashboardState struct {
 	event *int64
 }
 
-func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
+func getSwarmSeries(date time.Time, mergeRequestId int64, dbUrl string) (templates.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
@@ -35,6 +35,11 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 	}
 
 	events, err := store.GetEventSlices(date)
+
+	if err != nil {
+		return templates.SwarmSeries{}, err
+	}
+	mergeRequestData, err := store.GetMergeRequestDetails(mergeRequestId)
 
 	if err != nil {
 		return templates.SwarmSeries{}, err
@@ -83,11 +88,12 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 	}
 
 	return templates.SwarmSeries{
-		XValues:   xvalues,
-		YValues:   yvalues,
-		DotColors: colors,
-		Title:     "Swarm",
-		Events:    events,
+		XValues:          xvalues,
+		YValues:          yvalues,
+		DotColors:        colors,
+		Title:            "Swarm",
+		Events:           events,
+		MergeRequestData: mergeRequestData,
 	}, nil
 
 }
@@ -147,7 +153,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		PreviousWeek: prevWeek,
 	}
 
-	swarmSeries, err := getSwarmSeries(date, tenantDatabaseUrl)
+	swarmSeries, err := getSwarmSeries(date, 474, tenantDatabaseUrl)
 
 	if err != nil {
 		return err
@@ -165,12 +171,15 @@ func (a *App) Dashboard(c echo.Context) error {
 		EventIds:             eventIds,
 		EventMergeRequestIds: eventMergeRequestIds,
 	}
+	fmt.Println("mergovi", event)
 
-	selectedEvent := data.Event{}
+	var selectedEvent data.MergeRequestData
+
 	if event != nil {
 		for _, e := range swarmSeries.Events {
 			if e.Id == *event {
-				selectedEvent = e
+				mergeRequestData := data.MergeRequestData{MergeRequestId: e.MergeRequestId}
+				selectedEvent = mergeRequestData
 			}
 		}
 	}

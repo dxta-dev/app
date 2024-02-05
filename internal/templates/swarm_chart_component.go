@@ -13,11 +13,12 @@ import (
 )
 
 type SwarmSeries struct {
-	Title     string
-	DotColors []drawing.Color
-	XValues   []float64
-	YValues   []float64
-	Events    []data.Event
+	Title            string
+	DotColors        []drawing.Color
+	XValues          []float64
+	YValues          []float64
+	Events           []data.Event
+	MergeRequestData []data.MergeRequestData
 }
 
 func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Component {
