@@ -4,7 +4,9 @@ import (
 	"dxta-dev/app/internal/handlers"
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/utils"
+	"fmt"
 	"log"
+	"os"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -40,6 +42,10 @@ func main() {
 
 	e.GET("/dashboard", app.Dashboard)
 
-	e.Logger.Fatal(e.Start(":3000"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 
 }

@@ -89,7 +89,35 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 	}, nil
 }
 
+func GetConfigFromEnv() (*Config, error) {
+	superDatabaseUrl := os.Getenv("SUPER_DATABASE_URL")
+	if superDatabaseUrl == "" {
+		return nil, fmt.Errorf("missing environment variable \"SUPER_DATABASE_URL\"")
+	}
+
+	groupAuthToken := os.Getenv("GROUP_AUTH_TOKEN")
+	if groupAuthToken == "" {
+		return nil, fmt.Errorf("missing environment variable \"GROUP_AUTH_TOKEN\"")
+	}
+
+	tenantDatabaseUrlTemplate := fmt.Sprintf("%%s?authToken=%s", groupAuthToken)
+
+	return &Config{
+		IsMultiTenant:             true,
+		ShouldUseSuperDatabase:    true,
+		SuperDatabaseUrl:          &superDatabaseUrl,
+		TenantDatabaseUrlTemplate: &tenantDatabaseUrlTemplate,
+		Tenants:                   nil,
+	}, nil
+
+}
+
 func GetConfig() (*Config, error) {
+	useEnv := os.Getenv("USE_SUPER_ENV")
+	fmt.Println("useEnv value: ", useEnv)
+	if useEnv == "true" {
+		return GetConfigFromEnv()
+	}
 	path := os.Getenv("CONFIG_PATH")
 	if path == "" {
 		path = "config.toml"
