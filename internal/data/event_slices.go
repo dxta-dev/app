@@ -36,7 +36,7 @@ type Event struct {
 	Id                int64
 	Timestamp         int64
 	Type              EventType
-	Actor             string
+	Actor             int64
 	MergeRequestId    int64
 	MergeRequestTitle string
 	MergeRequestUrl   string
@@ -71,10 +71,14 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	week := utils.GetFormattedWeek(date)
 
+	if err != nil {
+		return nil, err
+	}
+
 	query := `
 		SELECT
 			ev.id,
-			user.name,
+			user.id,
 			mr.id,
 			mr.title,
 			mr.web_url,

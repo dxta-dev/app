@@ -71,7 +71,7 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(233, 30, 99, 255)) // Pink
 		case data.REVIEWED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(255, 193, 7, 255)) // Amber
-		case data.OPENED:
+		case data.STARTED_CODING:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(76, 175, 80, 255)) // Green
 		case data.ASSIGNED:
 			colors = append(colors, drawing.ColorFromAlphaMixedRGBA(0, 150, 136, 255)) // Teal
