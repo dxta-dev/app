@@ -15,7 +15,7 @@ func (a *App) Home(c echo.Context) error {
 	page := &templates.Page{
 		Title:   "Home",
 		Boosted: h.HxBoosted,
-		Bust: a.BuildTimestamp,
+		CacheBust: a.BuildTimestamp,
 	}
 	components := templates.Home(page, page.Title)
 	return components.Render(context.Background(), c.Response().Writer)

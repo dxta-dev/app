@@ -8,12 +8,12 @@ type Page struct {
 	Title   string
 	Boosted bool
 	Requested bool
-	Bust string
+	CacheBust string
 }
 
 templ Layout(page *Page) {
 	<html>
-		@Head(page.Title, page.Bust)
+		@Head(page.Title, page.CacheBust)
 		if !page.Boosted && !page.Requested {
 			@Navigation(false)
 		}
