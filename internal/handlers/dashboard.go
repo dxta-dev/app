@@ -126,6 +126,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		Title:     "Charts",
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
+		CacheBust: a.BuildTimestamp,
 	}
 
 	date := time.Now()

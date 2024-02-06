@@ -30,7 +30,7 @@ RUN go install github.com/a-h/templ/cmd/templ@v0.2.543
 RUN templ generate
 
 RUN go build \
-  -ldflags="-linkmode external -extldflags -static" \
+  -ldflags="-linkmode external -extldflags -static -X 'main.buildTime=$(date)'" \
   -o web \
   ./cmd/web/main.go
 
