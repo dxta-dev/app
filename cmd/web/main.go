@@ -27,20 +27,21 @@ func main() {
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
-	e.Use(middlewares.ConfigMiddleware(config))
-	e.Use(middlewares.TenantMiddleware)
 	e.Use(middlewares.HtmxMiddleware)
 
 	e.GET("/*", handlers.PublicHandler())
 
 	e.GET("/", app.Home)
 
-	e.GET("/database", app.Database)
-	e.GET("/database/:week", app.Database)
-
 	e.GET("/charts", app.Charts)
 
-	e.GET("/dashboard", app.Dashboard)
+
+	g := e.Group("")
+
+	g.Use(middlewares.ConfigMiddleware(config))
+	g.Use(middlewares.TenantMiddleware)
+
+	g.GET("/dashboard", app.Dashboard)
 
 	port := os.Getenv("PORT")
 	if port == "" {
