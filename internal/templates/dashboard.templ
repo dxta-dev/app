@@ -24,12 +24,12 @@ templ weekPicker(props WeekPickerProps) {
 	</div>
 }
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, selectedEvent data.Event) {
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, selectedEvents []data.Event) {
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
-		if selectedEvent != (data.Event{}) {
-   			@circleInfo(selectedEvent)
+		if len(selectedEvents) > 0 {
+   			@circleInfo(selectedEvents)
 		}
 	}
 }
