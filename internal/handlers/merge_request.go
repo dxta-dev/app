@@ -13,11 +13,7 @@ import (
 
 func (a *App) MergeRequest(c echo.Context) error {
 	r := c.Request()
-	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
-
-	fmt.Println("TenantDatabaseUrl: ", tenantDatabaseUrl)
-	fmt.Println("HxRequestHeader: ", h)
 
 	store := &data.Store{
 		DbUrl:tenantDatabaseUrl,
