@@ -1,4 +1,4 @@
-FROM oven/bun:1.0.25-debian AS bun
+FROM oven/bun:1.0.26-debian AS bun
 
 WORKDIR /app
 
@@ -18,15 +18,12 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-  --mount=type=cache,target=/root/.cache/go-build \
-  go mod download
+RUN go mod download
 
-RUN useradd -u 1001 dxta
 
 COPY . .
 
-COPY --from=bun /app/public/style.css /public/style.css
+COPY --from=bun /app/public/style.css /app/public/style.css
 
 RUN go install github.com/a-h/templ/cmd/templ@v0.2.543
 
@@ -37,6 +34,7 @@ RUN go build \
   -o web \
   ./cmd/web/main.go
 
+RUN useradd -u 1001 dxta
 
 
 FROM scratch
@@ -51,6 +49,8 @@ COPY --from=build /app/web /web
 
 USER dxta
 
-EXPOSE 3000
+EXPOSE 80
+
+EXPOSE 443
 
 CMD ["/web"]

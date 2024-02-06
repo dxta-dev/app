@@ -35,13 +35,9 @@ func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) 
 
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
 	query := `
 		SELECT
-			name,
+			subdomain,
 			db_url
 		FROM tenants
 	`
@@ -136,9 +132,7 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, subdomain)
 
 		if err != nil {
-			fmt.Println("Error multi_tenant_middleware.go: TODO(error-handling) - log or something when super database fails")
-			// Ideas: https://echo.labstack.com/docs/error-handling
-			return echo.ErrInternalServerError
+			log.Panicln("Error getting tenant database URL", err)
 		}
 
 		if !tenantDatabaseUrlExists {
