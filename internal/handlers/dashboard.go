@@ -23,7 +23,7 @@ import (
 
 type DashboardState struct {
 	week  string
-	event *int64
+	mr *int64
 }
 
 func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
@@ -41,6 +41,19 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 	}
 
 	startOfWeek := utils.GetStartOfTheWeek(date)
+
+	filteredEvents := []data.Event{}
+
+	for _, e := range events {
+		if e.Type == data.COMMITTED ||
+		e.Type == data.CLOSED ||
+		e.Type == data.REVIEWED ||
+		e.Type == data.STARTED_CODING {
+			filteredEvents = append(filteredEvents, e)
+		}
+	}
+
+	events = filteredEvents
 
 	var times []time.Time
 
@@ -97,8 +110,8 @@ func getNextUrl(state DashboardState) string {
 	if state.week != "" {
 		params.Add("week", state.week)
 	}
-	if state.event != nil {
-		params.Add("event", fmt.Sprintf("%d", *state.event))
+	if state.mr != nil {
+		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
 	baseUrl := "/dashboard"
 	return fmt.Sprintf("%s?%s", baseUrl, params.Encode())
@@ -117,14 +130,14 @@ func (a *App) Dashboard(c echo.Context) error {
 
 	date := time.Now()
 	var err error
-	var event *int64 = new(int64)
-	*event, err = strconv.ParseInt(r.URL.Query().Get("event"), 10, 64)
+	var mr *int64 = new(int64)
+	*mr, err = strconv.ParseInt(r.URL.Query().Get("mr"), 10, 64)
 	if err != nil {
-		event = nil
+		mr = nil
 	}
 	state := DashboardState{
 		week:  r.URL.Query().Get("week"),
-		event: event,
+		mr: mr,
 	}
 
 	if state.week != "" {
@@ -166,16 +179,16 @@ func (a *App) Dashboard(c echo.Context) error {
 		EventMergeRequestIds: eventMergeRequestIds,
 	}
 
-	selectedEvent := data.Event{}
-	if event != nil {
+	selectedEvents := []data.Event{}
+	if mr != nil {
 		for _, e := range swarmSeries.Events {
-			if e.Id == *event {
-				selectedEvent = e
+			if e.MergeRequestId == *mr {
+				selectedEvents = append(selectedEvents, e)
 			}
 		}
 	}
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvent)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvents)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
