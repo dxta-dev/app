@@ -7,13 +7,41 @@ import (
 )
 
 type SwarmProps struct {
-	Series         SwarmSeries
-	StartOfTheWeek time.Time
-	EventIds	[]int64
+	Series               SwarmSeries
+	StartOfTheWeek       time.Time
+	EventIds             []int64
+	EventMergeRequestIds []int64
+}
+
+var eventTypeNames = map[data.EventType]string{
+	data.UNKNOWN:               "UNKNOWN",
+	data.OPENED:                "OPENED",
+	data.STARTED_CODING:        "STARTED_CODING",
+	data.STARTED_PICKUP:        "STARTED_PICKUP",
+	data.STARTED_REVIEW:        "STARTED_REVIEW",
+	data.NOTED:                 "NOTED",
+	data.ASSIGNED:              "ASSIGNED",
+	data.CLOSED:                "CLOSED",
+	data.COMMENTED:             "COMMENTED",
+	data.COMMITTED:             "COMMITTED",
+	data.CONVERT_TO_DRAFT:      "CONVERT_TO_DRAFT",
+	data.MERGED:                "MERGED",
+	data.READY_FOR_REVIEW:      "READY_FOR_REVIEW",
+	data.REVIEW_REQUEST_REMOVED:"REVIEW_REQUEST_REMOVED",
+	data.REVIEW_REQUESTED:      "REVIEW_REQUESTED",
+	data.REVIEWED:              "REVIEWED",
+	data.UNASSIGNED:            "UNASSIGNED",
 }
 
 
-script getChart(chartId string, endpoint string, circleIds []int64) {
+func getEventName(eventType data.EventType) string {
+	if name, exists := eventTypeNames[eventType]; exists {
+		return name
+	}
+	return "Invalid EventType"
+}
+
+script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
 
 	if (circleIds === null) {
 		return;
@@ -26,100 +54,166 @@ script getChart(chartId string, endpoint string, circleIds []int64) {
         element.parentNode.appendChild(element);
     }
 
-	function getCircleInfo(circleId) {
+	function getCircleInfo(mrid) {
 		const paramsString = document.location.search;
 		const searchParams = new URLSearchParams(paramsString);
-	    searchParams.set('event', circleId);
+	    searchParams.set('mr', mrid);
 		const url = new URL(`${endpoint}?${searchParams.toString()}`, document.location.origin);
 		htmx.ajax('GET', url.toString(), 'main')
 	}
 
-	const redCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+	function createLineBetweenCircles(x1, y1, x2, y2) {
+		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
-	redCircle.setAttribute("fill", "white");
-	redCircle.setAttribute("stroke", "red");
-	redCircle.setAttribute("stroke-width", "1");
-	redCircle.setAttribute("r", +circles[0].getAttribute("r") + 3);
+		line.setAttribute("x1", x1);
+		line.setAttribute("y1", y1);
+		line.setAttribute("x2", x2);
+		line.setAttribute("y2", y2);
+		line.setAttribute("stroke", "blue");
+		line.setAttribute("stroke-width", "2");
+
+		return line;
+	}
+
+	function calculateDistance(x1, y1, x2, y2) {
+		return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+	}
+
+	function orderCircles(circles) {
+		if (circles.length === 0) return [];
+		if (circles.length === 1) return circles;
+
+		let unorderedCircles = [...circles];
+
+		let currentCircle = unorderedCircles.shift();
+
+		const orderedCircles = [currentCircle];
+
+		while (unorderedCircles.length > 0) {
+			let closestCircleIndex = 0;
+			let minDistance = Infinity;
+
+			for (let i = 0; i < unorderedCircles.length; i++) {
+				const distance = calculateDistance(currentCircle.getAttribute("cx"), currentCircle.getAttribute("cy"), unorderedCircles[i].getAttribute("cx"), unorderedCircles[i].getAttribute("cy"));
+				if (distance < minDistance) {
+					minDistance = distance;
+					closestCircleIndex = i;
+				}
+			}
+
+			let closestCircle = unorderedCircles.splice(closestCircleIndex, 1)[0];
+
+			currentCircle = closestCircle;
+
+			orderedCircles.push(currentCircle);
+		}
+
+		return orderedCircles;
+	}
+
 
 	const searchParams = new URLSearchParams(document.location.search);
-	const eventId = searchParams.get('event');
 
 	for (let i = 0; i < circles.length; i++) {
 		circles[i].setAttribute("data-id", circleIds[i]);
-		if (Number(eventId) === circleIds[i]) {
-			redCircle.setAttribute("cx", circles[i].getAttribute("cx"));
-			redCircle.setAttribute("cy", circles[i].getAttribute("cy"));
-			svg.appendChild(redCircle);
-			moveToTop(redCircle);
-			moveToTop(circles[i]);
-		}
+		circles[i].setAttribute("data-merge-request-id", circleMergeRequestIds[i]);
 	}
 
-	circles.forEach((circle, i) => {
-		circle.addEventListener("click", (e) => {
-			redCircle.setAttribute("cx", circle.getAttribute("cx"));
-			redCircle.setAttribute("cy", circle.getAttribute("cy"));
-			if(!redCircle.parentNode) {
-				svg.appendChild(redCircle);
-			}
-			moveToTop(redCircle);
-			moveToTop(circle);
-			getCircleInfo(Number(circle.getAttribute("data-id")));
+	let size = +circles[0].getAttribute("r");
 
-		})
+	circles.forEach((circle, i) => {
+		let strokes = [];
+		let lines = [];
+		circle.addEventListener("mouseover", (e) => {
+			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+			circles = orderCircles(circles);
+			prevCircle = circles[0];
+			for (let i = 0; i < circles.length; i++) {
+				circles[i].setAttribute("r", size + 2);
+				strokes.push(circles[i].style.stroke);
+				circles[i].style.stroke = "blue";
+				circles[i].style.strokeWidth = "2";
+				if (i > 0 && 300 < calculateDistance(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"))){
+					const line = createLineBetweenCircles(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"));
+					lines.push(line);
+					svg.appendChild(line);
+					prevCircle = circles[i];
+				}
+			}
+			for (let i = 0; i < circles.length; i++) {
+				moveToTop(circles[i]);
+			}
+		});
+
+		circle.addEventListener("mouseout", (e) => {
+			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+			for (let i = 0; i < circles.length; i++) {
+				circles[i].setAttribute("r", size);
+				circles[i].style.stroke = strokes[i];
+				circles[i].style.strokeWidth = "1";
+			}
+			for (let i = 0; i < lines.length; i++) {
+				lines[i].remove();
+			}
+			strokes = [];
+			lines = [];
+		});
+
+		circle.addEventListener("click", (e) => {
+			getCircleInfo(Number(circle.getAttribute("data-merge-request-id")));
+
+		});
 	});
 }
 
-
-templ circleInfo(eventInfo data.Event) {
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
-		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-
-		<div class="fixed inset-0 overflow-hidden">
-			<div class="absolute inset-0 overflow-hidden">
-			<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-
-				<div class="pointer-events-auto relative w-screen max-w-md">
-
-				<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-					<button type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup()">
-					<span class="absolute -inset-2.5"></span>
-					<span class="sr-only">Close panel</span>
-					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-					</svg>
-					</button>
-				</div>
-
-				<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-					<div class="px-4 sm:px-6">
-						<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", eventInfo.MergeRequest) }</h2>
-					</div>
-					<div class="relative mt-6 flex-1 px-4 sm:px-6">
-						<pre>Author: { fmt.Sprintf("%v", eventInfo.Actor) }</pre>
-						<a class="text-blue-600" href={ templ.URL(eventInfo.MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", eventInfo.MergeRequest) }</a>
-						<pre>Time: { fmt.Sprintf("%v", time.Unix(eventInfo.Timestamp / 1000, 0)) }</pre>
-					</div>
-				</div>
-				</div>
-			</div>
-			</div>
-		</div>
-	</div>
-
+templ circleInfo(events []data.Event) {
 	<script>
-
 		function closePopup() {
 			document.getElementById('slide-over').style.display = 'none';
-
 			const searchParams = new URLSearchParams(document.location.search);
-			searchParams.delete('event');
+			searchParams.delete('mr');
             const newUrl = `${document.location.origin}${document.location.pathname}?${searchParams.toString()}`;
 			history.replaceState(null, '', newUrl);
 		}
-        </script>
+    </script>
+	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
+		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+		<div class="fixed inset-0 overflow-hidden">
+			<div class="absolute inset-0 overflow-hidden">
+				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+					<div class="pointer-events-auto relative w-screen max-w-md">
+						<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
+							<button type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup()">
+								<span class="absolute -inset-2.5"></span>
+								<span class="sr-only">Close panel</span>
+								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
+							<div class="px-4 sm:px-6">
+								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", events[0].MergeRequestTitle) }</h2>
+							</div>
+							<div class="relative mt-6 flex-1 px-4 sm:px-6">
+								<a class="text-blue-600" href={ templ.URL(events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", events[0].MergeRequestUrl) }</a>
+								for _, event := range events {
+									<div>
+										{ getEventName(event.Type) }
+										{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
+										{ fmt.Sprintf("%v", event.Id) }
+									</div>
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 }
-
 
 templ swarm(props SwarmProps) {
 	<div class="flex items-center justify-center" id="swarm-chart">
@@ -129,6 +223,6 @@ templ swarm(props SwarmProps) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "dashboard", props.EventIds)
+		@getChart("#swarm-chart", "dashboard", props.EventIds, props.EventMergeRequestIds)
 	</div>
 }
