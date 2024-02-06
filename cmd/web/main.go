@@ -67,6 +67,7 @@ func main() {
 	g.Use(middlewares.TenantMiddleware)
 
 	g.GET("/dashboard", app.Dashboard)
+	g.GET("/merge-request/:mrid", app.MergeRequest)
 
 	port := os.Getenv("PORT")
 	if port == "" {
