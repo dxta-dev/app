@@ -7,11 +7,15 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
+	"time"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
+
+var buildTime string
 
 func main() {
 
@@ -20,8 +24,15 @@ func main() {
 		log.Fatal(err)
 	}
 
+	t, err := time.Parse("Tue Feb  6 02:58:31 PM CET 2024", buildTime)
+
+	if err != nil {
+		t = time.Unix(0, 0)
+	}
+
 	app := &handlers.App{
 		HTMX: htmx.New(),
+		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
 	}
 
 	e := echo.New()
@@ -31,7 +42,7 @@ func main() {
 
 	e.Use(middlewares.HtmxMiddleware)
 
-	e.GET("/*", handlers.PublicHandler())
+	e.GET("/*", app.PublicHandler())
 
 	e.GET("/", app.Home)
 

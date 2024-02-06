@@ -15,6 +15,7 @@ func (a *App) Charts(c echo.Context) error {
 	page := &templates.Page{
 		Title:   "Charts",
 		Boosted: h.HxBoosted,
+		Bust: a.BuildTimestamp,
 	}
 
 	var chartData []templates.TimeSeries

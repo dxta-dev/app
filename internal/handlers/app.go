@@ -6,4 +6,7 @@ import (
 
 type App struct {
 	HTMX *htmx.HTMX
+	BuildTimestamp string
 }
+
+

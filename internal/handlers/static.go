@@ -7,12 +7,21 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func PublicHandler() echo.HandlerFunc {
+
+func (a App) PublicHandler() echo.HandlerFunc {
 	publicFS, err := fs.Sub(static.Public, "public")
 
 	if err != nil {
 		panic(err)
 	}
 
-	return echo.WrapHandler(http.FileServer(http.FS(publicFS)))
+	fileServer := http.FileServer(http.FS(publicFS))
+
+	return func(c echo.Context) error {
+		c.Response().Header().Set("Cache-Control", "public, max-age=31536000")
+
+		fileServer.ServeHTTP(c.Response(), c.Request())
+
+		return nil
+	}
 }
