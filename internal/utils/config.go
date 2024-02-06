@@ -60,7 +60,6 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 
 	if configTenantsSize > 0 {
 		if config.SuperDatabaseUrl != nil {
-			// TODO: logger ? after echo starts ?
 			fmt.Printf("utils: using %d config \"[tenants.*]\", ignoring config \"super_database_url\"\n", configTenantsSize)
 		}
 
