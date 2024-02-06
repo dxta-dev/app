@@ -65,10 +65,6 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
 	week := utils.GetFormattedWeek(date)
 
 	if err != nil {

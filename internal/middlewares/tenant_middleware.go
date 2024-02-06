@@ -35,10 +35,6 @@ func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) 
 
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
 	query := `
 		SELECT
 			subdomain,

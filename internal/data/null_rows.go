@@ -33,10 +33,6 @@ func (s *Store) GetNullRows() (*NullRows, error) {
 
 	defer db.Close()
 
-	if err := db.Ping(); err != nil {
-		return nil, err
-	}
-
 	nullRows = &NullRows{}
 
 	err = db.QueryRow("SELECT dates_id, users_id, merge_requests_id, repository_id FROM transform_null_rows LIMIT 1;").Scan(
