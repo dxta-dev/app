@@ -171,11 +171,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 templ circleInfo(events []data.Event) {
 	<script>
 		function closePopup() {
-			document.getElementById('slide-over').style.display = 'none';
 			const searchParams = new URLSearchParams(document.location.search);
 			searchParams.delete('mr');
-            const newUrl = `${document.location.origin}${document.location.pathname}?${searchParams.toString()}`;
-			history.replaceState(null, '', newUrl);
+            const newUrl = new URL(`${document.location.origin}${document.location.pathname}?${searchParams.toString()}`, document.location.origin);
+			htmx.ajax('GET', newUrl.toString(), 'main')
 		}
     </script>
 	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
