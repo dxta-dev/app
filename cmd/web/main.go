@@ -6,6 +6,7 @@ import (
 	"dxta-dev/app/internal/utils"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -24,7 +25,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t, err := time.Parse("Tue Feb  6 02:58:31 PM CET 2024", buildTime)
+	t, err := time.Parse(time.RFC3339, buildTime)
 
 	if err != nil {
 		t = time.Unix(0, 0)
@@ -42,6 +43,9 @@ func main() {
 
 	e.Use(middlewares.HtmxMiddleware)
 
+	e.GET("/timestamp",  func(c echo.Context) error {
+		return c.String(http.StatusOK, app.BuildTimestamp)
+	})
 	e.GET("/*", app.PublicHandler())
 
 	e.GET("/", app.Home)
