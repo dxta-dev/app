@@ -15,7 +15,7 @@ type PRSizeByWeek struct {
 	Size int
 }
 
-func (s *Store) GetAveragePRSize(weeks []string) ([]PRSizeByWeek, error) {
+func (s *Store) GetAverageMRSize(weeks []string) ([]PRSizeByWeek, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
