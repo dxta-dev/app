@@ -1,10 +1,5 @@
 package templates
 
-import (
-	"dxta-dev/app/internal/data"
-
-)
-
 type WeekPickerProps struct {
 	Week         string
 	CurrentWeek  string
@@ -24,12 +19,9 @@ templ weekPicker(props WeekPickerProps) {
 	</div>
 }
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, selectedEvents []data.Event) {
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps) {
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
-		if len(selectedEvents) > 0 {
-   			@circleInfo(selectedEvents)
-		}
 	}
 }

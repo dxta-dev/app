@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"context"
 	"dxta-dev/app/internal/middlewares"
+	"dxta-dev/app/internal/templates"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -37,14 +39,7 @@ func (a *App) MergeRequest(c echo.Context) error {
 		return err
 	}
 
-	var result = struct {
-		Mr     *data.MergeRequestInfo `json:"mr"`
-		Events data.EventSlice        `json:"events"`
-	}{
-		Mr:     mrInfo,
-		Events: events,
-	}
+	components := templates.CircleInfo(events, *mrInfo)
 
-	c.JSON(200, result)
-	return nil
+	return components.Render(context.Background(), c.Response().Writer)
 }

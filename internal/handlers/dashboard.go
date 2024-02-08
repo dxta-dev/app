@@ -22,8 +22,8 @@ import (
 )
 
 type DashboardState struct {
-	week  string
-	mr *int64
+	week string
+	mr   *int64
 }
 
 func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
@@ -46,9 +46,9 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 
 	for _, e := range events {
 		if e.Type == data.COMMITTED ||
-		e.Type == data.CLOSED ||
-		e.Type == data.REVIEWED ||
-		e.Type == data.STARTED_CODING {
+			e.Type == data.CLOSED ||
+			e.Type == data.REVIEWED ||
+			e.Type == data.STARTED_CODING {
 			filteredEvents = append(filteredEvents, e)
 		}
 	}
@@ -138,8 +138,8 @@ func (a *App) Dashboard(c echo.Context) error {
 		mr = nil
 	}
 	state := DashboardState{
-		week:  r.URL.Query().Get("week"),
-		mr: mr,
+		week: r.URL.Query().Get("week"),
+		mr:   mr,
 	}
 
 	if state.week != "" {
@@ -190,9 +190,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		}
 	}
 
-	fmt.Printf("%v", page.DebugMode)
-
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvents)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
