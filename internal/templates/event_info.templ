@@ -9,9 +9,9 @@ import (
 templ CircleInfo(events []data.Event, mergeRequest data.MergeRequestInfo) {
 	<script>
 		function closePopup() {
-			const searchParams = new URLSearchParams(document.location.search);
-            const newUrl = new URL(`${document.location.origin}${document.location.pathname}?${searchParams.toString()}`, document.location.origin);
-			htmx.ajax('GET', newUrl.toString(), 'main')
+			const endpointWithMrid = `merge-request/${mrid}`;
+			const url = new URL(endpointWithMrid, document.location.origin);
+			htmx.ajax('DELETE', url.toString(), '#slide-over');
 		}
     </script>
 	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">

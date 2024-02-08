@@ -56,7 +56,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	function getCircleInfo(mrid) {
 		const endpointWithMrid = `merge-request/${mrid}`;
 		const url = new URL(endpointWithMrid, document.location.origin);
-		htmx.ajax('GET', url.toString(), 'main');
+		htmx.ajax('GET', url.toString(), '#slide-over');
 	}
 
 	function createLineBetweenCircles(x1, y1, x2, y2) {
@@ -174,5 +174,6 @@ templ swarm(props SwarmProps) {
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
 		@getChart("#swarm-chart", "merge-request/:mrid", props.EventIds, props.EventMergeRequestIds)
+		<div id="slide-over"></div>
 	</div>
 }
