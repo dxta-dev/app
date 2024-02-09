@@ -78,7 +78,8 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		JOIN transform_dates as date ON date.id = ev.occured_on
 		JOIN transform_forge_users as user ON user.id = ev.actor
 		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
-		WHERE ev.merge_request =?;
+		WHERE ev.merge_request =?
+		ORDER BY ev.timestamp ASC;
 		`
 
 	rows, err := db.Query(query, mrId)
