@@ -80,7 +80,7 @@ type PRCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetPRsMergedWithoutReview(weeks []string) (interface{}, error) {
+func (s *Store) GetPRsMergedWithoutReview(weeks []string) ([]PRCountByWeek, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
