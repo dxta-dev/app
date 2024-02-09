@@ -7,8 +7,9 @@ import (
 )
 
 type MergeRequestInfoProps struct {
-	Events []data.Event
+	Events         []data.Event
 	DeleteEndpoint string
+	TargetSelector string
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -19,7 +20,13 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
 					<div class="pointer-events-auto relative w-screen max-w-md">
 						<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-							<button hx-delete={ props.DeleteEndpoint } hx-target="#slide-over" type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white">
+							<button
+								hx-trigger="click, keyup[key=='Escape'] from:body"
+								hx-delete={ props.DeleteEndpoint }
+								hx-target={ props.TargetSelector }
+								type="button"
+								class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
+							>
 								<span class="absolute -inset-2.5"></span>
 								<span class="sr-only">Close panel</span>
 								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">

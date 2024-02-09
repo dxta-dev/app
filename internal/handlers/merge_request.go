@@ -15,7 +15,7 @@ import (
 	"dxta-dev/app/internal/data"
 )
 
-func (a *App) MergeRequest(c echo.Context) error {
+func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
@@ -53,6 +53,7 @@ func (a *App) MergeRequest(c echo.Context) error {
 	mergeRequestInfoProps := templates.MergeRequestInfoProps{
 		Events: events,
 		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
+		TargetSelector: "#slide-over",
 	}
 
 	components := templates.MergeRequestInfo(mergeRequestInfoProps)

@@ -67,7 +67,7 @@ func main() {
 	g.Use(middlewares.TenantMiddleware)
 
 	g.GET("/dashboard", app.Dashboard)
-	g.GET("/merge-request/:mrid", app.MergeRequest)
+	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
 	port := os.Getenv("PORT")
