@@ -40,7 +40,7 @@ func main() {
 	}
 
 	app := &handlers.App{
-		HTMX: htmx.New(),
+		HTMX:           htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
 		DebugMode: DEBUG == "true",
 	}
@@ -48,11 +48,11 @@ func main() {
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
-	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{ Level: 6 }))
+	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
 
 	e.Use(middlewares.HtmxMiddleware)
 
-	e.GET("/timestamp",  func(c echo.Context) error {
+	e.GET("/timestamp", func(c echo.Context) error {
 		return c.String(http.StatusOK, app.BuildTimestamp)
 	})
 	e.GET("/*", app.PublicHandler())
@@ -68,6 +68,7 @@ func main() {
 
 	g.GET("/dashboard", app.Dashboard)
 	g.GET("/merge-request/:mrid", app.MergeRequest)
+	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
 	port := os.Getenv("PORT")
 	if port == "" {
