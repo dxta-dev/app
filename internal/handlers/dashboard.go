@@ -22,17 +22,13 @@ import (
 )
 
 type DashboardState struct {
-	week  string
-	mr *int64
+	week string
+	mr   *int64
 }
 
-func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time) (templates.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
-
-	store := &data.Store{
-		DbUrl: dbUrl,
-	}
 
 	events, err := store.GetEventSlices(date)
 
@@ -46,9 +42,9 @@ func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error)
 
 	for _, e := range events {
 		if e.Type == data.COMMITTED ||
-		e.Type == data.CLOSED ||
-		e.Type == data.REVIEWED ||
-		e.Type == data.STARTED_CODING {
+			e.Type == data.CLOSED ||
+			e.Type == data.REVIEWED ||
+			e.Type == data.STARTED_CODING {
 			filteredEvents = append(filteredEvents, e)
 		}
 	}
@@ -114,7 +110,12 @@ func getNextUrl(state DashboardState) string {
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
 	baseUrl := "/dashboard"
-	return fmt.Sprintf("%s?%s", baseUrl, params.Encode())
+	encodedParams := params.Encode()
+	if encodedParams != "" {
+		return fmt.Sprintf("%s?%s", baseUrl, encodedParams)
+	}
+
+	return baseUrl
 }
 
 func (a *App) Dashboard(c echo.Context) error {
@@ -130,6 +131,10 @@ func (a *App) Dashboard(c echo.Context) error {
 		DebugMode: a.DebugMode,
 	}
 
+	store := &data.Store{
+		DbUrl: tenantDatabaseUrl,
+	}
+
 	date := time.Now()
 	var err error
 	var mr *int64 = new(int64)
@@ -138,8 +143,8 @@ func (a *App) Dashboard(c echo.Context) error {
 		mr = nil
 	}
 	state := DashboardState{
-		week:  r.URL.Query().Get("week"),
-		mr: mr,
+		week: r.URL.Query().Get("week"),
+		mr:   mr,
 	}
 
 	if state.week != "" {
@@ -162,7 +167,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		PreviousWeek: prevWeek,
 	}
 
-	swarmSeries, err := getSwarmSeries(date, tenantDatabaseUrl)
+	swarmSeries, err := getSwarmSeries(store, date)
 
 	if err != nil {
 		return err
@@ -181,18 +186,24 @@ func (a *App) Dashboard(c echo.Context) error {
 		EventMergeRequestIds: eventMergeRequestIds,
 	}
 
-	selectedEvents := []data.Event{}
-	if mr != nil {
-		for _, e := range swarmSeries.Events {
-			if e.MergeRequestId == *mr {
-				selectedEvents = append(selectedEvents, e)
-			}
+	var mergeRequestInfoProps *templates.MergeRequestInfoProps
+
+	if state.mr != nil {
+
+		events, err := store.GetMergeRequestEvents(*state.mr)
+
+		if err != nil {
+			return err
+		}
+
+		mergeRequestInfoProps = &templates.MergeRequestInfoProps{
+			Events: events,
+			DeleteEndpoint: fmt.Sprintf("/merge-request/%d", *state.mr),
+			TargetSelector: "#slide-over",
 		}
 	}
 
-	fmt.Printf("%v", page.DebugMode)
-
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvents)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

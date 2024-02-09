@@ -13,8 +13,8 @@ func (a *App) Home(c echo.Context) error {
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
 	page := &templates.Page{
-		Title:   "Home",
-		Boosted: h.HxBoosted,
+		Title:     "Home",
+		Boosted:   h.HxBoosted,
 		CacheBust: a.BuildTimestamp,
 		DebugMode: a.DebugMode,
 	}

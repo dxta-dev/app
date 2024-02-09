@@ -3,7 +3,6 @@ package templates
 import (
 	"time"
 	"dxta-dev/app/internal/data"
-	"fmt"
 )
 
 type SwarmProps struct {
@@ -55,11 +54,11 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
     }
 
 	function getCircleInfo(mrid) {
-		const paramsString = document.location.search;
-		const searchParams = new URLSearchParams(paramsString);
-	    searchParams.set('mr', mrid);
-		const url = new URL(`${endpoint}?${searchParams.toString()}`, document.location.origin);
-		htmx.ajax('GET', url.toString(), 'main')
+		const searchParams = new URLSearchParams(document.location.search);
+		searchParams.set('mr', mrid);
+		const endpointWithMrid = `${endpoint}${mrid}`;
+		const mrUrl = new URL(endpointWithMrid, document.location.origin);
+		htmx.ajax('GET', mrUrl.toString(), '#slide-over');
 	}
 
 	function createLineBetweenCircles(x1, y1, x2, y2) {
@@ -168,52 +167,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	});
 }
 
-templ circleInfo(events []data.Event) {
-	<script>
-		function closePopup() {
-			const searchParams = new URLSearchParams(document.location.search);
-			searchParams.delete('mr');
-            const newUrl = new URL(`${document.location.origin}${document.location.pathname}?${searchParams.toString()}`, document.location.origin);
-			htmx.ajax('GET', newUrl.toString(), 'main')
-		}
-    </script>
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
-		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-		<div class="fixed inset-0 overflow-hidden">
-			<div class="absolute inset-0 overflow-hidden">
-				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-					<div class="pointer-events-auto relative w-screen max-w-md">
-						<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-							<button type="button" class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white" onclick="closePopup()">
-								<span class="absolute -inset-2.5"></span>
-								<span class="sr-only">Close panel</span>
-								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-								</svg>
-							</button>
-						</div>
-						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", events[0].MergeRequestTitle) }</h2>
-							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">
-								<a class="text-blue-600" href={ templ.URL(events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", events[0].MergeRequestUrl) }</a>
-								for _, event := range events {
-									<div>
-										{ getEventName(event.Type) }
-										{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-										{ fmt.Sprintf("%v", event.Id) }
-									</div>
-								}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-}
-
 templ swarm(props SwarmProps) {
 	<div class="flex items-center justify-center" id="swarm-chart">
 		<style text="text/css">
@@ -222,6 +175,6 @@ templ swarm(props SwarmProps) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "dashboard", props.EventIds, props.EventMergeRequestIds)
+		@getChart("#swarm-chart", "merge-request/", props.EventIds, props.EventMergeRequestIds)
 	</div>
 }

@@ -56,6 +56,57 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
+func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	query := `
+		SELECT
+			ev.id,
+			user.id,
+			mr.id,
+			mr.title,
+			mr.web_url,
+			ev.timestamp,
+			ev.merge_request_event_type
+		FROM transform_merge_request_events as ev
+		JOIN transform_dates as date ON date.id = ev.occured_on
+		JOIN transform_forge_users as user ON user.id = ev.actor
+		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
+		WHERE ev.merge_request =?
+		ORDER BY ev.timestamp ASC;
+		`
+
+	rows, err := db.Query(query, mrId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var mergeRequestEvents EventSlice
+
+	for rows.Next() {
+		var event Event
+
+		if err := rows.Scan(
+			&event.Id, &event.Actor, &event.MergeRequestId,
+			&event.MergeRequestTitle, &event.MergeRequestUrl,
+			&event.Timestamp, &event.Type,
+		); err != nil {
+			log.Fatal(err)
+		}
+
+		mergeRequestEvents = append(mergeRequestEvents, event)
+	}
+
+	return mergeRequestEvents, nil
+}
+
 func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
