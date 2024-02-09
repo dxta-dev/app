@@ -52,6 +52,7 @@ func (a *App) MergeRequest(c echo.Context) error {
 
 	mergeRequestInfoProps := templates.MergeRequestInfoProps{
 		Events: events,
+		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
 	}
 
 	components := templates.MergeRequestInfo(mergeRequestInfoProps)
@@ -64,7 +65,6 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
 	parsedURL, err := url.Parse(h.HxCurrentURL)
-	fmt.Println("parsedURL", parsedURL)
 	if err != nil {
 		return err
 	}
@@ -76,9 +76,8 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 		week: week,
 		mr:   nil,
 	}
-	fmt.Println("state", state)
+
 	nextUrl := getNextUrl(state)
-	fmt.Println("nexturl", nextUrl)
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
 	c.NoContent(http.StatusOK)
