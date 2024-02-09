@@ -16,6 +16,7 @@ func (a *App) Charts(c echo.Context) error {
 		Title:   "Charts",
 		Boosted: h.HxBoosted,
 		CacheBust: a.BuildTimestamp,
+		DebugMode: a.DebugMode,
 	}
 
 	var chartData []templates.TimeSeries

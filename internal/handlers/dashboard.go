@@ -127,6 +127,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
 		CacheBust: a.BuildTimestamp,
+		DebugMode: a.DebugMode,
 	}
 
 	date := time.Now()
@@ -188,6 +189,8 @@ func (a *App) Dashboard(c echo.Context) error {
 			}
 		}
 	}
+
+	fmt.Printf("%v", page.DebugMode)
 
 	components := templates.DashboardPage(page, swarmProps, weekPickerProps, selectedEvents)
 

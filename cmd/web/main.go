@@ -16,7 +16,8 @@ import (
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
-var buildTime string
+var BUILDTIME string
+var DEBUG string
 
 func main() {
 
@@ -25,15 +26,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	t, err := time.Parse(time.RFC3339, buildTime)
+	t, err := time.Parse(time.RFC3339, BUILDTIME)
 
 	if err != nil {
-		t = time.Unix(0, 0)
+		t = time.Now()
+	}
+
+	if DEBUG == "true" {
+		log.Printf("--------------------------------------------------")
+		log.Printf("Debug mode is enabled")
+		log.Printf("Build timestamp: %v", t.Unix())
+		log.Printf("--------------------------------------------------")
 	}
 
 	app := &handlers.App{
 		HTMX: htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
+		DebugMode: DEBUG == "true",
 	}
 
 	e := echo.New()
