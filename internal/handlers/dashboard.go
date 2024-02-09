@@ -110,7 +110,12 @@ func getNextUrl(state DashboardState) string {
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
 	baseUrl := "/dashboard"
-	return fmt.Sprintf("%s?%s", baseUrl, params.Encode())
+	encodedParams := params.Encode()
+	if encodedParams != "" {
+		return fmt.Sprintf("%s?%s", baseUrl, encodedParams)
+	}
+
+	return baseUrl
 }
 
 func (a *App) Dashboard(c echo.Context) error {
