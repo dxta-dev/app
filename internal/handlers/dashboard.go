@@ -26,13 +26,9 @@ type DashboardState struct {
 	mr   *int64
 }
 
-func getSwarmSeries(date time.Time, dbUrl string) (templates.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time) (templates.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
-
-	store := &data.Store{
-		DbUrl: dbUrl,
-	}
 
 	events, err := store.GetEventSlices(date)
 
@@ -130,6 +126,10 @@ func (a *App) Dashboard(c echo.Context) error {
 		DebugMode: a.DebugMode,
 	}
 
+	store := &data.Store{
+		DbUrl: tenantDatabaseUrl,
+	}
+
 	date := time.Now()
 	var err error
 	var mr *int64 = new(int64)
@@ -162,7 +162,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		PreviousWeek: prevWeek,
 	}
 
-	swarmSeries, err := getSwarmSeries(date, tenantDatabaseUrl)
+	swarmSeries, err := getSwarmSeries(store, date)
 
 	if err != nil {
 		return err
@@ -181,16 +181,22 @@ func (a *App) Dashboard(c echo.Context) error {
 		EventMergeRequestIds: eventMergeRequestIds,
 	}
 
-	selectedEvents := []data.Event{}
-	if mr != nil {
-		for _, e := range swarmSeries.Events {
-			if e.MergeRequestId == *mr {
-				selectedEvents = append(selectedEvents, e)
-			}
+	var mergeRequestInfoProps *templates.MergeRequestInfoProps
+
+	if state.mr != nil {
+
+		events, err := store.GetMergeRequestEvents(*state.mr)
+
+		if err != nil {
+			return err
+		}
+
+		mergeRequestInfoProps = &templates.MergeRequestInfoProps{
+			Events: events,
 		}
 	}
 
-	components := templates.DashboardPage(page, swarmProps, weekPickerProps)
+	components := templates.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

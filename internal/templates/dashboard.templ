@@ -19,9 +19,14 @@ templ weekPicker(props WeekPickerProps) {
 	</div>
 }
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps) {
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps) {
 	@Layout(page) {
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps)
+		<div aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
+			if (mergeRequestInfoProps != nil) {
+				@MergeRequestInfo(*mergeRequestInfoProps)
+			}
+		</div>
 	}
 }

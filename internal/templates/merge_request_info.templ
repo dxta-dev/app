@@ -6,7 +6,11 @@ import (
 	"time"
 )
 
-templ CircleInfo(events []data.Event, mergeRequest data.MergeRequestInfo) {
+type MergeRequestInfoProps struct {
+	Events []data.Event
+}
+
+templ MergeRequestInfo(props MergeRequestInfoProps) {
 	<script>
 		function closePopup() {
 			let params = new URL(document.location).searchParams;
@@ -15,9 +19,8 @@ templ CircleInfo(events []data.Event, mergeRequest data.MergeRequestInfo) {
 			const url = new URL(endpointWithMrid, document.location.origin);
 			htmx.ajax('DELETE', url.toString(), '#slide-over');
 		}
-    </script>
-	<div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true" id="slide-over">
-
+	</script>
+	<div class="relative z-10">
 		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 		<div class="fixed inset-0 overflow-hidden">
 			<div class="absolute inset-0 overflow-hidden">
@@ -34,11 +37,11 @@ templ CircleInfo(events []data.Event, mergeRequest data.MergeRequestInfo) {
 						</div>
 						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
 							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", events[0].MergeRequestTitle) }</h2>
+								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }</h2>
 							</div>
 							<div class="relative mt-6 flex-1 px-4 sm:px-6">
-								<a class="text-blue-600" href={ templ.URL(events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", events[0].MergeRequestUrl) }</a>
-								for _, event := range events {
+								<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", props.Events[0].MergeRequestUrl) }</a>
+								for _, event := range props.Events {
 									<div>
 										{ getEventName(event.Type) }
 										{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }

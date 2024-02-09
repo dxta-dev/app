@@ -50,11 +50,11 @@ func (a *App) MergeRequest(c echo.Context) error {
 		return err
 	}
 
-	mergeRequestInfoProps := templates.MergeRequestInfoProps{
-		Events: events,
+	eventInfoProps := templates.EventInfoProps{
+		Events,
 	}
 
-	components := templates.MergeRequestInfo(mergeRequestInfoProps)
+	components := templates.EventInfo(eventInfoProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
