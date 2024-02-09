@@ -71,8 +71,64 @@ func (s *Store) GetAverageMRSize(weeks []string) ([]PRSizeByWeek, error) {
 	return prSizeByWeeks, nil
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string) (interface{}, error) {
-	return nil, nil
+type PRReviewDepthByWeek struct {
+	Week  string
+	Depth int
+}
+
+func (s *Store) GetAverageReviewDepth(weeks []string) ([]PRReviewDepthByWeek, error) {
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+	SELECT
+		FLOOR(AVG(metrics.review_depth)),
+		mergedAt.week
+	FROM transform_merge_request_metrics as metrics
+	JOIN transform_merge_request_fact_dates_junk as dj
+	ON metrics.dates_junk = dj.id
+	JOIN transform_dates as mergedAt
+	ON dj.merged_at = mergedAt.id
+	WHERE mergedAt.week IN (%s)
+	GROUP BY mergedAt.week;`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var prReviewDepthByWeeks []PRReviewDepthByWeek
+
+	for rows.Next() {
+		var prweek PRReviewDepthByWeek
+
+		if err := rows.Scan(
+			&prweek.Depth,
+			&prweek.Week,
+		); err != nil {
+			return nil, err
+		}
+
+		prReviewDepthByWeeks = append(prReviewDepthByWeeks, prweek)
+	}
+
+	return prReviewDepthByWeeks, nil
 }
 
 type PRCountByWeek struct {
