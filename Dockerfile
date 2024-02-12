@@ -12,7 +12,7 @@ RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
 
 
-FROM golang:1.21.6-bullseye AS build
+FROM golang:1.22-bullseye AS build
 
 WORKDIR /app
 
