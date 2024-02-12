@@ -75,12 +75,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, e
 	return commitCountByWeeks, nil
 }
 
-type PRCountByWeek struct {
-	Week  string
-	Count int
-}
-
-func (s *Store) GetTotalPRsOpened(weeks []string) (map[string]PRCountByWeek, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -120,10 +115,10 @@ func (s *Store) GetTotalPRsOpened(weeks []string) (map[string]PRCountByWeek, err
 
 	defer rows.Close()
 
-	prCountByWeeks := make(map[string]PRCountByWeek)
+	prCountByWeeks := make(map[string]MrCountByWeek)
 
 	for rows.Next() {
-		var prCount PRCountByWeek
+		var prCount MrCountByWeek
 
 		if err := rows.Scan(&prCount.Count, &prCount.Week); err != nil {
 			return nil, err
@@ -133,7 +128,7 @@ func (s *Store) GetTotalPRsOpened(weeks []string) (map[string]PRCountByWeek, err
 
 	for _, week := range weeks {
 		if _, ok := prCountByWeeks[week]; !ok {
-			prCountByWeeks[week] = PRCountByWeek{
+			prCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
 				Count: 0,
 			}
