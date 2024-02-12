@@ -138,8 +138,70 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 	return prCountByWeeks, nil
 }
 
-func (s *Store) GetTotalReviews(weeks []string) (interface{}, error) {
-	return nil, nil
+type TotalReviewsByWeek struct {
+	Week  string
+	Count int
+}
+
+
+func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, error) {
+
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+		SELECT
+			COUNT (*),
+			occuredAt.week
+		FROM transform_merge_request_events as ev
+		JOIN transform_dates as occuredAt
+		ON occuredAt.id = ev.occured_on
+		WHERE ev.merge_request_event_type = 15
+		AND occuredAt.week IN (%s)
+		GROUP BY occuredAt.week;`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	totalReviewsByWeek := make(map[string]TotalReviewsByWeek)
+
+	for rows.Next() {
+		var reviewCount TotalReviewsByWeek
+
+		if err := rows.Scan(&reviewCount.Count, &reviewCount.Week); err != nil {
+			return nil, err
+		}
+		totalReviewsByWeek[reviewCount.Week] = reviewCount
+	}
+
+	for _, week := range weeks {
+		if _, ok := totalReviewsByWeek[week]; !ok {
+			totalReviewsByWeek[week] = TotalReviewsByWeek{
+				Week:  week,
+				Count: 0,
+			}
+		}
+	}
+
+	return totalReviewsByWeek, nil
 }
 
 func (s *Store) GetMergeFrequency(weeks []string) (interface{}, error) {
