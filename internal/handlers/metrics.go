@@ -49,6 +49,12 @@ func (a *App) Metrics(c echo.Context) error {
 		return err
 	}
 
+	totalPrsOpenedMap, err := store.GetTotalPRsOpened(weeks)
+
+	if err != nil {
+		return err
+	}
+
 	mrsMergedWithoutReviewMap, err := store.GetMRsMergedWithoutReview(weeks)
 
 	metricsProps := &templates.MetricsProps{
@@ -57,6 +63,7 @@ func (a *App) Metrics(c echo.Context) error {
 		AverageReviewDepthMap: averageReviewDepthMap,
 		MrCountMap:            mrsMergedWithoutReviewMap,
 		TotalCommitsMap:       totalCommitsMap,
+		TotalPRsOpenedMap:     totalPrsOpenedMap,
 	}
 
 	components := templates.Metrics(page, *metricsProps)
