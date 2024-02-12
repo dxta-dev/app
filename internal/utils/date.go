@@ -7,6 +7,24 @@ import (
 	"time"
 )
 
+func GetLastNWeeks(date time.Time, n int) []string {
+	weeks := make([]string, n)
+
+	for i := 0; i < n; i++ {
+		weeks[i] = GetFormattedWeek(date.AddDate(0, 0, -7*i))
+	}
+
+	return weeks
+}
+
+func GetFormattedWeek(date time.Time) string {
+	year, week := date.ISOWeek()
+
+	formattedWeek := fmt.Sprintf("%d-W%02d", year, week)
+
+	return formattedWeek
+}
+
 func GetPrevNextWeek(date time.Time) (string, string) {
 	startOfWeek := GetStartOfTheWeek(date)
 	prevStartOfWeek := startOfWeek.AddDate(0, 0, -7)
@@ -32,13 +50,6 @@ func GetStartOfTheWeek(date time.Time) time.Time {
 	return startOfWeek
 }
 
-func GetFormattedWeek(date time.Time) string {
-	year, week := date.ISOWeek()
-
-	formattedWeek := fmt.Sprintf("%d-W%02d", year, week)
-
-	return formattedWeek
-}
 
 func ParseYearWeek(yw string) (time.Time, error) {
 	parts := strings.Split(yw, "-W")
