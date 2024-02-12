@@ -10,8 +10,8 @@ import (
 func GetLastNWeeks(date time.Time, n int) []string {
 	weeks := make([]string, n)
 
-	for i := 0; i < n; i++ {
-		weeks[i] = GetFormattedWeek(date.AddDate(0, 0, -7*i))
+	for i := 1; i <= n; i++ {
+		weeks[i-1] = GetFormattedWeek(date.AddDate(0, 0, -7*i))
 	}
 
 	return weeks

@@ -23,7 +23,7 @@ func (a *App) Metrics(c echo.Context) error {
 		DebugMode: a.DebugMode,
 	}
 
-	weeks := utils.GetLastNWeeks(time.Now(), 6)
+	weeks := utils.GetLastNWeeks(time.Now(), 24)
 
 	tenantDatabaseUrl := r.Context().Value(middlewares.TenantDatabaseURLContext).(string)
 
@@ -31,25 +31,25 @@ func (a *App) Metrics(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	averageMrSizeData, err := store.GetAverageMRSize(weeks)
+	averageMrSizeMap, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	averageReviewDepthData, err := store.GetAverageReviewDepth(weeks)
+	averageReviewDepthMap, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	mrCountData, err := store.GetMRsMergedWithoutReview(weeks)
+	mrsMergedWithoutReviewMap, err := store.GetMRsMergedWithoutReview(weeks)
 
 	metricsProps := &templates.MetricsProps{
-		Weeks:                  weeks,
-		AverageMrSizeData:      averageMrSizeData,
-		AverageReviewDepthData: averageReviewDepthData,
-		MrCountData:            mrCountData,
+		Weeks:                 weeks,
+		AverageMrSizeMap:      averageMrSizeMap,
+		AverageReviewDepthMap: averageReviewDepthMap,
+		MrCountMap:            mrsMergedWithoutReviewMap,
 	}
 
 	components := templates.Metrics(page, *metricsProps)
