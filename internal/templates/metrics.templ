@@ -1,0 +1,51 @@
+package templates
+
+import (
+	"dxta-dev/app/internal/data"
+	"strconv"
+	"fmt"
+)
+
+type MetricsProps struct {
+	Weeks				  []string
+	AverageMrSizeData      []data.AverageMRSizeByWeek
+	AverageReviewDepthData []data.AverageMrReviewDepthByWeek
+	MrCountData            []data.MrCountByWeek
+}
+
+templ Metrics(page *Page, props MetricsProps) {
+	@Layout(page) {
+		for i, _ := range props.Weeks {
+			<div>
+				<span>
+					{ props.Weeks[i] }&nbsp;
+				</span>
+			</div>
+		}
+		for i, _ := range props.AverageMrSizeData {
+			<div>
+				<span>
+					{ props.AverageMrSizeData[i].Week }&nbsp;
+					{ strconv.Itoa(props.AverageMrSizeData[i].N) }&nbsp;
+					{ strconv.Itoa(props.AverageMrSizeData[i].Size) }&nbsp;
+				</span>
+			</div>
+		}
+		for i, _ := range props.AverageReviewDepthData {
+			<div>
+				<span>
+					{ props.AverageReviewDepthData[i].Week }&nbsp;
+					{ fmt.Sprintf("%f", props.AverageReviewDepthData[i].Depth) }&nbsp;
+				</span>
+			</div>
+		}
+		for i, _ := range props.MrCountData {
+			<div>
+				<span>
+					{ props.MrCountData[i].Week }&nbsp;
+					{ strconv.Itoa(props.MrCountData[i].Count) }&nbsp;
+				</span>
+			</div>
+		}
+	}
+}

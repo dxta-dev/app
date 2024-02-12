@@ -144,4 +144,32 @@ func TestParseYearWeek(t *testing.T) {
 	}
 }
 
+func TestGetLastNWeeks(t *testing.T) {
+	t.Run("current date", func(t *testing.T) {
+		n := 4
+		weeks := GetLastNWeeks(time.Now(), n)
+		if len(weeks) != n {
+			t.Errorf("Expected %d weeks, got %d", n, len(weeks))
+		}
+	})
+
+	t.Run("specific date", func(t *testing.T) {
+		date := time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC) // A known date
+		n := 2
+		expectedWeeks := []string{"2023-W02", "2023-W01"}
+		weeks := GetLastNWeeks(date, n)
+		for i, week := range weeks {
+			if week != expectedWeeks[i] {
+				t.Errorf("Expected %s, got %s", expectedWeeks[i], week)
+			}
+		}
+	})
+
+	t.Run("n is zero", func(t *testing.T) {
+		weeks := GetLastNWeeks(time.Now(), 0)
+		if len(weeks) != 0 {
+			t.Errorf("Expected 0 weeks, got %d", len(weeks))
+		}
+	})
+}
 

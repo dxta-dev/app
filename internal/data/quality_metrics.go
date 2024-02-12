@@ -10,19 +10,21 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type PRSizeByWeek struct {
+type AverageMRSizeByWeek struct {
 	Week string
 	Size int
+	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string) ([]PRSizeByWeek, error) {
+func (s *Store) GetAverageMRSize(weeks []string) ([]AverageMRSizeByWeek, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
 	SELECT
 		FLOOR(AVG(metrics.mr_size)),
-		mergedAt.week
+		mergedAt.week,
+		COUNT(*)
 	FROM transform_merge_request_metrics as metrics
 	JOIN transform_merge_request_fact_dates_junk as dj
 	ON metrics.dates_junk = dj.id
@@ -53,35 +55,36 @@ func (s *Store) GetAverageMRSize(weeks []string) ([]PRSizeByWeek, error) {
 
 	defer rows.Close()
 
-	var prSizeByWeeks []PRSizeByWeek
+	var mrSizeByWeeks []AverageMRSizeByWeek
 
 	for rows.Next() {
-		var prweek PRSizeByWeek
+		var mrweek AverageMRSizeByWeek
 
 		if err := rows.Scan(
-			&prweek.Size,
-			&prweek.Week,
+			&mrweek.Size,
+			&mrweek.Week,
+			&mrweek.N,
 		); err != nil {
 			return nil, err
 		}
 
-		prSizeByWeeks = append(prSizeByWeeks, prweek)
+		mrSizeByWeeks = append(mrSizeByWeeks, mrweek)
 	}
 
-	return prSizeByWeeks, nil
+	return mrSizeByWeeks, nil
 }
 
-type PRReviewDepthByWeek struct {
+type AverageMrReviewDepthByWeek struct {
 	Week  string
-	Depth int
+	Depth float32
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string) ([]PRReviewDepthByWeek, error) {
+func (s *Store) GetAverageReviewDepth(weeks []string) ([]AverageMrReviewDepthByWeek, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
 	SELECT
-		FLOOR(AVG(metrics.review_depth)),
+		AVG(metrics.review_depth),
 		mergedAt.week
 	FROM transform_merge_request_metrics as metrics
 	JOIN transform_merge_request_fact_dates_junk as dj
@@ -113,30 +116,30 @@ func (s *Store) GetAverageReviewDepth(weeks []string) ([]PRReviewDepthByWeek, er
 
 	defer rows.Close()
 
-	var prReviewDepthByWeeks []PRReviewDepthByWeek
+	var mrReviewDepthByWeeks []AverageMrReviewDepthByWeek
 
 	for rows.Next() {
-		var prweek PRReviewDepthByWeek
+		var mrweek AverageMrReviewDepthByWeek
 
 		if err := rows.Scan(
-			&prweek.Depth,
-			&prweek.Week,
+			&mrweek.Depth,
+			&mrweek.Week,
 		); err != nil {
 			return nil, err
 		}
 
-		prReviewDepthByWeeks = append(prReviewDepthByWeeks, prweek)
+		mrReviewDepthByWeeks = append(mrReviewDepthByWeeks, mrweek)
 	}
 
-	return prReviewDepthByWeeks, nil
+	return mrReviewDepthByWeeks, nil
 }
 
-type PRCountByWeek struct {
+type MrCountByWeek struct {
 	Week  string
 	Count int
 }
 
-func (s *Store) GetPRsMergedWithoutReview(weeks []string) ([]PRCountByWeek, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string) ([]MrCountByWeek, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -173,22 +176,22 @@ func (s *Store) GetPRsMergedWithoutReview(weeks []string) ([]PRCountByWeek, erro
 
 	defer rows.Close()
 
-	var prCountByWeeks []PRCountByWeek
+	var mrCountByWeeks []MrCountByWeek
 
 	for rows.Next() {
-		var prweek PRCountByWeek
+		var mrweek MrCountByWeek
 
 		if err := rows.Scan(
-			&prweek.Count,
-			&prweek.Week,
+			&mrweek.Count,
+			&mrweek.Week,
 		); err != nil {
 			return nil, err
 		}
 
-		prCountByWeeks = append(prCountByWeeks, prweek)
+		mrCountByWeeks = append(mrCountByWeeks, mrweek)
 	}
 
-	return prCountByWeeks, nil
+	return mrCountByWeeks, nil
 }
 
 func (s *Store) GetNewCodePercentage(weeks []string) (interface{}, error) {
