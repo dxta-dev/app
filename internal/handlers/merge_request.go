@@ -51,7 +51,7 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	}
 
 	mergeRequestInfoProps := templates.MergeRequestInfoProps{
-		Events: events,
+		Events:         events,
 		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
 		TargetSelector: "#slide-over",
 	}

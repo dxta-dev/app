@@ -11,6 +11,7 @@ type MetricsProps struct {
 	AverageMrSizeMap	  map[string]data.AverageMRSizeByWeek
 	AverageReviewDepthMap map[string]data.AverageMrReviewDepthByWeek
 	MrCountMap			  map[string]data.MrCountByWeek
+	TotalCommitsMap		  map[string]data.CommitCountByWeek
 }
 
 templ Metrics(page *Page, props MetricsProps) {
@@ -22,6 +23,7 @@ templ Metrics(page *Page, props MetricsProps) {
 				<td>MR Count</td>
 				<td>Average Review Depth</td>
 				<td>MR Count</td>
+				<td>Commit Count</td>
 			</thead>
 			<tbody>
 			for _, week := range props.Weeks {
@@ -31,6 +33,7 @@ templ Metrics(page *Page, props MetricsProps) {
 					<td>{strconv.Itoa(props.AverageMrSizeMap[week].N)}</td>
 					<td>{fmt.Sprintf("%f", props.AverageReviewDepthMap[week].Depth)}</td>
 					<td>{strconv.Itoa(props.MrCountMap[week].Count)}</td>
+					<td>{strconv.Itoa(props.TotalCommitsMap[week].Count)}</td>
 				</tr>
 			}
 			</tbody>
