@@ -25,7 +25,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, e
 			commitedAt.week
 		FROM transform_merge_request_events as ev
 		JOIN transform_dates as commitedAt
-		ON commitedAt.id = ev.occured_on
+		ON commitedAt.id = ev.commited_at
 		WHERE ev.merge_request_event_type = 9
 		AND commitedAt.week IN (%s)
 		GROUP BY commitedAt.week;`,
@@ -75,8 +75,67 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, e
 	return commitCountByWeeks, nil
 }
 
-func (s *Store) GetTotalPRsOpened(weeks []string) (interface{}, error) {
-	return nil, nil
+func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, error) {
+
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+	SELECT
+		COUNT (*),
+		opened_dates.week
+	FROM transform_merge_request_metrics as metrics
+	JOIN transform_merge_request_fact_dates_junk as dates_junk
+	ON metrics.dates_junk = dates_junk.id
+	JOIN transform_dates as opened_dates
+	ON dates_junk.opened_at = opened_dates.id
+	WHERE opened_dates.week IN (%s)
+	GROUP BY opened_dates.week`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	fmt.Println(rows)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	prCountByWeeks := make(map[string]MrCountByWeek)
+
+	for rows.Next() {
+		var prCount MrCountByWeek
+
+		if err := rows.Scan(&prCount.Count, &prCount.Week); err != nil {
+			return nil, err
+		}
+		prCountByWeeks[prCount.Week] = prCount
+	}
+
+	for _, week := range weeks {
+		if _, ok := prCountByWeeks[week]; !ok {
+			prCountByWeeks[week] = MrCountByWeek{
+				Week:  week,
+				Count: 0,
+			}
+		}
+	}
+
+	return prCountByWeeks, nil
 }
 
 type TotalReviewsByWeek struct {

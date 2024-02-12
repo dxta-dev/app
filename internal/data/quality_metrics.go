@@ -137,7 +137,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	for _, week := range weeks {
 		if _, ok := mrReviewDepthByWeeks[week]; !ok {
 			mrReviewDepthByWeeks[week] = AverageMrReviewDepthByWeek{
-				Week: week,
+				Week:  week,
 				Depth: 0,
 			}
 		}
@@ -203,7 +203,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	for _, week := range weeks {
 		if _, ok := mrCountByWeeks[week]; !ok {
 			mrCountByWeeks[week] = MrCountByWeek{
-				Week: week,
+				Week:  week,
 				Count: 0,
 			}
 		}
