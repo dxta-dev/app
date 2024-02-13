@@ -14,6 +14,7 @@ type MetricsProps struct {
 	TotalCommitsMap       map[string]data.CommitCountByWeek
 	TotalMrsOpenedMap     map[string]data.MrCountByWeek
 	TotalReviewsMap       map[string]data.TotalReviewsByWeek
+	MergeFrequencyMap     map[string]data.MergeFrequencyByWeek
 }
 
 templ Metrics(page *Page, props MetricsProps) {
@@ -24,12 +25,13 @@ templ Metrics(page *Page, props MetricsProps) {
 				<tr>
 					<th class="px-4 py-2">Week</th>
 					<th class="px-4 py-2">Average MR Size</th>
-					<th class="px-4 py-2">MR Count</th>
+					<th class="px-4 py-2">Total MR merged</th>
 					<th class="px-4 py-2">Average Review Depth</th>
 					<th class="px-4 py-2">Mrs Without Review</th>
 					<th class="px-4 py-2">Commit Count</th>
 					<th class="px-4 py-2">Total MRs Opened</th>
 					<th class="px-4 py-2">Review Count</th>
+					<th class="px-4 py-2">Merge Frequency</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -47,6 +49,7 @@ templ Metrics(page *Page, props MetricsProps) {
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalCommitsMap[week].Count) }</td>
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalMrsOpenedMap[week].Count) }</td>
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalReviewsMap[week].Count) }</td>
+						<td class="border px-4 py-2 text-right">{ fmt.Sprintf("%.2f", props.MergeFrequencyMap[week].Amount) }</td>
 					</tr>
 				}
 			</tbody>
