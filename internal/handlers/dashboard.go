@@ -26,6 +26,13 @@ type DashboardState struct {
 	mr   *int64
 }
 
+func absInt64(x int64) int64 {
+    if x < 0 {
+        return -x
+    }
+    return x
+}
+
 func getSwarmSeries(store *data.Store, date time.Time) (templates.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
@@ -40,7 +47,30 @@ func getSwarmSeries(store *data.Store, date time.Time) (templates.SwarmSeries, e
 
 	filteredEvents := []data.Event{}
 
+	reviewedMap := make(map[string][]int64)
+
+	sort.Sort(events)
+
+EventLoop:
 	for _, e := range events {
+		if e.Type == data.REVIEWED {
+			key := fmt.Sprintf("%d-%d", e.MergeRequestId, e.Actor)
+			reviewed, ok := reviewedMap[key]
+			if !ok {
+				reviewedMap[key] = []int64{}
+			}
+
+			if ok {
+				for _, r := range reviewed {
+					if absInt64(r-e.Timestamp) < 1000*60*5 {
+						continue EventLoop
+					}
+				}
+			}
+
+			reviewedMap[key] = append(reviewedMap[key], e.Timestamp)
+		}
+
 		if e.Type == data.COMMITTED ||
 			e.Type == data.CLOSED ||
 			e.Type == data.REVIEWED ||
@@ -53,7 +83,6 @@ func getSwarmSeries(store *data.Store, date time.Time) (templates.SwarmSeries, e
 
 	var times []time.Time
 
-	sort.Sort(events)
 
 	for _, d := range events {
 		t := time.Unix(d.Timestamp/1000, 0)
@@ -174,16 +203,27 @@ func (a *App) Dashboard(c echo.Context) error {
 	}
 	var eventIds []int64
 	var eventMergeRequestIds []int64
+	var eventOrder []int
+
+	mergeRequestEventOrder := make(map[int64]int)
+
 	for _, event := range swarmSeries.Events {
 		eventIds = append(eventIds, event.Id)
 		eventMergeRequestIds = append(eventMergeRequestIds, event.MergeRequestId)
+		if val, ok := mergeRequestEventOrder[event.MergeRequestId]; ok {
+			eventOrder = append(eventOrder, val)
+			mergeRequestEventOrder[event.MergeRequestId]++
+		} else {
+			eventOrder = append(eventOrder, 0)
+			mergeRequestEventOrder[event.MergeRequestId] = 1
+		}
 	}
-
 	swarmProps := templates.SwarmProps{
 		Series:               swarmSeries,
 		StartOfTheWeek:       utils.GetStartOfTheWeek(date),
 		EventIds:             eventIds,
 		EventMergeRequestIds: eventMergeRequestIds,
+		EventOrder:           eventOrder,
 	}
 
 	var mergeRequestInfoProps *templates.MergeRequestInfoProps
@@ -197,7 +237,7 @@ func (a *App) Dashboard(c echo.Context) error {
 		}
 
 		mergeRequestInfoProps = &templates.MergeRequestInfoProps{
-			Events: events,
+			Events:         events,
 			DeleteEndpoint: fmt.Sprintf("/merge-request/%d", *state.mr),
 			TargetSelector: "#slide-over",
 		}

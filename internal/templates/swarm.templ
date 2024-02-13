@@ -10,6 +10,7 @@ type SwarmProps struct {
 	StartOfTheWeek       time.Time
 	EventIds             []int64
 	EventMergeRequestIds []int64
+	EventOrder           []int
 }
 
 var eventTypeNames = map[data.EventType]string{
@@ -40,8 +41,7 @@ func getEventName(eventType data.EventType) string {
 	return "Invalid EventType"
 }
 
-script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
-
+script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64, eventOrder []int) {
 	if (circleIds === null) {
 		return;
 	}
@@ -78,44 +78,12 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
 	}
 
-	function orderCircles(circles) {
-		if (circles.length === 0) return [];
-		if (circles.length === 1) return circles;
-
-		let unorderedCircles = [...circles];
-
-		let currentCircle = unorderedCircles.shift();
-
-		const orderedCircles = [currentCircle];
-
-		while (unorderedCircles.length > 0) {
-			let closestCircleIndex = 0;
-			let minDistance = Infinity;
-
-			for (let i = 0; i < unorderedCircles.length; i++) {
-				const distance = calculateDistance(currentCircle.getAttribute("cx"), currentCircle.getAttribute("cy"), unorderedCircles[i].getAttribute("cx"), unorderedCircles[i].getAttribute("cy"));
-				if (distance < minDistance) {
-					minDistance = distance;
-					closestCircleIndex = i;
-				}
-			}
-
-			let closestCircle = unorderedCircles.splice(closestCircleIndex, 1)[0];
-
-			currentCircle = closestCircle;
-
-			orderedCircles.push(currentCircle);
-		}
-
-		return orderedCircles;
-	}
-
-
 	const searchParams = new URLSearchParams(document.location.search);
 
 	for (let i = 0; i < circles.length; i++) {
 		circles[i].setAttribute("data-id", circleIds[i]);
 		circles[i].setAttribute("data-merge-request-id", circleMergeRequestIds[i]);
+		circles[i].setAttribute("data-order", eventOrder[i]);
 	}
 
 	let size = +circles[0].getAttribute("r");
@@ -126,19 +94,23 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		circle.addEventListener("mouseover", (e) => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
-			circles = orderCircles(circles);
+			circles = Array.from(circles);
+			circles.sort((a, b) => parseInt(a.getAttribute("data-order"), 10) - parseInt(b.getAttribute("data-order"), 10));
 			prevCircle = circles[0];
 			for (let i = 0; i < circles.length; i++) {
-				circles[i].setAttribute("r", size + 2);
 				strokes.push(circles[i].style.stroke);
+			}
+			circles[0].setAttribute("r", size + 2);
+			circles[0].style.stroke = "blue";
+			circles[0].style.strokeWidth = "2";
+			for (let i = 1; i < circles.length; i++) {
+				circles[i].setAttribute("r", size + 2);
 				circles[i].style.stroke = "blue";
 				circles[i].style.strokeWidth = "2";
-				if (i > 0 && 300 < calculateDistance(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"))){
-					const line = createLineBetweenCircles(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"));
-					lines.push(line);
-					svg.appendChild(line);
-					prevCircle = circles[i];
-				}
+				const line = createLineBetweenCircles(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"));
+				lines.push(line);
+				svg.appendChild(line);
+				prevCircle = circles[i];
 			}
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);
@@ -175,6 +147,6 @@ templ swarm(props SwarmProps) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "merge-request/", props.EventIds, props.EventMergeRequestIds)
+		@getChart("#swarm-chart", "merge-request/", props.EventIds, props.EventMergeRequestIds, props.EventOrder)
 	</div>
 }
