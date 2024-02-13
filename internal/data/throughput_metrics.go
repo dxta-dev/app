@@ -6,8 +6,70 @@ import (
 	"strings"
 )
 
-func (s *Store) GetTotalCodeChanges(weeks []string) (interface{}, error) {
-	return nil, nil
+type CodeChangesCount struct {
+	Count int
+	Week  string
+}
+
+func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, error) {
+
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+	SELECT
+		SUM(metrics.mr_size) AS total_mr_size,
+		dates.week
+	FROM transform_merge_request_metrics as metrics
+	JOIN transform_merge_request_fact_dates_junk as dates_junk
+	ON metrics.dates_junk = dates_junk.id
+	JOIN transform_dates as dates
+	ON dates_junk.merged_at = dates.id
+	WHERE dates.week IN (%s)
+	GROUP BY dates.week;`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	codeChangesByWeek := make(map[string]CodeChangesCount)
+
+	for rows.Next() {
+		var codeChangesCount CodeChangesCount
+
+		if err = rows.Scan(&codeChangesCount.Count, &codeChangesCount.Week); err != nil {
+			return nil, err
+		}
+		codeChangesByWeek[codeChangesCount.Week] = codeChangesCount
+	}
+
+	for _, week := range weeks {
+		if _, ok := codeChangesByWeek[week]; !ok {
+			codeChangesByWeek[week] = CodeChangesCount{
+				Count: 0,
+				Week:  week,
+			}
+		}
+	}
+
+	return codeChangesByWeek, nil
 }
 
 type CommitCountByWeek struct {
