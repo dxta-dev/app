@@ -265,8 +265,69 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 	return totalReviewsByWeek, nil
 }
 
-func (s *Store) GetMergeFrequency(weeks []string) (interface{}, error) {
-	return nil, nil
+type MergeFrequencyByWeek struct {
+	Week   string
+	Amount float32
+}
+
+func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWeek, error) {
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+		SELECT
+			CAST(COUNT (*) AS REAL) / 7,
+			merged_dates.week
+		FROM transform_merge_request_metrics as metrics
+		JOIN transform_merge_request_fact_dates_junk as dates_junk
+		ON metrics.dates_junk = dates_junk.id
+		JOIN transform_dates as merged_dates
+		ON dates_junk.merged_at = merged_dates.id
+		WHERE merged_dates.week IN (%s)
+		GROUP BY merged_dates.week`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	mergeFrequencyByWeek := make(map[string]MergeFrequencyByWeek)
+
+	for rows.Next() {
+		var mergeFreq MergeFrequencyByWeek
+
+		if err := rows.Scan(&mergeFreq.Amount, &mergeFreq.Week); err != nil {
+			return nil, err
+		}
+		mergeFrequencyByWeek[mergeFreq.Week] = mergeFreq
+	}
+
+	for _, week := range weeks {
+		if _, ok := mergeFrequencyByWeek[week]; !ok {
+			mergeFrequencyByWeek[week] = MergeFrequencyByWeek{
+				Week:   week,
+				Amount: 0,
+			}
+		}
+	}
+
+	return mergeFrequencyByWeek, nil
 }
 
 func (s *Store) GetDeployFrequency(weeks []string) (interface{}, error) {
