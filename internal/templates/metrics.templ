@@ -14,6 +14,7 @@ type MetricsProps struct {
 	TotalCommitsMap       map[string]data.CommitCountByWeek
 	TotalMrsOpenedMap     map[string]data.MrCountByWeek
 	TotalReviewsMap       map[string]data.TotalReviewsByWeek
+	TotalCodeChangesMap   map[string]data.CodeChangesCount
 }
 
 templ Metrics(page *Page, props MetricsProps) {
@@ -30,6 +31,7 @@ templ Metrics(page *Page, props MetricsProps) {
 					<th class="px-4 py-2">Commit Count</th>
 					<th class="px-4 py-2">Total MRs Opened</th>
 					<th class="px-4 py-2">Review Count</th>
+					<th class="px-4 py-2">Code Changes</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -47,6 +49,7 @@ templ Metrics(page *Page, props MetricsProps) {
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalCommitsMap[week].Count) }</td>
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalMrsOpenedMap[week].Count) }</td>
 						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalReviewsMap[week].Count) }</td>
+						<td class="border px-4 py-2 text-right">{ strconv.Itoa(props.TotalCodeChangesMap[week].Count) }</td>
 					</tr>
 				}
 			</tbody>
