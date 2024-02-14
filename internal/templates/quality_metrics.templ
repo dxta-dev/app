@@ -8,8 +8,12 @@ type QualityMetricsProps struct {
 
 templ QualityMetrics(page *Page, props QualityMetricsProps) {
 	@Layout(page){
+		<h1>Quality Metrics</h1>
+		<h2>Average MR Size</h2>
 		@TimeSeriesChart(props.AverageMrSizeSeries)
+		<h2>Average Review Depth</h2>
 		@TimeSeriesChart(props.AverageReviewDepthSeries)
+		<h2>MRs Merged Without Review</h2>
 		@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
 	}
 }

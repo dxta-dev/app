@@ -6,6 +6,7 @@ import (
 	"dxta-dev/app/internal/middlewares"
 	"dxta-dev/app/internal/templates"
 	"dxta-dev/app/internal/utils"
+	"fmt"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -30,6 +31,10 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	weeks := utils.GetLastNWeeks(time.Now(), 6*4)
+
+
+	fmt.Println(weeks)
+
 
 	ams, err := store.GetAverageMRSize(weeks)
 
@@ -81,6 +86,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	mmwrYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
+		fmt.Println(week, mmwr[week].Count)
 		mmwrXValues[i] = float64(i)
 		mmwrYValues[i] = float64(mmwr[week].Count)
 	}
