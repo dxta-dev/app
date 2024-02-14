@@ -56,6 +56,7 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
+
 func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 

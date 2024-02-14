@@ -1,0 +1,15 @@
+package templates
+
+type QualityMetricsProps struct {
+	AverageMrSizeSeries TimeSeries
+	AverageReviewDepthSeries TimeSeries
+	MrsMergedWithoutReviewSeries TimeSeries
+}
+
+templ QualityMetrics(page *Page, props QualityMetricsProps) {
+	@Layout(page){
+		@TimeSeriesChart(props.AverageMrSizeSeries)
+		@TimeSeriesChart(props.AverageReviewDepthSeries)
+		@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+	}
+}

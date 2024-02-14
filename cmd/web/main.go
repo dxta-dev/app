@@ -71,6 +71,7 @@ func main() {
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
 	g.GET("/metrics", app.Metrics)
+	g.GET("/metrics/quality", app.QualityMetricsPage)
 
 	port := os.Getenv("PORT")
 	if port == "" {
