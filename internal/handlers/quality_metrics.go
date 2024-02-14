@@ -32,10 +32,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := utils.GetLastNWeeks(time.Now(), 6*4)
 
-
-	fmt.Println(weeks)
-
-
 	ams, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {

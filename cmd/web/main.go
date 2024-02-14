@@ -72,6 +72,7 @@ func main() {
 
 	g.GET("/metrics", app.Metrics)
 	g.GET("/metrics/quality", app.QualityMetricsPage)
+	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 
 	port := os.Getenv("PORT")
 	if port == "" {
