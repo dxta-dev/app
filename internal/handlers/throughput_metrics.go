@@ -29,7 +29,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	weeks := utils.GetLastNWeeks(time.Now(), 6*4)
+	weeks := utils.GetLastNWeeks(time.Now(), 3*4)
 
 	tc, err := store.GetTotalCommits(weeks)
 
@@ -102,11 +102,11 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	props := templates.ThroughputMetricsProps{
-		TotalCommitsSeries:     templates.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues},
-		TotalMrsOpenedSeries:   templates.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues},
-		MergeFrequencySeries:   templates.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues},
-		TotalReviewsSeries:     templates.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues},
-		TotalCodeChangesSeries: templates.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues},
+		TotalCommitsSeries:     templates.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks},
+		TotalMrsOpenedSeries:   templates.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks},
+		MergeFrequencySeries:   templates.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks},
+		TotalReviewsSeries:     templates.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks},
+		TotalCodeChangesSeries: templates.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks},
 	}
 
 	components := templates.ThroughputMetrics(page, props)

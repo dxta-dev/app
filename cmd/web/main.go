@@ -59,8 +59,6 @@ func main() {
 
 	e.GET("/", app.Home)
 
-	e.GET("/charts", app.Charts)
-
 	g := e.Group("")
 
 	g.Use(middlewares.ConfigMiddleware(config))

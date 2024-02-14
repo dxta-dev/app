@@ -62,6 +62,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Title:   "Average Pull Request Size",
 		XValues: amsXValues,
 		YValues: amsYValues,
+		Weeks:   weeks,
 	}
 
 	ardXValues := make([]float64, len(weeks))
@@ -76,6 +77,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Title:   "Average Review Depth",
 		XValues: ardXValues,
 		YValues: ardYValues,
+		Weeks:   weeks,
 	}
 
 	mmwrXValues := make([]float64, len(weeks))
@@ -91,6 +93,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Title:   "Pull Requests Merged Without Review",
 		XValues: mmwrXValues,
 		YValues: mmwrYValues,
+		Weeks:   weeks,
 	}
 
 	props := templates.QualityMetricsProps{
