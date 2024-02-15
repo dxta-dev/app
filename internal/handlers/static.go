@@ -1,7 +1,8 @@
 package handlers
 
 import (
-	"dxta-dev/app"
+	"github.com/dxta-dev/app"
+
 	"io/fs"
 	"net/http"
 

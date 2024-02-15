@@ -1,9 +1,10 @@
 package middlewares
 
 import (
+	"github.com/dxta-dev/app/internal/utils"
+
 	"context"
 	"database/sql"
-	"dxta-dev/app/internal/utils"
 	"fmt"
 	"log"
 	"net/http"

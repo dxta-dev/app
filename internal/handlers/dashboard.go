@@ -1,24 +1,25 @@
 package handlers
 
 import (
+	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/graphs"
+	"github.com/dxta-dev/app/internal/middlewares"
+	"github.com/dxta-dev/app/internal/templates"
+	"github.com/dxta-dev/app/internal/utils"
+
 	"context"
-	"dxta-dev/app/internal/data"
-	"dxta-dev/app/internal/graphs"
-	"dxta-dev/app/internal/middlewares"
-	"dxta-dev/app/internal/templates"
-	"dxta-dev/app/internal/utils"
 	"fmt"
 	"net/url"
 	"sort"
 	"strconv"
 	"time"
+	_ "modernc.org/sqlite"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	"github.com/wcharczuk/go-chart/v2/drawing"
-
 	_ "github.com/libsql/libsql-client-go/libsql"
-	_ "modernc.org/sqlite"
+
 )
 
 type DashboardState struct {

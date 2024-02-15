@@ -1,9 +1,10 @@
 package main
 
 import (
-	"dxta-dev/app/internal/handlers"
-	"dxta-dev/app/internal/middlewares"
-	"dxta-dev/app/internal/utils"
+	"github.com/dxta-dev/app/internal/handlers"
+	"github.com/dxta-dev/app/internal/middlewares"
+	"github.com/dxta-dev/app/internal/utils"
+
 	"fmt"
 	"log"
 	"net/http"

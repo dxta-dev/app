@@ -1,13 +1,14 @@
 package data
 
 import (
+	"github.com/dxta-dev/app/internal/utils"
+
 	"database/sql"
-	"dxta-dev/app/internal/utils"
 	"log"
 	"time"
+	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
-	_ "modernc.org/sqlite"
 )
 
 const (

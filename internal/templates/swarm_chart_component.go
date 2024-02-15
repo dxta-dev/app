@@ -1,9 +1,10 @@
 package templates
 
 import (
+	"github.com/dxta-dev/app/internal/data"
+
 	"bytes"
 	"context"
-	"dxta-dev/app/internal/data"
 	"io"
 	"time"
 

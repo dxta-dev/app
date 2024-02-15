@@ -3,9 +3,9 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
-	_ "modernc.org/sqlite"
 )
 
 type NullRows struct {

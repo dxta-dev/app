@@ -1,8 +1,9 @@
 package middlewares
 
 import (
+	"github.com/dxta-dev/app/internal/utils"
+
 	"context"
-	"dxta-dev/app/internal/utils"
 
 	"github.com/labstack/echo/v4"
 )

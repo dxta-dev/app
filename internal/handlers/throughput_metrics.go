@@ -1,11 +1,12 @@
 package handlers
 
 import (
+	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/middlewares"
+	"github.com/dxta-dev/app/internal/templates"
+	"github.com/dxta-dev/app/internal/utils"
+
 	"context"
-	"dxta-dev/app/internal/data"
-	"dxta-dev/app/internal/middlewares"
-	"dxta-dev/app/internal/templates"
-	"dxta-dev/app/internal/utils"
 	"time"
 
 	"github.com/donseba/go-htmx"

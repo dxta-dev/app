@@ -1,12 +1,13 @@
 package handlers
 
 import (
-	"context"
-	"dxta-dev/app/internal/data"
-	"dxta-dev/app/internal/middlewares"
-	"dxta-dev/app/internal/templates"
-	"dxta-dev/app/internal/utils"
+	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/middlewares"
+	"github.com/dxta-dev/app/internal/templates"
+	"github.com/dxta-dev/app/internal/utils"
+
 	"time"
+	"context"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
