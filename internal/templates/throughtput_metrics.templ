@@ -1,0 +1,25 @@
+package templates
+
+type ThroughputMetricsProps struct {
+	TotalCommitsSeries TimeSeries
+	TotalMrsOpenedSeries TimeSeries
+	MergeFrequencySeries TimeSeries
+	TotalReviewsSeries TimeSeries
+	TotalCodeChangesSeries TimeSeries
+}
+
+templ ThroughputMetrics(page *Page, props ThroughputMetricsProps) {
+	@Layout(page){
+		<h1>Throughput Metrics</h1>
+		<h2>Total Commits</h2>
+		@TimeSeriesChart(props.TotalCommitsSeries)
+		<h2>Total MRs Opened</h2>
+		@TimeSeriesChart(props.TotalMrsOpenedSeries)
+		<h2>Merge Frequency</h2>
+		@TimeSeriesChart(props.MergeFrequencySeries)
+		<h2>Total Reviews</h2>
+		@TimeSeriesChart(props.TotalReviewsSeries)
+		<h2>Total Code Changes</h2>
+		@TimeSeriesChart(props.TotalCodeChangesSeries)
+	}
+}

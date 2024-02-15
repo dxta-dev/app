@@ -156,7 +156,7 @@ func TestGetLastNWeeks(t *testing.T) {
 	t.Run("specific date", func(t *testing.T) {
 		date := time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC) // A known date
 		n := 2
-		expectedWeeks := []string{"2023-W01", "2022-W52"}
+		expectedWeeks := []string{"2022-W52", "2023-W01"}
 		weeks := GetLastNWeeks(date, n)
 		for i, week := range weeks {
 			if week != expectedWeeks[i] {

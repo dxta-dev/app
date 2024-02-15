@@ -59,8 +59,6 @@ func main() {
 
 	e.GET("/", app.Home)
 
-	e.GET("/charts", app.Charts)
-
 	g := e.Group("")
 
 	g.Use(middlewares.ConfigMiddleware(config))
@@ -71,6 +69,8 @@ func main() {
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
 	g.GET("/metrics", app.Metrics)
+	g.GET("/metrics/quality", app.QualityMetricsPage)
+	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 
 	port := os.Getenv("PORT")
 	if port == "" {
