@@ -206,26 +206,44 @@ func Navigation(debug bool) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var10 := `DXTA `
+		templ_7745c5c3_Var10 := `DXTA`
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var10)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></div><nav class=\"flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden\"><ul class=\"space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex\"><li><a href=\"/charts\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></div><nav class=\"flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden\"><ul class=\"space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex\"><li><a href=\"/\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var11 := `Charts`
+		templ_7745c5c3_Var11 := `Dashboard`
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var11)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></li><li><a href=\"/dashboard\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></li><li><a href=\"/metrics\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Var12 := `Dashboard`
+		templ_7745c5c3_Var12 := `Metrics`
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var12)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></li><li><a href=\"/metrics/quality\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Var13 := `Quality Metrics`
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var13)
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</a></li><li><a href=\"/metrics/throughput\" class=\"px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		templ_7745c5c3_Var14 := `Throughput Metrics`
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ_7745c5c3_Var14)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

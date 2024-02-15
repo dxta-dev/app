@@ -7,7 +7,6 @@ import (
 	"github.com/dxta-dev/app/internal/util"
 
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -85,7 +84,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	mmwrYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		fmt.Println(week, mmwr[week].Count)
 		mmwrXValues[i] = float64(i)
 		mmwrYValues[i] = float64(mmwr[week].Count)
 	}
