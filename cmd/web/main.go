@@ -58,14 +58,13 @@ func main() {
 	})
 	e.GET("/*", app.PublicHandler())
 
-	e.GET("/", app.Home)
 
 	g := e.Group("")
 
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
 
-	g.GET("/dashboard", app.Dashboard)
+	g.GET("/", app.Dashboard)
 	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 

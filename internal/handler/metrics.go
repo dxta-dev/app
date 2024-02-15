@@ -26,6 +26,10 @@ func (a *App) Metrics(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 24)
 
+	for i, j := 0, len(weeks)-1; i < j; i, j = i+1, j-1 {
+		weeks[i], weeks[j] = weeks[j], weeks[i]
+	}
+
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
