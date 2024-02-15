@@ -5,8 +5,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"dxta-dev/app/internal/middlewares"
-	"dxta-dev/app/internal/utils"
+	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/util"
 
 	"github.com/labstack/echo/v4"
 )
@@ -40,16 +40,16 @@ func TestTenantMiddleware(t *testing.T) {
 
 			echoContext := e.NewContext(req, rec)
 
-			var mockConfigTenants = make(map[string]utils.Tenant)
+			var mockConfigTenants = make(map[string]util.Tenant)
 			if !tc.expectedIsRoot {
-				mockConfigTenants[tc.expectedSubdomain] = utils.Tenant{
+				mockConfigTenants[tc.expectedSubdomain] = util.Tenant{
 					Name:          tc.name,
 					SubdomainName: tc.expectedSubdomain,
 					DatabaseName:  tc.name,
 					DatabaseUrl:   &mockDatabaseUrl,
 				}
 			}
-			var mockConfig = utils.Config{
+			var mockConfig = util.Config{
 				IsMultiTenant:             true, // bypass: set to true since we are testing multi-tenant config
 				ShouldUseSuperDatabase:    false,
 				SuperDatabaseUrl:          nil,
@@ -58,16 +58,16 @@ func TestTenantMiddleware(t *testing.T) {
 			}
 
 			requestContext := echoContext.Request().Context()
-			requestContext = middlewares.WithConfigContext(requestContext, &mockConfig)
+			requestContext = middleware.WithConfigContext(requestContext, &mockConfig)
 			echoContext.SetRequest(echoContext.Request().WithContext(requestContext))
 
-			if err := middlewares.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
+			if err := middleware.TenantMiddleware(func(c echo.Context) error { return nil })(echoContext); err != nil {
 				t.Fatal(err)
 			}
 
 			requestContext = echoContext.Request().Context()
 
-			isRoot, ok := requestContext.Value(middlewares.IsRootContext).(bool)
+			isRoot, ok := requestContext.Value(middleware.IsRootContext).(bool)
 			if !ok {
 				t.Errorf("is_root not set correctly")
 			}
@@ -75,7 +75,7 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected is_root to be %v, got %v", tc.expectedIsRoot, isRoot)
 			}
 
-			subdomain, ok := requestContext.Value(middlewares.SubdomainContext).(string)
+			subdomain, ok := requestContext.Value(middleware.SubdomainContext).(string)
 			if !ok {
 				t.Errorf("subdomain not set correctly")
 			}
@@ -83,7 +83,7 @@ func TestTenantMiddleware(t *testing.T) {
 				t.Errorf("Expected subdomain to be %v, got %v", tc.expectedSubdomain, subdomain)
 			}
 
-			_, ok = requestContext.Value(middlewares.TenantDatabaseURLContext).(string)
+			_, ok = requestContext.Value(middleware.TenantDatabaseURLContext).(string)
 			if !ok && !tc.expectedIsRoot {
 				t.Errorf("tenant database url not set correctly")
 			}
