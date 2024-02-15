@@ -30,7 +30,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	weeks := utils.GetLastNWeeks(time.Now(), 6*4)
+	weeks := utils.GetLastNWeeks(time.Now(), 3*4)
 
 	ams, err := store.GetAverageMRSize(weeks)
 
