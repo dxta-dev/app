@@ -127,7 +127,7 @@ func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error
 	return requestUri, nil
 }
 
-func (a *App) Dashboard(c echo.Context) error {
+func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)

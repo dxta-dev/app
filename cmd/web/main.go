@@ -64,11 +64,12 @@ func main() {
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
 
-	g.GET("/", app.Dashboard)
+	g.GET("/", app.DashboardPage)
+
 	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
-	g.GET("/metrics", app.Metrics)
+	g.GET("/metrics", app.MetricsPage)
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 

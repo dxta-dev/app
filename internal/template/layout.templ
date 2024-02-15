@@ -1,74 +1,103 @@
 package template
 
 import (
-	"fmt"
+"fmt"
 )
 
 type Page struct {
-	Title     string
-	Boosted   bool
-	Requested bool
-	CacheBust string
-	DebugMode bool
+Title string
+Boosted bool
+Requested bool
+CacheBust string
+DebugMode bool
 }
 
 templ Layout(page *Page) {
-	<html>
-		@Head(page.Title, page.CacheBust)
-		if !page.Boosted && !page.Requested {
-			@Navigation(page.DebugMode)
-		}
-		<body>
-			@Content() {
-				{ children... }
-			}
-		</body>
-	</html>
+<html>
+@Head(page.Title, page.CacheBust)
+if !page.Boosted && !page.Requested {
+@Navigation(page.DebugMode)
+}
+
+<body>
+	@Content() {
+	{ children... }
+	}
+</body>
+
+</html>
 }
 
 templ Head(title string, bust string) {
-	<head>
-		<meta charset="UTF-8"/>
-		<title>{ title }</title>
-		<script src="https://unpkg.com/htmx.org@1.9.9/dist/htmx.min.js"></script>
-		<script src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
-		<link href={ fmt.Sprintf("/style.css?t=%s", bust) } rel="stylesheet"/>
-	</head>
+
+<head>
+	<meta charset="UTF-8" />
+	<title>{ title }</title>
+	<script src="https://unpkg.com/htmx.org@1.9.9/dist/htmx.min.js"></script>
+	<script src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
+	<link href={ fmt.Sprintf("/style.css?t=%s", bust) } rel="stylesheet" />
+</head>
 }
 
 templ Content() {
-	<main>
-		{ children... }
-	</main>
+<main>
+	{ children... }
+</main>
 }
 
 templ Navigation(debug bool) {
-	if debug {
-		<div class="rounded-md bg-yellow-50 p-4">
-			<div class="flex justify-center items-center">
-				<div class="flex-shrink-0">
-					<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-						<path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
-					</svg>
-				</div>
-				<div class="ml-3">
-					<h3 class="text-sm font-medium text-yellow-800">YOU ARE IN DEBUG MODE</h3>
-				</div>
-			</div>
+if debug {
+<div class="rounded-md bg-yellow-50 p-4">
+	<div class="flex justify-center items-center">
+		<div class="flex-shrink-0">
+			<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path fill-rule="evenodd"
+					d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+					clip-rule="evenodd"></path>
+			</svg>
 		</div>
-	}
-	<div hx-boost="true" hx-target="main" hx-swap="outerHTML show:unset" class="w-full mx-auto">
-		<div class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24">
-			<div class="flex flex-row items-center justify-between lg:justify-start">
-				<a href="/" class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">DXTA </a>
-			</div>
-			<nav class="flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden">
-				<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
-					<li>
-						<a href="/dashboard" class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">Dashboard</a>
-					</li>
-				</ul>
-			</nav>
+		<div class="ml-3">
+			<h3 class="text-sm font-medium text-yellow-800">YOU ARE IN DEBUG MODE</h3>
 		</div>
 	</div>
+</div>
+}
+<div hx-boost="true" hx-target="main" hx-swap="outerHTML show:unset" class="w-full mx-auto">
+	<div
+		class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24">
+		<div class="flex flex-row items-center justify-between lg:justify-start">
+			<a href="/" class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
+				DXTA
+			</a>
+		</div>
+		<nav class="flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden">
+			<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
+				<li>
+					<a href="/"
+						class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
+						Dashboard
+					</a>
+				</li>
+				<li>
+					<a href="/metrics"
+						class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
+						Metrics
+					</a>
+				</li>
+				<li>
+					<a href="/metrics/quality"
+						class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
+						Quality Metrics
+					</a>
+				</li>
+				<li>
+					<a href="/metrics/throughput"
+						class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900">
+						Throughput Metrics
+					</a>
+				</li>
+			</ul>
+		</nav>
+	</div>
+</div>
 }

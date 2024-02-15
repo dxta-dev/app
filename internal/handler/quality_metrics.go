@@ -103,6 +103,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		MrsMergedWithoutReviewSeries: mrsMergedWithoutReviewSeries,
 	}
 
-	components := template.QualityMetrics(page, props)
+	components := template.QualityMetricsPage(page, props)
 	return components.Render(context.Background(), c.Response().Writer)
 }

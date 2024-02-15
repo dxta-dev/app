@@ -13,7 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (a *App) Metrics(c echo.Context) error {
+func (a *App) MetricsPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
@@ -96,6 +96,6 @@ func (a *App) Metrics(c echo.Context) error {
 		MergeFrequencyMap:     mergeFrequencyMap,
 	}
 
-	components := template.Metrics(page, *metricsProps)
+	components := template.MetricsPage(page, *metricsProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }

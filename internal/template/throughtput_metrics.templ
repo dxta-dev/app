@@ -8,7 +8,7 @@ type ThroughputMetricsProps struct {
 	TotalCodeChangesSeries TimeSeries
 }
 
-templ ThroughputMetrics(page *Page, props ThroughputMetricsProps) {
+templ ThroughputMetricsPage(page *Page, props ThroughputMetricsProps) {
 	@Layout(page){
 		<h1>Throughput Metrics</h1>
 		<h2>Total Commits</h2>
