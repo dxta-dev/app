@@ -3,11 +3,10 @@ package data
 import (
 	"fmt"
 	"strings"
-
 	"database/sql"
+	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
-	_ "modernc.org/sqlite"
 )
 
 type AverageMRSizeByWeek struct {

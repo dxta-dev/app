@@ -1,4 +1,4 @@
-module dxta-dev/app
+module github.com/dxta-dev/app
 
 go 1.22
 

@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json bun.lockb tailwind.config.js tsconfig.json style.css ./
 
-COPY ./internal/templates/*.templ ./internal/templates/
+COPY ./internal/template/*.templ ./internal/template/
 
 RUN bun install
 

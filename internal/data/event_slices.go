@@ -1,13 +1,14 @@
 package data
 
 import (
+	"github.com/dxta-dev/app/internal/util"
+
 	"database/sql"
-	"dxta-dev/app/internal/utils"
 	"log"
 	"time"
+	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
-	_ "modernc.org/sqlite"
 )
 
 const (
@@ -117,7 +118,7 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	defer db.Close()
 
-	week := utils.GetFormattedWeek(date)
+	week := util.GetFormattedWeek(date)
 
 	if err != nil {
 		return nil, err
