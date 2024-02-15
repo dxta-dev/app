@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/dxta-dev/app/internal/handlers"
-	"github.com/dxta-dev/app/internal/middlewares"
-	"github.com/dxta-dev/app/internal/utils"
+	"github.com/dxta-dev/app/internal/handler"
+	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/util"
 
 	"fmt"
 	"log"
@@ -22,7 +22,7 @@ var DEBUG string
 
 func main() {
 
-	config, err := utils.GetConfig()
+	config, err := util.GetConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,7 +40,7 @@ func main() {
 		log.Printf("--------------------------------------------------")
 	}
 
-	app := &handlers.App{
+	app := &handler.App{
 		HTMX:           htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
 		DebugMode: DEBUG == "true",
@@ -51,7 +51,7 @@ func main() {
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
 
-	e.Use(middlewares.HtmxMiddleware)
+	e.Use(middleware.HtmxMiddleware)
 
 	e.GET("/timestamp", func(c echo.Context) error {
 		return c.String(http.StatusOK, app.BuildTimestamp)
@@ -62,8 +62,8 @@ func main() {
 
 	g := e.Group("")
 
-	g.Use(middlewares.ConfigMiddleware(config))
-	g.Use(middlewares.TenantMiddleware)
+	g.Use(middleware.ConfigMiddleware(config))
+	g.Use(middleware.TenantMiddleware)
 
 	g.GET("/dashboard", app.Dashboard)
 	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
