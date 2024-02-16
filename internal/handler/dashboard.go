@@ -102,30 +102,38 @@ func getSwarmSeries(store *data.Store, date time.Time) (template.SwarmSeries, er
 
 }
 
-func getNextUrl(state DashboardState) string {
+func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error) {
 	params := url.Values{}
+
+	parsedURL, err := url.Parse(currentUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	requestUri := parsedURL.Path
+
 	if state.week != "" {
 		params.Add("week", state.week)
 	}
 	if state.mr != nil {
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
-	baseUrl := "/dashboard"
 	encodedParams := params.Encode()
 	if encodedParams != "" {
-		return fmt.Sprintf("%s?%s", baseUrl, encodedParams)
+		return fmt.Sprintf("%s?%s", requestUri, encodedParams), nil
 	}
 
-	return baseUrl
+	return requestUri, nil
 }
 
-func (a *App) Dashboard(c echo.Context) error {
+func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	page := &template.Page{
-		Title:     "Charts",
+		Title:     "Dashboard - DXTA",
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,
 		CacheBust: a.BuildTimestamp,
@@ -155,7 +163,20 @@ func (a *App) Dashboard(c echo.Context) error {
 		}
 	}
 
-	nextUrl := getNextUrl(state)
+	var nextUrl string
+
+	if h.HxRequest && h.HxBoosted == false {
+		nextUrl, err = getNextDashboardUrl(h.HxCurrentURL, state)
+		if err != nil {
+			return err
+		}
+	} else {
+		nextUrl, err = getNextDashboardUrl(r.URL.RequestURI(), state)
+		if err != nil {
+			return err
+		}
+	}
+
 
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 

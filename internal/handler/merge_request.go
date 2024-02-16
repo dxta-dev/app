@@ -42,7 +42,14 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		mr:   &mrId,
 	}
 
-	nextUrl := getNextUrl(state)
+	fmt.Println("current url", h.HxCurrentURL)
+
+	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
+
+	if err != nil {
+		return err
+	}
+
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
 	events, err := store.GetMergeRequestEvents(mrId)
@@ -79,7 +86,12 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 		mr:   nil,
 	}
 
-	nextUrl := getNextUrl(state)
+	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
+
+	if err != nil {
+		return err
+	}
+
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
 	c.NoContent(http.StatusOK)

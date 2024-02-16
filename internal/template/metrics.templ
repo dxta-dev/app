@@ -19,7 +19,7 @@ type MetricsProps struct {
 	MergeFrequencyMap     map[string]data.MergeFrequencyByWeek
 }
 
-templ Metrics(page *Page, props MetricsProps) {
+templ MetricsPage(page *Page, props MetricsProps) {
 	@Layout(page) {
 		<div class="overflow-x-auto font-mono">
 		<table class="min-w-full table-auto">

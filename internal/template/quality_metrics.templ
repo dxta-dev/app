@@ -6,7 +6,7 @@ type QualityMetricsProps struct {
 	MrsMergedWithoutReviewSeries TimeSeries
 }
 
-templ QualityMetrics(page *Page, props QualityMetricsProps) {
+templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 	@Layout(page){
 		<h1>Quality Metrics</h1>
 		<h2>Average MR Size</h2>

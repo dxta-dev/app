@@ -58,18 +58,18 @@ func main() {
 	})
 	e.GET("/*", app.PublicHandler())
 
-	e.GET("/", app.Home)
 
 	g := e.Group("")
 
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
 
-	g.GET("/dashboard", app.Dashboard)
+	g.GET("/", app.DashboardPage)
+
 	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
 	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
 
-	g.GET("/metrics", app.Metrics)
+	g.GET("/metrics", app.MetricsPage)
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 

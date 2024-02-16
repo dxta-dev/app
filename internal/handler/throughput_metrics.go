@@ -110,6 +110,6 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		TotalCodeChangesSeries: template.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks},
 	}
 
-	components := template.ThroughputMetrics(page, props)
+	components := template.ThroughputMetricsPage(page, props)
 	return components.Render(context.Background(), c.Response().Writer)
 }
