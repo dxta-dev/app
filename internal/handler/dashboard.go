@@ -163,11 +163,20 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 	}
 
-	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
+	var nextUrl string
 
-	if err != nil {
-		return err
+	if h.HxRequest && h.HxBoosted == false {
+		nextUrl, err = getNextDashboardUrl(h.HxCurrentURL, state)
+		if err != nil {
+			return err
+		}
+	} else {
+		nextUrl, err = getNextDashboardUrl(r.URL.RequestURI(), state)
+		if err != nil {
+			return err
+		}
 	}
+
 
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 

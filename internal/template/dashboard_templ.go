@@ -30,7 +30,7 @@ func weekPicker(props WeekPickerProps) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form><input hx-target=\"main\" hx-swap=\"innerHTML\" hx-get=\"/dashboard\" id=\"week\" type=\"week\" name=\"week\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form><input hx-target=\"main\" hx-swap=\"innerHTML\" hx-get=\"/\" id=\"week\" type=\"week\" name=\"week\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -50,7 +50,7 @@ func weekPicker(props WeekPickerProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 templ.SafeURL = templ.SafeURL("/dashboard?week=" + props.PreviousWeek)
+		var templ_7745c5c3_Var2 templ.SafeURL = templ.SafeURL("/?week=" + props.PreviousWeek)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var2)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -68,7 +68,7 @@ func weekPicker(props WeekPickerProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL("/dashboard?week=" + props.CurrentWeek)
+		var templ_7745c5c3_Var4 templ.SafeURL = templ.SafeURL("/?week=" + props.CurrentWeek)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var4)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
@@ -86,7 +86,7 @@ func weekPicker(props WeekPickerProps) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 templ.SafeURL = templ.SafeURL("/dashboard?week=" + props.NextWeek)
+		var templ_7745c5c3_Var6 templ.SafeURL = templ.SafeURL("/?week=" + props.NextWeek)
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var6)))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
