@@ -52,8 +52,8 @@ func getEventName(eventType data.EventType) string {
 
 func getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_getChart_cb35`,
-		Function: `function __templ_getChart_cb35(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
+		Name: `__templ_getChart_2d43`,
+		Function: `function __templ_getChart_2d43(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
 		return;
 	}
 
@@ -92,33 +92,9 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 	function orderCircles(circles) {
 		if (circles.length === 0) return [];
 		if (circles.length === 1) return circles;
-
-		let unorderedCircles = [...circles];
-
-		let currentCircle = unorderedCircles.shift();
-
-		const orderedCircles = [currentCircle];
-
-		while (unorderedCircles.length > 0) {
-			let closestCircleIndex = 0;
-			let minDistance = Infinity;
-
-			for (let i = 0; i < unorderedCircles.length; i++) {
-				const distance = calculateDistance(currentCircle.getAttribute("cx"), currentCircle.getAttribute("cy"), unorderedCircles[i].getAttribute("cx"), unorderedCircles[i].getAttribute("cy"));
-				if (distance < minDistance) {
-					minDistance = distance;
-					closestCircleIndex = i;
-				}
-			}
-
-			let closestCircle = unorderedCircles.splice(closestCircleIndex, 1)[0];
-
-			currentCircle = closestCircle;
-
-			orderedCircles.push(currentCircle);
-		}
-
-		return orderedCircles;
+		return Array.from(circles).sort((a, b) => {
+			return Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+		})
 	}
 
 
@@ -176,8 +152,8 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 
 		});
 	});}`,
-		Call:       templ.SafeScript(`__templ_getChart_cb35`, chartId, endpoint, circleIds, circleMergeRequestIds),
-		CallInline: templ.SafeScriptInline(`__templ_getChart_cb35`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		Call:       templ.SafeScript(`__templ_getChart_2d43`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		CallInline: templ.SafeScriptInline(`__templ_getChart_2d43`, chartId, endpoint, circleIds, circleMergeRequestIds),
 	}
 }
 

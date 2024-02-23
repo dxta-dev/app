@@ -82,33 +82,9 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	function orderCircles(circles) {
 		if (circles.length === 0) return [];
 		if (circles.length === 1) return circles;
-
-		let unorderedCircles = [...circles];
-
-		let currentCircle = unorderedCircles.shift();
-
-		const orderedCircles = [currentCircle];
-
-		while (unorderedCircles.length > 0) {
-			let closestCircleIndex = 0;
-			let minDistance = Infinity;
-
-			for (let i = 0; i < unorderedCircles.length; i++) {
-				const distance = calculateDistance(currentCircle.getAttribute("cx"), currentCircle.getAttribute("cy"), unorderedCircles[i].getAttribute("cx"), unorderedCircles[i].getAttribute("cy"));
-				if (distance < minDistance) {
-					minDistance = distance;
-					closestCircleIndex = i;
-				}
-			}
-
-			let closestCircle = unorderedCircles.splice(closestCircleIndex, 1)[0];
-
-			currentCircle = closestCircle;
-
-			orderedCircles.push(currentCircle);
-		}
-
-		return orderedCircles;
+		return Array.from(circles).sort((a, b) => {
+			return Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+		})
 	}
 
 
