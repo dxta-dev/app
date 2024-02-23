@@ -52,8 +52,8 @@ func getEventName(eventType data.EventType) string {
 
 func getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_getChart_f81e`,
-		Function: `function __templ_getChart_f81e(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
+		Name: `__templ_getChart_c413`,
+		Function: `function __templ_getChart_c413(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
 		return;
 	}
 
@@ -99,7 +99,6 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 			return y;
 		})
 	}
-
 
 	const searchParams = new URLSearchParams(document.location.search);
 
@@ -155,8 +154,8 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 
 		});
 	});}`,
-		Call:       templ.SafeScript(`__templ_getChart_f81e`, chartId, endpoint, circleIds, circleMergeRequestIds),
-		CallInline: templ.SafeScriptInline(`__templ_getChart_f81e`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		Call:       templ.SafeScript(`__templ_getChart_c413`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		CallInline: templ.SafeScriptInline(`__templ_getChart_c413`, chartId, endpoint, circleIds, circleMergeRequestIds),
 	}
 }
 
