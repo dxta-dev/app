@@ -83,7 +83,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		if (circles.length === 0) return [];
 		if (circles.length === 1) return circles;
 		return Array.from(circles).sort((a, b) => {
-			return Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+			const x = Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+			const y = Number(a.getAttribute("cy")) - Number(b.getAttribute("cy"));
+			if (x !== 0) return x;
+			return y;
 		})
 	}
 
@@ -114,8 +117,8 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 					const line = createLineBetweenCircles(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"));
 					lines.push(line);
 					svg.appendChild(line);
-					prevCircle = circles[i];
 				}
+				prevCircle = circles[i];
 			}
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);

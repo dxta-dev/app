@@ -52,8 +52,8 @@ func getEventName(eventType data.EventType) string {
 
 func getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) templ.ComponentScript {
 	return templ.ComponentScript{
-		Name: `__templ_getChart_2d43`,
-		Function: `function __templ_getChart_2d43(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
+		Name: `__templ_getChart_f81e`,
+		Function: `function __templ_getChart_f81e(chartId, endpoint, circleIds, circleMergeRequestIds){if (circleIds === null) {
 		return;
 	}
 
@@ -93,7 +93,10 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 		if (circles.length === 0) return [];
 		if (circles.length === 1) return circles;
 		return Array.from(circles).sort((a, b) => {
-			return Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+			const x = Number(a.getAttribute("cx")) - Number(b.getAttribute("cx"));
+			const y = Number(a.getAttribute("cy")) - Number(b.getAttribute("cy"));
+			if (x !== 0) return x;
+			return y;
 		})
 	}
 
@@ -124,8 +127,8 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 					const line = createLineBetweenCircles(prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"), circles[i].getAttribute("cx"), circles[i].getAttribute("cy"));
 					lines.push(line);
 					svg.appendChild(line);
-					prevCircle = circles[i];
 				}
+				prevCircle = circles[i];
 			}
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);
@@ -152,8 +155,8 @@ func getChart(chartId string, endpoint string, circleIds []int64, circleMergeReq
 
 		});
 	});}`,
-		Call:       templ.SafeScript(`__templ_getChart_2d43`, chartId, endpoint, circleIds, circleMergeRequestIds),
-		CallInline: templ.SafeScriptInline(`__templ_getChart_2d43`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		Call:       templ.SafeScript(`__templ_getChart_f81e`, chartId, endpoint, circleIds, circleMergeRequestIds),
+		CallInline: templ.SafeScriptInline(`__templ_getChart_f81e`, chartId, endpoint, circleIds, circleMergeRequestIds),
 	}
 }
 
