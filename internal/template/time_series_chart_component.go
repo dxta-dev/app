@@ -5,6 +5,7 @@ import (
 	"context"
 	"io"
 	"log"
+	"strings"
 
 	"github.com/a-h/templ"
 	"github.com/wcharczuk/go-chart/v2"
@@ -40,13 +41,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 			mainSeries,
 		},
 		Height: 300,
-		Width:  900,
+		Width:  650,
 	}
 
 	for i, week := range series.Weeks {
+		week_part := strings.Split(week, "-")
 		graph.XAxis.Ticks = append(graph.XAxis.Ticks, chart.Tick{
 			Value: float64(i),
-			Label: week,
+			Label: week_part[1],
 		})
 	}
 
