@@ -9,7 +9,7 @@ public/style.css
 bin/*
 !bin/.gitkeep
 
-internal/templates/*_templ.go
+internal/template/*_templ.go
 
 .env
 

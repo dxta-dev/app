@@ -44,8 +44,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/templates/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/templates/**/*.templ') }}
+            ./internal/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
 
       - name: Generate
         if: steps.generate-cache.outputs.cache-hit != 'true'
@@ -71,8 +71,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/templates/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/templates/**/*.templ') }}
+            ./internal/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
 
       - name: Test
         run: |
@@ -94,8 +94,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/templates/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/templates/**/*.templ') }}
+            ./internal/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
 
       - name: Dry Build
         run: |
