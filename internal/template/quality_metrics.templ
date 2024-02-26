@@ -9,11 +9,19 @@ type QualityMetricsProps struct {
 templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 	@Layout(page){
 		<h1>Quality Metrics</h1>
-		<h2>Average MR Size</h2>
-		@TimeSeriesChart(props.AverageMrSizeSeries)
-		<h2>Average Review Depth</h2>
-		@TimeSeriesChart(props.AverageReviewDepthSeries)
-		<h2>MRs Merged Without Review</h2>
-		@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+		<div class="flex flex-row grid grid-cols-2 gap-2">
+			<div class="w-96">
+				<h2 class="m-4">Average MR Size</h2>
+				@TimeSeriesChart(props.AverageMrSizeSeries)
+			</div>
+			<div class="w-96">
+				<h2 class="m-4">Average Review Depth</h2>
+				@TimeSeriesChart(props.AverageReviewDepthSeries)
+			</div>
+			<div class="w-96">
+				<h2 class="m-4">MRs Merged Without Review</h2>
+				@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+			</div>
+		</div>
 	}
 }

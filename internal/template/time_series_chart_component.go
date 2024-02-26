@@ -20,8 +20,8 @@ type TimeSeries struct {
 func TimeSeriesChart(series TimeSeries) templ.Component {
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
-			StrokeWidth:      chart.Disabled,
-			DotWidth:         5,
+			StrokeWidth: chart.Disabled,
+			DotWidth:    5,
 		},
 		Name:    series.Title,
 		XValues: series.XValues,
@@ -39,6 +39,8 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 			lineSeries,
 			mainSeries,
 		},
+		Height: 300,
+		Width:  900,
 	}
 
 	for i, week := range series.Weeks {
