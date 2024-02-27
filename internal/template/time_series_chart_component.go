@@ -3,8 +3,10 @@ package template
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"log"
+	"math"
 	"strconv"
 	"strings"
 
@@ -23,6 +25,7 @@ func getYAxisValues(yValues []float64) []float64 {
 	if len(yValues) == 0 {
 		return []float64{0, 1, 2, 3, 4, 5}
 	}
+	fmt.Println(yValues)
 
 	highest := yValues[0]
 
@@ -31,6 +34,12 @@ func getYAxisValues(yValues []float64) []float64 {
 			highest = num
 		}
 	}
+
+	if highest < 5 {
+		return []float64{0, 1, 2, 3, 4}
+	}
+
+	highest = float64(int(math.Round(highest/10) * 10))
 
 	lowest := 0.0
 	percent25 := highest * 0.25
@@ -41,8 +50,8 @@ func getYAxisValues(yValues []float64) []float64 {
 }
 
 func TimeSeriesChart(series TimeSeries) templ.Component {
-
 	YAxisValues := getYAxisValues(series.YValues)
+
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,
