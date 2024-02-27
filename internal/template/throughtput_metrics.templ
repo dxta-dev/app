@@ -10,16 +10,35 @@ type ThroughputMetricsProps struct {
 
 templ ThroughputMetricsPage(page *Page, props ThroughputMetricsProps) {
 	@Layout(page){
-		<h1>Throughput Metrics</h1>
-		<h2>Total Commits</h2>
-		@TimeSeriesChart(props.TotalCommitsSeries)
-		<h2>Total MRs Opened</h2>
-		@TimeSeriesChart(props.TotalMrsOpenedSeries)
-		<h2>Merge Frequency</h2>
-		@TimeSeriesChart(props.MergeFrequencySeries)
-		<h2>Total Reviews</h2>
-		@TimeSeriesChart(props.TotalReviewsSeries)
-		<h2>Total Code Changes</h2>
-		@TimeSeriesChart(props.TotalCodeChangesSeries)
+		<div class="">
+			<h1 class="text-4xl font-bold mb-8 text-center">Throughput Metrics</h1>
+			<div class="grid grid-cols-2">
+				<div class="inline-block bg-red-100 px-9 py-4">
+					<h4 class="text-2xl font-bold">Total Commits</h4>
+					<p>AVG commits per week</p>
+					@TimeSeriesChart(props.TotalCommitsSeries)
+				</div>
+				<div class="inline-block bg-blue-100 px-9 py-4">
+					<h4 class="text-2xl font-bold">Total MRs Opened</h4>
+					<p>AVG MRs per week</p>
+					@TimeSeriesChart(props.TotalMrsOpenedSeries)
+				</div>
+				<div class="inline-block bg-yellow-100 px-9 py-4">
+					<h4 class="text-2xl font-bold">Merge Frequency</h4>
+					<p>AVG MRs merged per Week</p>
+					@TimeSeriesChart(props.MergeFrequencySeries)
+				</div>
+				<div class="inline-block bg-green-100 px-9 py-4">
+					<h4 class="text-2xl font-bold">Total Reviews</h4>
+					<p>AVG reviews per week</p>
+					@TimeSeriesChart(props.TotalReviewsSeries)
+				</div>
+				<div class="inline-block bg-green-100 px-9 py-4">
+					<h4 class="text-2xl font-bold">Total Code Changes</h4>
+					<p>AVG code changes per week</p>
+					@TimeSeriesChart(props.TotalCodeChangesSeries)
+				</div>
+			</div>
+        </div>
 	}
 }
