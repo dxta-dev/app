@@ -9,7 +9,7 @@ require (
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	github.com/wcharczuk/go-chart/v2 v2.1.1
-	modernc.org/sqlite v1.29.1
+	modernc.org/sqlite v1.29.2
 )
 
 require (
