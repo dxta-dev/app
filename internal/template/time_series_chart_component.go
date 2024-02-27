@@ -23,6 +23,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,
 			DotWidth:    5,
+			DotColor:    chart.ColorBlue,
 		},
 		Name:    series.Title,
 		XValues: series.XValues,
