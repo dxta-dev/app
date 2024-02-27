@@ -3,7 +3,6 @@ package template
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"log"
 	"math"
@@ -23,9 +22,8 @@ type TimeSeries struct {
 
 func getYAxisValues(yValues []float64) []float64 {
 	if len(yValues) == 0 {
-		return []float64{0, 1, 2, 3, 4, 5}
+		return []float64{0, 1, 2, 3, 4}
 	}
-	fmt.Println(yValues)
 
 	highest := yValues[0]
 
