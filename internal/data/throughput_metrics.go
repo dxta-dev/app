@@ -169,8 +169,6 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 
 	rows, err := db.Query(query, weeksInterface...)
 
-	fmt.Println(rows)
-
 	if err != nil {
 		return nil, err
 	}
