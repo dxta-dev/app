@@ -7,13 +7,31 @@ type QualityMetricsProps struct {
 }
 
 templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
-	@Layout(page){
-		<h1>Quality Metrics</h1>
-		<h2>Average MR Size</h2>
-		@TimeSeriesChart(props.AverageMrSizeSeries)
-		<h2>Average Review Depth</h2>
-		@TimeSeriesChart(props.AverageReviewDepthSeries)
-		<h2>MRs Merged Without Review</h2>
-		@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
-	}
+    @Layout(page) {
+		<div class="">
+			<h1 class="text-4xl font-bold mb-8 text-center">Quality Metrics</h1>
+			<div class="grid grid-cols-2">
+				<div class="inline-block px-9 py-4">
+					<h4 class="text-2xl font-bold">Average MR Size</h4>
+					<p>AVG Size per week</p>
+					@TimeSeriesChart(props.AverageMrSizeSeries)
+				</div>
+				<div class="inline-block px-9 py-4">
+					<h4 class="text-2xl font-bold">Average Review Depth</h4>
+					<p>AVG Depth per week</p>
+					@TimeSeriesChart(props.AverageReviewDepthSeries)
+				</div>
+				<div class="inline-block px-9 py-4">
+					<h4 class="text-2xl font-bold">MRs Merged Without Review</h4>
+					<p>AVG MRS Merged Without Review</p>
+					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+				</div>
+				<div class="inline-block px-9 py-4">
+					<h4 class="text-2xl font-bold">Handover Chart -> DEMO</h4>
+					<p>AVG Handovers</p>
+					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+				</div>
+			</div>
+        </div>
+    }
 }
