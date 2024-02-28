@@ -50,6 +50,12 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
+	ahm, err := store.GetAverageHandoverPerMR(weeks)
+
+	if err != nil {
+		return err
+	}
+
 	amsXValues := make([]float64, len(weeks))
 	amsYValues := make([]float64, len(weeks))
 
@@ -80,6 +86,21 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Weeks:   weeks,
 	}
 
+	ahmXValues := make([]float64, len(weeks))
+	ahmYValues := make([]float64, len(weeks))
+
+	for i, week := range weeks {
+		ahmXValues[i] = float64(i)
+		ahmYValues[i] = float64(ahm[week].Handover)
+	}
+
+	averageHandoverSeries := template.TimeSeries{
+		Title:   "Average Handovers Per MR",
+		XValues: ahmXValues,
+		YValues: ahmYValues,
+		Weeks:   weeks,
+	}
+
 	mmwrXValues := make([]float64, len(weeks))
 	mmwrYValues := make([]float64, len(weeks))
 
@@ -99,6 +120,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		AverageMrSizeSeries:          averageMrSizeSeries,
 		AverageReviewDepthSeries:     averageReviewDepthSeries,
 		MrsMergedWithoutReviewSeries: mrsMergedWithoutReviewSeries,
+		AverageHandoverTimeSeries:    averageHandoverSeries,
 	}
 
 	components := template.QualityMetricsPage(page, props)
