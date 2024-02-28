@@ -25,14 +25,14 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		FLOOR(AVG(metrics.mr_size)),
 		mergedAt.week,
 		COUNT(*)
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dj
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
-	JOIN transform_dates as mergedAt
+	JOIN transform_dates AS mergedAt
 	ON dj.merged_at = mergedAt.id
-	JOIN transform_merge_request_fact_users_junk as uj
+	JOIN transform_merge_request_fact_users_junk AS uj
 	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users as author
+	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0
@@ -97,14 +97,14 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	SELECT
 		AVG(metrics.review_depth),
 		mergedAt.week
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dj
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
-	JOIN transform_dates as mergedAt
+	JOIN transform_dates AS mergedAt
 	ON dj.merged_at = mergedAt.id
-	JOIN transform_merge_request_fact_users_junk as uj
+	JOIN transform_merge_request_fact_users_junk AS uj
 	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users as author
+	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0
@@ -168,14 +168,14 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 	SELECT
 		AVG(metrics.handover),
 		mergedAt.week
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dj
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
-	JOIN transform_dates as mergedAt
+	JOIN transform_dates AS mergedAt
 	ON dj.merged_at = mergedAt.id
-	JOIN transform_merge_request_fact_users_junk as uj
+	JOIN transform_merge_request_fact_users_junk AS uj
 	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users as author
+	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0
@@ -239,14 +239,14 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	SELECT
 		COUNT(*),
 		mergedAt.week
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dj
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
-	JOIN transform_dates as mergedAt
+	JOIN transform_dates AS mergedAt
 	ON dj.merged_at = mergedAt.id
-	JOIN transform_merge_request_fact_users_junk as uj
+	JOIN transform_merge_request_fact_users_junk AS uj
 	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users as author
+	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s) and metrics.review_depth = 0
 	AND author.bot = 0

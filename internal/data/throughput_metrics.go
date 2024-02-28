@@ -153,14 +153,14 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 	SELECT
 		COUNT (*),
 		opened_dates.week
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dates_junk
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dates_junk
 	ON metrics.dates_junk = dates_junk.id
-	JOIN transform_dates as opened_dates
+	JOIN transform_dates AS opened_dates
 	ON dates_junk.opened_at = opened_dates.id
-	JOIN transform_merge_request_fact_users_junk as uj
+	JOIN transform_merge_request_fact_users_junk AS uj
 	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users as author
+	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE opened_dates.week IN (%s)
 	AND author.bot = 0
@@ -224,8 +224,8 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 		SELECT
 			COUNT (*),
 			occuredAt.week
-		FROM transform_merge_request_events as ev
-		JOIN transform_dates as occuredAt
+		FROM transform_merge_request_events AS ev
+		JOIN transform_dates AS occuredAt
 		ON occuredAt.id = ev.occured_on
 		JOIN transform_forge_users AS actor
 		ON ev.actor = actor.id
@@ -291,14 +291,14 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		SELECT
 			CAST(COUNT (*) AS REAL) / 7,
 			merged_dates.week
-		FROM transform_merge_request_metrics as metrics
-		JOIN transform_merge_request_fact_dates_junk as dates_junk
+		FROM transform_merge_request_metrics AS metrics
+		JOIN transform_merge_request_fact_dates_junk AS dates_junk
 		ON metrics.dates_junk = dates_junk.id
-		JOIN transform_dates as merged_dates
+		JOIN transform_dates AS merged_dates
 		ON dates_junk.merged_at = merged_dates.id
-		JOIN transform_merge_request_fact_users_junk as uj
+		JOIN transform_merge_request_fact_users_junk AS uj
 		ON metrics.users_junk = uj.id
-		JOIN transform_forge_users as author
+		JOIN transform_forge_users AS author
 		ON uj.author = author.id
 		WHERE merged_dates.week IN (%s)
 		AND author.bot = 0
