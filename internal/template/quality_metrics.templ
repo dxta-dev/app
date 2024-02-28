@@ -4,6 +4,7 @@ type QualityMetricsProps struct {
 	AverageMrSizeSeries TimeSeries
 	AverageReviewDepthSeries TimeSeries
 	MrsMergedWithoutReviewSeries TimeSeries
+	AverageHandoverTimeSeries TimeSeries
 }
 
 templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
@@ -27,9 +28,9 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
-					<h4 class="text-2xl font-bold">Handover Chart -> DEMO</h4>
+					<h4 class="text-2xl font-bold">Average Handover per MR</h4>
 					<p>AVG Handovers</p>
-					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
+					@TimeSeriesChart(props.AverageHandoverTimeSeries)
 				</div>
 			</div>
         </div>

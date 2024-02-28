@@ -1,9 +1,10 @@
 package data
 
 import (
+	"database/sql"
 	"fmt"
 	"strings"
-	"database/sql"
+
 	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
@@ -143,6 +144,74 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	}
 
 	return mrReviewDepthByWeeks, nil
+}
+
+type AverageHandoverPerMR struct {
+	Week     string
+	Handover float32
+}
+
+func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHandoverPerMR, error) {
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	query := fmt.Sprintf(`
+	SELECT
+		AVG(metrics.handover),
+		mergedAt.week
+	FROM transform_merge_request_metrics as metrics
+	JOIN transform_merge_request_fact_dates_junk as dj
+	ON metrics.dates_junk = dj.id
+	JOIN transform_dates as mergedAt
+	ON dj.merged_at = mergedAt.id
+	WHERE mergedAt.week IN (%s)
+	GROUP BY mergedAt.week;`,
+		placeholders)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	weeksInterface := make([]interface{}, len(weeks))
+	for i, v := range weeks {
+		weeksInterface[i] = v
+	}
+
+	rows, err := db.Query(query, weeksInterface...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	mrHandoverByWeeks := make(map[string]AverageHandoverPerMR)
+
+	for rows.Next() {
+		var mrweek AverageHandoverPerMR
+
+		if err := rows.Scan(&mrweek.Handover, &mrweek.Week); err != nil {
+			return nil, err
+		}
+
+		mrHandoverByWeeks[mrweek.Week] = mrweek
+	}
+
+	for _, week := range weeks {
+		if _, ok := mrHandoverByWeeks[week]; !ok {
+			mrHandoverByWeeks[week] = AverageHandoverPerMR{
+				Week:     week,
+				Handover: 0,
+			}
+		}
+	}
+
+	fmt.Println(mrHandoverByWeeks)
+
+	return mrHandoverByWeeks, nil
 }
 
 type MrCountByWeek struct {
