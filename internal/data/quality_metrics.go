@@ -30,7 +30,12 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 	ON metrics.dates_junk = dj.id
 	JOIN transform_dates as mergedAt
 	ON dj.merged_at = mergedAt.id
+	JOIN transform_merge_request_fact_users_junk as uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users as author
+	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
+	AND author.bot = 0
 	GROUP BY mergedAt.week;`,
 		placeholders)
 
@@ -97,7 +102,12 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	ON metrics.dates_junk = dj.id
 	JOIN transform_dates as mergedAt
 	ON dj.merged_at = mergedAt.id
+	JOIN transform_merge_request_fact_users_junk as uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users as author
+	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
+	AND author.bot = 0
 	GROUP BY mergedAt.week;`,
 		placeholders)
 
@@ -163,7 +173,12 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 	ON metrics.dates_junk = dj.id
 	JOIN transform_dates as mergedAt
 	ON dj.merged_at = mergedAt.id
+	JOIN transform_merge_request_fact_users_junk as uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users as author
+	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
+	AND author.bot = 0
 	GROUP BY mergedAt.week;`,
 		placeholders)
 
@@ -229,7 +244,12 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	ON metrics.dates_junk = dj.id
 	JOIN transform_dates as mergedAt
 	ON dj.merged_at = mergedAt.id
+	JOIN transform_merge_request_fact_users_junk as uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users as author
+	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s) and metrics.review_depth = 0
+	AND author.bot = 0
 	GROUP BY mergedAt.week;`,
 		placeholders)
 

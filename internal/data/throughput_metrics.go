@@ -19,12 +19,17 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	SELECT
 		SUM(metrics.mr_size) AS total_mr_size,
 		dates.week
-	FROM transform_merge_request_metrics as metrics
-	JOIN transform_merge_request_fact_dates_junk as dates_junk
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dates_junk
 	ON metrics.dates_junk = dates_junk.id
-	JOIN transform_dates as dates
+	JOIN transform_dates AS dates
 	ON dates_junk.merged_at = dates.id
+	JOIN transform_merge_request_fact_users_junk AS uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users AS author
+	ON uj.author = author.id
 	WHERE dates.week IN (%s)
+	AND author.bot = 0
 	GROUP BY dates.week;`,
 		placeholders)
 
@@ -85,11 +90,14 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, e
 		SELECT
 			COUNT (*),
 			commitedAt.week
-		FROM transform_merge_request_events as ev
-		JOIN transform_dates as commitedAt
+		FROM transform_merge_request_events AS ev
+		JOIN transform_dates AS commitedAt
 		ON commitedAt.id = ev.commited_at
+		JOIN transform_forge_users AS actor
+		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 9
 		AND commitedAt.week IN (%s)
+		AND actor.bot = 0
 		GROUP BY commitedAt.week;`,
 		placeholders)
 
@@ -150,7 +158,12 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 	ON metrics.dates_junk = dates_junk.id
 	JOIN transform_dates as opened_dates
 	ON dates_junk.opened_at = opened_dates.id
+	JOIN transform_merge_request_fact_users_junk as uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users as author
+	ON uj.author = author.id
 	WHERE opened_dates.week IN (%s)
+	AND author.bot = 0
 	GROUP BY opened_dates.week`,
 		placeholders)
 
@@ -214,8 +227,11 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 		FROM transform_merge_request_events as ev
 		JOIN transform_dates as occuredAt
 		ON occuredAt.id = ev.occured_on
+		JOIN transform_forge_users AS actor
+		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 15
 		AND occuredAt.week IN (%s)
+		AND actor.bot = 0
 		GROUP BY occuredAt.week;`,
 		placeholders)
 
@@ -280,7 +296,12 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		ON metrics.dates_junk = dates_junk.id
 		JOIN transform_dates as merged_dates
 		ON dates_junk.merged_at = merged_dates.id
+		JOIN transform_merge_request_fact_users_junk as uj
+		ON metrics.users_junk = uj.id
+		JOIN transform_forge_users as author
+		ON uj.author = author.id
 		WHERE merged_dates.week IN (%s)
+		AND author.bot = 0
 		GROUP BY merged_dates.week`,
 		placeholders)
 
