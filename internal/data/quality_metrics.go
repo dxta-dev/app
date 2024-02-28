@@ -209,8 +209,6 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 		}
 	}
 
-	fmt.Println(mrHandoverByWeeks)
-
 	return mrHandoverByWeeks, nil
 }
 
