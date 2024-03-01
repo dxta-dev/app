@@ -88,11 +88,11 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 			mr.web_url,
 			ev.timestamp,
 			ev.merge_request_event_type
-		FROM transform_merge_request_events as ev
-		JOIN transform_dates as date ON date.id = ev.occured_on
-		JOIN transform_forge_users as user ON user.id = ev.actor
-		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
+		FROM transform_merge_request_events AS ev
+		JOIN transform_forge_users AS user ON user.id = ev.actor
+		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
 		WHERE ev.merge_request =?
+		AND user.bot = 0
 		ORDER BY ev.timestamp ASC;
 		`
 
@@ -146,11 +146,16 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 			mr.web_url,
 			ev.timestamp,
 			ev.merge_request_event_type
-		FROM transform_merge_request_events as ev
-		JOIN transform_dates as date ON date.id = ev.occured_on
-		JOIN transform_forge_users as user ON user.id = ev.actor
-		JOIN transform_merge_requests as mr ON mr.id = ev.merge_request
-		WHERE date.week=?;
+		FROM transform_merge_request_events AS ev
+		JOIN transform_dates AS date ON date.id = ev.occured_on
+		JOIN transform_forge_users AS user ON user.id = ev.actor
+		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
+		JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
+		JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
+		JOIN transform_forge_users AS author ON author.id = u.author
+		WHERE date.week = ?
+		AND author.bot = 0
+		AND user.bot = 0;
 	`
 	rows, err := db.Query(query, week)
 
