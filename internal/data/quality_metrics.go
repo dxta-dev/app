@@ -161,7 +161,7 @@ type AverageHandoverPerMR struct {
 	Handover float32
 }
 
-func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHandoverPerMR, error) {
+func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHandoverPerMR, float32, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -180,7 +180,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -193,7 +193,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -204,13 +204,16 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 		var mrweek AverageHandoverPerMR
 
 		if err := rows.Scan(&mrweek.Handover, &mrweek.Week); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		mrHandoverByWeeks[mrweek.Week] = mrweek
 	}
 
+	totalHandoverCount := float32(0)
+
 	for _, week := range weeks {
+		totalHandoverCount += mrHandoverByWeeks[week].Handover
 		if _, ok := mrHandoverByWeeks[week]; !ok {
 			mrHandoverByWeeks[week] = AverageHandoverPerMR{
 				Week:     week,
@@ -219,7 +222,9 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 		}
 	}
 
-	return mrHandoverByWeeks, nil
+	averageHandoverByXWeeks := float32(totalHandoverCount) / float32(len(mrHandoverByWeeks))
+
+	return mrHandoverByWeeks, averageHandoverByXWeeks, nil
 }
 
 type MrCountByWeek struct {
