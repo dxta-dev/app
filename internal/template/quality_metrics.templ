@@ -19,7 +19,7 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 			<div class="grid grid-cols-2">
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">Average MR Size</h4>
-					<p>AVG Size per week: {strconv.FormatFloat(float64(props.AverageMrSizeSeries.Average), 'f', -1, 32)}</p>
+					<p>AVG Size per week: {strconv.FormatFloat(float64(props.AverageMrSizeSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.AverageMrSizeSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
@@ -29,7 +29,7 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 				</div>
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">MRs Merged Without Review</h4>
-					<p>AVG MRS Merged Without Review: {strconv.FormatFloat(float64(props.MrsMergedWithoutReviewSeries.Average), 'f', -1, 32)}</p>
+					<p>AVG MRS Merged Without Review: {strconv.FormatFloat(float64(props.MrsMergedWithoutReviewSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
