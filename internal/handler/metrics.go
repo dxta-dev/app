@@ -48,7 +48,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	totalCommitsMap, err := store.GetTotalCommits(weeks)
+	totalCommitsMap, _, err := store.GetTotalCommits(weeks)
 
 	if err != nil {
 		return err

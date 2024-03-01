@@ -32,7 +32,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	tc, err := store.GetTotalCommits(weeks)
+	tc, avtc, err := store.GetTotalCommits(weeks)
 
 	if err != nil {
 		return err
@@ -103,7 +103,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	props := template.ThroughputMetricsProps{
-		TotalCommitsSeries:     template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks},
+		TotalCommitsSeries:     template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks, Average: avtc},
 		TotalMrsOpenedSeries:   template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks},
 		MergeFrequencySeries:   template.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks},
 		TotalReviewsSeries:     template.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks},
