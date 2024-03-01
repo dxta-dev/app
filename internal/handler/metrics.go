@@ -6,8 +6,8 @@ import (
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
-	"time"
 	"context"
+	"time"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -36,13 +36,13 @@ func (a *App) MetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	averageMrSizeMap, err := store.GetAverageMRSize(weeks)
+	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	averageReviewDepthMap, err := store.GetAverageReviewDepth(weeks)
+	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	mrsMergedWithoutReviewMap, err := store.GetMRsMergedWithoutReview(weeks)
+	mrsMergedWithoutReviewMap, _, err := store.GetMRsMergedWithoutReview(weeks)
 
 	if err != nil {
 		return err

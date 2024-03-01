@@ -18,6 +18,7 @@ type TimeSeries struct {
 	XValues []float64
 	YValues []float64
 	Weeks   []string
+	Average float32
 }
 
 func getYAxisValues(yValues []float64) []float64 {
@@ -49,7 +50,7 @@ func getYAxisValues(yValues []float64) []float64 {
 		return []float64{0, 0.8, 1.6, 2.4, 3.2}
 	}
 
-	if highest <  4 {
+	if highest < 4 {
 		return []float64{0, 1, 2, 3, 4}
 	}
 

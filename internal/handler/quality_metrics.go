@@ -32,25 +32,25 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	ams, err := store.GetAverageMRSize(weeks)
+	ams, amrs, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	ard, err := store.GetAverageReviewDepth(weeks)
+	ard, amrrd, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	mmwr, err := store.GetMRsMergedWithoutReview(weeks)
+	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	ahm, err := store.GetAverageHandoverPerMR(weeks)
+	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks)
 
 	if err != nil {
 		return err
@@ -65,10 +65,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	averageMrSizeSeries := template.TimeSeries{
-		Title:   "Average Pull Request Size",
+		Title:   "Average Merge Request Size",
 		XValues: amsXValues,
 		YValues: amsYValues,
 		Weeks:   weeks,
+		Average: amrs,
 	}
 
 	ardXValues := make([]float64, len(weeks))
@@ -84,6 +85,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ardXValues,
 		YValues: ardYValues,
 		Weeks:   weeks,
+		Average: amrrd,
 	}
 
 	ahmXValues := make([]float64, len(weeks))
@@ -91,7 +93,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		ahmXValues[i] = float64(i)
-		ahmYValues[i] = float64(ahm[week].Handover)
+		ahmYValues[i] = float64(mrhm[week].Handover)
 	}
 
 	averageHandoverSeries := template.TimeSeries{
@@ -99,6 +101,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ahmXValues,
 		YValues: ahmYValues,
 		Weeks:   weeks,
+		Average: amrh,
 	}
 
 	mmwrXValues := make([]float64, len(weeks))
@@ -114,6 +117,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: mmwrXValues,
 		YValues: mmwrYValues,
 		Weeks:   weeks,
+		Average: amwr,
 	}
 
 	props := template.QualityMetricsProps{
