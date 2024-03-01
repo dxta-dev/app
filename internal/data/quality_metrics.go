@@ -217,7 +217,7 @@ type MrCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -236,7 +236,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -249,7 +249,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -260,13 +260,16 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 		var mrweek MrCountByWeek
 
 		if err := rows.Scan(&mrweek.Count, &mrweek.Week); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		mrCountByWeeks[mrweek.Week] = mrweek
 	}
 
+	totalMergedCount := 0
+
 	for _, week := range weeks {
+		totalMergedCount += mrCountByWeeks[week].Count
 		if _, ok := mrCountByWeeks[week]; !ok {
 			mrCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
@@ -275,7 +278,9 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 		}
 	}
 
-	return mrCountByWeeks, nil
+	averageMergedByXWeeks := float64(totalMergedCount) / float64(len(mrCountByWeeks))
+
+	return mrCountByWeeks, averageMergedByXWeeks, nil
 }
 
 func (s *Store) GetNewCodePercentage(weeks []string) (interface{}, error) {

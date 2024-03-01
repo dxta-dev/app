@@ -44,7 +44,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	mmwr, err := store.GetMRsMergedWithoutReview(weeks)
+	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks)
 
 	if err != nil {
 		return err
@@ -114,6 +114,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: mmwrXValues,
 		YValues: mmwrYValues,
 		Weeks:   weeks,
+		Average: amwr,
 	}
 
 	props := template.QualityMetricsProps{
