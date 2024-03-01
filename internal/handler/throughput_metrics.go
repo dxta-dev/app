@@ -46,7 +46,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		tcYValues[i] = float64(tc[week].Count)
 	}
 
-	tmo, err := store.GetTotalMrsOpened(weeks)
+	tmo, amo, err := store.GetTotalMrsOpened(weeks)
 
 	if err != nil {
 		return err
@@ -104,7 +104,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	props := template.ThroughputMetricsProps{
 		TotalCommitsSeries:     template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks, Average: avtc},
-		TotalMrsOpenedSeries:   template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks},
+		TotalMrsOpenedSeries:   template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks, Average: amo},
 		MergeFrequencySeries:   template.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks},
 		TotalReviewsSeries:     template.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks},
 		TotalCodeChangesSeries: template.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks, Average: atcc},

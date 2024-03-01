@@ -155,7 +155,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
 
-func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, float32, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -180,7 +180,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -193,7 +193,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -204,12 +204,15 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 		var prCount MrCountByWeek
 
 		if err := rows.Scan(&prCount.Count, &prCount.Week); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		prCountByWeeks[prCount.Week] = prCount
 	}
 
+	totalMRCount := 0
+
 	for _, week := range weeks {
+		totalMRCount += prCountByWeeks[week].Count
 		if _, ok := prCountByWeeks[week]; !ok {
 			prCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
@@ -218,7 +221,9 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, err
 		}
 	}
 
-	return prCountByWeeks, nil
+	averageMRCountByXWeeks := float32(totalMRCount) / float32(len(weeks))
+
+	return prCountByWeeks, averageMRCountByXWeeks, nil
 }
 
 type TotalReviewsByWeek struct {

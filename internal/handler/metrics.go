@@ -54,7 +54,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	totalMrsOpenedMap, err := store.GetTotalMrsOpened(weeks)
+	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks)
 
 	if err != nil {
 		return err
