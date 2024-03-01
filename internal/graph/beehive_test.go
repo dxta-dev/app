@@ -2,11 +2,7 @@ package graph
 
 import (
 	"reflect"
-	"sort"
 	"testing"
-	"time"
-
-	"github.com/dxta-dev/app/internal/data"
 )
 
 func BenchmarkGenerateHexagonGrid(b *testing.B) {
@@ -81,35 +77,6 @@ func BenchmarkFindNearestHexTaken(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		findNearestHex(hexagons, takenHexagons, x, y, r)
-	}
-}
-
-func BenchmarkBeehive(b *testing.B) {
-	var times []time.Time
-
-	var xvalues []float64
-	var yvalues []float64
-
-	sort.Sort(data.DataList)
-
-	startOfWeek := time.Unix(1696204800, 0)
-
-	for _, d := range data.DataList {
-		t := time.Unix(d.Timestamp/1000, 0)
-		times = append(times, t)
-	}
-
-	for _, t := range times {
-		xSecondsValue := float64(t.Unix() - startOfWeek.Unix())
-		xvalues = append(xvalues, xSecondsValue)
-		yvalues = append(yvalues, 60*60*12)
-	}
-
-	chartWidth, chartHeight, dotWidth := 1400, 200, 5
-
-	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
-		Beehive(xvalues, yvalues, chartWidth, chartHeight, dotWidth)
 	}
 }
 
