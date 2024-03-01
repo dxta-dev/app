@@ -34,14 +34,22 @@ const (
 
 type EventType int
 
+type EventUserInfo struct {
+	Id         int64
+	Name       string
+	ProfileUrl string
+	AvatarUrl  string
+}
+
 type Event struct {
-	Id                int64
-	Timestamp         int64
-	Type              EventType
-	Actor             int64
-	MergeRequestId    int64
-	MergeRequestTitle string
-	MergeRequestUrl   string
+	Id                  int64
+	Timestamp           int64
+	Type                EventType
+	Actor               EventUserInfo
+	MergeRequestId      int64
+	MergeRequestCanonId int64
+	MergeRequestTitle   string
+	MergeRequestUrl     string
 }
 
 type EventSlice []Event
@@ -71,7 +79,11 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		SELECT
 			ev.id,
 			user.id,
+			user.profile_url,
+			user.avatar_url,
+			user.name,
 			mr.id,
+			mr.canon_id,
 			mr.title,
 			mr.web_url,
 			ev.timestamp,
@@ -96,8 +108,9 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		var event Event
 
 		if err := rows.Scan(
-			&event.Id, &event.Actor, &event.MergeRequestId,
-			&event.MergeRequestTitle, &event.MergeRequestUrl,
+			&event.Id,
+			&event.Actor.Id, &event.Actor.ProfileUrl, &event.Actor.AvatarUrl, &event.Actor.Name,
+			&event.MergeRequestId, &event.MergeRequestCanonId, &event.MergeRequestTitle, &event.MergeRequestUrl,
 			&event.Timestamp, &event.Type,
 		); err != nil {
 			log.Fatal(err)
@@ -153,7 +166,7 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 		var event Event
 
 		if err := rows.Scan(
-			&event.Id, &event.Actor, &event.MergeRequestId,
+			&event.Id, &event.Actor.Id, &event.MergeRequestId,
 			&event.MergeRequestTitle, &event.MergeRequestUrl,
 			&event.Timestamp, &event.Type,
 		); err != nil {

@@ -5,12 +5,25 @@ import (
 
 	"fmt"
 	"time"
+	"strings"
 )
 
 type MergeRequestInfoProps struct {
 	Events         []data.Event
 	DeleteEndpoint string
 	TargetSelector string
+}
+
+templ UserInfoBubble(user data.EventUserInfo) {
+	<span class="flex overflow-visible items-center gap-1">
+		if (user.Id == 1) {
+			<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-300"></div>
+			<small>&lt;Unknown/&gt;</small>
+		} else {
+				<img class="inline-block h-6 w-6 rounded-full ring-2 ring-white" src={fmt.Sprintf(user.AvatarUrl)}/>
+				{strings.Split(user.Name, " ")[0]}
+		}
+	</span>
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -37,15 +50,18 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 						</div>
 						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
 							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }</h2>
+								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">
+									{ fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }
+									(<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
+								</h2>
 							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">
-								<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">{ fmt.Sprintf("%v", props.Events[0].MergeRequestUrl) }</a>
+							<div class="relative mt-6 flex-1 px-4 sm:px-6">								
 								for _, event := range props.Events {
-									<div>
-										{ getEventName(event.Type) }
-										{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-										{ fmt.Sprintf("%v", event.Id) }
+									<div class="flex items-center gap-1">
+										@UserInfoBubble(event.Actor)
+										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>										
+										<small>{ getEventName(event.Type) }</small>
+										<small>{ fmt.Sprintf("%v", event.Id) }</small>
 									</div>
 								}
 							</div>
