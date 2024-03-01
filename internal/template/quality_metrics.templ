@@ -1,5 +1,10 @@
 package template
 
+import (
+	"strconv"
+)
+
+
 type QualityMetricsProps struct {
 	AverageMrSizeSeries TimeSeries
 	AverageReviewDepthSeries TimeSeries
@@ -14,22 +19,22 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
 			<div class="grid grid-cols-2">
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">Average MR Size</h4>
-					<p>AVG Size per week</p>
+					<p>AVG Size per week: {strconv.FormatFloat(float64(props.AverageMrSizeSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.AverageMrSizeSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">Average Review Depth</h4>
-					<p>AVG Depth per week</p>
+					<p>AVG Depth per week: {strconv.FormatFloat(float64(props.AverageReviewDepthSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.AverageReviewDepthSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">MRs Merged Without Review</h4>
-					<p>AVG MRS Merged Without Review</p>
+					<p>AVG MRS Merged Without Review: {strconv.FormatFloat(float64(props.MrsMergedWithoutReviewSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.MrsMergedWithoutReviewSeries)
 				</div>
 				<div class="inline-block px-9 py-4">
 					<h4 class="text-2xl font-bold">Average Handover per MR</h4>
-					<p>AVG Handovers</p>
+					<p>AVG Handovers: {strconv.FormatFloat(float64(props.AverageHandoverTimeSeries.Average), 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.AverageHandoverTimeSeries)
 				</div>
 			</div>
