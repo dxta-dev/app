@@ -15,17 +15,15 @@ type MergeRequestInfoProps struct {
 }
 
 templ UserInfoBubble(user data.EventUserInfo) {
-	if (user.Id == 1) {
-		<span>USER NOT FOUND</span>
-	} else {
-		<span class="group relative flex overflow-visible items-center">
-    <img class="inline-block h-6 w-6 rounded-full ring-2 ring-white mx-1" src={fmt.Sprintf(user.AvatarUrl)}/>
-		{strings.Split(strings.Split(user.Name, " ")[0], "-")[0]}&nbsp;
-    <span class="absolute invisible opacity-0 left-0 -top-1 -translate-y-full transition-opacity bg-white px-1 text-sm rounded-md ring-1 ring-gray-800 group-hover:opacity-100 group-hover:visible">
-        <span class="whitespace-nowrap"> {user.Name} </span>
-    </span>
-</span>
-	}
+	<span class="flex overflow-visible items-center gap-1">
+		if (user.Id == 1) {
+			<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-300"></div>
+			&lt;Unknown/&gt;
+		} else {
+				<img class="inline-block h-6 w-6 rounded-full ring-2 ring-white" src={fmt.Sprintf(user.AvatarUrl)}/>
+				{strings.Split(user.Name, " ")[0]}
+		}
+	</span>
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -57,11 +55,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 									(<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
 								</h2>
 							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">								
+							<div class="mt-6 flex-1 px-4 sm:px-6">								
 								for _, event := range props.Events {
-									<div class="flex items-center">
+									<div class="flex items-center gap-1">
 										@UserInfoBubble(event.Actor)
-										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>
+										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>										
 										<small>{ getEventName(event.Type) }</small>
 										<small>{ fmt.Sprintf("%v", event.Id) }</small>
 									</div>
