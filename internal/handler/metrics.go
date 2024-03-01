@@ -36,7 +36,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	averageMrSizeMap, err := store.GetAverageMRSize(weeks)
+	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err

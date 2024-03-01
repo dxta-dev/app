@@ -16,7 +16,7 @@ type AverageMRSizeByWeek struct {
 	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, error) {
+func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -37,7 +37,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -50,7 +50,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -61,13 +61,16 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		var mrweek AverageMRSizeByWeek
 
 		if err := rows.Scan(&mrweek.Size, &mrweek.Week, &mrweek.N); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		mrSizeByWeeks[mrweek.Week] = mrweek
 	}
 
+	totalMRSizeCount := 0
+
 	for _, week := range weeks {
+		totalMRSizeCount += mrSizeByWeeks[week].Size
 		if _, ok := mrSizeByWeeks[week]; !ok {
 			mrSizeByWeeks[week] = AverageMRSizeByWeek{
 				Week: week,
@@ -77,7 +80,9 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		}
 	}
 
-	return mrSizeByWeeks, nil
+	averageMRSizeByXWeeks := float64(totalMRSizeCount) / float64(len(mrSizeByWeeks))
+
+	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
 
 type AverageMrReviewDepthByWeek struct {

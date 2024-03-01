@@ -32,7 +32,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	ams, err := store.GetAverageMRSize(weeks)
+	ams, amrs, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err
@@ -65,10 +65,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	averageMrSizeSeries := template.TimeSeries{
-		Title:   "Average Pull Request Size",
+		Title:   "Average Merge Request Size",
 		XValues: amsXValues,
 		YValues: amsYValues,
 		Weeks:   weeks,
+		Average: amrs,
 	}
 
 	ardXValues := make([]float64, len(weeks))
