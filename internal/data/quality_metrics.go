@@ -16,7 +16,7 @@ type AverageMRSizeByWeek struct {
 	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, float64, error) {
+func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, float32, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -80,7 +80,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		}
 	}
 
-	averageMRSizeByXWeeks := float64(totalMRSizeCount) / float64(len(mrSizeByWeeks))
+	averageMRSizeByXWeeks := float32(totalMRSizeCount) / float32(len(mrSizeByWeeks))
 
 	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
@@ -90,7 +90,7 @@ type AverageMrReviewDepthByWeek struct {
 	Depth float32
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrReviewDepthByWeek, error) {
+func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrReviewDepthByWeek, float32, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -109,7 +109,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -122,7 +122,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -133,13 +133,16 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 		var mrweek AverageMrReviewDepthByWeek
 
 		if err := rows.Scan(&mrweek.Depth, &mrweek.Week); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		mrReviewDepthByWeeks[mrweek.Week] = mrweek
 	}
 
+	totalReviewDepthCount := float32(0)
+
 	for _, week := range weeks {
+		totalReviewDepthCount += mrReviewDepthByWeeks[week].Depth
 		if _, ok := mrReviewDepthByWeeks[week]; !ok {
 			mrReviewDepthByWeeks[week] = AverageMrReviewDepthByWeek{
 				Week:  week,
@@ -148,7 +151,9 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 		}
 	}
 
-	return mrReviewDepthByWeeks, nil
+	averageReviewDepthByXWeeks := float32(totalReviewDepthCount) / float32(len(mrReviewDepthByWeeks))
+
+	return mrReviewDepthByWeeks, averageReviewDepthByXWeeks, nil
 }
 
 type AverageHandoverPerMR struct {
@@ -222,7 +227,7 @@ type MrCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, float32, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -283,7 +288,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 		}
 	}
 
-	averageMergedByXWeeks := float64(totalMergedCount) / float64(len(mrCountByWeeks))
+	averageMergedByXWeeks := float32(totalMergedCount) / float32(len(mrCountByWeeks))
 
 	return mrCountByWeeks, averageMergedByXWeeks, nil
 }

@@ -38,7 +38,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	ard, err := store.GetAverageReviewDepth(weeks)
+	ard, amrrd, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err
@@ -85,6 +85,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ardXValues,
 		YValues: ardYValues,
 		Weeks:   weeks,
+		Average: amrrd,
 	}
 
 	ahmXValues := make([]float64, len(weeks))

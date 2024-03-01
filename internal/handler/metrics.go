@@ -42,7 +42,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	averageReviewDepthMap, err := store.GetAverageReviewDepth(weeks)
+	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err

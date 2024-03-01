@@ -18,7 +18,7 @@ type TimeSeries struct {
 	XValues []float64
 	YValues []float64
 	Weeks   []string
-	Average float64
+	Average float32
 }
 
 func getYAxisValues(yValues []float64) []float64 {
