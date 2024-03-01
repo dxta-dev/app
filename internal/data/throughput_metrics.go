@@ -11,7 +11,7 @@ type CodeChangesCount struct {
 	Week  string
 }
 
-func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, error) {
+func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, float32, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -31,7 +31,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer db.Close()
@@ -44,7 +44,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	rows, err := db.Query(query, weeksInterface...)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
 	defer rows.Close()
@@ -55,12 +55,15 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 		var codeChangesCount CodeChangesCount
 
 		if err = rows.Scan(&codeChangesCount.Count, &codeChangesCount.Week); err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		codeChangesByWeek[codeChangesCount.Week] = codeChangesCount
 	}
 
+	totalCodeChangesCount := 0
+
 	for _, week := range weeks {
+		totalCodeChangesCount += codeChangesByWeek[week].Count
 		if _, ok := codeChangesByWeek[week]; !ok {
 			codeChangesByWeek[week] = CodeChangesCount{
 				Count: 0,
@@ -69,7 +72,9 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 		}
 	}
 
-	return codeChangesByWeek, nil
+	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(len(weeks))
+
+	return codeChangesByWeek, averageCodeChangesByXWeeks, nil
 }
 
 type CommitCountByWeek struct {

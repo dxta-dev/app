@@ -78,7 +78,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	totalCodeChanges, err := store.GetTotalCodeChanges(weeks)
+	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks)
 
 	if err != nil {
 		return err
