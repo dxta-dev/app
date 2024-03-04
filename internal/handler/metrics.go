@@ -66,13 +66,13 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	mergeFrequencyMap, err := store.GetMergeFrequency(weeks)
+	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	totalReviewsMap, err := store.GetTotalReviews(weeks)
+	totalReviewsMap, _, err := store.GetTotalReviews(weeks)
 
 	if err != nil {
 		return err
