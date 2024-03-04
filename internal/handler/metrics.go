@@ -48,13 +48,13 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	totalCommitsMap, err := store.GetTotalCommits(weeks)
+	totalCommitsMap, _, err := store.GetTotalCommits(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	totalMrsOpenedMap, err := store.GetTotalMrsOpened(weeks)
+	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks)
 
 	if err != nil {
 		return err
@@ -66,19 +66,19 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	mergeFrequencyMap, err := store.GetMergeFrequency(weeks)
+	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	totalReviewsMap, err := store.GetTotalReviews(weeks)
+	totalReviewsMap, _, err := store.GetTotalReviews(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	totalCodeChanges, err := store.GetTotalCodeChanges(weeks)
+	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks)
 
 	if err != nil {
 		return err
