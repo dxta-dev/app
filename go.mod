@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/BurntSushi/toml v1.3.2
-	github.com/a-h/templ v0.2.590
+	github.com/a-h/templ v0.2.598
 	github.com/donseba/go-htmx v1.6.0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
