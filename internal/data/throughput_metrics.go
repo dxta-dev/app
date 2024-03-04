@@ -66,12 +66,10 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	}
 
 	totalCodeChangesCount := 0
-	totalWeeksWithCodeChangesCount := 0
+	numOfWeeksWithCodeChanges := len(codeChangesByWeek)
 
 	for _, week := range weeks {
-		fmt.Print(codeChangesByWeek[week].Count, ", ")
 		if codeChangesByWeek[week].Count >= 0 {
-			totalWeeksWithCodeChangesCount++
 			totalCodeChangesCount += codeChangesByWeek[week].Count
 		}
 
@@ -83,7 +81,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 		}
 	}
 
-	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(totalWeeksWithCodeChangesCount)
+	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(numOfWeeksWithCodeChanges)
 
 	return codeChangesByWeek, averageCodeChangesByXWeeks, nil
 }
@@ -145,6 +143,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 	}
 
 	totalCommitCount := 0
+	numOfWeeksWithCommits := len(commitCountByWeeks)
 
 	for _, week := range weeks {
 		totalCommitCount += commitCountByWeeks[week].Count
@@ -156,7 +155,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 		}
 	}
 
-	averageCommitCountByXWeeks := float32(totalCommitCount) / float32(len(weeks))
+	averageCommitCountByXWeeks := float32(totalCommitCount) / float32(numOfWeeksWithCommits)
 
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
@@ -204,7 +203,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, flo
 
 	defer rows.Close()
 
-	prCountByWeeks := make(map[string]MrCountByWeek)
+	mrCountByWeeks := make(map[string]MrCountByWeek)
 
 	for rows.Next() {
 		var prCount MrCountByWeek
@@ -212,24 +211,25 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, flo
 		if err := rows.Scan(&prCount.Count, &prCount.Week); err != nil {
 			return nil, 0, err
 		}
-		prCountByWeeks[prCount.Week] = prCount
+		mrCountByWeeks[prCount.Week] = prCount
 	}
 
 	totalMRCount := 0
+	numOfWeeksWithMR := len(mrCountByWeeks)
 
 	for _, week := range weeks {
-		totalMRCount += prCountByWeeks[week].Count
-		if _, ok := prCountByWeeks[week]; !ok {
-			prCountByWeeks[week] = MrCountByWeek{
+		totalMRCount += mrCountByWeeks[week].Count
+		if _, ok := mrCountByWeeks[week]; !ok {
+			mrCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
 				Count: 0,
 			}
 		}
 	}
 
-	averageMRCountByXWeeks := float32(totalMRCount) / float32(len(weeks))
+	averageMRCountByXWeeks := float32(totalMRCount) / float32(numOfWeeksWithMR)
 
-	return prCountByWeeks, averageMRCountByXWeeks, nil
+	return mrCountByWeeks, averageMRCountByXWeeks, nil
 }
 
 type TotalReviewsByWeek struct {
@@ -289,6 +289,7 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 	}
 
 	totalReviewsCount := 0
+	numOfWeeksWithReviews := len(totalReviewsByWeek)
 
 	for _, week := range weeks {
 		totalReviewsCount += totalReviewsByWeek[week].Count
@@ -300,7 +301,7 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 		}
 	}
 
-	averageReviewsByXWeeks := float32(totalReviewsCount) / float32(len(weeks))
+	averageReviewsByXWeeks := float32(totalReviewsCount) / float32(numOfWeeksWithReviews)
 
 	return totalReviewsByWeek, averageReviewsByXWeeks, nil
 }
@@ -363,7 +364,8 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		mergeFrequencyByWeek[mergeFreq.Week] = mergeFreq
 	}
 
-	totalMergeFrequencyCount := float32(0)
+	var totalMergeFrequencyCount float32 = 0
+	numOfWeeksWithMergeFrequency := len(mergeFrequencyByWeek)
 
 	for _, week := range weeks {
 		totalMergeFrequencyCount += mergeFrequencyByWeek[week].Amount
@@ -375,7 +377,7 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		}
 	}
 
-	averageMergeFrequencyByXWeeks := totalMergeFrequencyCount / float32(len(weeks))
+	averageMergeFrequencyByXWeeks := totalMergeFrequencyCount / float32(numOfWeeksWithMergeFrequency)
 
 	return mergeFrequencyByWeek, averageMergeFrequencyByXWeeks, nil
 }
