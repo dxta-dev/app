@@ -73,6 +73,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 	}
 
 	totalMRSizeCount := 0
+	numOfWeeksWithMRSize := len(mrSizeByWeeks)
 
 	for _, week := range weeks {
 		totalMRSizeCount += mrSizeByWeeks[week].Size
@@ -85,7 +86,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		}
 	}
 
-	averageMRSizeByXWeeks := float32(totalMRSizeCount) / float32(len(mrSizeByWeeks))
+	averageMRSizeByXWeeks := float32(totalMRSizeCount) / float32(numOfWeeksWithMRSize)
 
 	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
@@ -150,6 +151,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 	}
 
 	totalReviewDepthCount := float32(0)
+	numOfWeeksWithReviewDepth := len(mrReviewDepthByWeeks)
 
 	for _, week := range weeks {
 		totalReviewDepthCount += mrReviewDepthByWeeks[week].Depth
@@ -161,7 +163,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 		}
 	}
 
-	averageReviewDepthByXWeeks := float32(totalReviewDepthCount) / float32(len(mrReviewDepthByWeeks))
+	averageReviewDepthByXWeeks := float32(totalReviewDepthCount) / float32(numOfWeeksWithReviewDepth)
 
 	return mrReviewDepthByWeeks, averageReviewDepthByXWeeks, nil
 }
@@ -226,6 +228,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 	}
 
 	totalHandoverCount := float32(0)
+	numOfWeeksWithHandover := len(mrHandoverByWeeks)
 
 	for _, week := range weeks {
 		totalHandoverCount += mrHandoverByWeeks[week].Handover
@@ -237,7 +240,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 		}
 	}
 
-	averageHandoverByXWeeks := float32(totalHandoverCount) / float32(len(mrHandoverByWeeks))
+	averageHandoverByXWeeks := float32(totalHandoverCount) / float32(numOfWeeksWithHandover)
 
 	return mrHandoverByWeeks, averageHandoverByXWeeks, nil
 }
@@ -302,6 +305,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 	}
 
 	totalMergedCount := 0
+	numOfWeeksWithMerged := len(mrCountByWeeks)
 
 	for _, week := range weeks {
 		totalMergedCount += mrCountByWeeks[week].Count
@@ -313,7 +317,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 		}
 	}
 
-	averageMergedByXWeeks := float32(totalMergedCount) / float32(len(mrCountByWeeks))
+	averageMergedByXWeeks := float32(totalMergedCount) / float32(numOfWeeksWithMerged)
 
 	return mrCountByWeeks, averageMergedByXWeeks, nil
 }
