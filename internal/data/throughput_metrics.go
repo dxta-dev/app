@@ -66,9 +66,15 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	}
 
 	totalCodeChangesCount := 0
+	totalWeeksWithCodeChangesCount := 0
 
 	for _, week := range weeks {
-		totalCodeChangesCount += codeChangesByWeek[week].Count
+		fmt.Print(codeChangesByWeek[week].Count, ", ")
+		if codeChangesByWeek[week].Count >= 0 {
+			totalWeeksWithCodeChangesCount++
+			totalCodeChangesCount += codeChangesByWeek[week].Count
+		}
+
 		if _, ok := codeChangesByWeek[week]; !ok {
 			codeChangesByWeek[week] = CodeChangesCount{
 				Count: 0,
@@ -77,7 +83,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 		}
 	}
 
-	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(len(weeks))
+	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(totalWeeksWithCodeChangesCount)
 
 	return codeChangesByWeek, averageCodeChangesByXWeeks, nil
 }
