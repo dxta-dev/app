@@ -56,16 +56,40 @@ func calculateYearMonth(weeks []string) (months []float64, year float64) {
 	if len(weeks) == 0 {
 		return []float64{}, 0
 	}
+	newMonthValue := []float64{}
+	// newYearValue := float64(0)
+
 	parsedYear := int(0)
 	parsedWeek := int(0)
-	for _, week := range weeks {
+
+	parsedYear, parsedWeek, _ = parseYearWeek(weeks[0])
+	date := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
+
+	startingMonth := float64(date[0].Month())
+
+	for i, week := range weeks {
 		parsedYear, parsedWeek, _ = parseYearWeek(week)
+		dates := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
+
+		daysInWeekVAlue := float64(1) / float64(len(dates))
+		decimal := float64(0)
+
+		var weekMonths []float64
+		for _, date := range dates {
+			weekMonths = append(weekMonths, float64(date.Month()))
+
+		}
+
+		for k, month := range weekMonths {
+			if month != startingMonth {
+				decimal = daysInWeekVAlue * float64(k+1)
+				startingMonth = month
+				newMonthValue = append(newMonthValue, float64(i)+decimal)
+			}
+		}
 	}
 
-	dates := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
-	fmt.Print(dates)
-
-	return nil, 0
+	return newMonthValue, 0
 }
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
@@ -88,8 +112,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	month, year := calculateYearMonth(weeks)
-	fmt.Print(month, year)
-	fmt.Print(weeks)
+	fmt.Print("NEBITNO", month, year)
+	fmt.Print("JOS NEBITNIJE", weeks)
 
 	ams, amrs, err := store.GetAverageMRSize(weeks)
 
