@@ -112,8 +112,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	month, year := calculateYearMonth(weeks)
-	fmt.Print("NEBITNO", month, year)
-	fmt.Print("JOS NEBITNIJE", weeks)
 
 	ams, amrs, err := store.GetAverageMRSize(weeks)
 
@@ -153,6 +151,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		YValues: amsYValues,
 		Weeks:   weeks,
 		Average: amrs,
+		Month:   month,
+		Year:    year,
 	}
 
 	ardXValues := make([]float64, len(weeks))
@@ -169,6 +169,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		YValues: ardYValues,
 		Weeks:   weeks,
 		Average: amrrd,
+		Month:   month,
+		Year:    year,
 	}
 
 	ahmXValues := make([]float64, len(weeks))
@@ -185,6 +187,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		YValues: ahmYValues,
 		Weeks:   weeks,
 		Average: amrh,
+		Month:   month,
+		Year:    year,
 	}
 
 	mmwrXValues := make([]float64, len(weeks))
@@ -201,6 +205,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		YValues: mmwrYValues,
 		Weeks:   weeks,
 		Average: amwr,
+		Month:   month,
+		Year:    year,
 	}
 
 	props := template.QualityMetricsProps{
