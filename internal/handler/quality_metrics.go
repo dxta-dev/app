@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -31,12 +33,36 @@ func getDatesForISOWeek(year, week int) []time.Time {
 	return dates
 }
 
-func calculateYearMonth(weeks []string) (month []float64, year float64) {
+func parseYearWeek(isoWeek string) (year, weekNum int, err error) {
+	parts := strings.Split(isoWeek, "-W")
+	if len(parts) != 2 {
+		return 0, 0, fmt.Errorf("Wrong ISO Format: %s", isoWeek)
+	}
+
+	year, err = strconv.Atoi(parts[0])
+	if err != nil {
+		return 0, 0, fmt.Errorf("Wrong year: %v", err)
+	}
+
+	week, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0, 0, fmt.Errorf("Wrong week: %v", err)
+	}
+
+	return year, week, nil
+}
+
+func calculateYearMonth(weeks []string) (months []float64, year float64) {
 	if len(weeks) == 0 {
 		return []float64{}, 0
 	}
+	parsedYear := int(0)
+	parsedWeek := int(0)
+	for _, week := range weeks {
+		parsedYear, parsedWeek, _ = parseYearWeek(week)
+	}
 
-	dates := getDatesForISOWeek(2023, 50)
+	dates := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
 	fmt.Print(dates)
 
 	return nil, 0
