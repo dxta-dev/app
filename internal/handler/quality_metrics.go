@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -12,6 +14,33 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 )
+
+func getDatesForISOWeek(year, week int) []time.Time {
+	firstDay := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
+	firstDay = firstDay.AddDate(0, 0, (int(time.Monday)-int(firstDay.Weekday())+7)%7)
+
+	daysToAdd := (week - 1) * 7
+	startDate := firstDay.AddDate(0, 0, daysToAdd)
+
+	var dates []time.Time
+	for i := 0; i < 7; i++ {
+		date := startDate.AddDate(0, 0, i)
+		dates = append(dates, date)
+	}
+
+	return dates
+}
+
+func calculateYearMonth(weeks []string) (month []float64, year float64) {
+	if len(weeks) == 0 {
+		return []float64{}, 0
+	}
+
+	dates := getDatesForISOWeek(2023, 50)
+	fmt.Print(dates)
+
+	return nil, 0
+}
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
@@ -31,6 +60,10 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
+
+	month, year := calculateYearMonth(weeks)
+	fmt.Print(month, year)
+	fmt.Print(weeks)
 
 	ams, amrs, err := store.GetAverageMRSize(weeks)
 
