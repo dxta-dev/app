@@ -82,6 +82,22 @@ func TestGetStartOfTheMonth(t *testing.T) {
 				"2024-W04", "2024-W05", "2024-W06", "2024-W07", "2024-W08", "2024-W09",
 			},
 		},
+		{
+			name: "Overlap of 2022/2023 13 weeks",
+			expected: []time.Time{
+				parseTime("2022-12-01T00:00:00Z"),
+				parseTime("2023-01-01T00:00:00Z"),
+				parseTime("2023-02-01T00:00:00Z"),
+				parseTime("2023-03-01T00:00:00Z"),
+			},
+			input: []string{
+				"2022-W50", "2022-W51", "2022-W52",
+				"2023-W01", "2023-W02", "2023-W03",
+				"2023-W04", "2023-W05", "2023-W06",
+				"2023-W07", "2023-W08", "2023-W09",
+				"2023-W10",
+			},
+		},
 	}
 
 	for _, tt := range tests {
