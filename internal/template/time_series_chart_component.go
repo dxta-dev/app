@@ -126,15 +126,21 @@ type label struct {
 	text string
 }
 
+// type yearLabel struct {
+// 	x, y int
+// 	text string
+// }
+
 func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
 	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
 
 		f, _ := chart.GetDefaultFont()
 
 		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
-			FontColor: chart.ColorBlack,
-			FontSize:  12,
-			Font:      f,
+			FontColor:           chart.ColorRed,
+			FontSize:            12,
+			Font:                f,
+			TextRotationDegrees: 90,
 		})
 	}
 }
@@ -203,12 +209,10 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		log.Fatal(err)
 	}
 	months := util.GetStartOfMonths(series.Weeks)
-
 	monthLabels := []label{}
 
 	for _, startOfMonth := range months {
 		xvalue := startOfMonth.Sub(firstDay).Hours() / 24 / 7
-
 		x := int(620 / 12 * xvalue)
 
 		if x < 0 {
@@ -230,9 +234,25 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		}
 
 		if startOfMonth.Month() == time.January {
+			yearLabel := label{
+				x:    x + 40,
+				y:    137,
+				text: startOfMonth.Format("2006"),
+			}
+			graph.Elements = append(graph.Elements, YearLabel(&graph, yearLabel))
+
+			prevYearLabel := label{
+				x:    x,
+				y:    137,
+				text: (startOfMonth.AddDate(-1, 0, 0)).Format("2006"),
+			}
+			graph.Elements = append(graph.Elements, YearLabel(&graph, prevYearLabel))
+		}
+
+		if startOfMonth.Month() == time.January {
 			gridLine := chart.ContinuousSeries{
 				XValues: []float64{xvalue, xvalue},
-				YValues: []float64{0, YAxisValues[len(YAxisValues)-1] * 268/273},
+				YValues: []float64{0, YAxisValues[len(YAxisValues)-1] * 268 / 273},
 				Style: chart.Style{
 					StrokeWidth: 1.0,
 					StrokeColor: chart.ColorRed,
@@ -256,7 +276,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 	for i, monthLabel := range monthLabels {
 		if i == len(monthLabels)-1 {
-			monthLabel.x = (620 - monthLabel.x) / 2 + monthLabel.x
+			monthLabel.x = (620-monthLabel.x)/2 + monthLabel.x
 		} else {
 			monthLabel.x = (monthLabels[i+1].x-monthLabel.x)/2 + monthLabel.x
 		}
