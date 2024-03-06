@@ -139,7 +139,7 @@ func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Rende
 			FontColor:           chart.ColorRed,
 			FontSize:            12,
 			Font:                f,
-			TextRotationDegrees: 90,
+			TextRotationDegrees: -90,
 		})
 	}
 }
@@ -234,15 +234,15 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 		if startOfMonth.Month() == time.January {
 			yearLabel := label{
-				x:    x + 40,
-				y:    137,
+				x:    x + 42,
+				y:    120,
 				text: startOfMonth.Format("2006"),
 			}
 			graph.Elements = append(graph.Elements, YearLabel(&graph, yearLabel))
 
 			prevYearLabel := label{
-				x:    x,
-				y:    137,
+				x:    x + 20,
+				y:    120,
 				text: (startOfMonth.AddDate(-1, 0, 0)).Format("2006"),
 			}
 			graph.Elements = append(graph.Elements, YearLabel(&graph, prevYearLabel))
