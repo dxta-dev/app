@@ -8,8 +8,10 @@ import (
 	"math"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
+	"github.com/dxta-dev/app/internal/util"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
@@ -18,9 +20,6 @@ type TimeSeries struct {
 	XValues []float64
 	YValues []float64
 	Weeks   []string
-	Average float32
-	Month   []float64
-	Year    float64
 }
 
 func getYAxisValues(yValues []float64) []float64 {
@@ -168,8 +167,50 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		})
 	}
 
+	months := util.GetStartOfMonths(series.Weeks)
+	lastDay, err := util.ParseYearWeek(series.Weeks[len(series.Weeks)-1])
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastDay = lastDay.AddDate(0, 0, 7)
+
+	for _, startOfMonth := range months {
+		xvalue := float64(len(series.Weeks)) - lastDay.Sub(startOfMonth).Hours() / 24 / 7
+
+		if xvalue <= 0 || xvalue >= float64(len(series.Weeks)){
+			continue
+		}
+
+
+		if startOfMonth.Month() == time.January {
+			gridLine := chart.ContinuousSeries{
+				XValues: []float64{xvalue, xvalue},
+				YValues: []float64{0, 24 * 60 * 60},
+				Style: chart.Style{
+					StrokeWidth: 1.0,
+					StrokeColor: chart.ColorRed,
+				},
+			}
+			graph.Series = append(graph.Series, gridLine)
+		} else {
+			gridLine := chart.ContinuousSeries{
+				XValues: []float64{xvalue, xvalue},
+				YValues: []float64{0, 24 * 60 * 60},
+				Style: chart.Style{
+					StrokeWidth: 1.0,
+					StrokeColor: chart.ColorBlack,
+					StrokeDashArray: []float64{10, 10},
+
+				},
+			}
+			graph.Series = append(graph.Series, gridLine)
+		}
+
+	}
+
+
 	buffer := bytes.NewBuffer([]byte{})
-	err := graph.Render(chart.SVG, buffer)
+	err = graph.Render(chart.SVG, buffer)
 
 	if err != nil {
 		log.Fatal(err)

@@ -11,7 +11,7 @@ type CodeChangesCount struct {
 	Week  string
 }
 
-func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, float32, error) {
+func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -81,7 +81,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 		}
 	}
 
-	averageCodeChangesByXWeeks := float32(totalCodeChangesCount) / float32(numOfWeeksWithCodeChanges)
+	averageCodeChangesByXWeeks := float64(totalCodeChangesCount) / float64(numOfWeeksWithCodeChanges)
 
 	return codeChangesByWeek, averageCodeChangesByXWeeks, nil
 }
@@ -91,7 +91,7 @@ type CommitCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, float32, error) {
+func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -155,12 +155,12 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 		}
 	}
 
-	averageCommitCountByXWeeks := float32(totalCommitCount) / float32(numOfWeeksWithCommits)
+	averageCommitCountByXWeeks := float64(totalCommitCount) / float64(numOfWeeksWithCommits)
 
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
 
-func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, float32, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -227,7 +227,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, flo
 		}
 	}
 
-	averageMRCountByXWeeks := float32(totalMRCount) / float32(numOfWeeksWithMR)
+	averageMRCountByXWeeks := float64(totalMRCount) / float64(numOfWeeksWithMR)
 
 	return mrCountByWeeks, averageMRCountByXWeeks, nil
 }
@@ -237,7 +237,7 @@ type TotalReviewsByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, float32, error) {
+func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -301,7 +301,7 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 		}
 	}
 
-	averageReviewsByXWeeks := float32(totalReviewsCount) / float32(numOfWeeksWithReviews)
+	averageReviewsByXWeeks := float64(totalReviewsCount) / float64(numOfWeeksWithReviews)
 
 	return totalReviewsByWeek, averageReviewsByXWeeks, nil
 }
@@ -311,7 +311,7 @@ type MergeFrequencyByWeek struct {
 	Amount float32
 }
 
-func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWeek, float32, error) {
+func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -364,11 +364,11 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		mergeFrequencyByWeek[mergeFreq.Week] = mergeFreq
 	}
 
-	var totalMergeFrequencyCount float32 = 0
+	totalMergeFrequencyCount := 0.0
 	numOfWeeksWithMergeFrequency := len(mergeFrequencyByWeek)
 
 	for _, week := range weeks {
-		totalMergeFrequencyCount += mergeFrequencyByWeek[week].Amount
+		totalMergeFrequencyCount += float64(mergeFrequencyByWeek[week].Amount)
 		if _, ok := mergeFrequencyByWeek[week]; !ok {
 			mergeFrequencyByWeek[week] = MergeFrequencyByWeek{
 				Week:   week,
@@ -377,7 +377,7 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		}
 	}
 
-	averageMergeFrequencyByXWeeks := totalMergeFrequencyCount / float32(numOfWeeksWithMergeFrequency)
+	averageMergeFrequencyByXWeeks := totalMergeFrequencyCount / float64(numOfWeeksWithMergeFrequency)
 
 	return mergeFrequencyByWeek, averageMergeFrequencyByXWeeks, nil
 }

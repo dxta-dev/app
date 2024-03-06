@@ -1,10 +1,6 @@
 package handler
 
 import (
-	"fmt"
-	"strconv"
-	"strings"
-
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -16,81 +12,6 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 )
-
-func getDatesForISOWeek(year, week int) []time.Time {
-	firstDay := time.Date(year, 1, 1, 0, 0, 0, 0, time.UTC)
-	firstDay = firstDay.AddDate(0, 0, (int(time.Monday)-int(firstDay.Weekday())+7)%7)
-
-	daysToAdd := (week - 1) * 7
-	startDate := firstDay.AddDate(0, 0, daysToAdd)
-
-	var dates []time.Time
-	for i := 0; i < 7; i++ {
-		date := startDate.AddDate(0, 0, i)
-		dates = append(dates, date)
-	}
-
-	return dates
-}
-
-func parseYearWeek(isoWeek string) (year, weekNum int, err error) {
-	parts := strings.Split(isoWeek, "-W")
-	if len(parts) != 2 {
-		return 0, 0, fmt.Errorf("Wrong ISO Format: %s", isoWeek)
-	}
-
-	year, err = strconv.Atoi(parts[0])
-	if err != nil {
-		return 0, 0, fmt.Errorf("Wrong year: %v", err)
-	}
-
-	week, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return 0, 0, fmt.Errorf("Wrong week: %v", err)
-	}
-
-	return year, week, nil
-}
-
-func calculateYearMonth(weeks []string) (months []float64, year float64) {
-	if len(weeks) == 0 {
-		return []float64{}, 0
-	}
-	newMonthValue := []float64{}
-	// newYearValue := float64(0)
-
-	parsedYear := int(0)
-	parsedWeek := int(0)
-
-	parsedYear, parsedWeek, _ = parseYearWeek(weeks[0])
-	date := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
-
-	startingMonth := float64(date[0].Month())
-
-	for i, week := range weeks {
-		parsedYear, parsedWeek, _ = parseYearWeek(week)
-		dates := getDatesForISOWeek(int(parsedYear), int(parsedWeek))
-
-		daysInWeekVAlue := float64(1) / float64(len(dates))
-		decimal := float64(0)
-
-		var weekMonths []float64
-		for _, date := range dates {
-			weekMonths = append(weekMonths, float64(date.Month()))
-
-		}
-
-		for k, month := range weekMonths {
-			if month != startingMonth {
-				decimal = daysInWeekVAlue * float64(k+1)
-				startingMonth = month
-				newMonthValue = append(newMonthValue, float64(i)+decimal)
-			}
-		}
-	}
-
-	return newMonthValue, 0
-}
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
@@ -110,8 +31,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
-
-	month, year := calculateYearMonth(weeks)
 
 	ams, amrs, err := store.GetAverageMRSize(weeks)
 
@@ -150,9 +69,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: amsXValues,
 		YValues: amsYValues,
 		Weeks:   weeks,
-		Average: amrs,
-		Month:   month,
-		Year:    year,
 	}
 
 	ardXValues := make([]float64, len(weeks))
@@ -168,9 +84,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ardXValues,
 		YValues: ardYValues,
 		Weeks:   weeks,
-		Average: amrrd,
-		Month:   month,
-		Year:    year,
 	}
 
 	ahmXValues := make([]float64, len(weeks))
@@ -186,9 +99,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ahmXValues,
 		YValues: ahmYValues,
 		Weeks:   weeks,
-		Average: amrh,
-		Month:   month,
-		Year:    year,
 	}
 
 	mmwrXValues := make([]float64, len(weeks))
@@ -204,16 +114,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: mmwrXValues,
 		YValues: mmwrYValues,
 		Weeks:   weeks,
-		Average: amwr,
-		Month:   month,
-		Year:    year,
 	}
 
 	props := template.QualityMetricsProps{
 		AverageMrSizeSeries:          averageMrSizeSeries,
+		TotalAverageMrSize:           amrs,
 		AverageReviewDepthSeries:     averageReviewDepthSeries,
+		TotalAverageReviewDepth:      amrrd,
 		MrsMergedWithoutReviewSeries: mrsMergedWithoutReviewSeries,
+		TotalMrsMergedWithoutReview:  amwr,
 		AverageHandoverTimeSeries:    averageHandoverSeries,
+		TotalAverageHandoverTime:     amrh,
 	}
 
 	components := template.QualityMetricsPage(page, props)
