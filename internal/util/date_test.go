@@ -48,9 +48,9 @@ func TestGetStartOfTheMonth(t *testing.T) {
 		{
 			name: "Standard last 12 weeks",
 			expected: []time.Time{
-				parseTime("2023-12-01T00:00:00Z"),
-				parseTime("2024-01-01T00:00:00Z"),
-				parseTime("2024-02-01T00:00:00Z"),
+				time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC),
 			},
 			input: []string{
 				"2023-W50", "2023-W51", "2023-W52",
@@ -60,35 +60,12 @@ func TestGetStartOfTheMonth(t *testing.T) {
 			},
 		},
 		{
-			name: "Last 96 weeks",
-			expected: []time.Time{
-				parseTime("2022-05-01T00:00:00Z"), parseTime("2022-06-01T00:00:00Z"), parseTime("2022-07-01T00:00:00Z"), parseTime("2022-08-01T00:00:00Z"),
-				parseTime("2022-09-01T00:00:00Z"), parseTime("2022-10-01T00:00:00Z"), parseTime("2022-11-01T00:00:00Z"), parseTime("2022-12-01T00:00:00Z"),
-				parseTime("2023-01-01T00:00:00Z"), parseTime("2023-02-01T00:00:00Z"), parseTime("2023-03-01T00:00:00Z"), parseTime("2023-04-01T00:00:00Z"),
-				parseTime("2023-05-01T00:00:00Z"), parseTime("2023-06-01T00:00:00Z"), parseTime("2023-07-01T00:00:00Z"), parseTime("2023-08-01T00:00:00Z"),
-				parseTime("2023-09-01T00:00:00Z"), parseTime("2023-10-01T00:00:00Z"), parseTime("2023-11-01T00:00:00Z"), parseTime("2023-12-01T00:00:00Z"),
-				parseTime("2024-01-01T00:00:00Z"), parseTime("2024-02-01T00:00:00Z"),
-			},
-			input: []string{
-				"2022-W18", "2022-W19", "2022-W20", "2022-W21", "2022-W22", "2022-W23", "2022-W24", "2022-W25", "2022-W26", "2022-W27",
-				"2022-W28", "2022-W29", "2022-W30", "2022-W31", "2022-W32", "2022-W33", "2022-W34", "2022-W35", "2022-W36", "2022-W37",
-				"2022-W38", "2022-W39", "2022-W40", "2022-W41", "2022-W42", "2022-W43", "2022-W44", "2022-W45", "2022-W46", "2022-W47",
-				"2022-W48", "2022-W49", "2022-W50", "2022-W51", "2022-W52", "2023-W01", "2023-W02", "2023-W03", "2023-W04", "2023-W05",
-				"2023-W06", "2023-W07", "2023-W08", "2023-W09", "2023-W10", "2023-W11", "2023-W12", "2023-W13", "2023-W14", "2023-W15",
-				"2023-W16", "2023-W17", "2023-W18", "2023-W19", "2023-W20", "2023-W21", "2023-W22", "2023-W23", "2023-W24", "2023-W25",
-				"2023-W26", "2023-W27", "2023-W28", "2023-W29", "2023-W30", "2023-W31", "2023-W32", "2023-W33", "2023-W34", "2023-W35",
-				"2023-W36", "2023-W37", "2023-W38", "2023-W39", "2023-W40", "2023-W41", "2023-W42", "2023-W43", "2023-W44", "2023-W45",
-				"2023-W46", "2023-W47", "2023-W48", "2023-W49", "2023-W50", "2023-W51", "2023-W52", "2024-W01", "2024-W02", "2024-W03",
-				"2024-W04", "2024-W05", "2024-W06", "2024-W07", "2024-W08", "2024-W09",
-			},
-		},
-		{
 			name: "Overlap of 2022/2023 13 weeks",
 			expected: []time.Time{
-				parseTime("2022-12-01T00:00:00Z"),
-				parseTime("2023-01-01T00:00:00Z"),
-				parseTime("2023-02-01T00:00:00Z"),
-				parseTime("2023-03-01T00:00:00Z"),
+				time.Date(2022, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.February, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.March, 1, 0, 0, 0, 0, time.UTC),
 			},
 			input: []string{
 				"2022-W50", "2022-W51", "2022-W52",
@@ -96,6 +73,17 @@ func TestGetStartOfTheMonth(t *testing.T) {
 				"2023-W04", "2023-W05", "2023-W06",
 				"2023-W07", "2023-W08", "2023-W09",
 				"2023-W10",
+			},
+		},
+		{
+			name: "Overlap of 1980/1981 4 weeks",
+			expected: []time.Time{
+				time.Date(1980, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(1981, time.January, 1, 0, 0, 0, 0, time.UTC),
+			},
+			input: []string{
+				"1980-W49", "1980-W50", "1980-W51",
+				"1980-W52", "1981-W01", "1981-W02",
 			},
 		},
 	}
@@ -109,14 +97,6 @@ func TestGetStartOfTheMonth(t *testing.T) {
 		})
 	}
 
-}
-
-func parseTime(timeStr string) time.Time {
-	t, err := time.Parse(time.RFC3339, timeStr)
-	if err != nil {
-		panic(err)
-	}
-	return t
 }
 
 func TestGetFormattedWeek(t *testing.T) {
