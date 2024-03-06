@@ -167,15 +167,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		})
 	}
 
-	months := util.GetStartOfMonths(series.Weeks)
-	lastDay, err := util.ParseYearWeek(series.Weeks[len(series.Weeks)-1])
+	firstDay, err := util.ParseYearWeek(series.Weeks[0])
 	if err != nil {
 		log.Fatal(err)
 	}
-	lastDay = lastDay.AddDate(0, 0, 7)
+	months := util.GetStartOfMonths(series.Weeks)
 
 	for _, startOfMonth := range months {
-		xvalue := float64(len(series.Weeks)) - lastDay.Sub(startOfMonth).Hours() / 24 / 7
+		xvalue := startOfMonth.Sub(firstDay).Hours() / 24 / 7
 
 		if xvalue <= 0 || xvalue >= float64(len(series.Weeks)){
 			continue
