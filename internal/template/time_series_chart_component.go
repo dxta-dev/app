@@ -126,6 +126,19 @@ type label struct {
 	text string
 }
 
+func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
+
+		f, _ := chart.GetDefaultFont()
+
+		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
+			FontColor: chart.ColorBlack,
+			FontSize:  12,
+			Font:      f,
+		})
+	}
+}
+
 func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
 	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
 
