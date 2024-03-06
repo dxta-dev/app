@@ -6,10 +6,10 @@ import (
 	"io"
 	"log"
 	"math"
-	"strconv"
 	"strings"
 
 	"github.com/a-h/templ"
+	"github.com/dxta-dev/app/internal/util"
 	"github.com/wcharczuk/go-chart/v2"
 )
 
@@ -143,11 +143,11 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 	graph := chart.Chart{
 		YAxis: chart.YAxis{
 			Ticks: []chart.Tick{
-				{Value: YAxisValues[0], Label: strconv.FormatFloat(YAxisValues[0], 'f', -1, 64)},
-				{Value: YAxisValues[1], Label: strconv.FormatFloat(YAxisValues[1], 'f', -1, 64)},
-				{Value: YAxisValues[2], Label: strconv.FormatFloat(YAxisValues[2], 'f', -1, 64)},
-				{Value: YAxisValues[3], Label: strconv.FormatFloat(YAxisValues[3], 'f', -1, 64)},
-				{Value: YAxisValues[4], Label: strconv.FormatFloat(YAxisValues[4], 'f', -1, 64)},
+				{Value: YAxisValues[0], Label: util.FormatYAxisValues(YAxisValues[0])},
+				{Value: YAxisValues[1], Label: util.FormatYAxisValues(YAxisValues[1])},
+				{Value: YAxisValues[2], Label: util.FormatYAxisValues(YAxisValues[2])},
+				{Value: YAxisValues[3], Label: util.FormatYAxisValues(YAxisValues[3])},
+				{Value: YAxisValues[4], Label: util.FormatYAxisValues(YAxisValues[4])},
 			},
 		},
 		Series: []chart.Series{
