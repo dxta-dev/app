@@ -121,6 +121,24 @@ func getYAxisValues(yValues []float64) []float64 {
 	return []float64{lowest, percent25, percent50, percent75, highest}
 }
 
+type label struct {
+	x, y int
+	text string
+}
+
+func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
+
+		f, _ := chart.GetDefaultFont()
+
+		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
+			FontColor: chart.ColorBlack,
+			FontSize:  12,
+			Font:      f,
+		})
+	}
+}
+
 func TimeSeriesChart(series TimeSeries) templ.Component {
 	YAxisValues := getYAxisValues(series.YValues)
 
@@ -173,18 +191,35 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 	}
 	months := util.GetStartOfMonths(series.Weeks)
 
+	monthLabels := []label{}
+
 	for _, startOfMonth := range months {
 		xvalue := startOfMonth.Sub(firstDay).Hours() / 24 / 7
 
-		if xvalue <= 0 || xvalue >= float64(len(series.Weeks)){
-			continue
+		x := int(620 / 12 * xvalue)
+
+		if x < 0 {
+			x = 0
 		}
 
+		if x > 620 {
+			x = 620
+		}
+
+		monthLabels = append(monthLabels, label{
+			x:    x,
+			y:    12,
+			text: startOfMonth.Format("Jan"),
+		})
+
+		if xvalue <= 0 || xvalue >= float64(len(series.Weeks)) {
+			continue
+		}
 
 		if startOfMonth.Month() == time.January {
 			gridLine := chart.ContinuousSeries{
 				XValues: []float64{xvalue, xvalue},
-				YValues: []float64{0, 24 * 60 * 60},
+				YValues: []float64{0, YAxisValues[len(YAxisValues)-1] * 268/273},
 				Style: chart.Style{
 					StrokeWidth: 1.0,
 					StrokeColor: chart.ColorRed,
@@ -194,12 +229,11 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		} else {
 			gridLine := chart.ContinuousSeries{
 				XValues: []float64{xvalue, xvalue},
-				YValues: []float64{0, 24 * 60 * 60},
+				YValues: []float64{0, YAxisValues[len(YAxisValues)-1]},
 				Style: chart.Style{
-					StrokeWidth: 1.0,
-					StrokeColor: chart.ColorBlack,
-					StrokeDashArray: []float64{10, 10},
-
+					StrokeWidth:     1.0,
+					StrokeColor:     chart.ColorBlack,
+					StrokeDashArray: []float64{5, 7},
 				},
 			}
 			graph.Series = append(graph.Series, gridLine)
@@ -207,6 +241,15 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 	}
 
+	for i, monthLabel := range monthLabels {
+		if i == len(monthLabels)-1 {
+			monthLabel.x = (620 - monthLabel.x) / 2 + monthLabel.x
+		} else {
+			monthLabel.x = (monthLabels[i+1].x-monthLabel.x)/2 + monthLabel.x
+		}
+
+		graph.Elements = append(graph.Elements, MonthLabel(&graph, monthLabel))
+	}
 
 	buffer := bytes.NewBuffer([]byte{})
 	err = graph.Render(chart.SVG, buffer)
