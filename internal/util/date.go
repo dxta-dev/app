@@ -7,6 +7,26 @@ import (
 	"time"
 )
 
+func GetStartOfMonths(weeks []string) []time.Time {
+	monthMap := make(map[time.Time]bool)
+	startOfMonths := make([]time.Time, 0)
+
+	for _, week := range weeks {
+		date, err  := ParseYearWeek(week)
+		if err != nil {
+			continue
+		}
+
+		startOfMonth := time.Date(date.Year(), date.Month(), 1, 0, 0, 0, 0, time.UTC)
+		if _, ok := monthMap[startOfMonth]; !ok {
+			monthMap[startOfMonth] = true
+			startOfMonths = append(startOfMonths, startOfMonth)
+		}
+
+	}
+	return startOfMonths
+}
+
 func GetLastNWeeks(date time.Time, n int) []string {
 	weeks := make([]string, n)
 

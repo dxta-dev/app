@@ -7,6 +7,7 @@ import (
 	"log"
 	"math"
 	"strings"
+	"time"
 
 	"github.com/a-h/templ"
 	"github.com/dxta-dev/app/internal/util"
@@ -18,7 +19,6 @@ type TimeSeries struct {
 	XValues []float64
 	YValues []float64
 	Weeks   []string
-	Average float32
 }
 
 func getYAxisValues(yValues []float64) []float64 {
@@ -120,8 +120,42 @@ func getYAxisValues(yValues []float64) []float64 {
 	return []float64{lowest, percent25, percent50, percent75, highest}
 }
 
+type label struct {
+	x, y int
+	text string
+}
+
+func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
+
+		f := util.GetMonospaceFont()
+
+		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
+			FontColor:           chart.ColorRed,
+			FontSize:            12,
+			Font:                f,
+			TextRotationDegrees: -90,
+		})
+	}
+}
+
+func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
+
+		f := util.GetMonospaceFont()
+
+		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
+			FontColor: chart.ColorBlack,
+			FontSize:  12,
+			Font:      f,
+		})
+	}
+}
+
 func TimeSeriesChart(series TimeSeries) templ.Component {
 	YAxisValues := getYAxisValues(series.YValues)
+
+	f := util.GetMonospaceFont()
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -138,9 +172,22 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		Name:    series.Title,
 		XValues: series.XValues,
 		YValues: series.YValues,
+		Style: chart.Style{
+			StrokeWidth: 3,
+			StrokeColor: chart.ColorBlue,
+		},
 	}
 
 	graph := chart.Chart{
+		Font: f,
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top:    20,
+				Left:   0,
+				Right:  0,
+				Bottom: 0,
+			},
+		},
 		YAxis: chart.YAxis{
 			Ticks: []chart.Tick{
 				{Value: YAxisValues[0], Label: util.FormatYAxisValues(YAxisValues[0])},
@@ -150,11 +197,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 				{Value: YAxisValues[4], Label: util.FormatYAxisValues(YAxisValues[4])},
 			},
 		},
-		Series: []chart.Series{
-			lineSeries,
-			mainSeries,
-		},
-		Height: 300,
+		Height: 320,
 		Width:  650,
 	}
 
@@ -166,8 +209,91 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		})
 	}
 
+	firstDay, err := util.ParseYearWeek(series.Weeks[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	months := util.GetStartOfMonths(series.Weeks)
+	monthLabels := []label{}
+
+	for _, startOfMonth := range months {
+		xvalue := startOfMonth.Sub(firstDay).Hours() / 24 / 7
+		x := int(620 / 12 * xvalue)
+
+		if x < 0 {
+			x = 0
+		}
+
+		if x > 620 {
+			x = 620
+		}
+
+		monthLabels = append(monthLabels, label{
+			x:    x,
+			y:    22,
+			text: startOfMonth.Format("Jan"),
+		})
+
+		if xvalue <= 0 || xvalue >= float64(len(series.Weeks)) {
+			continue
+		}
+
+		if startOfMonth.Month() == time.January {
+			yearLabel := label{
+				x:    x + 38,
+				y:    80,
+				text: startOfMonth.Format("2006"),
+			}
+			graph.Elements = append(graph.Elements, YearLabel(&graph, yearLabel))
+
+			prevYearLabel := label{
+				x:    x + 16,
+				y:    80,
+				text: (startOfMonth.AddDate(-1, 0, 0)).Format("2006"),
+			}
+			graph.Elements = append(graph.Elements, YearLabel(&graph, prevYearLabel))
+		}
+
+		if startOfMonth.Month() == time.January {
+			gridLine := chart.ContinuousSeries{
+				XValues: []float64{xvalue, xvalue},
+				YValues: []float64{0, YAxisValues[len(YAxisValues)-1] * 268 / 273},
+				Style: chart.Style{
+					StrokeWidth: 1.0,
+					StrokeColor: chart.ColorRed,
+				},
+			}
+			graph.Series = append(graph.Series, gridLine)
+		} else {
+			gridLine := chart.ContinuousSeries{
+				XValues: []float64{xvalue, xvalue},
+				YValues: []float64{0, YAxisValues[len(YAxisValues)-1]},
+				Style: chart.Style{
+					StrokeWidth:     1.0,
+					StrokeColor:     chart.ColorBlack,
+					StrokeDashArray: []float64{5, 7},
+				},
+			}
+			graph.Series = append(graph.Series, gridLine)
+		}
+
+	}
+
+	for i, monthLabel := range monthLabels {
+		if i == len(monthLabels)-1 {
+			monthLabel.x = (620-monthLabel.x)/2 + monthLabel.x
+		} else {
+			monthLabel.x = (monthLabels[i+1].x-monthLabel.x)/2 + monthLabel.x
+		}
+
+		graph.Elements = append(graph.Elements, MonthLabel(&graph, monthLabel))
+	}
+
+	graph.Series = append(graph.Series, lineSeries)
+	graph.Series = append(graph.Series, mainSeries)
+
 	buffer := bytes.NewBuffer([]byte{})
-	err := graph.Render(chart.SVG, buffer)
+	err = graph.Render(chart.SVG, buffer)
 
 	if err != nil {
 		log.Fatal(err)

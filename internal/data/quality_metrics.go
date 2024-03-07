@@ -16,7 +16,7 @@ type AverageMRSizeByWeek struct {
 	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, float32, error) {
+func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -86,7 +86,7 @@ func (s *Store) GetAverageMRSize(weeks []string) (map[string]AverageMRSizeByWeek
 		}
 	}
 
-	averageMRSizeByXWeeks := float32(totalMRSizeCount) / float32(numOfWeeksWithMRSize)
+	averageMRSizeByXWeeks := float64(totalMRSizeCount) / float64(numOfWeeksWithMRSize)
 
 	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
@@ -96,7 +96,7 @@ type AverageMrReviewDepthByWeek struct {
 	Depth float32
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrReviewDepthByWeek, float32, error) {
+func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrReviewDepthByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -163,7 +163,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string) (map[string]AverageMrRevie
 		}
 	}
 
-	averageReviewDepthByXWeeks := float32(totalReviewDepthCount) / float32(numOfWeeksWithReviewDepth)
+	averageReviewDepthByXWeeks := float64(totalReviewDepthCount) / float64(numOfWeeksWithReviewDepth)
 
 	return mrReviewDepthByWeeks, averageReviewDepthByXWeeks, nil
 }
@@ -173,7 +173,7 @@ type AverageHandoverPerMR struct {
 	Handover float32
 }
 
-func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHandoverPerMR, float32, error) {
+func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHandoverPerMR, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -240,7 +240,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string) (map[string]AverageHando
 		}
 	}
 
-	averageHandoverByXWeeks := float32(totalHandoverCount) / float32(numOfWeeksWithHandover)
+	averageHandoverByXWeeks := float64(totalHandoverCount) / float64(numOfWeeksWithHandover)
 
 	return mrHandoverByWeeks, averageHandoverByXWeeks, nil
 }
@@ -250,7 +250,7 @@ type MrCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, float32, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -317,7 +317,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string) (map[string]MrCountByW
 		}
 	}
 
-	averageMergedByXWeeks := float32(totalMergedCount) / float32(numOfWeeksWithMerged)
+	averageMergedByXWeeks := float64(totalMergedCount) / float64(numOfWeeksWithMerged)
 
 	return mrCountByWeeks, averageMergedByXWeeks, nil
 }
