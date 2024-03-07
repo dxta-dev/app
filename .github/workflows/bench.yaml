@@ -2,6 +2,9 @@ name: BENCH
 
 on: [workflow_dispatch]
 
+
+permissions: read-all
+
 jobs:
   bench:
     runs-on: ubuntu-latest
