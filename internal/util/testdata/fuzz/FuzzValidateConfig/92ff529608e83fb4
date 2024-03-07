@@ -1,0 +1,5 @@
+go test fuzz v1
+int(-75)
+bool(true)
+bool(false)
+bool(true)
