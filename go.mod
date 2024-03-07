@@ -6,10 +6,11 @@ require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/a-h/templ v0.2.598
 	github.com/donseba/go-htmx v1.6.1
+	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/labstack/echo/v4 v4.11.4
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	github.com/wcharczuk/go-chart/v2 v2.1.1
-	modernc.org/sqlite v1.29.2
+	modernc.org/sqlite v1.29.3
 )
 
 require (
@@ -17,7 +18,6 @@ require (
 	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
-	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/golang-lru/v2 v2.0.7 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
