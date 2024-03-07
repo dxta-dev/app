@@ -103,11 +103,16 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	props := template.ThroughputMetricsProps{
-		TotalCommitsSeries:     template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks, Average: avtc},
-		TotalMrsOpenedSeries:   template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks, Average: amo},
-		MergeFrequencySeries:   template.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks, Average: amf},
-		TotalReviewsSeries:     template.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks, Average: arx},
-		TotalCodeChangesSeries: template.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks, Average: atcc},
+		TotalCommitsSeries:      template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks},
+		AverageTotalCommits:     avtc,
+		TotalMrsOpenedSeries:    template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks},
+		AverageTotalMrsOpened:   amo,
+		MergeFrequencySeries:    template.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks},
+		AverageMergeFrequency:   amf,
+		TotalReviewsSeries:      template.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks},
+		AverageTotalReviews:     arx,
+		TotalCodeChangesSeries:  template.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks},
+		AverageTotalCodeChanges: atcc,
 	}
 
 	components := template.ThroughputMetricsPage(page, props)

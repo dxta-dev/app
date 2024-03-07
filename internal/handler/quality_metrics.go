@@ -69,7 +69,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: amsXValues,
 		YValues: amsYValues,
 		Weeks:   weeks,
-		Average: amrs,
 	}
 
 	ardXValues := make([]float64, len(weeks))
@@ -85,7 +84,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ardXValues,
 		YValues: ardYValues,
 		Weeks:   weeks,
-		Average: amrrd,
 	}
 
 	ahmXValues := make([]float64, len(weeks))
@@ -101,7 +99,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ahmXValues,
 		YValues: ahmYValues,
 		Weeks:   weeks,
-		Average: amrh,
 	}
 
 	mmwrXValues := make([]float64, len(weeks))
@@ -117,14 +114,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: mmwrXValues,
 		YValues: mmwrYValues,
 		Weeks:   weeks,
-		Average: amwr,
 	}
 
 	props := template.QualityMetricsProps{
 		AverageMrSizeSeries:          averageMrSizeSeries,
+		TotalAverageMrSize:           amrs,
 		AverageReviewDepthSeries:     averageReviewDepthSeries,
+		TotalAverageReviewDepth:      amrrd,
 		MrsMergedWithoutReviewSeries: mrsMergedWithoutReviewSeries,
+		TotalMrsMergedWithoutReview:  amwr,
 		AverageHandoverTimeSeries:    averageHandoverSeries,
+		TotalAverageHandoverTime:     amrh,
 	}
 
 	components := template.QualityMetricsPage(page, props)

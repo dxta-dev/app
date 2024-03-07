@@ -9,15 +9,20 @@ jobs:
   bench:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Harden Runner
+        uses: step-security/harden-runner@63c24ba6bd7ba022e95695ff85de572c04a18142 # v2.7.0
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Setup bun
-        uses: oven-sh/setup-bun@v1
+        uses: oven-sh/setup-bun@d3603274aca5625baad52ec06108517a089cdd00 # v1.2.0
         with:
           bun-version: 1.0.26
 
       - name: Setup go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
         with:
           go-version: 1.22
 
@@ -41,7 +46,7 @@ jobs:
           mv ./benchmark-new.txt /tmp/
 
       - name: Checkout main branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
         with:
           ref: 'main'
 
@@ -76,7 +81,7 @@ jobs:
           cat bench-diff.txt
 
       - name: Upload Benchmark Comparison as Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@5d5d22a31266ced268874388b861e4b58bb5c2f3 # v4.3.1
         with:
           name: benchmark-comparison
           path: bench-diff.txt

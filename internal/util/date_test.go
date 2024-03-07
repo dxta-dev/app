@@ -1,6 +1,7 @@
 package util
 
 import (
+	"reflect"
 	"testing"
 	"time"
 )
@@ -36,6 +37,66 @@ func TestGetStartOfTheWeek(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetStartOfTheMonth(t *testing.T) {
+	tests := []struct {
+		name     string
+		expected []time.Time
+		input    []string
+	}{
+		{
+			name: "Standard last 12 weeks",
+			expected: []time.Time{
+				time.Date(2023, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC),
+			},
+			input: []string{
+				"2023-W50", "2023-W51", "2023-W52",
+				"2024-W01", "2024-W02", "2024-W03",
+				"2024-W04", "2024-W05", "2024-W06",
+				"2024-W07", "2024-W08", "2024-W09",
+			},
+		},
+		{
+			name: "Overlap of 2022/2023 13 weeks",
+			expected: []time.Time{
+				time.Date(2022, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.February, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(2023, time.March, 1, 0, 0, 0, 0, time.UTC),
+			},
+			input: []string{
+				"2022-W50", "2022-W51", "2022-W52",
+				"2023-W01", "2023-W02", "2023-W03",
+				"2023-W04", "2023-W05", "2023-W06",
+				"2023-W07", "2023-W08", "2023-W09",
+				"2023-W10",
+			},
+		},
+		{
+			name: "Overlap of 1980/1981 4 weeks",
+			expected: []time.Time{
+				time.Date(1980, time.December, 1, 0, 0, 0, 0, time.UTC),
+				time.Date(1981, time.January, 1, 0, 0, 0, 0, time.UTC),
+			},
+			input: []string{
+				"1980-W49", "1980-W50", "1980-W51",
+				"1980-W52", "1981-W01", "1981-W02",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := GetStartOfMonths(tt.input)
+			if !reflect.DeepEqual(tt.expected, got) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+
 }
 
 func TestGetFormattedWeek(t *testing.T) {
@@ -78,19 +139,19 @@ func TestParseYearWeek(t *testing.T) {
 		input    string
 	}{
 		{
-			name: "first week of 1980",
+			name:     "first week of 1980",
 			expected: time.Date(1979, time.December, 31, 0, 0, 0, 0, time.UTC),
-			input: "1980-W01",
+			input:    "1980-W01",
 		},
 		{
-			name: "first week of 1981",
+			name:     "first week of 1981",
 			expected: time.Date(1980, time.December, 29, 0, 0, 0, 0, time.UTC),
-			input: "1981-W01",
+			input:    "1981-W01",
 		},
 		{
-			name: "first week of 2015",
+			name:     "first week of 2015",
 			expected: time.Date(2014, time.December, 29, 0, 0, 0, 0, time.UTC),
-			input: "2015-W01",
+			input:    "2015-W01",
 		},
 		{
 			name:     "first week of 2022",
@@ -108,9 +169,9 @@ func TestParseYearWeek(t *testing.T) {
 			input:    "2023-W51",
 		},
 		{
-			name: "begging of the last year",
+			name:     "begging of the last year",
 			expected: time.Date(2023, time.January, 2, 0, 0, 0, 0, time.UTC),
-			input: "2023-W01",
+			input:    "2023-W01",
 		},
 		{
 			name:     "beginning of the year",
@@ -172,4 +233,3 @@ func TestGetLastNWeeks(t *testing.T) {
 		}
 	})
 }
-
