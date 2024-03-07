@@ -125,15 +125,10 @@ type label struct {
 	text string
 }
 
-// type yearLabel struct {
-// 	x, y int
-// 	text string
-// }
-
 func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
 	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
 
-		f, _ := chart.GetDefaultFont()
+		f := util.GetMonospaceFont()
 
 		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
 			FontColor:           chart.ColorRed,
@@ -147,7 +142,7 @@ func YearLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Rende
 func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
 	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
 
-		f, _ := chart.GetDefaultFont()
+		f := util.GetMonospaceFont()
 
 		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
 			FontColor: chart.ColorBlack,
@@ -159,6 +154,8 @@ func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Rend
 
 func TimeSeriesChart(series TimeSeries) templ.Component {
 	YAxisValues := getYAxisValues(series.YValues)
+
+	f := util.GetMonospaceFont()
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -175,9 +172,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		Name:    series.Title,
 		XValues: series.XValues,
 		YValues: series.YValues,
+		Style: chart.Style{
+			StrokeWidth: 3,
+			StrokeColor: chart.ColorBlue,
+		},
 	}
 
 	graph := chart.Chart{
+		Font: f,
 		YAxis: chart.YAxis{
 			Ticks: []chart.Tick{
 				{Value: YAxisValues[0], Label: util.FormatYAxisValues(YAxisValues[0])},
@@ -186,10 +188,6 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 				{Value: YAxisValues[3], Label: util.FormatYAxisValues(YAxisValues[3])},
 				{Value: YAxisValues[4], Label: util.FormatYAxisValues(YAxisValues[4])},
 			},
-		},
-		Series: []chart.Series{
-			lineSeries,
-			mainSeries,
 		},
 		Height: 300,
 		Width:  650,
@@ -235,14 +233,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		if startOfMonth.Month() == time.January {
 			yearLabel := label{
 				x:    x + 42,
-				y:    120,
+				y:    80,
 				text: startOfMonth.Format("2006"),
 			}
 			graph.Elements = append(graph.Elements, YearLabel(&graph, yearLabel))
 
 			prevYearLabel := label{
 				x:    x + 20,
-				y:    120,
+				y:    80,
 				text: (startOfMonth.AddDate(-1, 0, 0)).Format("2006"),
 			}
 			graph.Elements = append(graph.Elements, YearLabel(&graph, prevYearLabel))
@@ -282,6 +280,9 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 		graph.Elements = append(graph.Elements, MonthLabel(&graph, monthLabel))
 	}
+
+	graph.Series = append(graph.Series, lineSeries)
+	graph.Series = append(graph.Series, mainSeries)
 
 	buffer := bytes.NewBuffer([]byte{})
 	err = graph.Render(chart.SVG, buffer)
