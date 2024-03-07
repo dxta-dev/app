@@ -180,6 +180,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 	graph := chart.Chart{
 		Font: f,
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top:    20,
+				Left:   0,
+				Right:  0,
+				Bottom: 0,
+			},
+		},
 		YAxis: chart.YAxis{
 			Ticks: []chart.Tick{
 				{Value: YAxisValues[0], Label: util.FormatYAxisValues(YAxisValues[0])},
@@ -189,7 +197,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 				{Value: YAxisValues[4], Label: util.FormatYAxisValues(YAxisValues[4])},
 			},
 		},
-		Height: 300,
+		Height: 320,
 		Width:  650,
 	}
 
@@ -222,7 +230,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 		monthLabels = append(monthLabels, label{
 			x:    x,
-			y:    12,
+			y:    22,
 			text: startOfMonth.Format("Jan"),
 		})
 
@@ -232,14 +240,14 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 
 		if startOfMonth.Month() == time.January {
 			yearLabel := label{
-				x:    x + 42,
+				x:    x + 38,
 				y:    80,
 				text: startOfMonth.Format("2006"),
 			}
 			graph.Elements = append(graph.Elements, YearLabel(&graph, yearLabel))
 
 			prevYearLabel := label{
-				x:    x + 20,
+				x:    x + 16,
 				y:    80,
 				text: (startOfMonth.AddDate(-1, 0, 0)).Format("2006"),
 			}
