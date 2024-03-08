@@ -22,27 +22,27 @@ templ ThroughputMetricsPage(page *Page, props ThroughputMetricsProps) {
 		<div class="">
 			<h1 class="text-4xl font-bold mb-8 text-center">Throughput Metrics</h1>
 			<div class="grid grid-cols-2">
-				<div class="inline-block px-9 py-4">
+				<div class="inline-block px-9 py-4" id="total-commits">
 					<h4 class="text-2xl font-bold">Total Commits</h4>
 					<p>AVG commits per week: {strconv.FormatFloat(props.AverageTotalCommits, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.TotalCommitsSeries)
 				</div>
-				<div class="inline-block px-9 py-4">
+				<div class="inline-block px-9 py-4" id="total-mrs-opened">
 					<h4 class="text-2xl font-bold">Total MRs Opened</h4>
 					<p>AVG MRs per week: {strconv.FormatFloat(props.AverageTotalMrsOpened, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.TotalMrsOpenedSeries)
 				</div>
-				<div class="inline-block px-9 py-4">
+				<div class="inline-block px-9 py-4" id="merge-frequency">
 					<h4 class="text-2xl font-bold">Merge Frequency</h4>
 					<p>AVG MRs merged per Week: {strconv.FormatFloat(props.AverageMergeFrequency, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.MergeFrequencySeries)
 				</div>
-				<div class="inline-block px-9 py-4">
+				<div class="inline-block px-9 py-4" id="total-reviews">
 					<h4 class="text-2xl font-bold">Total Reviews</h4>
 					<p>AVG reviews per week: {strconv.FormatFloat(props.AverageTotalReviews, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.TotalReviewsSeries)
 				</div>
-				<div class="inline-block px-9 py-4">
+				<div class="inline-block px-9 py-4" id="total-code-changes">
 					<h4 class="text-2xl font-bold">Total Code Changes</h4>
 					<p>AVG code changes per week: {strconv.FormatFloat(props.AverageTotalCodeChanges, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.TotalCodeChangesSeries)
