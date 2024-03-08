@@ -26,6 +26,7 @@ templ ThroughputMetricsPage(page *Page, props ThroughputMetricsProps) {
 					<h4 class="text-2xl font-bold">Total Commits</h4>
 					<p>AVG commits per week: {strconv.FormatFloat(props.AverageTotalCommits, 'f', 2, 32)}</p>
 					@TimeSeriesChart(props.TotalCommitsSeries)
+					@getHover()
 				</div>
 				<div class="inline-block px-9 py-4" id="total-mrs-opened">
 					<h4 class="text-2xl font-bold">Total MRs Opened</h4>

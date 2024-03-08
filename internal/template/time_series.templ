@@ -1,0 +1,56 @@
+package template
+
+script getHover() {
+	  const totalCommitsDiv = document.getElementById('total-commits');
+
+  const circles = totalCommitsDiv.querySelector('svg').querySelectorAll('circle');
+
+  const tooltip = document.createElement('div');
+  tooltip.className = 'tooltip';
+  totalCommitsDiv.appendChild(tooltip);
+
+  circles.forEach(circle => {
+    circle.addEventListener('mouseover', function () {
+		// I've take CX value just for presenting some value
+      const cxValue = circle.getAttribute('cx');
+      tooltip.textContent = `cx value: ${cxValue}`;
+      tooltip.style.visibility = 'visible';
+    });
+
+    circle.addEventListener('mouseout', function () {
+      tooltip.style.visibility = 'hidden';
+    });
+  });
+}
+
+
+templ Hover () {
+<h1>Hover</h1>
+	@getHover()
+	<style>
+		.inline-block {
+  display: inline-block;
+}
+
+circle {
+  fill: rgba(0, 116, 217, 1.0);
+  stroke: rgba(0, 116, 217, 1.0);
+  stroke-width: 1;
+}
+
+#total-commits {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.tooltip {
+  position: absolute;
+  background-color: rgba(0, 116, 217, 1.0);
+  color: #fff;
+  padding: 5px;
+  border-radius: 5px;
+  visibility: hidden;
+  z-index: 1;
+}
+	</style>
+}
