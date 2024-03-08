@@ -13,13 +13,13 @@ import (
 	"sort"
 	"strconv"
 	"time"
+
 	_ "modernc.org/sqlite"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
-	"github.com/wcharczuk/go-chart/v2/drawing"
 	_ "github.com/libsql/libsql-client-go/libsql"
-
+	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
 type DashboardState struct {
@@ -177,7 +177,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 	}
 
-
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
 	prevWeek, nextWeek := util.GetPrevNextWeek(date)
@@ -187,6 +186,16 @@ func (a *App) DashboardPage(c echo.Context) error {
 		CurrentWeek:  util.GetFormattedWeek(time.Now()),
 		NextWeek:     nextWeek,
 		PreviousWeek: prevWeek,
+	}
+
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
+	teamPickerProps := template.TeamPickerProps{
+		Teams: teams,
 	}
 
 	swarmSeries, err := getSwarmSeries(store, date)
@@ -219,13 +228,13 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 
 		mergeRequestInfoProps = &template.MergeRequestInfoProps{
-			Events: events,
+			Events:         events,
 			DeleteEndpoint: fmt.Sprintf("/merge-request/%d", *state.mr),
 			TargetSelector: "#slide-over",
 		}
 	}
 
-	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps)
+	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
