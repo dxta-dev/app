@@ -22,16 +22,21 @@ import (
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
+type X struct {
+	time.Time
+}
+
 type DashboardState struct {
 	week string
 	mr   *int64
+	team *int64
 }
 
-func getSwarmSeries(store *data.Store, date time.Time) (template.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time, team *int64) (template.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
-	events, err := store.GetEventSlices(date)
+	events, err := store.GetEventSlices(date, team)
 
 	if err != nil {
 		return template.SwarmSeries{}, err
@@ -119,6 +124,9 @@ func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error
 	if state.mr != nil {
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
+	if state.team != nil {
+		params.Add("team", fmt.Sprint(*state.team))
+	}
 	encodedParams := params.Encode()
 	if encodedParams != "" {
 		return fmt.Sprintf("%s?%s", requestUri, encodedParams), nil
@@ -151,9 +159,23 @@ func (a *App) DashboardPage(c echo.Context) error {
 	if err != nil {
 		mr = nil
 	}
+
+	var team *int64 = new(int64)
+	*team, err = strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+	if err != nil {
+		team = nil
+	}
+
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
 	state := DashboardState{
 		week: r.URL.Query().Get("week"),
 		mr:   mr,
+		team: team,
 	}
 
 	if state.week != "" {
@@ -163,9 +185,12 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 	}
 
+	fmt.Println("===================================================================", state)
+	fmt.Println("===================================================================", state)
+
 	var nextUrl string
 
-	if h.HxRequest && h.HxBoosted == false {
+	if h.HxRequest && !h.HxBoosted {
 		nextUrl, err = getNextDashboardUrl(h.HxCurrentURL, state)
 		if err != nil {
 			return err
@@ -179,26 +204,31 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
+	searchParams := url.Values{}
+	if team != nil {
+		searchParams.Set("team", fmt.Sprint(*team))
+	}
+	if state.week != "" {
+		searchParams.Set("week", state.week)
+	}
+
 	prevWeek, nextWeek := util.GetPrevNextWeek(date)
 
 	weekPickerProps := template.WeekPickerProps{
 		Week:         util.GetFormattedWeek(date),
+		SearchParams: searchParams,
+		PreviousWeek: prevWeek,
 		CurrentWeek:  util.GetFormattedWeek(time.Now()),
 		NextWeek:     nextWeek,
-		PreviousWeek: prevWeek,
-	}
-
-	teams, err := store.GetTeams()
-
-	if err != nil {
-		return err
 	}
 
 	teamPickerProps := template.TeamPickerProps{
-		Teams: teams,
+		Teams:        teams,
+		SelectedTeam: team,
+		SearchParams: searchParams,
 	}
 
-	swarmSeries, err := getSwarmSeries(store, date)
+	swarmSeries, err := getSwarmSeries(store, date, team)
 
 	if err != nil {
 		return err

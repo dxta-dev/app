@@ -2,176 +2,29 @@ package template
 
 import (
   "github.com/dxta-dev/app/internal/data"
+  "github.com/dxta-dev/app/internal/util"
+  "net/url"
+  "fmt"
 )
 
 type TeamPickerProps struct {
   Teams data.TeamSlice
-}
-
-script dropdownControls(selectorId string) {
-  const dropdownTarget = document.querySelector(`#${selectorId}`);
-  const dropdownContainer = document.querySelector(`[data-role='dropdown-container']`);
-  const dropdownButton = dropdownContainer.querySelector(`[data-role='dropdown-button']`);
-  const dropdownValue = dropdownButton.querySelector(`[data-role='dropdown-value']`);
-  const dropdownCheckmark = dropdownContainer.querySelector(`[data-role='dropdown-checkmark']`);
-  const dropdown = dropdownContainer.querySelector(`[data-role='dropdown']`);
-  const dropdownOptions = [...dropdown.querySelectorAll(`[data-role='dropdown-option']`)];
-
-  if (!dropdown) return;
-
-  let highlighted = null;
-
-  dropdown.remove();
-  dropdown.classList.remove("hidden");
-
-  dropdownButton.addEventListener("click", () => {
-    if (dropdown.parentElement !== null) return dropdown.remove();
-    dropdownContainer.appendChild(dropdown);
-    dropdown.focus();
-  });
-
-  dropdown.addEventListener("blur", (ev) => {
-    if (ev.relatedTarget === dropdownButton) return;
-    dropdown.remove();
-  })
-
-  dropdown.addEventListener("mouseleave", () => {
-    setHighlighted(null);
-  });
-
-  const removeHighlight = (el) => {
-    if (el === null) return;
-    el.classList.remove("bg-indigo-600");
-    el.classList.remove("text-white");
-    el.classList.add("text-gray-900");
-    if (el.contains(dropdownCheckmark)) {
-      dropdownCheckmark.classList.remove("text-white");
-      dropdownCheckmark.classList.add("text-gray-900");
-    }
-  }
-
-  const setHighlighted = (el) => {
-    removeHighlight(highlighted);
-    highlighted = el;
-    if (el === null) return;
-    if (el.contains(dropdownCheckmark)) {
-      dropdownCheckmark.classList.add("text-white");
-      dropdownCheckmark.classList.remove("text-gray-900");
-    }
-    el.classList.remove("text-gray-900");
-    el.classList.add("bg-indigo-600");
-    el.classList.add("text-white");
-  }
-
-  const onEnter = (ev)=> {
-    setHighlighted(ev.target);
-  }
-
-  const onClickOption = (target) => {
-      const v = target.getAttribute("data-value")
-      dropdownContainer.setAttribute("value", v); // TODO: emit valuechanged event
-      dropdownCheckmark.remove();
-      target.appendChild(dropdownCheckmark);
-      dropdownValue.innerHTML = target.querySelector(`[data-role="dropdown-option-text"]`).innerHTML;
-      dropdownButton.focus();
-      dropdown.remove();
-  }
-
-  for(const dropdownOption of dropdownOptions) {
-    dropdownOption.addEventListener("mouseenter", onEnter);
-    dropdownOption.addEventListener("click", (ev) => {
-      onClickOption(ev.target);
-    })
-  }
-
-  dropdown.addEventListener("keydown", (ev) => {
-    if (ev.key === "ArrowUp") {
-      const target = highlighted === null ? dropdown.lastElementChild : highlighted === dropdown.firstElementChild ? dropdown.lastElementChild : highlighted.previousElementSibling;
-      setHighlighted(target);
-      target.scrollIntoView({ block: "nearest" } );
-      return ev.preventDefault();
-    }
-    if (ev.key === "ArrowDown") {
-      const target = highlighted === null ? dropdown.firstElementChild : highlighted === dropdown.lastElementChild ? dropdown.firstElementChild : highlighted.nextElementSibling;
-      setHighlighted(target);
-      target.scrollIntoView({ block: "nearest" });
-      return ev.preventDefault();
-    }
-    if (ev.key === "Escape") {
-      dropdownButton.focus();
-      dropdown.remove();
-    }
-    if (ev.key === "Enter" && highlighted !== null) {
-      onClickOption(highlighted);
-      return ev.preventDefault();
-    }
-  });
+  SearchParams 	 url.Values
+  SelectedTeam *int64
 }
 
 templ teamPicker(props TeamPickerProps) {
-<div id="team-picker">
-  <label id="team-picker-label" class="block text-sm font-medium leading-6 text-gray-900">Select team</label>
-  <div class="relative mt-2" data-role="dropdown-container">
-    <button type="button" class="relative w-full cursor-default rounded-md bg-white py-1.5 pl-3 pr-10 text-left text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-600 sm:text-sm sm:leading-6" data-role="dropdown-button">
-      <span class="block truncate" data-role="dropdown-value">Tom Cook</span>
-      <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-        <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M10 3a.75.75 0 01.55.24l3.25 3.5a.75.75 0 11-1.1 1.02L10 4.852 7.3 7.76a.75.75 0 01-1.1-1.02l3.25-3.5A.75.75 0 0110 3zm-3.76 9.2a.75.75 0 011.06.04l2.7 2.908 2.7-2.908a.75.75 0 111.1 1.02l-3.25 3.5a.75.75 0 01-1.1 0l-3.25-3.5a.75.75 0 01.04-1.06z" clip-rule="evenodd" />
-        </svg>
-      </span>
-    </button>
-
-    <!--
-      Select popover, show/hide based on select state.
-
-      Entering: ""
-        From: ""
-        To: ""
-      Leaving: "transition ease-in duration-100"
-        From: "opacity-100"
-        To: "opacity-0"
-    -->
-    <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" data-role="dropdown">
-      <!--
-        Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
-
-        Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
-      -->
-      <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9" data-role="dropdown-option" data-value="1">
-        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-        <span class="pointer-events-none font-normal block truncate" data-role="dropdown-option-text">Tom Cook</span>
-        <!--
-          Checkmark, only display for selected option.
-
-          Highlighted: "text-white", Not Highlighted: "text-indigo-600"
-        -->
-        <span class="pointer-events-none text-indigo-600 absolute inset-y-0 right-0 flex items-center pr-4" data-role="dropdown-checkmark">
-          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clip-rule="evenodd" />
-          </svg>
-        </span>
-      </li>
-       <!--
-        Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
-
-        Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
-      -->
-      <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9" data-role="dropdown-option" data-value="2">
-        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-        <span class="pointer-events-none font-normal block truncate" data-role="dropdown-option-text">Tanya Fox</span>
-      </li>
-       <!--
-        Select option, manage highlight styles based on mouseenter/mouseleave and keyboard navigation.
-
-        Highlighted: "bg-indigo-600 text-white", Not Highlighted: "text-gray-900"
-      -->
-      <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9" data-role="dropdown-option" data-value="3">
-        <!-- Selected: "font-semibold", Not Selected: "font-normal" -->
-        <span class="pointer-events-none font-normal block truncate" data-role="dropdown-option-text">Wade Cooper</span>        
-      </li>
-    </ul>
-  </div>
+<div class="flex gap-4" id="team-picker">      
+      for _, team := range props.Teams {                    
+        if props.SelectedTeam != nil && team.Id == *props.SelectedTeam {
+          <a href={ templ.SafeURL("/?" + util.URLValuesWith(props.SearchParams, "team", fmt.Sprint(team.Id)).Encode()) }>🔥{team.Name}</a>
+        } else {
+          <a href={ templ.SafeURL("/?" + util.URLValuesWith(props.SearchParams, "team", fmt.Sprint(team.Id)).Encode()) }>{team.Name}</a>
+        }
+      }
+      if props.SelectedTeam != nil {
+        <a href={ templ.SafeURL("/?" + util.URLValuesWithout(props.SearchParams, "team").Encode()) }>Show all teams</a>
+      }
 </div>
-@dropdownControls("team-picker")
 }
 
