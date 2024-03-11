@@ -22,10 +22,6 @@ import (
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
-type X struct {
-	time.Time
-}
-
 type DashboardState struct {
 	week string
 	mr   *int64
@@ -184,9 +180,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 			date = dateTime
 		}
 	}
-
-	fmt.Println("===================================================================", state)
-	fmt.Println("===================================================================", state)
 
 	var nextUrl string
 

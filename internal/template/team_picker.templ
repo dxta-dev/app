@@ -14,8 +14,8 @@ type TeamPickerProps struct {
 }
 
 templ teamPicker(props TeamPickerProps) {
-<div class="flex gap-4" id="team-picker">      
-      for _, team := range props.Teams {                    
+<div class="flex gap-4" id="team-picker">
+      for _, team := range props.Teams {
         if props.SelectedTeam != nil && team.Id == *props.SelectedTeam {
           <a href={ templ.SafeURL("/?" + util.URLValuesWith(props.SearchParams, "team", fmt.Sprint(team.Id)).Encode()) }>🔥{team.Name}</a>
         } else {
