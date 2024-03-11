@@ -1,9 +1,9 @@
 package handler
 
 import (
+	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
-	"github.com/dxta-dev/app/internal/data"
 
 	"context"
 	"fmt"
@@ -13,7 +13,6 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
-
 )
 
 func (a *App) GetMergeRequestInfo(c echo.Context) error {
@@ -34,12 +33,25 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	parsedURL, err := url.Parse(h.HxCurrentURL)
 
-	var week string
-	week = parsedURL.Query().Get("week")
+	if err != nil {
+		return err
+	}
+
+	week := parsedURL.Query().Get("week")
+	var team *int64
+	if parsedURL.Query().Has("team") {
+		team = new(int64)
+		*team, err = strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
+	}
+
+	if err != nil {
+		return err
+	}
 
 	state := DashboardState{
 		week: week,
 		mr:   &mrId,
+		team: team,
 	}
 
 	fmt.Println("current url", h.HxCurrentURL)
@@ -78,12 +90,23 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 		return err
 	}
 
-	var week string
-	week = parsedURL.Query().Get("week")
+	week := parsedURL.Query().Get("week")
+
+	var team *int64
+
+	if parsedURL.Query().Has("team") {
+		team = new(int64)
+		*team, err = strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
+	}
+
+	if err != nil {
+		return err
+	}
 
 	state := DashboardState{
 		week: week,
 		mr:   nil,
+		team: team,
 	}
 
 	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
