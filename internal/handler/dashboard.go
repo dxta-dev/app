@@ -185,9 +185,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 	}
 
-	fmt.Println("===================================================================", state)
-	fmt.Println("===================================================================", state)
-
 	var nextUrl string
 
 	if h.HxRequest && !h.HxBoosted {
