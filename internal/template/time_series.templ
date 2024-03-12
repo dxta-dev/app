@@ -1,32 +1,31 @@
 package template
 
-script getHover() {
-	  const totalCommitsDiv = document.getElementById('total-commits');
+script getHover(values []float64) {
+  const totalCommitsDiv = document.getElementById('total-commits');
+  values.forEach((value, index) => {
+    console.log(value);
 
-  const circles = totalCommitsDiv.querySelector('svg').querySelectorAll('circle');
+    const circles = totalCommitsDiv.querySelector('svg').querySelectorAll('circle');
 
-  const tooltip = document.createElement('div');
-  tooltip.className = 'tooltip';
-  totalCommitsDiv.appendChild(tooltip);
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    totalCommitsDiv.appendChild(tooltip);
 
-  circles.forEach(circle => {
-    circle.addEventListener('mouseover', function () {
-		// I've take CX value just for presenting some value
-      const cxValue = circle.getAttribute('cx');
-      tooltip.textContent = `cx value: ${cxValue}`;
+    circles[index].addEventListener('mouseover', function () {
+      tooltip.textContent = `Value: ${value}`;
       tooltip.style.visibility = 'visible';
     });
 
-    circle.addEventListener('mouseout', function () {
+    circles[index].addEventListener('mouseout', function () {
       tooltip.style.visibility = 'hidden';
     });
   });
 }
 
 
-templ Hover () {
+templ Hover (series TimeSeries) {
 <h1>Hover</h1>
-	@getHover()
+	@getHover(series.YValues)
 	<style>
 		.inline-block {
   display: inline-block;
