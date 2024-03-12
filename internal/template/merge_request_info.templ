@@ -20,8 +20,8 @@ templ UserInfoBubble(user data.EventUserInfo) {
 			<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-300"></div>
 			<small>&lt;Unknown/&gt;</small>
 		} else {
-				<img class="inline-block h-6 w-6 rounded-full ring-2 ring-white" src={fmt.Sprintf(user.AvatarUrl)}/>
-				{strings.Split(user.Name, " ")[0]}
+			<img class="inline-block h-6 w-6 rounded-full ring-2 ring-white" src={ fmt.Sprintf(user.AvatarUrl) }/>
+			{ strings.Split(user.Name, " ")[0] }
 		}
 	</span>
 }
@@ -55,11 +55,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 									(<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
 								</h2>
 							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">								
+							<div class="relative mt-6 flex-1 px-4 sm:px-6">
 								for _, event := range props.Events {
 									<div class="flex items-center gap-1">
 										@UserInfoBubble(event.Actor)
-										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>										
+										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>
 										<small>{ getEventName(event.Type) }</small>
 										<small>{ fmt.Sprintf("%v", event.Id) }</small>
 									</div>

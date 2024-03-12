@@ -14,25 +14,24 @@ type SwarmProps struct {
 }
 
 var eventTypeNames = map[data.EventType]string{
-	data.UNKNOWN:               "UNKNOWN",
-	data.OPENED:                "OPENED",
-	data.STARTED_CODING:        "STARTED_CODING",
-	data.STARTED_PICKUP:        "STARTED_PICKUP",
-	data.STARTED_REVIEW:        "STARTED_REVIEW",
-	data.NOTED:                 "NOTED",
-	data.ASSIGNED:              "ASSIGNED",
-	data.CLOSED:                "CLOSED",
-	data.COMMENTED:             "COMMENTED",
-	data.COMMITTED:             "COMMITTED",
-	data.CONVERT_TO_DRAFT:      "CONVERT_TO_DRAFT",
-	data.MERGED:                "MERGED",
-	data.READY_FOR_REVIEW:      "READY_FOR_REVIEW",
-	data.REVIEW_REQUEST_REMOVED:"REVIEW_REQUEST_REMOVED",
-	data.REVIEW_REQUESTED:      "REVIEW_REQUESTED",
-	data.REVIEWED:              "REVIEWED",
-	data.UNASSIGNED:            "UNASSIGNED",
+	data.UNKNOWN:                "UNKNOWN",
+	data.OPENED:                 "OPENED",
+	data.STARTED_CODING:         "STARTED_CODING",
+	data.STARTED_PICKUP:         "STARTED_PICKUP",
+	data.STARTED_REVIEW:         "STARTED_REVIEW",
+	data.NOTED:                  "NOTED",
+	data.ASSIGNED:               "ASSIGNED",
+	data.CLOSED:                 "CLOSED",
+	data.COMMENTED:              "COMMENTED",
+	data.COMMITTED:              "COMMITTED",
+	data.CONVERT_TO_DRAFT:       "CONVERT_TO_DRAFT",
+	data.MERGED:                 "MERGED",
+	data.READY_FOR_REVIEW:       "READY_FOR_REVIEW",
+	data.REVIEW_REQUEST_REMOVED: "REVIEW_REQUEST_REMOVED",
+	data.REVIEW_REQUESTED:       "REVIEW_REQUESTED",
+	data.REVIEWED:               "REVIEWED",
+	data.UNASSIGNED:             "UNASSIGNED",
 }
-
 
 func getEventName(eventType data.EventType) string {
 	if name, exists := eventTypeNames[eventType]; exists {
