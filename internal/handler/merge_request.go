@@ -38,14 +38,12 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	}
 
 	week := parsedURL.Query().Get("week")
-	var team *int64
+	var team *data.TeamRef
 	if parsedURL.Query().Has("team") {
-		team = new(int64)
-		*team, err = strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
-	}
-
-	if err != nil {
-		return err
+		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &data.TeamRef{Id: value}
+		}
 	}
 
 	state := DashboardState{
@@ -92,15 +90,12 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 
 	week := parsedURL.Query().Get("week")
 
-	var team *int64
-
+	var team *data.TeamRef
 	if parsedURL.Query().Has("team") {
-		team = new(int64)
-		*team, err = strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
-	}
-
-	if err != nil {
-		return err
+		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &data.TeamRef{Id: value}
+		}
 	}
 
 	state := DashboardState{

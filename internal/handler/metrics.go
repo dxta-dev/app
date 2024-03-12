@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"net/url"
+	"strconv"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -24,6 +27,14 @@ func (a *App) MetricsPage(c echo.Context) error {
 		DebugMode: a.DebugMode,
 	}
 
+	var team *data.TeamRef
+	if c.Request().URL.Query().Has("team") {
+		value, err := strconv.ParseInt(c.Request().URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &data.TeamRef{Id: value}
+		}
+	}
+
 	weeks := util.GetLastNWeeks(time.Now(), 24)
 
 	for i, j := 0, len(weeks)-1; i < j; i, j = i+1, j-1 {
@@ -36,49 +47,55 @@ func (a *App) MetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
-	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks)
+	teams, err := store.GetTeams()
 
 	if err != nil {
 		return err
 	}
 
-	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks)
+	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	totalCommitsMap, _, err := store.GetTotalCommits(weeks)
+	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks)
+	totalCommitsMap, _, err := store.GetTotalCommits(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	mrsMergedWithoutReviewMap, _, err := store.GetMRsMergedWithoutReview(weeks)
+	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks)
+	mrsMergedWithoutReviewMap, _, err := store.GetMRsMergedWithoutReview(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	totalReviewsMap, _, err := store.GetTotalReviews(weeks)
+	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks, team)
 
 	if err != nil {
 		return err
 	}
 
-	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks)
+	totalReviewsMap, _, err := store.GetTotalReviews(weeks, team)
+
+	if err != nil {
+		return err
+	}
+
+	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks, team)
 
 	if err != nil {
 		return err
@@ -96,6 +113,13 @@ func (a *App) MetricsPage(c echo.Context) error {
 		MergeFrequencyMap:     mergeFrequencyMap,
 	}
 
-	components := template.MetricsPage(page, *metricsProps)
+	teamPickerProps := &template.TeamPickerProps{
+		Teams:        teams,
+		SearchParams: url.Values{},
+		SelectedTeam: team,
+		BaseUrl:      "/metrics",
+	}
+
+	components := template.MetricsPage(page, *metricsProps, *teamPickerProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }

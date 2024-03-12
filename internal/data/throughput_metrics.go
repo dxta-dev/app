@@ -11,7 +11,7 @@ type CodeChangesCount struct {
 	Week  string
 }
 
-func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount, float64, error) {
+func (s *Store) GetTotalCodeChanges(weeks []string, team *TeamRef) (map[string]CodeChangesCount, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -29,9 +29,9 @@ func (s *Store) GetTotalCodeChanges(weeks []string) (map[string]CodeChangesCount
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE dates.week IN (%s)
-	AND author.bot = 0
+	AND author.bot = 0%s
 	GROUP BY dates.week;`,
-		placeholders)
+		placeholders, AndUserInTeamQueryPart("author.external_id", team))
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -91,7 +91,7 @@ type CommitCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, float64, error) {
+func (s *Store) GetTotalCommits(weeks []string, team *TeamRef) (map[string]CommitCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -106,9 +106,9 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 9
 		AND commitedAt.week IN (%s)
-		AND actor.bot = 0
+		AND actor.bot = 0%s
 		GROUP BY commitedAt.week;`,
-		placeholders)
+		placeholders, AndUserInTeamQueryPart("actor.external_id", team))
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -160,7 +160,7 @@ func (s *Store) GetTotalCommits(weeks []string) (map[string]CommitCountByWeek, f
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
 
-func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string, team *TeamRef) (map[string]MrCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -178,9 +178,9 @@ func (s *Store) GetTotalMrsOpened(weeks []string) (map[string]MrCountByWeek, flo
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE opened_dates.week IN (%s)
-	AND author.bot = 0
+	AND author.bot = 0%s
 	GROUP BY opened_dates.week`,
-		placeholders)
+		placeholders, AndUserInTeamQueryPart("author.external_id", team))
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -237,7 +237,7 @@ type TotalReviewsByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, float64, error) {
+func (s *Store) GetTotalReviews(weeks []string, team *TeamRef) (map[string]TotalReviewsByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -252,9 +252,9 @@ func (s *Store) GetTotalReviews(weeks []string) (map[string]TotalReviewsByWeek, 
 		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 15
 		AND occuredAt.week IN (%s)
-		AND actor.bot = 0
+		AND actor.bot = 0%s
 		GROUP BY occuredAt.week;`,
-		placeholders)
+		placeholders, AndUserInTeamQueryPart("actor.external_id", team))
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -311,7 +311,7 @@ type MergeFrequencyByWeek struct {
 	Amount float32
 }
 
-func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWeek, float64, error) {
+func (s *Store) GetMergeFrequency(weeks []string, team *TeamRef) (map[string]MergeFrequencyByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	query := fmt.Sprintf(`
@@ -328,9 +328,9 @@ func (s *Store) GetMergeFrequency(weeks []string) (map[string]MergeFrequencyByWe
 		JOIN transform_forge_users AS author
 		ON uj.author = author.id
 		WHERE merged_dates.week IN (%s)
-		AND author.bot = 0
+		AND author.bot = 0%s
 		GROUP BY merged_dates.week`,
-		placeholders)
+		placeholders, AndUserInTeamQueryPart("author.external_id", team))
 
 	db, err := sql.Open("libsql", s.DbUrl)
 

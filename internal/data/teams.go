@@ -2,12 +2,17 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 
 	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
+
+type TeamRef struct {
+	Id int64
+}
 
 type Team struct {
 	Id   int64
@@ -51,4 +56,12 @@ func (s *Store) GetTeams() (TeamSlice, error) {
 	}
 
 	return teams, nil
+}
+
+func AndUserInTeamQueryPart(userColumn string, teamRef *TeamRef) string {
+	if teamRef == nil {
+		return ""
+	}
+
+	return "\n\tAND " + userColumn + fmt.Sprintf(" IN (SELECT member AS external_id FROM tenant_team_members WHERE team = %v)", teamRef.Id)
 }

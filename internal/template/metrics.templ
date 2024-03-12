@@ -19,8 +19,9 @@ type MetricsProps struct {
 	MergeFrequencyMap     map[string]data.MergeFrequencyByWeek
 }
 
-templ MetricsPage(page *Page, props MetricsProps) {
+templ MetricsPage(page *Page, props MetricsProps, teamPickerProps TeamPickerProps) {
 	@Layout(page) {
+		@teamPicker(teamPickerProps)
 		<div class="overflow-x-auto font-mono">
 		<table class="min-w-full table-auto">
 			<thead class="bg-gray-200">

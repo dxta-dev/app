@@ -5,9 +5,7 @@ import (
 )
 
 type App struct {
-	HTMX *htmx.HTMX
+	HTMX           *htmx.HTMX
 	BuildTimestamp string
-	DebugMode bool
+	DebugMode      bool
 }
-
-

@@ -22,17 +22,13 @@ import (
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
-type X struct {
-	time.Time
-}
-
 type DashboardState struct {
 	week string
 	mr   *int64
-	team *int64
+	team *data.TeamRef
 }
 
-func getSwarmSeries(store *data.Store, date time.Time, team *int64) (template.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time, team *data.TeamRef) (template.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
@@ -125,7 +121,7 @@ func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
 	if state.team != nil {
-		params.Add("team", fmt.Sprint(*state.team))
+		params.Add("team", fmt.Sprint(state.team.Id))
 	}
 	encodedParams := params.Encode()
 	if encodedParams != "" {
@@ -160,10 +156,12 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mr = nil
 	}
 
-	var team *int64 = new(int64)
-	*team, err = strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
-	if err != nil {
-		team = nil
+	var team *data.TeamRef
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &data.TeamRef{Id: value}
+		}
 	}
 
 	teams, err := store.GetTeams()
@@ -203,7 +201,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	searchParams := url.Values{}
 	if team != nil {
-		searchParams.Set("team", fmt.Sprint(*team))
+		searchParams.Set("team", fmt.Sprint(team.Id))
 	}
 	if state.week != "" {
 		searchParams.Set("week", state.week)
@@ -223,6 +221,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		Teams:        teams,
 		SelectedTeam: team,
 		SearchParams: searchParams,
+		BaseUrl:      "/",
 	}
 
 	swarmSeries, err := getSwarmSeries(store, date, team)
