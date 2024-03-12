@@ -1,6 +1,8 @@
 package data
 
 import (
+	"fmt"
+
 	"github.com/dxta-dev/app/internal/util"
 
 	"database/sql"
@@ -122,7 +124,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 	return mergeRequestEvents, nil
 }
 
-func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
+func (s *Store) GetEventSlices(date time.Time, team *int64) (EventSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
@@ -133,11 +135,32 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 
 	week := util.GetFormattedWeek(date)
 
-	if err != nil {
-		return nil, err
-	}
+	var query string
 
-	query := `
+	if team != nil {
+		query = fmt.Sprintf(`
+		SELECT
+		ev.id,
+		user.id,
+		mr.id,
+		mr.title,
+		mr.web_url,
+		ev.timestamp,
+		ev.merge_request_event_type
+	FROM transform_merge_request_events AS ev
+	JOIN transform_dates AS date ON date.id = ev.occured_on
+	JOIN transform_forge_users AS user ON user.id = ev.actor
+	JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
+	JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
+	JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
+	JOIN transform_forge_users AS author ON author.id = u.author
+	WHERE date.week = '%v'
+	AND author.bot = 0
+	AND user.bot = 0
+	AND user.external_id IN (SELECT member as external_id FROM tenant_team_members WHERE team = %v);
+		`, week, *team)
+	} else {
+		query = fmt.Sprintf(`
 		SELECT
 			ev.id,
 			user.id,
@@ -153,10 +176,12 @@ func (s *Store) GetEventSlices(date time.Time) (EventSlice, error) {
 		JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
 		JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
 		JOIN transform_forge_users AS author ON author.id = u.author
-		WHERE date.week = ?
+		WHERE date.week = '%v'
 		AND author.bot = 0
 		AND user.bot = 0;
-	`
+	`, week)
+	}
+
 	rows, err := db.Query(query, week)
 
 	if err != nil {
