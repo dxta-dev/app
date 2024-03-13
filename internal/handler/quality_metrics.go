@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"net/url"
+	"strconv"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -30,27 +33,47 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &value
+		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
+	}
+
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	ams, amrs, err := store.GetAverageMRSize(weeks)
+	ams, amrs, err := store.GetAverageMRSize(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	ard, amrrd, err := store.GetAverageReviewDepth(weeks)
+	ard, amrrd, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks)
+	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks)
+	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -127,6 +150,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		TotalAverageHandoverTime:     amrh,
 	}
 
-	components := template.QualityMetricsPage(page, props)
+	teamPickerProps := template.TeamPickerProps{
+		Teams:        teams,
+		SearchParams: url.Values{},
+		SelectedTeam: team,
+		BaseUrl:      "/metrics/quality",
+	}
+
+	components := template.QualityMetricsPage(page, props, teamPickerProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }

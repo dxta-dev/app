@@ -16,8 +16,9 @@ type QualityMetricsProps struct {
 	TotalAverageHandoverTime float64
 }
 
-templ QualityMetricsPage(page *Page, props QualityMetricsProps) {
+templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps TeamPickerProps) {
     @Layout(page) {
+		@teamPicker(teamPickerProps)
 		<div class="">
 			<h1 class="text-4xl font-bold mb-8 text-center">Quality Metrics</h1>
 			<div class="grid grid-cols-2">

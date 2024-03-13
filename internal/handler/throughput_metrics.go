@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"net/url"
+	"strconv"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -30,9 +33,29 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &value
+		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
+	}
+
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	tc, avtc, err := store.GetTotalCommits(weeks)
+	tc, avtc, err := store.GetTotalCommits(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -46,7 +69,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		tcYValues[i] = float64(tc[week].Count)
 	}
 
-	tmo, amo, err := store.GetTotalMrsOpened(weeks)
+	tmo, amo, err := store.GetTotalMrsOpened(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -60,7 +83,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		tmoYValues[i] = float64(tmo[week].Count)
 	}
 
-	mf, amf, err := store.GetMergeFrequency(weeks)
+	mf, amf, err := store.GetMergeFrequency(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -74,7 +97,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		mfYValues[i] = float64(mf[week].Amount)
 	}
 
-	tr, arx, err := store.GetTotalReviews(weeks)
+	tr, arx, err := store.GetTotalReviews(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -88,7 +111,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		trYValues[i] = float64(tr[week].Count)
 	}
 
-	tcc, atcc, err := store.GetTotalCodeChanges(weeks)
+	tcc, atcc, err := store.GetTotalCodeChanges(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -115,6 +138,13 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		AverageTotalCodeChanges: atcc,
 	}
 
-	components := template.ThroughputMetricsPage(page, props)
+	teamPickerProps := template.TeamPickerProps{
+		Teams:        teams,
+		SearchParams: url.Values{},
+		SelectedTeam: team,
+		BaseUrl:      "/metrics/throughput",
+	}
+
+	components := template.ThroughputMetricsPage(page, props, teamPickerProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }

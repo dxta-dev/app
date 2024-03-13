@@ -22,21 +22,17 @@ import (
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
-type X struct {
-	time.Time
-}
-
 type DashboardState struct {
 	week string
 	mr   *int64
 	team *int64
 }
 
-func getSwarmSeries(store *data.Store, date time.Time, team *int64) (template.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time, teamMembers []int64) (template.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
-	events, err := store.GetEventSlices(date, team)
+	events, err := store.GetEventSlices(date, teamMembers)
 
 	if err != nil {
 		return template.SwarmSeries{}, err
@@ -160,10 +156,18 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mr = nil
 	}
 
-	var team *int64 = new(int64)
-	*team, err = strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &value
+		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
 	if err != nil {
-		team = nil
+		return err
 	}
 
 	teams, err := store.GetTeams()
@@ -184,9 +188,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 			date = dateTime
 		}
 	}
-
-	fmt.Println("===================================================================", state)
-	fmt.Println("===================================================================", state)
 
 	var nextUrl string
 
@@ -226,9 +227,10 @@ func (a *App) DashboardPage(c echo.Context) error {
 		Teams:        teams,
 		SelectedTeam: team,
 		SearchParams: searchParams,
+		BaseUrl:      "/",
 	}
 
-	swarmSeries, err := getSwarmSeries(store, date, team)
+	swarmSeries, err := getSwarmSeries(store, date, teamMembers)
 
 	if err != nil {
 		return err
