@@ -34,6 +34,8 @@ func getYAxisValues(yValues []float64) []float64 {
 		}
 	}
 
+	highest = highest * 1.1
+
 	if highest < 1 {
 		return []float64{0, 0.25, 0.5, 0.75, 1}
 	}
