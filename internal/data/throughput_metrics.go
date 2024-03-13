@@ -11,9 +11,15 @@ type CodeChangesCount struct {
 	Week  string
 }
 
-func (s *Store) GetTotalCodeChanges(weeks []string, team *TeamRef) (map[string]CodeChangesCount, float64, error) {
+func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers TeamMembers) (map[string]CodeChangesCount, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -31,7 +37,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, team *TeamRef) (map[string]C
 	WHERE dates.week IN (%s)
 	AND author.bot = 0%s
 	GROUP BY dates.week;`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -41,12 +47,15 @@ func (s *Store) GetTotalCodeChanges(weeks []string, team *TeamRef) (map[string]C
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -91,9 +100,15 @@ type CommitCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalCommits(weeks []string, team *TeamRef) (map[string]CommitCountByWeek, float64, error) {
+func (s *Store) GetTotalCommits(weeks []string, teamMembers TeamMembers) (map[string]CommitCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND actor.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 		SELECT
@@ -108,7 +123,7 @@ func (s *Store) GetTotalCommits(weeks []string, team *TeamRef) (map[string]Commi
 		AND commitedAt.week IN (%s)
 		AND actor.bot = 0%s
 		GROUP BY commitedAt.week;`,
-		placeholders, AndUserInTeamQueryPart("actor.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -118,12 +133,15 @@ func (s *Store) GetTotalCommits(weeks []string, team *TeamRef) (map[string]Commi
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -160,9 +178,15 @@ func (s *Store) GetTotalCommits(weeks []string, team *TeamRef) (map[string]Commi
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
 
-func (s *Store) GetTotalMrsOpened(weeks []string, team *TeamRef) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers TeamMembers) (map[string]MrCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -180,7 +204,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string, team *TeamRef) (map[string]MrC
 	WHERE opened_dates.week IN (%s)
 	AND author.bot = 0%s
 	GROUP BY opened_dates.week`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -190,12 +214,15 @@ func (s *Store) GetTotalMrsOpened(weeks []string, team *TeamRef) (map[string]MrC
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -237,9 +264,15 @@ type TotalReviewsByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalReviews(weeks []string, team *TeamRef) (map[string]TotalReviewsByWeek, float64, error) {
+func (s *Store) GetTotalReviews(weeks []string, teamMembers TeamMembers) (map[string]TotalReviewsByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND actor.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 		SELECT
@@ -254,7 +287,7 @@ func (s *Store) GetTotalReviews(weeks []string, team *TeamRef) (map[string]Total
 		AND occuredAt.week IN (%s)
 		AND actor.bot = 0%s
 		GROUP BY occuredAt.week;`,
-		placeholders, AndUserInTeamQueryPart("actor.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -264,12 +297,15 @@ func (s *Store) GetTotalReviews(weeks []string, team *TeamRef) (map[string]Total
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -311,8 +347,14 @@ type MergeFrequencyByWeek struct {
 	Amount float32
 }
 
-func (s *Store) GetMergeFrequency(weeks []string, team *TeamRef) (map[string]MergeFrequencyByWeek, float64, error) {
+func (s *Store) GetMergeFrequency(weeks []string, teamMembers TeamMembers) (map[string]MergeFrequencyByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 		SELECT
@@ -330,7 +372,7 @@ func (s *Store) GetMergeFrequency(weeks []string, team *TeamRef) (map[string]Mer
 		WHERE merged_dates.week IN (%s)
 		AND author.bot = 0%s
 		GROUP BY merged_dates.week`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -340,12 +382,15 @@ func (s *Store) GetMergeFrequency(weeks []string, team *TeamRef) (map[string]Mer
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err

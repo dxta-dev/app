@@ -16,9 +16,15 @@ type AverageMRSizeByWeek struct {
 	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string, team *TeamRef) (map[string]AverageMRSizeByWeek, float64, error) {
+func (s *Store) GetAverageMRSize(weeks []string, teamMembers TeamMembers) (map[string]AverageMRSizeByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -37,7 +43,7 @@ func (s *Store) GetAverageMRSize(weeks []string, team *TeamRef) (map[string]Aver
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0%s
 	GROUP BY mergedAt.week;`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -47,12 +53,15 @@ func (s *Store) GetAverageMRSize(weeks []string, team *TeamRef) (map[string]Aver
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -96,8 +105,14 @@ type AverageMrReviewDepthByWeek struct {
 	Depth float32
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string, team *TeamRef) (map[string]AverageMrReviewDepthByWeek, float64, error) {
+func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers TeamMembers) (map[string]AverageMrReviewDepthByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -115,7 +130,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string, team *TeamRef) (map[string
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0%s
 	GROUP BY mergedAt.week;`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -125,12 +140,15 @@ func (s *Store) GetAverageReviewDepth(weeks []string, team *TeamRef) (map[string
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -173,8 +191,14 @@ type AverageHandoverPerMR struct {
 	Handover float32
 }
 
-func (s *Store) GetAverageHandoverPerMR(weeks []string, team *TeamRef) (map[string]AverageHandoverPerMR, float64, error) {
+func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers TeamMembers) (map[string]AverageHandoverPerMR, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -192,7 +216,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, team *TeamRef) (map[stri
 	WHERE mergedAt.week IN (%s)
 	AND author.bot = 0%s
 	GROUP BY mergedAt.week;`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -202,12 +226,15 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, team *TeamRef) (map[stri
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -250,8 +277,14 @@ type MrCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetMRsMergedWithoutReview(weeks []string, team *TeamRef) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers TeamMembers) (map[string]MrCountByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
 
 	query := fmt.Sprintf(`
 	SELECT
@@ -269,7 +302,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, team *TeamRef) (map[st
 	WHERE mergedAt.week IN (%s) and metrics.review_depth = 0
 	AND author.bot = 0%s
 	GROUP BY mergedAt.week;`,
-		placeholders, AndUserInTeamQueryPart("author.external_id", team))
+		placeholders, usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -279,12 +312,15 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, team *TeamRef) (map[st
 
 	defer db.Close()
 
-	weeksInterface := make([]interface{}, len(weeks))
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
 	for i, v := range weeks {
-		weeksInterface[i] = v
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, weeksInterface...)
+	rows, err := db.Query(query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
