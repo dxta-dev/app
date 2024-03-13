@@ -18,7 +18,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[st
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -109,7 +109,7 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND actor.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND actor.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -189,7 +189,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -277,7 +277,7 @@ func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND actor.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND actor.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -361,7 +361,7 @@ func (s *Store) GetMergeFrequency(weeks []string, teamMembers []int64) (map[stri
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`

@@ -23,7 +23,7 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -113,7 +113,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -201,7 +201,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
@@ -289,7 +289,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("\n\tAND author.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	query := fmt.Sprintf(`
