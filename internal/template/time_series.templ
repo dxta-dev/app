@@ -1,55 +1,24 @@
 package template
 
-script getHover(values []float64) {
-  const totalCommitsDiv = document.getElementById('total-commits');
-  values.forEach((value, index) => {
-    console.log(value);
+script setData(values []float64) {
+	const parent = document.currentScript.parentNode;
+	const svg = parent.querySelector(`svg`);
+	const circles = parent.querySelectorAll(`svg > circle`);
 
-    const circles = totalCommitsDiv.querySelector('svg').querySelectorAll('circle');
-
-    const tooltip = document.createElement('div');
-    tooltip.className = 'tooltip';
-    totalCommitsDiv.appendChild(tooltip);
-
-    circles[index].addEventListener('mouseover', function () {
-      tooltip.textContent = `Value: ${value}`;
-      tooltip.style.visibility = 'visible';
-    });
-
-    circles[index].addEventListener('mouseout', function () {
-      tooltip.style.visibility = 'hidden';
-    });
-  });
+	circles.forEach((c, i) => {
+		c.setAttribute(`data-value`, values[i]);
+	});
 }
 
-
-templ Hover (series TimeSeries) {
-<h1>Hover</h1>
-	@getHover(series.YValues)
-	<style>
-		.inline-block {
-  display: inline-block;
+type TimeSeriesProps struct {
+	Series TimeSeries
+	InfoText string
 }
 
-circle {
-  fill: rgba(0, 116, 217, 1.0);
-  stroke: rgba(0, 116, 217, 1.0);
-  stroke-width: 1;
-}
-
-#total-commits {
-  text-align: center;
-  margin-top: 20px;
-}
-
-.tooltip {
-  position: absolute;
-  background-color: rgba(0, 116, 217, 1.0);
-  color: #fff;
-  padding: 5px;
-  border-radius: 5px;
-  visibility: hidden;
-  z-index: 1;
-}
-	</style>
+templ timeSeries(props TimeSeriesProps) {
+	<div>
+		<p>{props.InfoText}</p>
+		@TimeSeriesChart(props.Series)
+		@setData(props.Series.YValues)
+	</div>
 }

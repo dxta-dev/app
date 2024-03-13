@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -71,6 +73,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Weeks:   weeks,
 	}
 
+	averageMrSizeSeriesProps := template.TimeSeriesProps{
+		Series: averageMrSizeSeries,
+		InfoText: fmt.Sprintf("AVG Size per week: %f", amrs),
+	}
+
 	ardXValues := make([]float64, len(weeks))
 	ardYValues := make([]float64, len(weeks))
 
@@ -84,6 +91,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		XValues: ardXValues,
 		YValues: ardYValues,
 		Weeks:   weeks,
+	}
+
+	averageReviewDepthSeriesProps := template.TimeSeriesProps{
+		Series: averageReviewDepthSeries,
+		InfoText: fmt.Sprintf("AVG Depth per week: %f", amrrd),
 	}
 
 	ahmXValues := make([]float64, len(weeks))
@@ -101,6 +113,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Weeks:   weeks,
 	}
 
+	averageHandoverSeriesProps := template.TimeSeriesProps{
+		Series: averageHandoverSeries,
+		InfoText: fmt.Sprintf("AVG Handovers per week: %f", amrh),
+	}
+
 	mmwrXValues := make([]float64, len(weeks))
 	mmwrYValues := make([]float64, len(weeks))
 
@@ -116,15 +133,20 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		Weeks:   weeks,
 	}
 
+	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{
+		Series: mrsMergedWithoutReviewSeries,
+		InfoText: fmt.Sprintf("Total Merged without Review: %f", amwr),
+	}
+
 	props := template.QualityMetricsProps{
-		AverageMrSizeSeries:          averageMrSizeSeries,
-		TotalAverageMrSize:           amrs,
-		AverageReviewDepthSeries:     averageReviewDepthSeries,
-		TotalAverageReviewDepth:      amrrd,
-		MrsMergedWithoutReviewSeries: mrsMergedWithoutReviewSeries,
-		TotalMrsMergedWithoutReview:  amwr,
-		AverageHandoverTimeSeries:    averageHandoverSeries,
-		TotalAverageHandoverTime:     amrh,
+		AverageMrSizeSeriesProps:          averageMrSizeSeriesProps,
+		TotalAverageMrSize:                amrs,
+		AverageReviewDepthSeriesProps:     averageReviewDepthSeriesProps,
+		TotalAverageReviewDepth:           amrrd,
+		MrsMergedWithoutReviewSeriesProps: mrsMergedWithoutReviewSeriesProps,
+		TotalMrsMergedWithoutReview:       amwr,
+		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
+		TotalAverageHandoverTime:          amrh,
 	}
 
 	components := template.QualityMetricsPage(page, props)
