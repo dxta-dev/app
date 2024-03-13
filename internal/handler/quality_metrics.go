@@ -34,108 +34,108 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	ams, amrs, err := store.GetAverageMRSize(weeks)
+	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	ard, amrrd, err := store.GetAverageReviewDepth(weeks)
+	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks)
+	mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err := store.GetMRsMergedWithoutReview(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks)
+	mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err := store.GetAverageHandoverPerMR(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	amsXValues := make([]float64, len(weeks))
-	amsYValues := make([]float64, len(weeks))
+	averageMrSizeXValues := make([]float64, len(weeks))
+	averageMrSizeYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		amsXValues[i] = float64(i)
-		amsYValues[i] = float64(ams[week].Size)
+		averageMrSizeXValues[i] = float64(i)
+		averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
 	}
 
 	averageMrSizeSeries := template.TimeSeries{
 		Title:   "Average Merge Request Size",
-		XValues: amsXValues,
-		YValues: amsYValues,
+		XValues: averageMrSizeXValues,
+		YValues: averageMrSizeYValues,
 		Weeks:   weeks,
 	}
 
 	averageMrSizeSeriesProps := template.TimeSeriesProps{
-		Series: averageMrSizeSeries,
-		InfoText: fmt.Sprintf("AVG Size per week: %f", amrs),
+		Series:   averageMrSizeSeries,
+		InfoText: fmt.Sprintf("AVG Size per week: %f", averageMrSizeByNWeeks),
 	}
 
-	ardXValues := make([]float64, len(weeks))
-	ardYValues := make([]float64, len(weeks))
+	averageReviewDepthXValues := make([]float64, len(weeks))
+	averageReviewDepthYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		ardXValues[i] = float64(i)
-		ardYValues[i] = float64(ard[week].Depth)
+		averageReviewDepthXValues[i] = float64(i)
+		averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 	}
 
 	averageReviewDepthSeries := template.TimeSeries{
 		Title:   "Average Review Depth",
-		XValues: ardXValues,
-		YValues: ardYValues,
+		XValues: averageReviewDepthXValues,
+		YValues: averageReviewDepthYValues,
 		Weeks:   weeks,
 	}
 
 	averageReviewDepthSeriesProps := template.TimeSeriesProps{
-		Series: averageReviewDepthSeries,
-		InfoText: fmt.Sprintf("AVG Depth per week: %f", amrrd),
+		Series:   averageReviewDepthSeries,
+		InfoText: fmt.Sprintf("AVG Depth per week: %f", averageReviewDepthByNWeeks),
 	}
 
-	ahmXValues := make([]float64, len(weeks))
-	ahmYValues := make([]float64, len(weeks))
+	averageMrHandoverMetricsByNWeeksXValues := make([]float64, len(weeks))
+	averageMrHandoverMetricsByNWeeksYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		ahmXValues[i] = float64(i)
-		ahmYValues[i] = float64(mrhm[week].Handover)
+		averageMrHandoverMetricsByNWeeksXValues[i] = float64(i)
+		averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 	}
 
 	averageHandoverSeries := template.TimeSeries{
 		Title:   "Average Handovers Per MR",
-		XValues: ahmXValues,
-		YValues: ahmYValues,
+		XValues: averageMrHandoverMetricsByNWeeksXValues,
+		YValues: averageMrHandoverMetricsByNWeeksYValues,
 		Weeks:   weeks,
 	}
 
 	averageHandoverSeriesProps := template.TimeSeriesProps{
-		Series: averageHandoverSeries,
-		InfoText: fmt.Sprintf("AVG Handovers per week: %f", amrh),
+		Series:   averageHandoverSeries,
+		InfoText: fmt.Sprintf("AVG Handovers per week: %f", averageMrHandoverMetricsByNWeeks),
 	}
 
-	mmwrXValues := make([]float64, len(weeks))
-	mmwrYValues := make([]float64, len(weeks))
+	mergeRequestWithoutReviewXValues := make([]float64, len(weeks))
+	mergeRequestWithoutReviewYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		mmwrXValues[i] = float64(i)
-		mmwrYValues[i] = float64(mmwr[week].Count)
+		mergeRequestWithoutReviewXValues[i] = float64(i)
+		mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 	}
 
 	mrsMergedWithoutReviewSeries := template.TimeSeries{
 		Title:   "Pull Requests Merged Without Review",
-		XValues: mmwrXValues,
-		YValues: mmwrYValues,
+		XValues: mergeRequestWithoutReviewXValues,
+		YValues: mergeRequestWithoutReviewYValues,
 		Weeks:   weeks,
 	}
 
 	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{
-		Series: mrsMergedWithoutReviewSeries,
-		InfoText: fmt.Sprintf("Total Merged without Review: %f", amwr),
+		Series:   mrsMergedWithoutReviewSeries,
+		InfoText: fmt.Sprintf("Total Merged without Review: %f", averageMrWithoutReviewByNWeeks),
 	}
 
 	props := template.QualityMetricsProps{
