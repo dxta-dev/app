@@ -2,7 +2,6 @@ package data
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
 	_ "modernc.org/sqlite"
@@ -10,16 +9,13 @@ import (
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
 
-type TeamRef struct {
-	Id int64
-}
-
 type Team struct {
 	Id   int64
 	Name string
 }
 
 type TeamSlice []Team
+type TeamMembers []int64
 
 func (s *Store) GetTeams() (TeamSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
@@ -58,10 +54,42 @@ func (s *Store) GetTeams() (TeamSlice, error) {
 	return teams, nil
 }
 
-func AndUserInTeamQueryPart(userColumn string, teamRef *TeamRef) string {
-	if teamRef == nil {
-		return ""
+func (s *Store) GetTeamMembers(team *int64) (TeamMembers, error) {
+	if team == nil {
+		return TeamMembers{}, nil
 	}
 
-	return "\n\tAND " + userColumn + fmt.Sprintf(" IN (SELECT member AS external_id FROM tenant_team_members WHERE team = %v)", teamRef.Id)
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	query := `SELECT member FROM tenant_team_members where team = ?`
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	rows, err := db.Query(query, team)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var teamMembers TeamMembers
+
+	for rows.Next() {
+		var member int64
+
+		if err := rows.Scan(
+			&member,
+		); err != nil {
+			log.Fatal(err)
+		}
+
+		teamMembers = append(teamMembers, member)
+	}
+
+	return teamMembers, nil
 }
