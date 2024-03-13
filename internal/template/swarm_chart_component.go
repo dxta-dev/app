@@ -2,6 +2,7 @@ package template
 
 import (
 	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/util"
 
 	"bytes"
 	"context"
@@ -41,7 +42,11 @@ func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Compon
 		YValues: series.YValues,
 	}
 
+
+	f := util.GetMonospaceFont()
+
 	graph := chart.Chart{
+		Font: f,
 		XAxis: chart.XAxis{
 			TickPosition: chart.TickPositionBetweenTicks,
 			Style: chart.Style{
