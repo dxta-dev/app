@@ -15,7 +15,6 @@ type Team struct {
 }
 
 type TeamSlice []Team
-type TeamMembers []int64
 
 func (s *Store) GetTeams() (TeamSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
@@ -54,9 +53,9 @@ func (s *Store) GetTeams() (TeamSlice, error) {
 	return teams, nil
 }
 
-func (s *Store) GetTeamMembers(team *int64) (TeamMembers, error) {
+func (s *Store) GetTeamMembers(team *int64) ([]int64, error) {
 	if team == nil {
-		return TeamMembers{}, nil
+		return []int64{}, nil
 	}
 
 	db, err := sql.Open("libsql", s.DbUrl)
@@ -77,7 +76,7 @@ func (s *Store) GetTeamMembers(team *int64) (TeamMembers, error) {
 
 	defer rows.Close()
 
-	var teamMembers TeamMembers
+	var teamMembers []int64
 
 	for rows.Next() {
 		var member int64

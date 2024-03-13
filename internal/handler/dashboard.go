@@ -28,7 +28,7 @@ type DashboardState struct {
 	team *int64
 }
 
-func getSwarmSeries(store *data.Store, date time.Time, teamMembers data.TeamMembers) (template.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time, teamMembers []int64) (template.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 

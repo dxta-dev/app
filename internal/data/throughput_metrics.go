@@ -11,7 +11,7 @@ type CodeChangesCount struct {
 	Week  string
 }
 
-func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers TeamMembers) (map[string]CodeChangesCount, float64, error) {
+func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[string]CodeChangesCount, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -35,9 +35,11 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers TeamMembers) (ma
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE dates.week IN (%s)
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY dates.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -100,7 +102,7 @@ type CommitCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalCommits(weeks []string, teamMembers TeamMembers) (map[string]CommitCountByWeek, float64, error) {
+func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string]CommitCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -121,9 +123,11 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers TeamMembers) (map[st
 		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 9
 		AND commitedAt.week IN (%s)
-		AND actor.bot = 0%s
+		AND actor.bot = 0
+		%s
 		GROUP BY commitedAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -178,7 +182,7 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers TeamMembers) (map[st
 	return commitCountByWeeks, averageCommitCountByXWeeks, nil
 }
 
-func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers TeamMembers) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[string]MrCountByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -202,9 +206,11 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers TeamMembers) (map[
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE opened_dates.week IN (%s)
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY opened_dates.week`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -264,7 +270,7 @@ type TotalReviewsByWeek struct {
 	Count int
 }
 
-func (s *Store) GetTotalReviews(weeks []string, teamMembers TeamMembers) (map[string]TotalReviewsByWeek, float64, error) {
+func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string]TotalReviewsByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -285,9 +291,11 @@ func (s *Store) GetTotalReviews(weeks []string, teamMembers TeamMembers) (map[st
 		ON ev.actor = actor.id
 		WHERE ev.merge_request_event_type = 15
 		AND occuredAt.week IN (%s)
-		AND actor.bot = 0%s
+		AND actor.bot = 0
+		%s
 		GROUP BY occuredAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -347,7 +355,7 @@ type MergeFrequencyByWeek struct {
 	Amount float32
 }
 
-func (s *Store) GetMergeFrequency(weeks []string, teamMembers TeamMembers) (map[string]MergeFrequencyByWeek, float64, error) {
+func (s *Store) GetMergeFrequency(weeks []string, teamMembers []int64) (map[string]MergeFrequencyByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	usersInTeamConditionQuery := ""
@@ -370,9 +378,11 @@ func (s *Store) GetMergeFrequency(weeks []string, teamMembers TeamMembers) (map[
 		JOIN transform_forge_users AS author
 		ON uj.author = author.id
 		WHERE merged_dates.week IN (%s)
-		AND author.bot = 0%s
+		AND author.bot = 0
+		%s
 		GROUP BY merged_dates.week`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 

@@ -125,7 +125,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 	return mergeRequestEvents, nil
 }
 
-func (s *Store) GetEventSlices(date time.Time, teamMembers TeamMembers) (EventSlice, error) {
+func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -160,7 +160,8 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers TeamMembers) (EventSl
 	JOIN transform_forge_users AS author ON author.id = u.author
 	WHERE date.week = ?
 	AND author.bot = 0
-	AND user.bot = 0%s;
+	AND user.bot = 0
+	%s;
 		`, usersInTeamConditionQuery)
 
 	queryParams := make([]interface{}, len(teamMembers)+1)

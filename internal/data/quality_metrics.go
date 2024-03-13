@@ -16,7 +16,7 @@ type AverageMRSizeByWeek struct {
 	N    int
 }
 
-func (s *Store) GetAverageMRSize(weeks []string, teamMembers TeamMembers) (map[string]AverageMRSizeByWeek, float64, error) {
+func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[string]AverageMRSizeByWeek, float64, error) {
 
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -41,9 +41,11 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers TeamMembers) (map[s
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY mergedAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -105,7 +107,7 @@ type AverageMrReviewDepthByWeek struct {
 	Depth float32
 }
 
-func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers TeamMembers) (map[string]AverageMrReviewDepthByWeek, float64, error) {
+func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[string]AverageMrReviewDepthByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	usersInTeamConditionQuery := ""
@@ -128,9 +130,11 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers TeamMembers) (
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY mergedAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -191,7 +195,7 @@ type AverageHandoverPerMR struct {
 	Handover float32
 }
 
-func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers TeamMembers) (map[string]AverageHandoverPerMR, float64, error) {
+func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (map[string]AverageHandoverPerMR, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	usersInTeamConditionQuery := ""
@@ -214,9 +218,11 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers TeamMembers)
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY mergedAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -277,7 +283,7 @@ type MrCountByWeek struct {
 	Count int
 }
 
-func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers TeamMembers) (map[string]MrCountByWeek, float64, error) {
+func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (map[string]MrCountByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	usersInTeamConditionQuery := ""
@@ -300,9 +306,11 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers TeamMember
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s) and metrics.review_depth = 0
-	AND author.bot = 0%s
+	AND author.bot = 0
+	%s
 	GROUP BY mergedAt.week;`,
-		placeholders, usersInTeamConditionQuery)
+		placeholders,
+		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
 
