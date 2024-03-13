@@ -32,87 +32,87 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	tc, avtc, err := store.GetTotalCommits(weeks)
+	totalCommits, averageTotalCommitsByNWeeks, err := store.GetTotalCommits(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	tcXValues := make([]float64, len(weeks))
-	tcYValues := make([]float64, len(weeks))
+	totalCommitsXValues := make([]float64, len(weeks))
+	totalCommitsYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		tcXValues[i] = float64(i)
-		tcYValues[i] = float64(tc[week].Count)
+		totalCommitsXValues[i] = float64(i)
+		totalCommitsYValues[i] = float64(totalCommits[week].Count)
 	}
 
-	tmo, amo, err := store.GetTotalMrsOpened(weeks)
+	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	tmoXValues := make([]float64, len(weeks))
-	tmoYValues := make([]float64, len(weeks))
+	totalMrsOpenedXValues := make([]float64, len(weeks))
+	totalMrsOpenedYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		tmoXValues[i] = float64(i)
-		tmoYValues[i] = float64(tmo[week].Count)
+		totalMrsOpenedXValues[i] = float64(i)
+		totalMrsOpenedYValues[i] = float64(totalMrsOpened[week].Count)
 	}
 
-	mf, amf, err := store.GetMergeFrequency(weeks)
+	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	mfXValues := make([]float64, len(weeks))
-	mfYValues := make([]float64, len(weeks))
+	mergeFrequencyXValues := make([]float64, len(weeks))
+	mergeFrequencyYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		mfXValues[i] = float64(i)
-		mfYValues[i] = float64(mf[week].Amount)
+		mergeFrequencyXValues[i] = float64(i)
+		mergeFrequencyYValues[i] = float64(mergeFrequency[week].Amount)
 	}
 
-	tr, arx, err := store.GetTotalReviews(weeks)
+	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	trXValues := make([]float64, len(weeks))
-	trYValues := make([]float64, len(weeks))
+	totalReviewsXValues := make([]float64, len(weeks))
+	totalReviewsYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		trXValues[i] = float64(i)
-		trYValues[i] = float64(tr[week].Count)
+		totalReviewsXValues[i] = float64(i)
+		totalReviewsYValues[i] = float64(totalReviews[week].Count)
 	}
 
-	tcc, atcc, err := store.GetTotalCodeChanges(weeks)
+	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks)
 
 	if err != nil {
 		return err
 	}
 
-	tccXValues := make([]float64, len(weeks))
-	tccYValues := make([]float64, len(weeks))
+	totalCodeChangesXValues := make([]float64, len(weeks))
+	totalCodeChangesYValues := make([]float64, len(weeks))
 
 	for i, week := range weeks {
-		tccXValues[i] = float64(i)
-		tccYValues[i] = float64(tcc[week].Count)
+		totalCodeChangesXValues[i] = float64(i)
+		totalCodeChangesYValues[i] = float64(totalCodeChanges[week].Count)
 	}
 
 	props := template.ThroughputMetricsProps{
-		TotalCommitsSeries:      template.TimeSeries{Title: "Total Commits", XValues: tcXValues, YValues: tcYValues, Weeks: weeks},
-		AverageTotalCommits:     avtc,
-		TotalMrsOpenedSeries:    template.TimeSeries{Title: "Total MRs Opened", XValues: tmoXValues, YValues: tmoYValues, Weeks: weeks},
-		AverageTotalMrsOpened:   amo,
-		MergeFrequencySeries:    template.TimeSeries{Title: "Merge Frequency", XValues: mfXValues, YValues: mfYValues, Weeks: weeks},
-		AverageMergeFrequency:   amf,
-		TotalReviewsSeries:      template.TimeSeries{Title: "Total Reviews", XValues: trXValues, YValues: trYValues, Weeks: weeks},
-		AverageTotalReviews:     arx,
-		TotalCodeChangesSeries:  template.TimeSeries{Title: "Total Code Changes", XValues: tccXValues, YValues: tccYValues, Weeks: weeks},
-		AverageTotalCodeChanges: atcc,
+		TotalCommitsSeries:      template.TimeSeries{Title: "Total Commits", XValues: totalCommitsXValues, YValues: totalCommitsYValues, Weeks: weeks},
+		AverageTotalCommits:     averageTotalCommitsByNWeeks,
+		TotalMrsOpenedSeries:    template.TimeSeries{Title: "Total MRs Opened", XValues: totalMrsOpenedXValues, YValues: totalMrsOpenedYValues, Weeks: weeks},
+		AverageTotalMrsOpened:   averageMrsOpenedByNWeeks,
+		MergeFrequencySeries:    template.TimeSeries{Title: "Merge Frequency", XValues: mergeFrequencyXValues, YValues: mergeFrequencyYValues, Weeks: weeks},
+		AverageMergeFrequency:   averageMergeFrequencyByNWeeks,
+		TotalReviewsSeries:      template.TimeSeries{Title: "Total Reviews", XValues: totalReviewsXValues, YValues: totalReviewsYValues, Weeks: weeks},
+		AverageTotalReviews:     averageReviewsByNWeeks,
+		TotalCodeChangesSeries:  template.TimeSeries{Title: "Total Code Changes", XValues: totalCodeChangesXValues, YValues: totalCodeChangesYValues, Weeks: weeks},
+		AverageTotalCodeChanges: averageTotalCodeChangesByNWeeks,
 	}
 
 	components := template.ThroughputMetricsPage(page, props)
