@@ -25,14 +25,14 @@ import (
 type DashboardState struct {
 	week string
 	mr   *int64
-	team *data.TeamRef
+	team *int64
 }
 
-func getSwarmSeries(store *data.Store, date time.Time, team *data.TeamRef) (template.SwarmSeries, error) {
+func getSwarmSeries(store *data.Store, date time.Time, teamMembers data.TeamMembers) (template.SwarmSeries, error) {
 	var xvalues []float64
 	var yvalues []float64
 
-	events, err := store.GetEventSlices(date, team)
+	events, err := store.GetEventSlices(date, teamMembers)
 
 	if err != nil {
 		return template.SwarmSeries{}, err
@@ -121,7 +121,7 @@ func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
 	if state.team != nil {
-		params.Add("team", fmt.Sprint(state.team.Id))
+		params.Add("team", fmt.Sprint(*state.team))
 	}
 	encodedParams := params.Encode()
 	if encodedParams != "" {
@@ -156,12 +156,18 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mr = nil
 	}
 
-	var team *data.TeamRef
+	var team *int64
 	if r.URL.Query().Has("team") {
 		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
 	}
 
 	teams, err := store.GetTeams()
@@ -201,7 +207,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	searchParams := url.Values{}
 	if team != nil {
-		searchParams.Set("team", fmt.Sprint(team.Id))
+		searchParams.Set("team", fmt.Sprint(*team))
 	}
 	if state.week != "" {
 		searchParams.Set("week", state.week)
@@ -224,7 +230,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		BaseUrl:      "/",
 	}
 
-	swarmSeries, err := getSwarmSeries(store, date, team)
+	swarmSeries, err := getSwarmSeries(store, date, teamMembers)
 
 	if err != nil {
 		return err

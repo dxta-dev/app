@@ -39,17 +39,23 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	var team *data.TeamRef
-	if c.Request().URL.Query().Has("team") {
-		value, err := strconv.ParseInt(c.Request().URL.Query().Get("team"), 10, 64)
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
 	}
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	tc, avtc, err := store.GetTotalCommits(weeks, team)
+	tc, avtc, err := store.GetTotalCommits(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -63,7 +69,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		tcYValues[i] = float64(tc[week].Count)
 	}
 
-	tmo, amo, err := store.GetTotalMrsOpened(weeks, team)
+	tmo, amo, err := store.GetTotalMrsOpened(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -77,7 +83,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		tmoYValues[i] = float64(tmo[week].Count)
 	}
 
-	mf, amf, err := store.GetMergeFrequency(weeks, team)
+	mf, amf, err := store.GetMergeFrequency(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -91,7 +97,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		mfYValues[i] = float64(mf[week].Amount)
 	}
 
-	tr, arx, err := store.GetTotalReviews(weeks, team)
+	tr, arx, err := store.GetTotalReviews(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -105,7 +111,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		trYValues[i] = float64(tr[week].Count)
 	}
 
-	tcc, atcc, err := store.GetTotalCodeChanges(weeks, team)
+	tcc, atcc, err := store.GetTotalCodeChanges(weeks, teamMembers)
 
 	if err != nil {
 		return err

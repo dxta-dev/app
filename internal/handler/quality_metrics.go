@@ -39,35 +39,41 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	var team *data.TeamRef
-	if c.Request().URL.Query().Has("team") {
-		value, err := strconv.ParseInt(c.Request().URL.Query().Get("team"), 10, 64)
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
 	}
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	ams, amrs, err := store.GetAverageMRSize(weeks, team)
+	ams, amrs, err := store.GetAverageMRSize(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	ard, amrrd, err := store.GetAverageReviewDepth(weeks, team)
+	ard, amrrd, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks, team)
+	mmwr, amwr, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks, team)
+	mrhm, amrh, err := store.GetAverageHandoverPerMR(weeks, teamMembers)
 
 	if err != nil {
 		return err

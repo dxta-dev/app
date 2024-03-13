@@ -38,11 +38,11 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	}
 
 	week := parsedURL.Query().Get("week")
-	var team *data.TeamRef
+	var team *int64
 	if parsedURL.Query().Has("team") {
 		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
 	}
 
@@ -90,11 +90,11 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 
 	week := parsedURL.Query().Get("week")
 
-	var team *data.TeamRef
+	var team *int64
 	if parsedURL.Query().Has("team") {
 		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
 	}
 

@@ -11,13 +11,13 @@ type TeamPickerProps struct {
   Teams data.TeamSlice
   BaseUrl string
   SearchParams 	 url.Values
-  SelectedTeam *data.TeamRef
+  SelectedTeam *int64
 }
 
 templ teamPicker(props TeamPickerProps) {
 <div class="flex gap-4" id="team-picker">      
       for _, team := range props.Teams {                    
-        if props.SelectedTeam != nil && team.Id == props.SelectedTeam.Id {
+        if props.SelectedTeam != nil && team.Id == *props.SelectedTeam {
           <a href={ templ.SafeURL(props.BaseUrl+"?" + util.URLValuesWith(props.SearchParams, "team", fmt.Sprint(team.Id)).Encode()) }>🔥{team.Name}</a>
         } else {
           <a href={ templ.SafeURL(props.BaseUrl+"?" + util.URLValuesWith(props.SearchParams, "team", fmt.Sprint(team.Id)).Encode()) }>{team.Name}</a>

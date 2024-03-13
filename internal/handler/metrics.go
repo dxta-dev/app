@@ -27,11 +27,11 @@ func (a *App) MetricsPage(c echo.Context) error {
 		DebugMode: a.DebugMode,
 	}
 
-	var team *data.TeamRef
-	if c.Request().URL.Query().Has("team") {
-		value, err := strconv.ParseInt(c.Request().URL.Query().Get("team"), 10, 64)
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
 		if err == nil {
-			team = &data.TeamRef{Id: value}
+			team = &value
 		}
 	}
 
@@ -53,49 +53,55 @@ func (a *App) MetricsPage(c echo.Context) error {
 		return err
 	}
 
-	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks, team)
+	teamMembers, err := store.GetTeamMembers(team)
 
 	if err != nil {
 		return err
 	}
 
-	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks, team)
+	averageMrSizeMap, _, err := store.GetAverageMRSize(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	totalCommitsMap, _, err := store.GetTotalCommits(weeks, team)
+	averageReviewDepthMap, _, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks, team)
+	totalCommitsMap, _, err := store.GetTotalCommits(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mrsMergedWithoutReviewMap, _, err := store.GetMRsMergedWithoutReview(weeks, team)
+	totalMrsOpenedMap, _, err := store.GetTotalMrsOpened(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks, team)
+	mrsMergedWithoutReviewMap, _, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	totalReviewsMap, _, err := store.GetTotalReviews(weeks, team)
+	mergeFrequencyMap, _, err := store.GetMergeFrequency(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks, team)
+	totalReviewsMap, _, err := store.GetTotalReviews(weeks, teamMembers)
+
+	if err != nil {
+		return err
+	}
+
+	totalCodeChanges, _, err := store.GetTotalCodeChanges(weeks, teamMembers)
 
 	if err != nil {
 		return err
