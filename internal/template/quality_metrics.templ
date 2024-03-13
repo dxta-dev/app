@@ -2,13 +2,9 @@ package template
 
 type QualityMetricsProps struct {
 	AverageMrSizeSeriesProps          TimeSeriesProps
-	TotalAverageMrSize                float64
 	AverageReviewDepthSeriesProps     TimeSeriesProps
-	TotalAverageReviewDepth           float64
 	MrsMergedWithoutReviewSeriesProps TimeSeriesProps
-	TotalMrsMergedWithoutReview       float64
 	AverageHandoverTimeSeriesProps    TimeSeriesProps
-	TotalAverageHandoverTime          float64
 }
 
 templ QualityMetricsPage(page *Page, props QualityMetricsProps) {

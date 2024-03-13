@@ -140,13 +140,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	props := template.QualityMetricsProps{
 		AverageMrSizeSeriesProps:          averageMrSizeSeriesProps,
-		TotalAverageMrSize:                amrs,
 		AverageReviewDepthSeriesProps:     averageReviewDepthSeriesProps,
-		TotalAverageReviewDepth:           amrrd,
 		MrsMergedWithoutReviewSeriesProps: mrsMergedWithoutReviewSeriesProps,
-		TotalMrsMergedWithoutReview:       amwr,
 		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
-		TotalAverageHandoverTime:          amrh,
 	}
 
 	components := template.QualityMetricsPage(page, props)
