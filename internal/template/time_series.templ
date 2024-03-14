@@ -18,6 +18,7 @@ type TimeSeriesProps struct {
 templ timeSeries(props TimeSeriesProps) {
 	<div>
 		<p>{props.InfoText}</p>
+		@hover()
 		@TimeSeriesChart(props.Series)
 		@setData(props.Series.YValues)
 	</div>

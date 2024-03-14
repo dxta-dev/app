@@ -1,0 +1,32 @@
+package template
+
+script tooltip() {
+	const parent = document.currentScript.parentNode;
+	const svg = parent.querySelector(`svg`);
+	const circles = parent.querySelectorAll(`svg > circle`);
+
+	circles.forEach((c, i) => {
+		c.addEventListener('mouseenter', function(event) {
+            const tooltip = document.createElement('div');
+            tooltip.textContent = 'Value: ' + event.target.getAttribute('data-value');
+            tooltip.style.position = 'absolute';
+            tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+            tooltip.style.color = '#fff';
+            tooltip.style.padding = '5px';
+            tooltip.style.borderRadius = '5px';
+            tooltip.style.top = event.clientY + 'px';
+            tooltip.style.left = event.clientX + 'px';
+            document.body.appendChild(tooltip);
+            c.addEventListener('mouseleave', function() {
+                tooltip.parentNode.removeChild(tooltip);
+            });
+        });
+	});
+}
+
+
+templ hover () {
+	@tooltip()
+}
+
+
