@@ -20,6 +20,5 @@ templ timeSeries(props TimeSeriesProps) {
 		<p>{props.InfoText}</p>
 		@TimeSeriesChart(props.Series)
 		@setData(props.Series.YValues)
-		@tooltip()
 	</div>
 }
