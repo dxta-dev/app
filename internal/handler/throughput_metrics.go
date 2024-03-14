@@ -160,7 +160,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText: fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
 	}
 
-	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks)
+	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks, teamMembers)
 
 	totalCodeChangesXValues := make([]float64, len(weeks))
 	totalCodeChangesYValues := make([]float64, len(weeks))
