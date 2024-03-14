@@ -52,3 +52,43 @@ func (s *Store) GetTeams() (TeamSlice, error) {
 
 	return teams, nil
 }
+
+func (s *Store) GetTeamMembers(team *int64) ([]int64, error) {
+	if team == nil {
+		return []int64{}, nil
+	}
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	query := `SELECT member FROM tenant_team_members where team = ?`
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer db.Close()
+
+	rows, err := db.Query(query, team)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var teamMembers []int64
+
+	for rows.Next() {
+		var member int64
+
+		if err := rows.Scan(
+			&member,
+		); err != nil {
+			log.Fatal(err)
+		}
+
+		teamMembers = append(teamMembers, member)
+	}
+
+	return teamMembers, nil
+}
