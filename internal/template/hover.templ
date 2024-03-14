@@ -1,0 +1,68 @@
+package template
+
+script tooltip() {
+
+	function formatValue(value) {
+		var absNumber = Math.abs(value);
+		var formatted = "";
+
+		switch (true) {
+			case absNumber < 1000:
+				if (Number.isInteger(value)) {
+					formatted = value.toFixed(0);
+				} else {
+					formatted = value.toFixed(1);
+				}
+				break;
+			case absNumber >= 1000 && absNumber < 1000000:
+				formatted = (value / 1000).toFixed(1) + 'K';
+				break;
+			case absNumber >= 1000000:
+				formatted = (value / 1000000).toFixed(1) + 'M';
+				break;
+			default:
+				formatted = value.toString();
+		}
+
+		if (formatted.length < 5) {
+			formatted += '\u00a0'.repeat(5 - formatted.length);
+		}
+
+		return formatted;
+	}
+
+	const parent = document.currentScript.parentNode;
+	const svg = parent.querySelector('svg');
+	const circles = parent.querySelectorAll('svg > circle');
+
+	circles.forEach((c, i) => {
+		c.addEventListener('mouseenter', function(event) {
+			const tooltip = document.createElement('div');
+			const dataValue = parseFloat(event.target.getAttribute('data-value'));
+			const formattedValue = formatValue(dataValue);
+
+			tooltip.textContent = formattedValue === 0 ? 'No Data' : 'Value: ' + formattedValue;
+
+			tooltip.style.position = 'absolute';
+			tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+			tooltip.style.color = '#fff';
+			tooltip.style.padding = '5px';
+			tooltip.style.borderRadius = '5px';
+
+			const rect = c.getBoundingClientRect();
+
+			tooltip.style.top = rect.top + window.scrollY - tooltip.offsetHeight + 'px';
+			tooltip.style.left = rect.left + window.scrollX + 'px';
+
+			document.body.appendChild(tooltip);
+
+			c.addEventListener('mouseleave', function() {
+				tooltip.remove();
+			});
+		});
+	});
+
+}
+
+
+

@@ -1,0 +1,24 @@
+package template
+
+script setData(values []float64) {
+	const parent = document.currentScript.parentNode;
+	const svg = parent.querySelector(`svg`);
+	const circles = parent.querySelectorAll(`svg > circle`);
+
+	circles.forEach((c, i) => {
+		c.setAttribute(`data-value`, values[i]);
+	});
+}
+
+type TimeSeriesProps struct {
+	Series TimeSeries
+	InfoText string
+}
+
+templ timeSeries(props TimeSeriesProps) {
+	<div>
+		<p>{props.InfoText}</p>
+		@TimeSeriesChart(props.Series)
+		@setData(props.Series.YValues)
+	</div>
+}
