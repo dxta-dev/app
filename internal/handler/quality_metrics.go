@@ -75,7 +75,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageMrSizeSeriesProps := template.TimeSeriesProps{
 		Series:   averageMrSizeSeries,
-		InfoText: fmt.Sprintf("AVG Size per week: %f", averageMrSizeByNWeeks),
+		InfoText: fmt.Sprintf("AVG Size per week: %v", util.FormatYAxisValues(averageMrSizeByNWeeks)),
 	}
 
 	averageReviewDepthXValues := make([]float64, len(weeks))
@@ -95,7 +95,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageReviewDepthSeriesProps := template.TimeSeriesProps{
 		Series:   averageReviewDepthSeries,
-		InfoText: fmt.Sprintf("AVG Depth per week: %f", averageReviewDepthByNWeeks),
+		InfoText: fmt.Sprintf("AVG Depth per week: %v", util.FormatYAxisValues(averageReviewDepthByNWeeks)),
 	}
 
 	averageMrHandoverMetricsByNWeeksXValues := make([]float64, len(weeks))
@@ -115,7 +115,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageHandoverSeriesProps := template.TimeSeriesProps{
 		Series:   averageHandoverSeries,
-		InfoText: fmt.Sprintf("AVG Handovers per week: %f", averageMrHandoverMetricsByNWeeks),
+		InfoText: fmt.Sprintf("AVG Handovers per week: %v", util.FormatYAxisValues(averageMrHandoverMetricsByNWeeks)),
 	}
 
 	mergeRequestWithoutReviewXValues := make([]float64, len(weeks))
@@ -135,7 +135,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{
 		Series:   mrsMergedWithoutReviewSeries,
-		InfoText: fmt.Sprintf("Total Merged without Review: %f", averageMrWithoutReviewByNWeeks),
+		InfoText: fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
 	}
 
 	props := template.QualityMetricsProps{
