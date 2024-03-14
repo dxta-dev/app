@@ -32,36 +32,36 @@ script tooltip() {
 	}
 
 	const parent = document.currentScript.parentNode;
-	const svg = parent.querySelector(`svg`);
-	const circles = parent.querySelectorAll(`svg > circle`);
+	const svg = parent.querySelector('svg');
+	const circles = parent.querySelectorAll('svg > circle');
 
 	circles.forEach((c, i) => {
 		c.addEventListener('mouseenter', function(event) {
-            const tooltip = document.createElement('div');
+			const tooltip = document.createElement('div');
 			const dataValue = parseFloat(event.target.getAttribute('data-value'));
-            const formattedValue = formatValue(dataValue);
+			const formattedValue = formatValue(dataValue);
 
-			if (formattedValue == 0) {
-				tooltip.textContent = 'No Data';
-			} else {
-            tooltip.textContent = 'Value: ' + formattedValue;
-			}
+			tooltip.textContent = formattedValue === 0 ? 'No Data' : 'Value: ' + formattedValue;
 
-            tooltip.style.position = 'absolute';
-            tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-            tooltip.style.color = '#fff';
-            tooltip.style.padding = '5px';
-            tooltip.style.borderRadius = '5px';
-            tooltip.style.top = event.clientY + 'px';
-            tooltip.style.left = event.clientX + 'px';
-            document.body.appendChild(tooltip);
-            c.addEventListener('mouseleave', function() {
-				if (tooltip.parentNode) {
-                    tooltip.parentNode.removeChild(tooltip);
-                }
-            });
-        });
+			tooltip.style.position = 'absolute';
+			tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+			tooltip.style.color = '#fff';
+			tooltip.style.padding = '5px';
+			tooltip.style.borderRadius = '5px';
+
+			const rect = c.getBoundingClientRect();
+
+			tooltip.style.top = rect.top + window.scrollY - tooltip.offsetHeight + 'px';
+			tooltip.style.left = rect.left + window.scrollX + 'px';
+
+			document.body.appendChild(tooltip);
+
+			c.addEventListener('mouseleave', function() {
+				tooltip.remove();
+			});
+		});
 	});
+
 }
 
 
