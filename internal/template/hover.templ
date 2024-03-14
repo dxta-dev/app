@@ -18,15 +18,13 @@ script tooltip() {
             tooltip.style.left = event.clientX + 'px';
             document.body.appendChild(tooltip);
             c.addEventListener('mouseleave', function() {
-                tooltip.parentNode.removeChild(tooltip);
+				if (tooltip.parentNode) {
+                    tooltip.parentNode.removeChild(tooltip);
+                }
             });
         });
 	});
 }
 
-
-templ hover () {
-	@tooltip()
-}
 
 
