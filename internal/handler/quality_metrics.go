@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -32,27 +34,49 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &value
+		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
+	}
+
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks)
+	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks, teamMembers)
+
 
 	if err != nil {
 		return err
 	}
 
-	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks)
+
+	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err := store.GetMRsMergedWithoutReview(weeks)
+	mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
 
 	if err != nil {
 		return err
 	}
 
-	mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err := store.GetAverageHandoverPerMR(weeks)
+	mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err := store.GetAverageHandoverPerMR(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -145,6 +169,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
 	}
 
-	components := template.QualityMetricsPage(page, props)
+	teamPickerProps := template.TeamPickerProps{
+		Teams:        teams,
+		SearchParams: url.Values{},
+		SelectedTeam: team,
+		BaseUrl:      "/metrics/quality",
+	}
+
+	components := template.QualityMetricsPage(page, props, teamPickerProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }

@@ -2,6 +2,8 @@ package handler
 
 import (
 	"fmt"
+	"net/url"
+	"strconv"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -32,9 +34,29 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
+	teams, err := store.GetTeams()
+
+	if err != nil {
+		return err
+	}
+
+	var team *int64
+	if r.URL.Query().Has("team") {
+		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
+		if err == nil {
+			team = &value
+		}
+	}
+
+	teamMembers, err := store.GetTeamMembers(team)
+
+	if err != nil {
+		return err
+	}
+
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	totalCommits, averageTotalCommitsByNWeeks, err := store.GetTotalCommits(weeks)
+	totalCommits, averageTotalCommitsByNWeeks, err := store.GetTotalCommits(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -60,7 +82,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText: fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
 	}
 
-	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks)
+	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -86,7 +108,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText: fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
 	}
 
-	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks)
+	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -112,7 +134,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText: fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
 	}
 
-	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks)
+	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -169,6 +191,13 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		TotalCodeChangesSeriesProps: averageTotalCodeChangesProps,
 	}
 
-	components := template.ThroughputMetricsPage(page, props)
+	teamPickerProps := template.TeamPickerProps{
+		Teams:        teams,
+		SearchParams: url.Values{},
+		SelectedTeam: team,
+		BaseUrl:      "/metrics/throughput",
+	}
+
+	components := template.ThroughputMetricsPage(page, props, teamPickerProps)
 	return components.Render(context.Background(), c.Response().Writer)
 }
