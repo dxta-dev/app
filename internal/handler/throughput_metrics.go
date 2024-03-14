@@ -57,7 +57,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	averageTotalCommitsSeriesProps := template.TimeSeriesProps{
 		Series:   averageTotalCommitsSeries,
-		InfoText: fmt.Sprintf("AVG Commits per week: %f", averageTotalCommitsByNWeeks),
+		InfoText: fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
 	}
 
 	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks)
@@ -83,7 +83,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	averageMrsOpenedSeriesProps := template.TimeSeriesProps{
 		Series:   averageMrsOpenedSeries,
-		InfoText: fmt.Sprintf("AVG MRs Opened per week: %f", averageMrsOpenedByNWeeks),
+		InfoText: fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
 	}
 
 	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks)
@@ -109,7 +109,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	averageMergeFrequencySeriesProps := template.TimeSeriesProps{
 		Series:   averageMergeFrequencySeries,
-		InfoText: fmt.Sprintf("AVG Merge Frequency per week: %f", averageMergeFrequencyByNWeeks),
+		InfoText: fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
 	}
 
 	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks)
@@ -135,7 +135,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	averageReviewsSeriesProps := template.TimeSeriesProps{
 		Series:   averageReviewsSeries,
-		InfoText: fmt.Sprintf("AVG Total Reviews per week: %f", averageReviewsByNWeeks),
+		InfoText: fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
 	}
 
 	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks)
@@ -155,7 +155,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	averageTotalCodeChangesProps := template.TimeSeriesProps{
 		Series:   averageCodeChangesSeries,
-		InfoText: fmt.Sprintf("AVG Total Code Changes per week: %f", averageTotalCodeChangesByNWeeks),
+		InfoText: fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
 	}
 	if err != nil {
 		return err
