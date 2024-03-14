@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"fmt"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
@@ -46,6 +48,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalCommitsYValues[i] = float64(totalCommits[week].Count)
 	}
 
+	averageTotalCommitsSeries := template.TimeSeries{
+		Title:   "Total Commits",
+		XValues: totalCommitsXValues,
+		YValues: totalCommitsYValues,
+		Weeks:   weeks,
+	}
+
+	averageTotalCommitsSeriesProps := template.TimeSeriesProps{
+		Series:   averageTotalCommitsSeries,
+		InfoText: fmt.Sprintf("AVG Commits per week: %f", averageTotalCommitsByNWeeks),
+	}
+
 	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks)
 
 	if err != nil {
@@ -58,6 +72,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	for i, week := range weeks {
 		totalMrsOpenedXValues[i] = float64(i)
 		totalMrsOpenedYValues[i] = float64(totalMrsOpened[week].Count)
+	}
+
+	averageMrsOpenedSeries := template.TimeSeries{
+		Title:   "Total MRs Opened",
+		XValues: totalMrsOpenedXValues,
+		YValues: totalMrsOpenedYValues,
+		Weeks:   weeks,
+	}
+
+	averageMrsOpenedSeriesProps := template.TimeSeriesProps{
+		Series:   averageMrsOpenedSeries,
+		InfoText: fmt.Sprintf("AVG MRs Opened per week: %f", averageMrsOpenedByNWeeks),
 	}
 
 	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks)
@@ -74,6 +100,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		mergeFrequencyYValues[i] = float64(mergeFrequency[week].Amount)
 	}
 
+	averageMergeFrequencySeries := template.TimeSeries{
+		Title:   "Merge Frequency",
+		XValues: mergeFrequencyXValues,
+		YValues: mergeFrequencyYValues,
+		Weeks:   weeks,
+	}
+
+	averageMergeFrequencySeriesProps := template.TimeSeriesProps{
+		Series:   averageMergeFrequencySeries,
+		InfoText: fmt.Sprintf("AVG Merge Frequency per week: %f", averageMergeFrequencyByNWeeks),
+	}
+
 	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks)
 
 	if err != nil {
@@ -88,11 +126,19 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalReviewsYValues[i] = float64(totalReviews[week].Count)
 	}
 
-	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks)
-
-	if err != nil {
-		return err
+	averageReviewsSeries := template.TimeSeries{
+		Title:   "Total Reviews",
+		XValues: totalReviewsXValues,
+		YValues: totalReviewsYValues,
+		Weeks:   weeks,
 	}
+
+	averageReviewsSeriesProps := template.TimeSeriesProps{
+		Series:   averageReviewsSeries,
+		InfoText: fmt.Sprintf("AVG Total Reviews per week: %f", averageReviewsByNWeeks),
+	}
+
+	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks)
 
 	totalCodeChangesXValues := make([]float64, len(weeks))
 	totalCodeChangesYValues := make([]float64, len(weeks))
@@ -101,18 +147,26 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalCodeChangesXValues[i] = float64(i)
 		totalCodeChangesYValues[i] = float64(totalCodeChanges[week].Count)
 	}
+	averageCodeChangesSeries := template.TimeSeries{
+		Title:   "Total Code Changes",
+		XValues: totalCodeChangesXValues,
+		YValues: totalCodeChangesYValues,
+		Weeks:   weeks}
+
+	averageTotalCodeChangesProps := template.TimeSeriesProps{
+		Series:   averageCodeChangesSeries,
+		InfoText: fmt.Sprintf("AVG Total Code Changes per week: %f", averageTotalCodeChangesByNWeeks),
+	}
+	if err != nil {
+		return err
+	}
 
 	props := template.ThroughputMetricsProps{
-		TotalCommitsSeries:      template.TimeSeries{Title: "Total Commits", XValues: totalCommitsXValues, YValues: totalCommitsYValues, Weeks: weeks},
-		AverageTotalCommits:     averageTotalCommitsByNWeeks,
-		TotalMrsOpenedSeries:    template.TimeSeries{Title: "Total MRs Opened", XValues: totalMrsOpenedXValues, YValues: totalMrsOpenedYValues, Weeks: weeks},
-		AverageTotalMrsOpened:   averageMrsOpenedByNWeeks,
-		MergeFrequencySeries:    template.TimeSeries{Title: "Merge Frequency", XValues: mergeFrequencyXValues, YValues: mergeFrequencyYValues, Weeks: weeks},
-		AverageMergeFrequency:   averageMergeFrequencyByNWeeks,
-		TotalReviewsSeries:      template.TimeSeries{Title: "Total Reviews", XValues: totalReviewsXValues, YValues: totalReviewsYValues, Weeks: weeks},
-		AverageTotalReviews:     averageReviewsByNWeeks,
-		TotalCodeChangesSeries:  template.TimeSeries{Title: "Total Code Changes", XValues: totalCodeChangesXValues, YValues: totalCodeChangesYValues, Weeks: weeks},
-		AverageTotalCodeChanges: averageTotalCodeChangesByNWeeks,
+		TotalCommitsSeriesProps:     averageTotalCommitsSeriesProps,
+		TotalMrsOpenedSeriesProps:   averageMrsOpenedSeriesProps,
+		MergeFrequencySeriesProps:   averageMergeFrequencySeriesProps,
+		TotalReviewsSeriesProps:     averageReviewsSeriesProps,
+		TotalCodeChangesSeriesProps: averageTotalCodeChangesProps,
 	}
 
 	components := template.ThroughputMetricsPage(page, props)
