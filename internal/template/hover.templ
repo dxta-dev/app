@@ -41,7 +41,12 @@ script tooltip() {
 			const dataValue = parseFloat(event.target.getAttribute('data-value'));
             const formattedValue = formatValue(dataValue);
 
+			if (formattedValue == 0) {
+				tooltip.textContent = 'No Data';
+			} else {
             tooltip.textContent = 'Value: ' + formattedValue;
+			}
+
             tooltip.style.position = 'absolute';
             tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
             tooltip.style.color = '#fff';
