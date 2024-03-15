@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"log"
 	"time"
+	"sort"
 
 	_ "modernc.org/sqlite"
 
@@ -194,5 +195,60 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 		events = append(events, event)
 	}
 
-	return events, nil
+	smushed := SmushEventSlice(events)
+
+	fmt.Println("Smushed: ", len(smushed))
+	fmt.Println("Events: ", len(events))
+
+	return smushed, nil
+}
+
+func groupEventsByMergeRequest(events EventSlice) map[int64]EventSlice {
+	grouped := make(map[int64]EventSlice)
+	for _, event := range events {
+		grouped[event.MergeRequestId] = append(grouped[event.MergeRequestId], event)
+	}
+	for _, slice := range grouped {
+		sort.Sort(slice)
+	}
+	return grouped
+}
+
+func isCommitted(event Event) bool {
+	return event.Type == COMMITTED
+}
+
+func isNotedOrCommented(event Event) bool {
+	return event.Type == NOTED || event.Type == COMMENTED
+}
+
+func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
+	return e2.Timestamp-e1.Timestamp <= timeframe
+}
+
+
+func SmushEventSlice(events EventSlice) EventSlice {
+	grouped := groupEventsByMergeRequest(events)
+
+	var smushed EventSlice
+
+	for _, slice := range grouped {
+		for _, event := range slice {
+			if (len(smushed) == 0) {
+				smushed = append(smushed, event)
+				continue
+			}
+			if (isNotedOrCommented(event) && isNotedOrCommented(smushed[len(smushed)-1]) && isInTimeframe(smushed[len(smushed)-1], event, 60*60*30)) {
+				continue
+			}
+
+			if (isCommitted(event) && isCommitted(smushed[len(smushed)-1]) && isInTimeframe(smushed[len(smushed)-1], event, 60*60*30)) {
+				continue
+			}
+			smushed = append(smushed, event)
+		}
+	}
+
+	return smushed
+
 }
