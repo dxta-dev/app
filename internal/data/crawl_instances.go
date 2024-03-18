@@ -28,14 +28,23 @@ func GetCrawlInstances(from, to time.Time) TimeFrameSlice {
 	return nil
 }
 
-func FindGaps(timeFrames TimeFrameSlice) TimeFrameSlice {
+func FindGaps(from, to time.Time, timeFrames TimeFrameSlice) TimeFrameSlice {
 	var gaps TimeFrameSlice
 
 	sort.Sort(timeFrames)
 
+
+	var until time.Time
+	if len(timeFrames) == 0 {
+		until = to
+	} else {
+		until = timeFrames[0].Since
+	}
+
+
 	gaps = append(gaps, TimeFrame{
-		Since: time.Date(0, 1, 1, 0, 0, 0, 0, time.UTC),
-		Until: timeFrames[0].Since,
+		Since: from,
+		Until: until,
 	})
 
 	for i := 1; i < len(timeFrames)-1; i++ {
