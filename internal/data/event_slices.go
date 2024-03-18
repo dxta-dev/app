@@ -8,8 +8,8 @@ import (
 
 	"database/sql"
 	"log"
-	"time"
 	"sort"
+	"time"
 
 	_ "modernc.org/sqlite"
 
@@ -130,7 +130,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("AND user.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	db, err := sql.Open("libsql", s.DbUrl)
@@ -197,9 +197,6 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 
 	smushed := SmushEventSlice(events)
 
-	fmt.Println("Smushed: ", len(smushed))
-	fmt.Println("Events: ", len(events))
-
 	return smushed, nil
 }
 
@@ -218,37 +215,63 @@ func isCommitted(event Event) bool {
 	return event.Type == COMMITTED
 }
 
-func isNotedOrCommented(event Event) bool {
-	return event.Type == NOTED || event.Type == COMMENTED
+func isReviewed(event Event) bool {
+	return event.Type == REVIEWED
+}
+
+func isSameActor(e1 Event, e2 Event) bool {
+	return e1.Actor.Id == e2.Actor.Id
+}
+
+func absInt64(x int64) int64 {
+	if x < 0 {
+		return -x
+	}
+	return x
 }
 
 func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
-	return e2.Timestamp-e1.Timestamp <= timeframe
+	return absInt64(e2.Timestamp-e1.Timestamp) <= timeframe
 }
-
 
 func SmushEventSlice(events EventSlice) EventSlice {
 	grouped := groupEventsByMergeRequest(events)
 
-	var smushed EventSlice
+	var result EventSlice
 
 	for _, slice := range grouped {
+		var smushed EventSlice
+
 		for _, event := range slice {
-			if (len(smushed) == 0) {
+			if len(smushed) == 0 {
 				smushed = append(smushed, event)
 				continue
 			}
-			if (isNotedOrCommented(event) && isNotedOrCommented(smushed[len(smushed)-1]) && isInTimeframe(smushed[len(smushed)-1], event, 60*60*30)) {
-				continue
+
+			shouldAppend := true
+
+			for _, e := range smushed {
+
+				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000){
+					shouldAppend = false
+				}
+
+				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000){
+					shouldAppend = false
+				}
+
 			}
 
-			if (isCommitted(event) && isCommitted(smushed[len(smushed)-1]) && isInTimeframe(smushed[len(smushed)-1], event, 60*60*30)) {
-				continue
+			if shouldAppend {
+				smushed = append(smushed, event)
 			}
-			smushed = append(smushed, event)
+
 		}
+
+		result = append(result, smushed...)
+
 	}
 
-	return smushed
+	return result
 
 }

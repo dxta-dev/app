@@ -16,6 +16,7 @@ type Team struct {
 
 type TeamSlice []Team
 
+
 func (s *Store) GetTeams() (TeamSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 

@@ -52,8 +52,6 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		team: team,
 	}
 
-	fmt.Println("current url", h.HxCurrentURL)
-
 	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
 
 	if err != nil {
