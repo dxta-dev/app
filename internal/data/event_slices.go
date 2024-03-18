@@ -8,6 +8,7 @@ import (
 
 	"database/sql"
 	"log"
+	"sort"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -194,5 +195,83 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 		events = append(events, event)
 	}
 
-	return events, nil
+	smushed := SmushEventSlice(events)
+
+	return smushed, nil
+}
+
+func groupEventsByMergeRequest(events EventSlice) map[int64]EventSlice {
+	grouped := make(map[int64]EventSlice)
+	for _, event := range events {
+		grouped[event.MergeRequestId] = append(grouped[event.MergeRequestId], event)
+	}
+	for _, slice := range grouped {
+		sort.Sort(slice)
+	}
+	return grouped
+}
+
+func isCommitted(event Event) bool {
+	return event.Type == COMMITTED
+}
+
+func isReviewed(event Event) bool {
+	return event.Type == REVIEWED
+}
+
+func isSameActor(e1 Event, e2 Event) bool {
+	return e1.Actor.Id == e2.Actor.Id
+}
+
+func absInt64(x int64) int64 {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
+func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
+	return absInt64(e2.Timestamp-e1.Timestamp) <= timeframe
+}
+
+func SmushEventSlice(events EventSlice) EventSlice {
+	grouped := groupEventsByMergeRequest(events)
+
+	var result EventSlice
+
+	for _, slice := range grouped {
+		var smushed EventSlice
+
+		for _, event := range slice {
+			if len(smushed) == 0 {
+				smushed = append(smushed, event)
+				continue
+			}
+
+			shouldAppend := true
+
+			for _, e := range smushed {
+
+				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000){
+					shouldAppend = false
+				}
+
+				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000){
+					shouldAppend = false
+				}
+
+			}
+
+			if shouldAppend {
+				smushed = append(smushed, event)
+			}
+
+		}
+
+		result = append(result, smushed...)
+
+	}
+
+	return result
+
 }
