@@ -129,7 +129,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("AND user.external_id IN (%s)", teamMembersPlaceholders)
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
 	db, err := sql.Open("libsql", s.DbUrl)
