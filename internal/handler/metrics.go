@@ -122,7 +122,7 @@ func (a *App) MetricsPage(c echo.Context) error {
 	teamPickerProps := &template.TeamPickerProps{
 		Teams:        teams,
 		SearchParams: url.Values{},
-		SelectedTeam: team,
+		SelectedTeam: data.DetermineSelectedTeam(teams, team, nil),
 		BaseUrl:      "/metrics",
 	}
 

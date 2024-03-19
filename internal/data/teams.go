@@ -16,7 +16,6 @@ type Team struct {
 
 type TeamSlice []Team
 
-
 func (s *Store) GetTeams() (TeamSlice, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
@@ -92,4 +91,24 @@ func (s *Store) GetTeamMembers(team *int64) ([]int64, error) {
 	}
 
 	return teamMembers, nil
+}
+
+func DetermineSelectedTeam(teams TeamSlice, preselectedTeam *int64, tenantDefaultTeam *int64) *int64 {
+	var none *int64
+	var firstTeam = int64(1)
+	hasDefinedTeams := len(teams) > 0
+
+	if !hasDefinedTeams {
+		return none
+	}
+
+	if preselectedTeam != nil {
+		return preselectedTeam
+	}
+
+	if tenantDefaultTeam != nil {
+		return tenantDefaultTeam
+	}
+
+	return &firstTeam
 }

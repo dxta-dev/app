@@ -58,11 +58,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks, teamMembers)
 
-
 	if err != nil {
 		return err
 	}
-
 
 	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
@@ -172,7 +170,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        teams,
 		SearchParams: url.Values{},
-		SelectedTeam: team,
+		SelectedTeam: data.DetermineSelectedTeam(teams, team, nil),
 		BaseUrl:      "/metrics/quality",
 	}
 

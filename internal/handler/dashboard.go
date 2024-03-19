@@ -219,7 +219,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        teams,
-		SelectedTeam: team,
+		SelectedTeam: data.DetermineSelectedTeam(teams, team, nil),
 		SearchParams: searchParams,
 		BaseUrl:      "/",
 	}

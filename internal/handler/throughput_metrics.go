@@ -194,7 +194,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        teams,
 		SearchParams: url.Values{},
-		SelectedTeam: team,
+		SelectedTeam: data.DetermineSelectedTeam(teams, team, nil),
 		BaseUrl:      "/metrics/throughput",
 	}
 
