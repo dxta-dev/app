@@ -66,14 +66,13 @@ func (s *Store) GetCrawlInstances(from, to time.Time) (TimeFrameSlice, error) {
 
 func FindGaps(from, to time.Time, timeFrames TimeFrameSlice) TimeFrameSlice {
 	var gaps TimeFrameSlice
-
 	sort.Sort(timeFrames)
 
 	var until time.Time
 	if len(timeFrames) == 0 {
 		until = to
 	} else {
-		until = timeFrames[0].Since
+		until = timeFrames[0].Until
 	}
 
 	gaps = append(gaps, TimeFrame{
@@ -81,7 +80,7 @@ func FindGaps(from, to time.Time, timeFrames TimeFrameSlice) TimeFrameSlice {
 		Until: until,
 	})
 
-	for i := 1; i < len(timeFrames)-1; i++ {
+	for i := 1; i < len(timeFrames); i++ {
 		if timeFrames[i-1].Until.Before(timeFrames[i].Since) {
 			gaps = append(gaps, TimeFrame{
 				Since: timeFrames[i-1].Until,

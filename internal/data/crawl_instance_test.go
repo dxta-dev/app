@@ -9,7 +9,7 @@ import (
 func TestFindGaps(t *testing.T) {
 
 	parseTime := func(s string) time.Time {
-		time, err := time.Parse("2006-01-02 10:22:12", s)
+		time, err := time.Parse("2006-01-02 15:04:05", s)
 		if err != nil {
 			t.Error(err)
 		}
@@ -17,16 +17,16 @@ func TestFindGaps(t *testing.T) {
 	}
 
 	tests := []struct {
-		name     string
-		from	 time.Time
-		to	   time.Time
+		name       string
+		from       time.Time
+		to         time.Time
 		timeFrames TimeFrameSlice
-		want	 TimeFrameSlice
+		want       TimeFrameSlice
 	}{
 		{
-			name: "no time frames",
-			from: parseTime("2019-01-01 00:00:00"),
-			to: parseTime("2019-01-02 00:00:00"),
+			name:       "no time frames",
+			from:       parseTime("2019-01-01 00:00:00"),
+			to:         parseTime("2019-01-02 00:00:00"),
 			timeFrames: nil,
 			want: TimeFrameSlice{
 				{
@@ -38,7 +38,7 @@ func TestFindGaps(t *testing.T) {
 		{
 			name: "consecutive time frames",
 			from: parseTime("2019-01-01 00:00:00"),
-			to: parseTime("2019-01-03 00:00:00"),
+			to:   parseTime("2019-01-03 00:00:00"),
 			timeFrames: TimeFrameSlice{
 				{
 					Since: parseTime("2019-01-01 00:00:00"),
@@ -54,7 +54,7 @@ func TestFindGaps(t *testing.T) {
 		{
 			name: "one gap",
 			from: parseTime("2019-01-01 00:00:00"),
-			to: parseTime("2019-01-03 00:00:00"),
+			to:   parseTime("2019-01-03 00:00:00"),
 			timeFrames: TimeFrameSlice{
 				{
 					Since: parseTime("2019-01-01 00:00:00"),
