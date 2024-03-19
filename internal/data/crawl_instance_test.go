@@ -49,7 +49,7 @@ func TestFindGaps(t *testing.T) {
 					Until: parseTime("2019-01-03 00:00:00"),
 				},
 			},
-			want: TimeFrameSlice{},
+			want: nil,
 		},
 		{
 			name: "one gap",

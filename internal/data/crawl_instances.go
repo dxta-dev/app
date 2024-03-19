@@ -68,25 +68,21 @@ func FindGaps(from, to time.Time, timeFrames TimeFrameSlice) TimeFrameSlice {
 	var gaps TimeFrameSlice
 	sort.Sort(timeFrames)
 
-	var until time.Time
-	if len(timeFrames) == 0 {
-		until = to
-	} else {
-		until = timeFrames[0].Until
+	currentFrame := TimeFrame{Since: from, Until: from}
+
+	for _, frame := range timeFrames {
+
+		if currentFrame.Until.Before(frame.Since) {
+			gaps = append(gaps, TimeFrame{Since: currentFrame.Until, Until: frame.Since})
+		}
+
+		if frame.Until.After(currentFrame.Until) {
+			currentFrame.Until = frame.Until
+		}
 	}
 
-	gaps = append(gaps, TimeFrame{
-		Since: from,
-		Until: until,
-	})
-
-	for i := 1; i < len(timeFrames); i++ {
-		if timeFrames[i-1].Until.Before(timeFrames[i].Since) {
-			gaps = append(gaps, TimeFrame{
-				Since: timeFrames[i-1].Until,
-				Until: timeFrames[i].Since,
-			})
-		}
+	if currentFrame.Until.Before(to) {
+		gaps = append(gaps, TimeFrame{Since: currentFrame.Until, Until: to})
 	}
 
 	return gaps
