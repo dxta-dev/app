@@ -91,5 +91,4 @@ func FindGaps(from, to time.Time, timeFrames TimeFrameSlice) TimeFrameSlice {
 	}
 
 	return gaps
-
 }
