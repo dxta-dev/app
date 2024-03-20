@@ -68,6 +68,43 @@ func TestFindGaps(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "one time frame fully contained within another",
+			from: parseTime("2019-01-01 00:00:00"),
+			to:   parseTime("2019-01-04 00:00:00"),
+			timeFrames: TimeFrameSlice{
+				{
+					Since: parseTime("2019-01-01 00:00:00"),
+					Until: parseTime("2019-01-04 00:00:00"),
+				},
+				{
+					Since: parseTime("2019-01-02 00:00:00"),
+					Until: parseTime("2019-01-03 00:00:00"),
+				},
+			},
+			want: nil,
+		},
+		{
+			name: "completely non-overlapping time frames",
+			from: parseTime("2019-01-01 00:00:00"),
+			to:   parseTime("2019-01-04 00:00:00"),
+			timeFrames: TimeFrameSlice{
+				{
+					Since: parseTime("2019-01-01 00:00:00"),
+					Until: parseTime("2019-01-02 00:00:00"),
+				},
+				{
+					Since: parseTime("2019-01-03 00:00:00"),
+					Until: parseTime("2019-01-04 00:00:00"),
+				},
+			},
+			want: TimeFrameSlice{
+				{
+					Since: parseTime("2019-01-02 00:00:00"),
+					Until: parseTime("2019-01-03 00:00:00"),
+				},
+			},
+		},
 	}
 
 	for _, tt := range tests {
