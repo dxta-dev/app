@@ -25,24 +25,30 @@ func (tfs TimeFrameSlice) Swap(i, j int) {
 	tfs[i], tfs[j] = tfs[j], tfs[i]
 }
 
-func (s *Store) GetCrawlInstances(from, to time.Time) (TimeFrameSlice, error) {
+func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
 
 	db, err := sql.Open("libsql", s.DbUrl)
-
 	if err != nil {
 		return nil, err
 	}
-
 	defer db.Close()
 
 	query := `
-		SELECT since, until
-		FROM crawl_instances
-		WHERE since >= ?
-		AND until <= ?;
-		`
+        SELECT since, until
+        FROM crawl_instances
+        WHERE
+        (
+            (since < ? AND until > ?)
+            OR
+            (since > ? AND until > ? AND until < ?)
+            OR
+            (since > ? AND since < ? AND until > ? AND until < ?)
+            OR
+            (since < ? AND since > ? AND until > ?)
+        )
+        `
 
-	rows, err := db.Query(query, from, to)
+	rows, err := db.Query(query, from, to, from, from, to, from, to, from, to, to, from, to)
 	if err != nil {
 		return nil, err
 	}
@@ -51,10 +57,14 @@ func (s *Store) GetCrawlInstances(from, to time.Time) (TimeFrameSlice, error) {
 	var crawlInstances TimeFrameSlice
 
 	for rows.Next() {
-		var since, until time.Time
-		if err := rows.Scan(&since, &until); err != nil {
+		var sinceInt, untilInt int64
+		if err := rows.Scan(&sinceInt, &untilInt); err != nil {
 			return nil, err
 		}
+
+		since := time.Unix(sinceInt, 0)
+		until := time.Unix(untilInt, 0)
+
 		crawlInstances = append(crawlInstances, TimeFrame{Since: since, Until: until})
 	}
 	if err := rows.Err(); err != nil {
