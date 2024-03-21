@@ -36,9 +36,27 @@ script tooltip() {
 	const circles = parent.querySelectorAll('svg > circle');
 
 	circles.forEach((c, i) => {
-		c.addEventListener('mouseenter', function(event) {
+		const circleRect = c.getBoundingClientRect();
+
+		const rect = document.createElement('div');
+		rect.style.position = 'absolute';
+		rect.style.width = '50px';
+		rect.style.height = '60px';
+		rect.style.background = 'red';
+		rect.style.transform = 'translate(-50%, -50%)';
+
+		const centerX = circleRect.left + circleRect.width / 2;
+		const centerY = circleRect.top + circleRect.height / 2;
+
+		rect.style.left = centerX + 'px';
+		rect.style.top = centerY + 'px';
+		rect.style.opacity = '0';
+
+		document.body.appendChild(rect);
+
+		rect.addEventListener('mouseenter', function(event) {
 			const tooltip = document.createElement('div');
-			const dataValue = parseFloat(event.target.getAttribute('data-value'));
+			const dataValue = parseFloat(c.getAttribute('data-value'));
 			const formattedValue = formatValue(dataValue);
 
 			tooltip.textContent = formattedValue === 0 ? 'No Data' : 'Value: ' + formattedValue;
@@ -49,20 +67,15 @@ script tooltip() {
 			tooltip.style.padding = '5px';
 			tooltip.style.borderRadius = '5px';
 
-			const rect = c.getBoundingClientRect();
-
-			tooltip.style.top = rect.top + window.scrollY - tooltip.offsetHeight + 'px';
-			tooltip.style.left = rect.left + window.scrollX + 'px';
+			tooltip.style.top = centerY + window.scrollY - tooltip.offsetHeight + 'px';
+			tooltip.style.left = centerX + window.scrollX + 'px';
 
 			document.body.appendChild(tooltip);
 
-			c.addEventListener('mouseleave', function() {
+			rect.addEventListener('mouseleave', function() {
 				tooltip.remove();
 			});
 		});
 	});
-
 }
-
-
 
