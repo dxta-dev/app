@@ -1,12 +1,13 @@
 package template
 
-script setData(values []float64) {
+script setData(yValues []float64, weeks []string) {
 	const parent = document.currentScript.parentNode;
 	const svg = parent.querySelector(`svg`);
 	const circles = parent.querySelectorAll(`svg > circle`);
 
 	circles.forEach((c, i) => {
-		c.setAttribute(`data-value`, values[i]);
+		c.setAttribute(`data-y-value`, yValues[i]);
+		c.setAttribute(`data-week`, weeks[i]);
 	});
 }
 
@@ -19,6 +20,6 @@ templ timeSeries(props TimeSeriesProps) {
 	<div>
 		<p>{props.InfoText}</p>
 		@TimeSeriesChart(props.Series)
-		@setData(props.Series.YValues)
+		@setData(props.Series.YValues, props.Series.Weeks)
 	</div>
 }

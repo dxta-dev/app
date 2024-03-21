@@ -56,7 +56,7 @@ script tooltip() {
 
 		rect.addEventListener('mouseenter', function(event) {
 			const tooltip = document.createElement('div');
-			const dataValue = parseFloat(c.getAttribute('data-value'));
+			const dataValue = parseFloat(c.getAttribute('data-y-value'));
 			const formattedValue = formatValue(dataValue);
 
 			tooltip.textContent = formattedValue === 0 ? 'No Data' : 'Value: ' + formattedValue;
