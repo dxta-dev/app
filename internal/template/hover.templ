@@ -56,10 +56,14 @@ script tooltip() {
 
 		rect.addEventListener('mouseenter', function(event) {
 			const tooltip = document.createElement('div');
-			const dataValue = parseFloat(c.getAttribute('data-y-value'));
-			const formattedValue = formatValue(dataValue);
+			const dataYValue = parseFloat(c.getAttribute('data-y-value'));
+			const formattedYValue = formatValue(dataYValue);
+			const week = c.getAttribute('data-week');
 
-			tooltip.textContent = formattedValue === 0 ? 'No Data' : 'Value: ' + formattedValue;
+			tooltip.textContent = formattedYValue === 0 ? 'No Data' : 'Value: ' + formattedYValue;
+			const weekText = document.createElement('div');
+			weekText.textContent = 'Week: ' + week;
+			tooltip.appendChild(weekText);
 
 			tooltip.style.position = 'absolute';
 			tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
