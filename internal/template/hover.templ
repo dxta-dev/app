@@ -102,9 +102,9 @@ script tooltip() {
 
 			tooltip.textContent = formattedYValue === 0 ? 'No Data' : 'Value: ' + formattedYValue;
 			const weekText = document.createElement('div');
-			weekText.textContent = startEndWeek[0].toLocaleDateString('en-US', {day: '2-digit', month: '2-digit', year: 'numeric'})
+			weekText.textContent = startEndWeek[0].toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
 								+ '-'
-								+ startEndWeek[1].toLocaleDateString('en-US', {day: '2-digit', month: '2-digit', year: 'numeric'});
+								+ startEndWeek[1].toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
 			tooltip.appendChild(weekText);
 
 			tooltip.style.position = 'absolute';
