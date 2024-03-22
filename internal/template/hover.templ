@@ -97,10 +97,11 @@ script tooltip() {
 			const dataYValue = parseFloat(c.getAttribute('data-y-value'));
 			const formattedYValue = formatValue(dataYValue);
 			const week = c.getAttribute('data-week');
+			const valueName = c.getAttribute('data-value-name');
 			const startEndWeek = getStartEndWeek(week);
 
 
-			tooltip.textContent = formattedYValue === 0 ? 'No Data' : 'Value: ' + formattedYValue;
+			tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
 			const weekText = document.createElement('div');
 			weekText.textContent = startEndWeek[0].toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
 								+ '-'
