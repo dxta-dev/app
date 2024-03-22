@@ -21,6 +21,11 @@ type TimeSeries struct {
 	Weeks   []string
 }
 
+type StartEndWeek struct {
+	Start time.Time
+	End   time.Time
+}
+
 func getYAxisValues(yValues []float64) []float64 {
 	if len(yValues) == 0 {
 		return []float64{0, 1, 2, 3, 4}
@@ -211,7 +216,7 @@ func TimeSeriesChart(series TimeSeries) templ.Component {
 		})
 	}
 
-	firstDay, err := util.ParseYearWeek(series.Weeks[0])
+	firstDay, _, err := util.ParseYearWeek(series.Weeks[0])
 	if err != nil {
 		log.Fatal(err)
 	}

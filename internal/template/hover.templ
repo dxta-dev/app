@@ -31,44 +31,6 @@ script tooltip() {
 		return formatted;
 	}
 
-	function getStartEndWeek(yw) {
-		const parts = yw.split("-W");
-		if (parts.length !== 2) {
-			throw new Error("Invalid format");
-		}
-
-		const year = parseInt(parts[0], 10);
-		const week = parseInt(parts[1], 10);
-
-		const firstDayOfYear = new Date(year, 0, 1);
-
-		if (firstDayOfYear.getDay() !== 1) {
-			for (let i = 1; i < 4; i++) {
-				const p = new Date(year, 0, 1 - i);
-				const n = new Date(year, 0, 1 + i);
-
-				if (p.getDay() === 1) {
-					firstDayOfYear.setTime(p.getTime());
-					break;
-				}
-
-				if (n.getDay() === 1) {
-					firstDayOfYear.setTime(n.getTime());
-					break;
-				}
-			}
-		}
-
-		const startOfWeek = new Date(firstDayOfYear.getTime() + (week - 1) * 7 * 24 * 60 * 60 * 1000);
-		const endOfWeek = new Date(startOfWeek.getTime() + 6 * 24 * 60 * 60 * 1000);
-
-		if (startOfWeek.getFullYear() > year) {
-			throw new Error("Invalid week");
-		}
-
-		return [startOfWeek, endOfWeek];
-	}
-
 	const parent = document.currentScript.parentNode;
 	const svg = parent.querySelector('svg');
 	const circles = parent.querySelectorAll('svg > circle');
@@ -98,14 +60,14 @@ script tooltip() {
 			const formattedYValue = formatValue(dataYValue);
 			const week = c.getAttribute('data-week');
 			const valueName = c.getAttribute('data-value-name');
-			const startEndWeek = getStartEndWeek(week);
-
+			const startWeek = new Date(c.getAttribute('start-week'));
+			const endWeek = new Date(c.getAttribute('end-week'));
 
 			tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
 			const weekText = document.createElement('div');
-			weekText.textContent = startEndWeek[0].toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
+			weekText.textContent = startWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
 								+ '-'
-								+ startEndWeek[1].toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
+								+ endWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
 			tooltip.appendChild(weekText);
 
 			tooltip.style.position = 'absolute';
