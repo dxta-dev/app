@@ -25,7 +25,6 @@ import (
 type DashboardState struct {
 	week string
 	mr   *int64
-	team *int64
 }
 
 func getSwarmSeries(store *data.Store, date time.Time, teamMembers []int64) (template.SwarmSeries, error) {
@@ -97,8 +96,10 @@ func getSwarmSeries(store *data.Store, date time.Time, teamMembers []int64) (tem
 
 }
 
-func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error) {
-	params := url.Values{}
+func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, params url.Values) (string, error) {
+	if params == nil {
+		params = url.Values{}
+	}
 
 	parsedURL, err := url.Parse(currentUrl)
 
@@ -108,21 +109,23 @@ func getNextDashboardUrl(currentUrl string, state DashboardState) (string, error
 
 	requestUri := parsedURL.Path
 
-	if state.week != "" {
+	if state.week != "" && !params.Has("week") {
 		params.Add("week", state.week)
 	}
-	if state.mr != nil {
+
+	if state.mr != nil && !params.Has("mr") {
 		params.Add("mr", fmt.Sprintf("%d", *state.mr))
 	}
-	if state.team != nil {
-		params.Add("team", fmt.Sprint(*state.team))
-	}
-	encodedParams := params.Encode()
-	if encodedParams != "" {
-		return fmt.Sprintf("%s?%s", requestUri, encodedParams), nil
+
+	nextUrl, err := app.GetUrlAppState(requestUri, params)
+
+	fmt.Println("Next URL: ", nextUrl)
+
+	if err != nil {
+		return "", err
 	}
 
-	return requestUri, nil
+	return nextUrl, nil
 }
 
 func (a *App) DashboardPage(c echo.Context) error {
@@ -130,17 +133,11 @@ func (a *App) DashboardPage(c echo.Context) error {
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
-	page := &template.Page{
-		Title:     "Dashboard - DXTA",
-		Boosted:   h.HxBoosted,
-		Requested: h.HxRequest,
-		CacheBust: a.BuildTimestamp,
-		DebugMode: a.DebugMode,
-	}
-
 	store := &data.Store{
 		DbUrl: tenantDatabaseUrl,
 	}
+
+	a.LoadState(r)
 
 	date := time.Now()
 	var err error
@@ -150,13 +147,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mr = nil
 	}
 
-	var team *int64
-	if r.URL.Query().Has("team") {
-		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
-		if err == nil {
-			team = &value
-		}
-	}
+	team := a.State.Team
 
 	teamMembers, err := store.GetTeamMembers(team)
 
@@ -173,7 +164,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 	state := DashboardState{
 		week: r.URL.Query().Get("week"),
 		mr:   mr,
-		team: team,
 	}
 
 	if state.week != "" {
@@ -186,12 +176,12 @@ func (a *App) DashboardPage(c echo.Context) error {
 	var nextUrl string
 
 	if h.HxRequest && !h.HxBoosted {
-		nextUrl, err = getNextDashboardUrl(h.HxCurrentURL, state)
+		nextUrl, err = getNextDashboardUrl(a, r.URL.Path, state, nil)
 		if err != nil {
 			return err
 		}
 	} else {
-		nextUrl, err = getNextDashboardUrl(r.URL.RequestURI(), state)
+		nextUrl, err = getNextDashboardUrl(a, r.URL.Path, state, nil)
 		if err != nil {
 			return err
 		}
@@ -209,19 +199,57 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	prevWeek, nextWeek := util.GetPrevNextWeek(date)
 
+	prevWeekParams := url.Values{}
+	prevWeekParams.Set("week", prevWeek)
+	previousWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, prevWeekParams)
+
+	if err != nil {
+		return err
+	}
+
+	nextWeekParams := url.Values{}
+	nextWeekParams.Set("week", nextWeek)
+	nextWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, nextWeekParams)
+
+	if err != nil {
+		return err
+	}
+
+	currentWeekParams := url.Values{}
+	currentWeekParams.Set("week", util.GetFormattedWeek(time.Now()))
+	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, currentWeekParams)
+
+	if err != nil {
+		return err
+	}
+
 	weekPickerProps := template.WeekPickerProps{
-		Week:         util.GetFormattedWeek(date),
-		SearchParams: searchParams,
-		PreviousWeek: prevWeek,
-		CurrentWeek:  util.GetFormattedWeek(time.Now()),
-		NextWeek:     nextWeek,
+		Week:            util.GetFormattedWeek(date),
+		CurrentWeek:     util.GetFormattedWeek(time.Now()),
+		PreviousWeekUrl: previousWeekUrl,
+		CurrentWeekUrl:  currentWeekUrl,
+		NextWeekUrl:     nextWeekUrl,
+	}
+
+	var templTeams []template.Team
+
+	for _, team := range teams {
+		params := url.Values{}
+		params.Set("team", fmt.Sprint(team.Id))
+		teamUrl, err := getNextDashboardUrl(a, r.URL.Path, state, params)
+		if err != nil {
+			return err
+		}
+		templTeams = append(templTeams, template.Team{
+			Id:   team.Id,
+			Name: team.Name,
+			Url:  teamUrl,
+		})
 	}
 
 	teamPickerProps := template.TeamPickerProps{
-		Teams:        teams,
+		Teams:        templTeams,
 		SelectedTeam: team,
-		SearchParams: searchParams,
-		BaseUrl:      "/",
 	}
 
 	swarmSeries, err := getSwarmSeries(store, date, teamMembers)
@@ -258,6 +286,21 @@ func (a *App) DashboardPage(c echo.Context) error {
 			DeleteEndpoint: fmt.Sprintf("/merge-request/%d", *state.mr),
 			TargetSelector: "#slide-over",
 		}
+	}
+
+	navState, err := a.GetNavState()
+
+	if err != nil {
+		return err
+	}
+
+	page := &template.Page{
+		Title:     "Dashboard - DXTA",
+		Boosted:   h.HxBoosted,
+		Requested: h.HxRequest,
+		CacheBust: a.BuildTimestamp,
+		DebugMode: a.DebugMode,
+		NavState:  navState,
 	}
 
 	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps)
