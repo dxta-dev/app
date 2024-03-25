@@ -54,6 +54,8 @@ script tooltip() {
             rect.setAttribute('y', circleY);
             rect.style.opacity = '0';
 
+			rect.style.cursor = 'pointer';
+
             svg.appendChild(rect);
 
             rect.addEventListener('mouseenter', function(event) {
