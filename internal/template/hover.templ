@@ -1,90 +1,92 @@
 package template
 
 script tooltip() {
+    function formatValue(value) {
+        var absNumber = Math.abs(value);
+        var formatted = "";
 
-	function formatValue(value) {
-		var absNumber = Math.abs(value);
-		var formatted = "";
+        switch (true) {
+            case absNumber < 1000:
+                if (Number.isInteger(value)) {
+                    formatted = value.toFixed(0);
+                } else {
+                    formatted = value.toFixed(1);
+                }
+                break;
+            case absNumber >= 1000 && absNumber < 1000000:
+                formatted = (value / 1000).toFixed(1) + 'K';
+                break;
+            case absNumber >= 1000000:
+                formatted = (value / 1000000).toFixed(1) + 'M';
+                break;
+            default:
+                formatted = value.toString();
+        }
 
-		switch (true) {
-			case absNumber < 1000:
-				if (Number.isInteger(value)) {
-					formatted = value.toFixed(0);
-				} else {
-					formatted = value.toFixed(1);
-				}
-				break;
-			case absNumber >= 1000 && absNumber < 1000000:
-				formatted = (value / 1000).toFixed(1) + 'K';
-				break;
-			case absNumber >= 1000000:
-				formatted = (value / 1000000).toFixed(1) + 'M';
-				break;
-			default:
-				formatted = value.toString();
-		}
+        if (formatted.length < 5) {
+            formatted += '\u00a0'.repeat(5 - formatted.length);
+        }
 
-		if (formatted.length < 5) {
-			formatted += '\u00a0'.repeat(5 - formatted.length);
-		}
+        return formatted;
+    }
 
-		return formatted;
-	}
+    const svgs = document.querySelectorAll('svg');
 
-	const parent = document.currentScript.parentNode;
-	const svg = parent.querySelector('svg');
-	const circles = parent.querySelectorAll('svg > circle');
+    svgs.forEach(svg => {
+        const circles = svg.querySelectorAll('circle');
 
-	circles.forEach((c, i) => {
-		const circleRect = c.getBoundingClientRect();
+        circles.forEach(c => {
+            const circleRect = c.getBoundingClientRect();
+            const circleX = c.getAttribute('cx');
+            const circleY = c.getAttribute('cy');
 
-		const rect = document.createElement('div');
-		rect.style.position = 'absolute';
-		rect.style.width = '50px';
-		rect.style.height = '60px';
-		rect.style.background = 'red';
-		rect.style.transform = 'translate(-50%, -50%)';
+            const rectWidth = 50;
+            const rectHeight = 60;
+            const rectX = circleRect.x + circleRect.width / 2 - rectWidth / 2;
+            const rectY = circleRect.y + circleRect.height / 2 - rectHeight / 2;
 
-		const centerX = circleRect.left + circleRect.width / 2;
-		const centerY = circleRect.top + circleRect.height / 2;
+            const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+            rect.setAttribute('width', rectWidth);
+            rect.setAttribute('height', rectHeight);
+            rect.setAttribute('fill', 'red');
+            rect.setAttribute('transform', 'translate(-25, -30)');
+            rect.setAttribute('x', circleX);
+            rect.setAttribute('y', circleY);
+            rect.style.opacity = '1';
 
-		rect.style.left = centerX + 'px';
-		rect.style.top = centerY + 'px';
-		rect.style.opacity = '0';
+            svg.appendChild(rect);
 
-		document.body.appendChild(rect);
+            rect.addEventListener('mouseenter', function(event) {
+                const tooltip = document.createElement('div');
+                const dataYValue = parseFloat(c.getAttribute('data-y-value'));
+                const formattedYValue = formatValue(dataYValue);
+                const week = c.getAttribute('data-week');
+                const valueName = c.getAttribute('data-value-name');
+                const startWeek = new Date(c.getAttribute('start-week'));
+                const endWeek = new Date(c.getAttribute('end-week'));
 
-		rect.addEventListener('mouseenter', function(event) {
-			const tooltip = document.createElement('div');
-			const dataYValue = parseFloat(c.getAttribute('data-y-value'));
-			const formattedYValue = formatValue(dataYValue);
-			const week = c.getAttribute('data-week');
-			const valueName = c.getAttribute('data-value-name');
-			const startWeek = new Date(c.getAttribute('start-week'));
-			const endWeek = new Date(c.getAttribute('end-week'));
+                tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
+                const weekText = document.createElement('div');
+                weekText.textContent = startWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
+                                    + '-'
+                                    + endWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
+                tooltip.appendChild(weekText);
 
-			tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
-			const weekText = document.createElement('div');
-			weekText.textContent = startWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
-								+ '-'
-								+ endWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
-			tooltip.appendChild(weekText);
+                tooltip.style.position = 'absolute';
+                tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+                tooltip.style.color = '#fff';
+                tooltip.style.padding = '5px';
+                tooltip.style.borderRadius = '5px';
 
-			tooltip.style.position = 'absolute';
-			tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-			tooltip.style.color = '#fff';
-			tooltip.style.padding = '5px';
-			tooltip.style.borderRadius = '5px';
+                tooltip.style.top = rectY + window.scrollY - tooltip.offsetHeight / 2 + circleRect.height / 2 + 'px';
+                tooltip.style.left = rectX + window.scrollX + circleRect.width / 2 + 'px';
 
-			tooltip.style.top = centerY + window.scrollY - tooltip.offsetHeight + 'px';
-			tooltip.style.left = centerX + window.scrollX + 'px';
+                document.body.appendChild(tooltip);
 
-			document.body.appendChild(tooltip);
-
-			rect.addEventListener('mouseleave', function() {
-				tooltip.remove();
-			});
-		});
-	});
+                rect.addEventListener('mouseleave', function() {
+                    tooltip.remove();
+                });
+            });
+        });
+    });
 }
-
