@@ -58,37 +58,43 @@ script tooltip() {
 
             svg.appendChild(rect);
 
-            rect.addEventListener('mouseenter', function(event) {
-                const tooltip = document.createElement('div');
-                const dataYValue = parseFloat(c.getAttribute('data-y-value'));
-                const formattedYValue = formatValue(dataYValue);
-                const week = c.getAttribute('data-week');
-                const valueName = c.getAttribute('data-value-name');
-                const startWeek = new Date(c.getAttribute('start-week'));
-                const endWeek = new Date(c.getAttribute('end-week'));
+           rect.addEventListener('mouseenter', function(event) {
+				const tooltipX = circleX - rectWidth / 2;
+				const tooltipY = circleY - rectHeight / 2;
 
-                tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
-                const weekText = document.createElement('div');
-                weekText.textContent = startWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'})
-                                    + '-'
-                                    + endWeek.toLocaleDateString('en-US', {day: '2-digit', month: 'short', year: 'numeric'});
-                tooltip.appendChild(weekText);
+				const tooltip = document.createElementNS("http://www.w3.org/2000/svg", "text");
+				const dataYValue = parseFloat(c.getAttribute('data-y-value'));
+				const formattedYValue = formatValue(dataYValue);
+				const week = c.getAttribute('data-week');
+				const valueName = c.getAttribute('data-value-name');
+				const startWeek = new Date(c.getAttribute('start-week'));
+				const endWeek = new Date(c.getAttribute('end-week'));
 
-                tooltip.style.position = 'absolute';
-                tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-                tooltip.style.color = '#fff';
-                tooltip.style.padding = '5px';
-                tooltip.style.borderRadius = '5px';
+				tooltip.textContent = formattedYValue === 0 ? 'No Data' : valueName + ': ' + formattedYValue;
 
-                tooltip.style.top = rectY + window.scrollY - tooltip.offsetHeight / 2 + circleRect.height / 2 + 'px';
-                tooltip.style.left = rectX + window.scrollX + circleRect.width / 2 + 'px';
+				const dateRange = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
+				dateRange.textContent = startWeek.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
+					+ ' - '
+					+ endWeek.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
+				dateRange.setAttribute('x', tooltipX);
+				dateRange.setAttribute('dy', '1.2em');
+				tooltip.appendChild(dateRange);
 
-                document.body.appendChild(tooltip);
+				tooltip.setAttribute('x', tooltipX);
+				tooltip.setAttribute('y', tooltipY);
+				tooltip.setAttribute('fill', 'red');
+				tooltip.style.userSelect = 'none';
+				tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+				tooltip.style.color = '#fff';
+				tooltip.style.padding = '5px';
+				tooltip.style.borderRadius = '5px';
 
-                rect.addEventListener('mouseleave', function() {
-                    tooltip.remove();
-                });
-            });
+				svg.appendChild(tooltip);
+
+				rect.addEventListener('mouseleave', function() {
+					tooltip.remove();
+				});
+			});
         });
     });
 }
