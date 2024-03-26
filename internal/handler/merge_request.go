@@ -80,8 +80,6 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
-	a.LoadState(r)
-
 	parsedURL, err := url.Parse(h.HxCurrentURL)
 	if err != nil {
 		return err
@@ -93,6 +91,12 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 		week: week,
 		mr:   nil,
 	}
+
+	team := parsedURL.Query().Get("team")
+
+	teamId, err := strconv.ParseInt(team, 10, 64)
+
+	a.State.Team = &teamId
 
 	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil)
 
