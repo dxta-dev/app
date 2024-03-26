@@ -45,13 +45,17 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		mr:   &mrId,
 	}
 
-	team := parsedURL.Query().Get("team")
+	if team := parsedURL.Query().Get("team"); team != "" {
+		teamId, err := strconv.ParseInt(team, 10, 64)
 
-	teamId, err := strconv.ParseInt(team, 10, 64)
+		if err != nil {
+			return err
+		}
 
-	a.State.Team = &teamId
+		a.State.Team = &teamId
+	}
 
-	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil)
+	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
 
 	if err != nil {
 		return err
@@ -92,13 +96,17 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 		mr:   nil,
 	}
 
-	team := parsedURL.Query().Get("team")
+	if team := parsedURL.Query().Get("team"); team != "" {
+		teamId, err := strconv.ParseInt(team, 10, 64)
 
-	teamId, err := strconv.ParseInt(team, 10, 64)
+		if err != nil {
+			return err
+		}
 
-	a.State.Team = &teamId
+		a.State.Team = &teamId
+	}
 
-	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil)
+	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
 
 	if err != nil {
 		return err

@@ -35,7 +35,7 @@ func (app *App) LoadState(r *http.Request) State {
 	return app.State
 }
 
-func getUrl(currentUrl string, params url.Values) (string, error) {
+func GetUrl(currentUrl string, params url.Values) (string, error) {
 	if params == nil {
 		params = url.Values{}
 	}
@@ -69,15 +69,15 @@ func (a *App) GetNavState() (template.NavState, error) {
 		params.Add("team", fmt.Sprint(*a.State.Team))
 	}
 
-	rootUrl, err := getUrl(navState.Root, params)
+	rootUrl, err := GetUrl(navState.Root, params)
 	if err != nil {
 		return template.NavState{}, err
 	}
-	qMetricsUrl, err := getUrl(navState.Metrics.Quality, params)
+	qMetricsUrl, err := GetUrl(navState.Metrics.Quality, params)
 	if err != nil {
 		return template.NavState{}, err
 	}
-	tMetricsUrl, err := getUrl(navState.Metrics.Throughput, params)
+	tMetricsUrl, err := GetUrl(navState.Metrics.Throughput, params)
 	if err != nil {
 		return template.NavState{}, err
 	}
@@ -104,7 +104,5 @@ func (app *App) GetUrlAppState(currentUrl string, params url.Values) (string, er
 		params.Add("team", fmt.Sprint(*app.State.Team))
 	}
 
-	fmt.Println("GetUrlAppState", currentUrl, params)
-
-	return getUrl(currentUrl, params)
+	return GetUrl(currentUrl, params)
 }
