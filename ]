@@ -23,11 +23,11 @@ script tooltip() {
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             rect.setAttribute('width', rectWidth);
             //rect.setAttribute('height', rectHeight);
-			rect.setAttribute('height', svgHeight-20);
+			rect.setAttribute('height', svgHeight);
             rect.setAttribute('fill', 'red');
             rect.setAttribute('x', circleX - rectWidth / 2);
             //rect.setAttribute('y', circleY - rectHeight / 2);
-			rect.setAttribute('y', 20);
+			rect.setAttribute('y', 0);
             rect.style.opacity = '0';
 
 			rect.style.cursor = 'cursor';
