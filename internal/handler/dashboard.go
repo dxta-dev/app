@@ -109,7 +109,6 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 	requestUri := parsedURL.Path
 
-	fmt.Println("state", state)
 
 	if state.week != "" && !params.Has("week") {
 		params.Add("week", state.week)
@@ -120,8 +119,6 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 	}
 
 	nextUrl, err := app.GetUrlAppState(requestUri, params)
-
-	fmt.Println("Next URL: ", nextUrl)
 
 	if err != nil {
 		return "", err

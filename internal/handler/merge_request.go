@@ -19,8 +19,6 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
-	a.LoadState(r)
-
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
@@ -46,6 +44,12 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		week: week,
 		mr:   &mrId,
 	}
+
+	team := parsedURL.Query().Get("team")
+
+	teamId, err := strconv.ParseInt(team, 10, 64)
+
+	a.State.Team = &teamId
 
 	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil)
 

@@ -104,5 +104,7 @@ func (app *App) GetUrlAppState(currentUrl string, params url.Values) (string, er
 		params.Add("team", fmt.Sprint(*app.State.Team))
 	}
 
+	fmt.Println("GetUrlAppState", currentUrl, params)
+
 	return getUrl(currentUrl, params)
 }
