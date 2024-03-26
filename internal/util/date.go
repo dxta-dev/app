@@ -108,7 +108,7 @@ func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	startOfWeek := firstDayOfYear.AddDate(0, 0, (week-1)*7)
 	endOfWeek := startOfWeek.AddDate(0, 0, 6) // End of the week is 6 days after start of the week
 
-	if startOfWeek.Year() > year {
+	if startOfWeek.Year() > year || endOfWeek.Year() < year {
 		return time.Time{}, time.Time{}, fmt.Errorf("invalid week")
 	}
 
