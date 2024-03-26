@@ -76,11 +76,27 @@ script tooltip() {
 				dateRange.textContent = startWeek.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' })
 					+ ' - '
 					+ endWeek.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-				dateRange.setAttribute('x', tooltipX);
+
+				if (tooltipX > 360) {
+					dateRange.setAttribute('x', 360);
+				} else if (tooltipX < 0) {
+					dateRange.setAttribute('x', 0);
+				} else {
+					dateRange.setAttribute('x', tooltipX);
+				}
 				dateRange.setAttribute('dy', '1.2em');
 				tooltip.appendChild(dateRange);
 
-				tooltip.setAttribute('x', tooltipX);
+				console.log(tooltipX);
+
+				if (tooltipX > 360) {
+					tooltip.setAttribute('x', 360);
+				} else if (tooltipX < 0) {
+					tooltip.setAttribute('x', 0);
+				} else {
+					tooltip.setAttribute('x', tooltipX);
+				}
+
 				tooltip.setAttribute('y', tooltipY);
 				tooltip.setAttribute('fill', 'red');
 				tooltip.style.userSelect = 'none';
