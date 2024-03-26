@@ -74,8 +74,8 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 			return err
 		}
 		startEndWeek[i] = template.StartEndWeek{
-			Start: startWeek,
-			End:   endWeek,
+			Start: startWeek.Format("Jan 02"),
+			End:   endWeek.Format("Jan 02"),
 		}
 	}
 

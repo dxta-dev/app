@@ -7,8 +7,8 @@ script setData(yValues []float64, startEndWeek []StartEndWeek, valueName string)
 
 	circles.forEach((c, i) => {
 		c.setAttribute(`data-y-value`, yValues[i]);
-		c.setAttribute(`start-week`, startEndWeek[i].Start);
-		c.setAttribute(`end-week`, startEndWeek[i].End);
+		c.setAttribute(`start-day`, startEndWeek[i].Start);
+		c.setAttribute(`end-day`, startEndWeek[i].End);
 		c.setAttribute(`data-value-name`, valueName);
 	});
 }

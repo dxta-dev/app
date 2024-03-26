@@ -22,8 +22,8 @@ type TimeSeries struct {
 }
 
 type StartEndWeek struct {
-	Start time.Time
-	End   time.Time
+	Start string
+	End   string
 }
 
 func getYAxisValues(yValues []float64) []float64 {
