@@ -100,7 +100,7 @@ func (app *App) GetUrlAppState(currentUrl string, params url.Values) (string, er
 		params = url.Values{}
 	}
 
-	if app.State.Team != nil {
+	if app.State.Team != nil && !params.Has("team") {
 		params.Add("team", fmt.Sprint(*app.State.Team))
 	}
 

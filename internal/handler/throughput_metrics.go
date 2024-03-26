@@ -198,8 +198,8 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        templTeams,
 		SelectedTeam: team,
+		NoTeamUrl:    r.URL.Path,
 	}
-
 
 	navState, err := a.GetNavState()
 

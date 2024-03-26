@@ -9,6 +9,7 @@ type Team struct {
 type TeamPickerProps struct {
 	Teams        []Team
 	SelectedTeam *int64
+	NoTeamUrl    string
 }
 
 templ teamPicker(props TeamPickerProps) {
@@ -30,7 +31,7 @@ templ teamPicker(props TeamPickerProps) {
 		}
 		if props.SelectedTeam != nil {
 			<a
-				href="/"
+				href={ templ.SafeURL(props.NoTeamUrl) }
 			>
 				Show all teams
 			</a>

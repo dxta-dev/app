@@ -109,6 +109,8 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 	requestUri := parsedURL.Path
 
+	fmt.Println("state", state)
+
 	if state.week != "" && !params.Has("week") {
 		params.Add("week", state.week)
 	}
@@ -247,9 +249,20 @@ func (a *App) DashboardPage(c echo.Context) error {
 		})
 	}
 
+
+	params := url.Values{}
+	params.Set("team", "")
+
+	noTeamUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{week: state.week, mr: state.mr}, params)
+
+	if err != nil {
+		return err
+	}
+
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        templTeams,
 		SelectedTeam: team,
+		NoTeamUrl: noTeamUrl,
 	}
 
 	swarmSeries, err := getSwarmSeries(store, date, teamMembers)

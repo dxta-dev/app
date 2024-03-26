@@ -175,6 +175,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        templTeams,
 		SelectedTeam: team,
+		NoTeamUrl:    r.URL.Path,
 	}
 
 
