@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -21,12 +20,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
-	page := &template.Page{
-		Title:     "Quality Metrics - DXTA",
-		Boosted:   h.HxBoosted,
-		CacheBust: a.BuildTimestamp,
-		DebugMode: a.DebugMode,
-	}
+	a.LoadState(r)
+
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
@@ -40,13 +35,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	var team *int64
-	if r.URL.Query().Has("team") {
-		value, err := strconv.ParseInt(r.URL.Query().Get("team"), 10, 64)
-		if err == nil {
-			team = &value
-		}
-	}
+	team := a.State.Team
 
 	teamMembers, err := store.GetTeamMembers(team)
 
@@ -58,11 +47,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks, teamMembers)
 
-
 	if err != nil {
 		return err
 	}
-
 
 	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks, teamMembers)
 
@@ -169,11 +156,41 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
 	}
 
+	var templTeams []template.Team
+
+	for _, team := range teams {
+		params := url.Values{}
+		params.Set("team", fmt.Sprint(team.Id))
+		teamUrl, err := a.GetUrlAppState(r.URL.Path, params)
+		if err != nil {
+			return err
+		}
+		templTeams = append(templTeams, template.Team{
+			Id:   team.Id,
+			Name: team.Name,
+			Url:  teamUrl,
+		})
+	}
+
 	teamPickerProps := template.TeamPickerProps{
-		Teams:        teams,
-		SearchParams: url.Values{},
+		Teams:        templTeams,
 		SelectedTeam: team,
-		BaseUrl:      "/metrics/quality",
+		NoTeamUrl:    r.URL.Path,
+	}
+
+
+	navState, err := a.GetNavState()
+
+	if err != nil {
+		return err
+	}
+
+	page := &template.Page{
+		Title:     "Quality Metrics - DXTA",
+		Boosted:   h.HxBoosted,
+		CacheBust: a.BuildTimestamp,
+		DebugMode: a.DebugMode,
+		NavState:  navState,
 	}
 
 	components := template.QualityMetricsPage(page, props, teamPickerProps)

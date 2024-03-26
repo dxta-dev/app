@@ -18,6 +18,7 @@ import (
 func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
@@ -38,21 +39,23 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	}
 
 	week := parsedURL.Query().Get("week")
-	var team *int64
-	if parsedURL.Query().Has("team") {
-		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
-		if err == nil {
-			team = &value
-		}
-	}
 
 	state := DashboardState{
 		week: week,
 		mr:   &mrId,
-		team: team,
 	}
 
-	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
+	if team := parsedURL.Query().Get("team"); team != "" {
+		teamId, err := strconv.ParseInt(team, 10, 64)
+
+		if err != nil {
+			return err
+		}
+
+		a.State.Team = &teamId
+	}
+
+	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
 
 	if err != nil {
 		return err
@@ -88,21 +91,22 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 
 	week := parsedURL.Query().Get("week")
 
-	var team *int64
-	if parsedURL.Query().Has("team") {
-		value, err := strconv.ParseInt(parsedURL.Query().Get("team"), 10, 64)
-		if err == nil {
-			team = &value
-		}
-	}
-
 	state := DashboardState{
 		week: week,
 		mr:   nil,
-		team: team,
 	}
 
-	nextUrl, err := getNextDashboardUrl(h.HxCurrentURL, state)
+	if team := parsedURL.Query().Get("team"); team != "" {
+		teamId, err := strconv.ParseInt(team, 10, 64)
+
+		if err != nil {
+			return err
+		}
+
+		a.State.Team = &teamId
+	}
+
+	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
 
 	if err != nil {
 		return err
