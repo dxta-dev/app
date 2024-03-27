@@ -46,8 +46,8 @@ script tooltip() {
 				const dataYValue = parseFloat(c.getAttribute('data-y-value'));
 				const formattedYValue = dataYValue;
 				const valueName = c.getAttribute('data-value-name');
-				const startDay = new Date(c.getAttribute('start-day'));
-				const endDay = new Date(c.getAttribute('end-day'));
+				const startDay = c.getAttribute('start-day');
+				const endDay = c.getAttribute('end-day');
 
 				let tooltipY = circleY - rectHeight / 2;
 				let tooltipX = circleX - rectWidth / 2;
@@ -61,7 +61,7 @@ script tooltip() {
 				valueLine.textContent = valueName + ': ' + formattedYValue;
 
 				const dateLine = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-				dateLine.textContent = startDay.getTime() + ' - ' + endDay.getTime();
+				dateLine.textContent = startDay + ' - ' + endDay;
 
 				content.appendChild(valueLine);
 				content.appendChild(dateLine);

@@ -86,11 +86,18 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		}
 	}
 
+	formattedAverageMrSizeYValues := make([]string, len(averageMrSizeYValues))
+
+	for i, value := range averageMrSizeYValues {
+		formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageMrSizeSeries := template.TimeSeries{
-		Title:   "Average Merge Request Size",
-		XValues: averageMrSizeXValues,
-		YValues: averageMrSizeYValues,
-		Weeks:   weeks,
+		Title:            "Average Merge Request Size",
+		XValues:          averageMrSizeXValues,
+		YValues:          averageMrSizeYValues,
+		FormattedYValues: formattedAverageMrSizeYValues,
+		Weeks:            weeks,
 	}
 
 	averageMrSizeSeriesProps := template.TimeSeriesProps{
@@ -107,11 +114,18 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 	}
 
+	formattedAverageReviewDepthYValues := make([]string, len(averageReviewDepthYValues))
+
+	for i, value := range averageReviewDepthYValues {
+		formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageReviewDepthSeries := template.TimeSeries{
-		Title:   "Average Review Depth",
-		XValues: averageReviewDepthXValues,
-		YValues: averageReviewDepthYValues,
-		Weeks:   weeks,
+		Title:            "Average Review Depth",
+		XValues:          averageReviewDepthXValues,
+		YValues:          averageReviewDepthYValues,
+		FormattedYValues: formattedAverageReviewDepthYValues,
+		Weeks:            weeks,
 	}
 
 	averageReviewDepthSeriesProps := template.TimeSeriesProps{
@@ -128,11 +142,18 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 	}
 
+	formattedAverageMrHandoverMetricsByNWeeksYValues := make([]string, len(averageMrHandoverMetricsByNWeeksYValues))
+
+	for i, value := range averageMrHandoverMetricsByNWeeksYValues {
+		formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageHandoverSeries := template.TimeSeries{
-		Title:   "Average Handovers Per MR",
-		XValues: averageMrHandoverMetricsByNWeeksXValues,
-		YValues: averageMrHandoverMetricsByNWeeksYValues,
-		Weeks:   weeks,
+		Title:            "Average Handovers Per MR",
+		XValues:          averageMrHandoverMetricsByNWeeksXValues,
+		YValues:          averageMrHandoverMetricsByNWeeksYValues,
+		FormattedYValues: formattedAverageMrHandoverMetricsByNWeeksYValues,
+		Weeks:            weeks,
 	}
 
 	averageHandoverSeriesProps := template.TimeSeriesProps{
@@ -149,11 +170,18 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 	}
 
+	formattedMergeRequestWithoutReviewYValues := make([]string, len(mergeRequestWithoutReviewYValues))
+
+	for i, value := range mergeRequestWithoutReviewYValues {
+		formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	mrsMergedWithoutReviewSeries := template.TimeSeries{
-		Title:   "Pull Requests Merged Without Review",
-		XValues: mergeRequestWithoutReviewXValues,
-		YValues: mergeRequestWithoutReviewYValues,
-		Weeks:   weeks,
+		Title:            "Pull Requests Merged Without Review",
+		XValues:          mergeRequestWithoutReviewXValues,
+		YValues:          mergeRequestWithoutReviewYValues,
+		FormattedYValues: formattedMergeRequestWithoutReviewYValues,
+		Weeks:            weeks,
 	}
 
 	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{

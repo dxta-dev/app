@@ -67,11 +67,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		}
 	}
 
+	formattedTotalCommitsYValues := make([]string, len(totalCommitsYValues))
+
+	for i, value := range totalCommitsYValues {
+		formattedTotalCommitsYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageTotalCommitsSeries := template.TimeSeries{
-		Title:   "Total Commits",
-		XValues: totalCommitsXValues,
-		YValues: totalCommitsYValues,
-		Weeks:   weeks,
+		Title:            "Total Commits",
+		XValues:          totalCommitsXValues,
+		YValues:          totalCommitsYValues,
+		FormattedYValues: formattedTotalCommitsYValues,
+		Weeks:            weeks,
 	}
 
 	averageTotalCommitsSeriesProps := template.TimeSeriesProps{
@@ -94,11 +101,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalMrsOpenedYValues[i] = float64(totalMrsOpened[week].Count)
 	}
 
+	formattedTotalMrsOpenedYValues := make([]string, len(totalMrsOpenedYValues))
+
+	for i, value := range totalMrsOpenedYValues {
+		formattedTotalMrsOpenedYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageMrsOpenedSeries := template.TimeSeries{
-		Title:   "Total MRs Opened",
-		XValues: totalMrsOpenedXValues,
-		YValues: totalMrsOpenedYValues,
-		Weeks:   weeks,
+		Title:            "Total MRs Opened",
+		XValues:          totalMrsOpenedXValues,
+		YValues:          totalMrsOpenedYValues,
+		FormattedYValues: formattedTotalMrsOpenedYValues,
+		Weeks:            weeks,
 	}
 
 	averageMrsOpenedSeriesProps := template.TimeSeriesProps{
@@ -121,11 +135,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		mergeFrequencyYValues[i] = float64(mergeFrequency[week].Amount)
 	}
 
+	formattedMergeFrequencyYValues := make([]string, len(mergeFrequencyYValues))
+
+	for i, value := range mergeFrequencyYValues {
+		formattedMergeFrequencyYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageMergeFrequencySeries := template.TimeSeries{
-		Title:   "Merge Frequency",
-		XValues: mergeFrequencyXValues,
-		YValues: mergeFrequencyYValues,
-		Weeks:   weeks,
+		Title:            "Merge Frequency",
+		XValues:          mergeFrequencyXValues,
+		YValues:          mergeFrequencyYValues,
+		FormattedYValues: formattedMergeFrequencyYValues,
+		Weeks:            weeks,
 	}
 
 	averageMergeFrequencySeriesProps := template.TimeSeriesProps{
@@ -148,11 +169,18 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalReviewsYValues[i] = float64(totalReviews[week].Count)
 	}
 
+	formattedTotalReviewsYValues := make([]string, len(totalReviewsYValues))
+
+	for i, value := range totalReviewsYValues {
+		formattedTotalReviewsYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageReviewsSeries := template.TimeSeries{
-		Title:   "Total Reviews",
-		XValues: totalReviewsXValues,
-		YValues: totalReviewsYValues,
-		Weeks:   weeks,
+		Title:            "Total Reviews",
+		XValues:          totalReviewsXValues,
+		YValues:          totalReviewsYValues,
+		FormattedYValues: formattedTotalReviewsYValues,
+		Weeks:            weeks,
 	}
 
 	averageReviewsSeriesProps := template.TimeSeriesProps{
@@ -170,11 +198,19 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		totalCodeChangesXValues[i] = float64(i)
 		totalCodeChangesYValues[i] = float64(totalCodeChanges[week].Count)
 	}
+
+	formattedTotalCodeChangesYValues := make([]string, len(totalCodeChangesYValues))
+
+	for i, value := range totalCodeChangesYValues {
+		formattedTotalCodeChangesYValues[i] = util.FormatYAxisValues(value)
+	}
+
 	averageCodeChangesSeries := template.TimeSeries{
-		Title:   "Total Code Changes",
-		XValues: totalCodeChangesXValues,
-		YValues: totalCodeChangesYValues,
-		Weeks:   weeks}
+		Title:            "Total Code Changes",
+		XValues:          totalCodeChangesXValues,
+		YValues:          totalCodeChangesYValues,
+		FormattedYValues: formattedTotalCodeChangesYValues,
+		Weeks:            weeks}
 
 	averageTotalCodeChangesProps := template.TimeSeriesProps{
 		Series:        averageCodeChangesSeries,

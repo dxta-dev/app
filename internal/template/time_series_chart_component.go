@@ -15,10 +15,11 @@ import (
 )
 
 type TimeSeries struct {
-	Title   string
-	XValues []float64
-	YValues []float64
-	Weeks   []string
+	Title            string
+	XValues          []float64
+	YValues          []float64
+	FormattedYValues []string
+	Weeks            []string
 }
 
 type StartEndWeek struct {
