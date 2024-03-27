@@ -74,17 +74,17 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	averageTotalCommitsSeries := template.TimeSeries{
-		Title:            "Total Commits",
-		XValues:          totalCommitsXValues,
-		YValues:          totalCommitsYValues,
-		FormattedYValues: formattedTotalCommitsYValues,
-		Weeks:            weeks,
+		Title:   "Total Commits",
+		XValues: totalCommitsXValues,
+		YValues: totalCommitsYValues,
+		Weeks:   weeks,
 	}
 
 	averageTotalCommitsSeriesProps := template.TimeSeriesProps{
-		Series:        averageTotalCommitsSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
+		Series:           averageTotalCommitsSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedTotalCommitsYValues,
+		InfoText:         fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
 	}
 
 	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks, teamMembers)
@@ -108,17 +108,17 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	averageMrsOpenedSeries := template.TimeSeries{
-		Title:            "Total MRs Opened",
-		XValues:          totalMrsOpenedXValues,
-		YValues:          totalMrsOpenedYValues,
-		FormattedYValues: formattedTotalMrsOpenedYValues,
-		Weeks:            weeks,
+		Title:   "Total MRs Opened",
+		XValues: totalMrsOpenedXValues,
+		YValues: totalMrsOpenedYValues,
+		Weeks:   weeks,
 	}
 
 	averageMrsOpenedSeriesProps := template.TimeSeriesProps{
-		Series:        averageMrsOpenedSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
+		Series:           averageMrsOpenedSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedTotalMrsOpenedYValues,
+		InfoText:         fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
 	}
 
 	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks, teamMembers)
@@ -142,17 +142,17 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	averageMergeFrequencySeries := template.TimeSeries{
-		Title:            "Merge Frequency",
-		XValues:          mergeFrequencyXValues,
-		YValues:          mergeFrequencyYValues,
-		FormattedYValues: formattedMergeFrequencyYValues,
-		Weeks:            weeks,
+		Title:   "Merge Frequency",
+		XValues: mergeFrequencyXValues,
+		YValues: mergeFrequencyYValues,
+		Weeks:   weeks,
 	}
 
 	averageMergeFrequencySeriesProps := template.TimeSeriesProps{
-		Series:        averageMergeFrequencySeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
+		Series:           averageMergeFrequencySeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedMergeFrequencyYValues,
+		InfoText:         fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
 	}
 
 	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks, teamMembers)
@@ -176,17 +176,17 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	averageReviewsSeries := template.TimeSeries{
-		Title:            "Total Reviews",
-		XValues:          totalReviewsXValues,
-		YValues:          totalReviewsYValues,
-		FormattedYValues: formattedTotalReviewsYValues,
-		Weeks:            weeks,
+		Title:   "Total Reviews",
+		XValues: totalReviewsXValues,
+		YValues: totalReviewsYValues,
+		Weeks:   weeks,
 	}
 
 	averageReviewsSeriesProps := template.TimeSeriesProps{
-		Series:        averageReviewsSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
+		Series:           averageReviewsSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedTotalReviewsYValues,
+		InfoText:         fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
 	}
 
 	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks, teamMembers)
@@ -206,16 +206,16 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	averageCodeChangesSeries := template.TimeSeries{
-		Title:            "Total Code Changes",
-		XValues:          totalCodeChangesXValues,
-		YValues:          totalCodeChangesYValues,
-		FormattedYValues: formattedTotalCodeChangesYValues,
-		Weeks:            weeks}
+		Title:   "Total Code Changes",
+		XValues: totalCodeChangesXValues,
+		YValues: totalCodeChangesYValues,
+		Weeks:   weeks}
 
 	averageTotalCodeChangesProps := template.TimeSeriesProps{
-		Series:        averageCodeChangesSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
+		Series:           averageCodeChangesSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedTotalCodeChangesYValues,
+		InfoText:         fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
 	}
 	if err != nil {
 		return err

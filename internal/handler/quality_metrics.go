@@ -22,7 +22,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	a.LoadState(r)
 
-
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
@@ -93,17 +92,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	averageMrSizeSeries := template.TimeSeries{
-		Title:            "Average Merge Request Size",
-		XValues:          averageMrSizeXValues,
-		YValues:          averageMrSizeYValues,
-		FormattedYValues: formattedAverageMrSizeYValues,
-		Weeks:            weeks,
+		Title:   "Average Merge Request Size",
+		XValues: averageMrSizeXValues,
+		YValues: averageMrSizeYValues,
+		Weeks:   weeks,
 	}
 
 	averageMrSizeSeriesProps := template.TimeSeriesProps{
-		Series:        averageMrSizeSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Size per week: %v", util.FormatYAxisValues(averageMrSizeByNWeeks)),
+		Series:           averageMrSizeSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedAverageMrSizeYValues,
+		InfoText:         fmt.Sprintf("AVG Size per week: %v", util.FormatYAxisValues(averageMrSizeByNWeeks)),
 	}
 
 	averageReviewDepthXValues := make([]float64, len(weeks))
@@ -121,17 +120,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	averageReviewDepthSeries := template.TimeSeries{
-		Title:            "Average Review Depth",
-		XValues:          averageReviewDepthXValues,
-		YValues:          averageReviewDepthYValues,
-		FormattedYValues: formattedAverageReviewDepthYValues,
-		Weeks:            weeks,
+		Title:   "Average Review Depth",
+		XValues: averageReviewDepthXValues,
+		YValues: averageReviewDepthYValues,
+		Weeks:   weeks,
 	}
 
 	averageReviewDepthSeriesProps := template.TimeSeriesProps{
-		Series:        averageReviewDepthSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Depth per week: %v", util.FormatYAxisValues(averageReviewDepthByNWeeks)),
+		Series:           averageReviewDepthSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedAverageReviewDepthYValues,
+		InfoText:         fmt.Sprintf("AVG Depth per week: %v", util.FormatYAxisValues(averageReviewDepthByNWeeks)),
 	}
 
 	averageMrHandoverMetricsByNWeeksXValues := make([]float64, len(weeks))
@@ -149,17 +148,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	averageHandoverSeries := template.TimeSeries{
-		Title:            "Average Handovers Per MR",
-		XValues:          averageMrHandoverMetricsByNWeeksXValues,
-		YValues:          averageMrHandoverMetricsByNWeeksYValues,
-		FormattedYValues: formattedAverageMrHandoverMetricsByNWeeksYValues,
-		Weeks:            weeks,
+		Title:   "Average Handovers Per MR",
+		XValues: averageMrHandoverMetricsByNWeeksXValues,
+		YValues: averageMrHandoverMetricsByNWeeksYValues,
+		Weeks:   weeks,
 	}
 
 	averageHandoverSeriesProps := template.TimeSeriesProps{
-		Series:        averageHandoverSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("AVG Handovers per week: %v", util.FormatYAxisValues(averageMrHandoverMetricsByNWeeks)),
+		Series:           averageHandoverSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedAverageMrHandoverMetricsByNWeeksYValues,
+		InfoText:         fmt.Sprintf("AVG Handovers per week: %v", util.FormatYAxisValues(averageMrHandoverMetricsByNWeeks)),
 	}
 
 	mergeRequestWithoutReviewXValues := make([]float64, len(weeks))
@@ -177,17 +176,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	mrsMergedWithoutReviewSeries := template.TimeSeries{
-		Title:            "Pull Requests Merged Without Review",
-		XValues:          mergeRequestWithoutReviewXValues,
-		YValues:          mergeRequestWithoutReviewYValues,
-		FormattedYValues: formattedMergeRequestWithoutReviewYValues,
-		Weeks:            weeks,
+		Title:   "Pull Requests Merged Without Review",
+		XValues: mergeRequestWithoutReviewXValues,
+		YValues: mergeRequestWithoutReviewYValues,
+		Weeks:   weeks,
 	}
 
 	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{
-		Series:        mrsMergedWithoutReviewSeries,
-		StartEndWeeks: startEndWeek,
-		InfoText:      fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
+		Series:           mrsMergedWithoutReviewSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedMergeRequestWithoutReviewYValues,
+		InfoText:         fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
 	}
 
 	props := template.QualityMetricsProps{
@@ -218,7 +217,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		SelectedTeam: team,
 		NoTeamUrl:    r.URL.Path,
 	}
-
 
 	navState, err := a.GetNavState()
 
