@@ -43,8 +43,7 @@ script tooltip() {
 
 			rectGroup.addEventListener('mouseenter', function(event) {
 
-				const dataYValue = parseFloat(c.getAttribute('data-y-value'));
-				const formattedYValue = dataYValue;
+				const dataYValue = c.getAttribute('data-y-value');
 				const valueName = c.getAttribute('data-value-name');
 				const startDay = c.getAttribute('start-day');
 				const endDay = c.getAttribute('end-day');
@@ -58,7 +57,7 @@ script tooltip() {
 				content.style.userSelect = 'none';
 
 				const valueLine = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-				valueLine.textContent = valueName + ': ' + formattedYValue;
+				valueLine.textContent = valueName + ': ' + dataYValue;
 
 				const dateLine = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
 				dateLine.textContent = startDay + ' - ' + endDay;
