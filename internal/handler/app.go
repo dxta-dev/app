@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"crypto/rand"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -15,11 +17,24 @@ type App struct {
 	HTMX           *htmx.HTMX
 	BuildTimestamp string
 	DebugMode      bool
+	Nonce          string
 	State          State
 }
 
 type State struct {
 	Team *int64
+}
+
+func (app *App) GenerateNonce() error {
+	nonce := make([]byte, 16)
+	_, err := rand.Read(nonce)
+	if err != nil {
+		return err
+	}
+
+	encodedNonce := hex.EncodeToString(nonce)
+	app.Nonce = encodedNonce
+	return nil
 }
 
 func (app *App) LoadState(r *http.Request) State {
