@@ -109,7 +109,6 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 	requestUri := parsedURL.Path
 
-
 	if state.week != "" && !params.Has("week") {
 		params.Add("week", state.week)
 	}
@@ -119,7 +118,7 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 	}
 
 	var nextUrl string
-	if(includeAppState) {
+	if includeAppState {
 		nextUrl, err = app.GetUrlAppState(requestUri, params)
 	} else {
 		nextUrl, err = GetUrl(requestUri, params)
@@ -141,6 +140,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		DbUrl: tenantDatabaseUrl,
 	}
 
+	a.GenerateNonce()
 	a.LoadState(r)
 
 	date := time.Now()
@@ -251,7 +251,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 		})
 	}
 
-
 	noTeamUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{week: state.week, mr: state.mr}, nil, false)
 
 	if err != nil {
@@ -261,7 +260,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	teamPickerProps := template.TeamPickerProps{
 		Teams:        templTeams,
 		SelectedTeam: team,
-		NoTeamUrl: noTeamUrl,
+		NoTeamUrl:    noTeamUrl,
 	}
 
 	swarmSeries, err := getSwarmSeries(store, date, teamMembers)
@@ -313,6 +312,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		CacheBust: a.BuildTimestamp,
 		DebugMode: a.DebugMode,
 		NavState:  navState,
+		Nonce:     a.Nonce,
 	}
 
 	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps)
