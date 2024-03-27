@@ -146,9 +146,9 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	});
 }
 
-templ swarm(props SwarmProps) {
+templ swarm(props SwarmProps, nonce string) {
 	<div class="pl-[10px] pr-[15px]" id="swarm-chart">
-		<style text="text/css">
+		<style nonce={ nonce } text="text/css">
 			svg > circle:hover {
 				cursor: pointer;
 			}

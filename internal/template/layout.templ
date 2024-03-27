@@ -32,11 +32,12 @@ type Page struct {
 	CacheBust string
 	DebugMode bool
 	NavState  NavState
+	Nonce     string
 }
 
 templ Layout(page *Page) {
 	<html>
-		@Head(page.Title, page.CacheBust)
+		@Head(page.Title, page.CacheBust, page.Nonce)
 		if !page.Boosted && !page.Requested {
 			@Navigation(page.NavState, page.DebugMode)
 		}
@@ -48,12 +49,12 @@ templ Layout(page *Page) {
 	</html>
 }
 
-templ Head(title string, bust string) {
+templ Head(title string, bust string, nonce string) {
 	<head>
 		<meta charset="UTF-8"/>
 		<title>{ title }</title>
-		<script src="https://unpkg.com/htmx.org@1.9.9/dist/htmx.min.js"></script>
-		<script src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
+		<script nonce={ nonce } src="https://unpkg.com/htmx.org@1.9.9/dist/htmx.min.js"></script>
+		<script nonce={ nonce } src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
 		<link href={ fmt.Sprintf("/style.css?t=%s", bust) } rel="stylesheet"/>
 	</head>
 }
