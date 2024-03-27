@@ -134,72 +134,85 @@ func TestGetFormattedWeek(t *testing.T) {
 
 func TestParseYearWeek(t *testing.T) {
 	tests := []struct {
-		name     string
-		expected time.Time
-		input    string
+		name         string
+		expectedFrom time.Time
+		expectedTo   time.Time
+		input        string
 	}{
 		{
-			name:     "first week of 1980",
-			expected: time.Date(1979, time.December, 31, 0, 0, 0, 0, time.UTC),
-			input:    "1980-W01",
+			name:         "first week of 1980",
+			expectedFrom: time.Date(1979, time.December, 31, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(1980, time.January, 6, 0, 0, 0, 0, time.UTC),
+			input:        "1980-W01",
 		},
 		{
-			name:     "first week of 1981",
-			expected: time.Date(1980, time.December, 29, 0, 0, 0, 0, time.UTC),
-			input:    "1981-W01",
+			name:         "first week of 1981",
+			expectedFrom: time.Date(1980, time.December, 29, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(1981, time.January, 4, 0, 0, 0, 0, time.UTC),
+			input:        "1981-W01",
 		},
 		{
-			name:     "first week of 2015",
-			expected: time.Date(2014, time.December, 29, 0, 0, 0, 0, time.UTC),
-			input:    "2015-W01",
+			name:         "first week of 2015",
+			expectedFrom: time.Date(2014, time.December, 29, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2015, time.January, 4, 0, 0, 0, 0, time.UTC),
+			input:        "2015-W01",
 		},
 		{
-			name:     "first week of 2022",
-			expected: time.Date(2022, time.January, 3, 0, 0, 0, 0, time.UTC),
-			input:    "2022-W01",
+			name:         "first week of 2022",
+			expectedFrom: time.Date(2022, time.January, 3, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2022, time.January, 9, 0, 0, 0, 0, time.UTC),
+			input:        "2022-W01",
 		},
 		{
-			name:     "last week of 2022",
-			expected: time.Date(2022, time.December, 26, 0, 0, 0, 0, time.UTC),
-			input:    "2022-W52",
+			name:         "last week of 2022",
+			expectedFrom: time.Date(2022, time.December, 26, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2023, time.January, 1, 0, 0, 0, 0, time.UTC),
+			input:        "2022-W52",
 		},
 		{
-			name:     "sunday?",
-			expected: time.Date(2023, time.December, 18, 0, 0, 0, 0, time.UTC),
-			input:    "2023-W51",
+			name:         "sunday?",
+			expectedFrom: time.Date(2023, time.December, 18, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2023, time.December, 24, 0, 0, 0, 0, time.UTC),
+			input:        "2023-W51",
 		},
 		{
-			name:     "begging of the last year",
-			expected: time.Date(2023, time.January, 2, 0, 0, 0, 0, time.UTC),
-			input:    "2023-W01",
+			name:         "begging of the last year",
+			expectedFrom: time.Date(2023, time.January, 2, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2023, time.January, 8, 0, 0, 0, 0, time.UTC),
+			input:        "2023-W01",
 		},
 		{
-			name:     "beginning of the year",
-			expected: time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC),
-			input:    "2024-W01",
+			name:         "beginning of the year",
+			expectedFrom: time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2024, time.January, 7, 0, 0, 0, 0, time.UTC),
+			input:        "2024-W01",
 		},
 		{
-			name:     "valid year and week",
-			expected: time.Date(2024, time.May, 13, 0, 0, 0, 0, time.UTC),
-			input:    "2024-W20",
+			name:         "valid year and week",
+			expectedFrom: time.Date(2024, time.May, 13, 0, 0, 0, 0, time.UTC),
+			expectedTo:   time.Date(2024, time.May, 19, 0, 0, 0, 0, time.UTC),
+			input:        "2024-W20",
 		},
 		{
-			name:     "invalid format",
-			expected: time.Time{},
-			input:    "2024W20",
+			name:         "invalid format",
+			expectedFrom: time.Time{},
+			input:        "2024W20",
 		},
 		{
-			name:     "non existent week number",
-			expected: time.Time{},
-			input:    "2024-W54",
+			name:         "non existent week number",
+			expectedFrom: time.Time{},
+			input:        "2024-W54",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, _ := ParseYearWeek(tt.input)
-			if tt.expected != got {
-				t.Errorf("expected %v, got %v", tt.expected, got)
+			gotFrom, gotTo, _ := ParseYearWeek(tt.input)
+			if tt.expectedFrom != gotFrom {
+				t.Errorf("expected %v, got %v", tt.expectedFrom, gotFrom)
+			}
+			if tt.expectedTo != gotTo {
+				t.Errorf("expected to %v, got %v", tt.expectedTo, gotTo)
 			}
 		})
 	}

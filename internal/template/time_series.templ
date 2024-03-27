@@ -1,24 +1,29 @@
 package template
 
-script setData(values []float64) {
+script setData(yValues []string, startEndWeek []StartEndWeek, valueName string) {
 	const parent = document.currentScript.parentNode;
 	const svg = parent.querySelector(`svg`);
 	const circles = parent.querySelectorAll(`svg > circle`);
 
 	circles.forEach((c, i) => {
-		c.setAttribute(`data-value`, values[i]);
+		c.setAttribute(`data-y-value`, yValues[i]);
+		c.setAttribute(`start-day`, startEndWeek[i].Start);
+		c.setAttribute(`end-day`, startEndWeek[i].End);
+		c.setAttribute(`data-value-name`, valueName);
 	});
 }
 
 type TimeSeriesProps struct {
 	Series TimeSeries
+	StartEndWeeks []StartEndWeek
+	FormattedYValues []string
 	InfoText string
 }
 
-templ timeSeries(props TimeSeriesProps) {
+templ timeSeries(props TimeSeriesProps, valueName string) {
 	<div>
 		<p>{props.InfoText}</p>
 		@TimeSeriesChart(props.Series)
-		@setData(props.Series.YValues)
+		@setData(props.FormattedYValues, props.StartEndWeeks, valueName)
 	</div>
 }

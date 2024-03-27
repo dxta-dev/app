@@ -171,7 +171,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 
 	if state.week != "" {
-		dateTime, err := util.ParseYearWeek(state.week)
+		dateTime, _, err := util.ParseYearWeek(state.week)
 		if err == nil {
 			date = dateTime
 		}

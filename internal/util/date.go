@@ -12,7 +12,7 @@ func GetStartOfMonths(weeks []string) []time.Time {
 	startOfMonths := make([]time.Time, 0)
 
 	for _, week := range weeks {
-		date, err  := ParseYearWeek(week)
+		date, _, err := ParseYearWeek(week)
 		if err != nil {
 			continue
 		}
@@ -70,21 +70,20 @@ func GetStartOfTheWeek(date time.Time) time.Time {
 	return startOfWeek
 }
 
-
-func ParseYearWeek(yw string) (time.Time, error) {
+func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	parts := strings.Split(yw, "-W")
 	if len(parts) != 2 {
-		return time.Time{}, fmt.Errorf("invalid format")
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid format")
 	}
 
 	year, err := strconv.Atoi(parts[0])
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, time.Time{}, err
 	}
 
 	week, err := strconv.Atoi(parts[1])
 	if err != nil {
-		return time.Time{}, err
+		return time.Time{}, time.Time{}, err
 	}
 
 	firstDayOfYear := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
@@ -107,10 +106,11 @@ func ParseYearWeek(yw string) (time.Time, error) {
 	}
 
 	startOfWeek := firstDayOfYear.AddDate(0, 0, (week-1)*7)
+	endOfWeek := startOfWeek.AddDate(0, 0, 6) // End of the week is 6 days after start of the week
 
-	if startOfWeek.Year() > year {
-		return time.Time{}, fmt.Errorf("invalid week")
+	if startOfWeek.Year() > year || endOfWeek.Year() < year {
+		return time.Time{}, time.Time{}, fmt.Errorf("invalid week")
 	}
 
-	return startOfWeek, nil
+	return startOfWeek, endOfWeek, nil
 }
