@@ -20,6 +20,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
+	a.GenerateNonce()
 	a.LoadState(r)
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
@@ -230,6 +231,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		CacheBust: a.BuildTimestamp,
 		DebugMode: a.DebugMode,
 		NavState:  navState,
+		Nonce:     a.Nonce,
 	}
 
 	components := template.QualityMetricsPage(page, props, teamPickerProps)
