@@ -43,13 +43,23 @@ func main() {
 	app := &handler.App{
 		HTMX:           htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
-		DebugMode: DEBUG == "true",
+		DebugMode:      DEBUG == "true",
 	}
+
+	app.GenerateNonce()
 
 	e := echo.New()
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
+	e.Use(echoMiddleware.SecureWithConfig(echoMiddleware.SecureConfig{
+		Skipper:               echoMiddleware.DefaultSkipper,
+		XSSProtection:         "1; mode=block",
+		ContentTypeNosniff:    "nosniff",
+		XFrameOptions:         "SAMEORIGIN",
+		HSTSMaxAge:            3600,
+		ContentSecurityPolicy: "default-src 'self'; img-src 'self' https://avatars.githubusercontent.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline';",
+	}))
 
 	e.Use(middleware.HtmxMiddleware)
 
@@ -57,7 +67,6 @@ func main() {
 		return c.String(http.StatusOK, app.BuildTimestamp)
 	})
 	e.GET("/*", app.PublicHandler())
-
 
 	g := e.Group("")
 

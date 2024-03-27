@@ -48,7 +48,7 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 	@Layout(page) {
 		@teamPicker(teamPickerProps)
 		@weekPicker(weekPickerProps)
-		@swarm(swarmProps)
+		@swarm(swarmProps, page.Nonce)
 		<div
 			aria-labelledby="slide-over-title"
 			role="dialog"
