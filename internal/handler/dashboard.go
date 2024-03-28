@@ -266,6 +266,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 		EventMergeRequestIds: eventMergeRequestIds,
 	}
 
+	fmt.Println("series", swarmSeries)
+
 	var mergeRequestInfoProps *template.MergeRequestInfoProps
 
 	if state.mr != nil {
