@@ -32,7 +32,7 @@ RUN templ generate
 RUN go build \
   -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
   -o web \
-  ./cmd/web/main.go
+  ./cmd/admin/main.go
 
 RUN useradd -u 1001 dxta
 

@@ -117,7 +117,7 @@ jobs:
 
       - name: Dry Build
         run: |
-          go build -o ./tmp/main ./cmd/web/main.go
+          go build -o ./tmp/main ./cmd/admin/main.go
 
   docker:
     needs: [test, setup, build]

@@ -4,7 +4,7 @@ tmp_dir = "tmp"
 [build]
   args_bind = []
   bin = "./tmp/main"
-  cmd = "make templ && go build -ldflags \"-X 'main.DEBUG=true'\" -o ./tmp/main ./cmd/web/main.go"
+  cmd = "make templ && go build -ldflags \"-X 'main.DEBUG=true'\" -o ./tmp/main ./cmd/admin/main.go"
   delay = 0
   exclude_dir = ["assets", "tmp", "vendor", "node_modules"]
   exclude_file = []
