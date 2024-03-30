@@ -25,14 +25,14 @@ COPY . .
 
 COPY --from=bun /app/public/style.css /app/public/style.css
 
-RUN go install github.com/a-h/templ/cmd/templ@v0.2.543
+RUN go install github.com/a-h/templ/cmd/templ@v0.2.648
 
 RUN templ generate
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
   -o web \
-  ./cmd/admin/main.go
+  ./cmd/web/main.go
 
 RUN useradd -u 1001 dxta
 
