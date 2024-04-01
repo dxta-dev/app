@@ -66,9 +66,9 @@ func main() {
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
 
-	g.GET("/admin", app.GetCrawlInstancesInfo)
+	g.GET("/", app.GetCrawlInstancesInfo)
 
-	fmt.Print("Hello, world!", middleware.TenantDatabasesGlobalContext)
+	fmt.Print("Hello, ADMIN! \n")
 
 	port := os.Getenv("PORT")
 	if port == "" {
