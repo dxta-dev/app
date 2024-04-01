@@ -1,7 +1,9 @@
+AIR_CONFIG ?= admin.air.toml
+
 .PHONY: watch
 watch:
 	@export $$(cat .env | xargs) && \
-	./bin/air & \
+    ./bin/air -c $(AIR_CONFIG) & \
 	$(MAKE) tailwind-watch
 
 .PHONY: templ
