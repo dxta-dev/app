@@ -1,10 +1,13 @@
 package handler
 
 import (
+	"context"
 	"time"
 
+	"github.com/a-h/templ"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
+	admin_template "github.com/dxta-dev/app/internal/template/admin"
 
 	"fmt"
 
@@ -13,7 +16,7 @@ import (
 
 func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	r := c.Request()
-
+	// h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
@@ -34,8 +37,12 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 		instanceByRepo[instance.RepositoryId] = append(instanceByRepo[instance.RepositoryId], instance.TimeFrame)
 	}
 
+	var findGaps data.TimeFrameSlice
+	var components templ.Component
+
 	for repositoryId, timeFrames := range instanceByRepo {
-		findGaps := data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
+		fmt.Printf("RepositoryId %d\n", repositoryId)
+		findGaps = data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
 		if len(findGaps) > 0 {
 			fmt.Printf("Gaps detected for repositoryId %d:\n", repositoryId)
 			for _, gap := range findGaps {
@@ -44,7 +51,8 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 		} else {
 			fmt.Printf("No gaps found for repositoryId %d.\n", repositoryId)
 		}
+		components = admin_template.DashboardAdminPage(findGaps, repositoryId)
 	}
 
-	return nil
+	return components.Render(context.Background(), c.Response().Writer)
 }
