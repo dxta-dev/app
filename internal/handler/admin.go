@@ -31,8 +31,7 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 		return err
 	}
 
-	findGaps := data.FindGaps(time.Date(2024, time.February, 1, 0, 0, 0, 0, time.UTC), fifteenMinutesAgo, crawlInstances) // This is hardcoded just for testing purposes,
-	// First argument will be crawlInstances[0].Since
+	findGaps := data.FindGaps(crawlInstances[0].Since, fifteenMinutesAgo, crawlInstances)
 
 	if len(findGaps) > 0 {
 		fmt.Println("Gaps detected:")
