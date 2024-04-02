@@ -51,7 +51,7 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 		} else {
 			fmt.Printf("No gaps found for repositoryId %d.\n", repositoryId)
 		}
-		components = admin_template.DashboardAdminPage(findGaps, repositoryId)
+		components = admin_template.DashboardAdminPage(findGaps, repositoryId, crawlInstances)
 	}
 
 	return components.Render(context.Background(), c.Response().Writer)
