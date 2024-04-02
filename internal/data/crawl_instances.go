@@ -18,6 +18,8 @@ type CrawlInstance struct {
 	TimeFrame
 }
 
+type CrawlInstanceSlice []CrawlInstance
+
 type TimeFrameSlice []TimeFrame
 
 func (tfs TimeFrameSlice) Len() int {
@@ -32,7 +34,7 @@ func (tfs TimeFrameSlice) Swap(i, j int) {
 	tfs[i], tfs[j] = tfs[j], tfs[i]
 }
 
-func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
+func (s *Store) GetCrawlInstances(from, to int64) (CrawlInstanceSlice, error) {
 
 	db, err := sql.Open("libsql", s.DbUrl)
 	if err != nil {
@@ -66,7 +68,7 @@ func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
 	}
 	defer rows.Close()
 
-	var crawlInstances TimeFrameSlice
+	var crawlInstances []CrawlInstance
 
 	for rows.Next() {
 		var id, repositoryId, sinceInt, untilInt, startedAtInt int64
@@ -82,8 +84,10 @@ func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
 			Id:           id,
 			RepositoryId: repositoryId,
 			StartedAt:    startedAt,
-			Since:        since,
-			Until:        until,
+			TimeFrame: TimeFrame{
+				Since: since,
+				Until: until,
+			},
 		})
 	}
 	if err := rows.Err(); err != nil {

@@ -23,16 +23,19 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	currentTime := time.Now()
 
 	threeMonthsAgo := currentTime.Add(-3 * time.Hour * 24 * 30)
-	threeMonthsAgoTimestamp := threeMonthsAgo.Unix()
 
-	crawlInstances, err := store.GetCrawlInstances(0, threeMonthsAgoTimestamp)
+	crawlInstances, err := store.GetCrawlInstances(0, currentTime.Unix())
 	if err != nil {
 		return err
+	}
+	var timeFrames data.TimeFrameSlice
+	for _, instance := range crawlInstances {
+		timeFrames = append(timeFrames, instance.TimeFrame)
 	}
 
 	// by repositoryId
 
-	findGaps := data.FindGaps(threeMonthsAgo, currentTime, crawlInstances)
+	findGaps := data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
 
 	if len(findGaps) > 0 {
 		fmt.Println("Gaps detected:")
