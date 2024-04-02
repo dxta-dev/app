@@ -17,21 +17,25 @@ func TestFindGaps(t *testing.T) {
 	}
 
 	tests := []struct {
-		name       string
-		from       time.Time
-		to         time.Time
-		timeFrames TimeFrameSlice
-		want       TimeFrameSlice
+		name         string
+		from         time.Time
+		to           time.Time
+		timeFrames   map[int64]TimeFrameSlice
+		wantByRepoId map[int64]TimeFrameSlice
 	}{
 		{
-			name:       "no time frames",
-			from:       parseTime("2019-01-01 00:00:00"),
-			to:         parseTime("2019-01-02 00:00:00"),
-			timeFrames: nil,
-			want: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-01 00:00:00"),
-					Until: parseTime("2019-01-02 00:00:00"),
+			name: "no time frames",
+			from: parseTime("2019-01-01 00:00:00"),
+			to:   parseTime("2019-01-02 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: nil,
+			},
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
 				},
 			},
 		},
@@ -39,32 +43,40 @@ func TestFindGaps(t *testing.T) {
 			name: "consecutive time frames",
 			from: parseTime("2019-01-01 00:00:00"),
 			to:   parseTime("2019-01-03 00:00:00"),
-			timeFrames: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-01 00:00:00"),
-					Until: parseTime("2019-01-02 00:00:00"),
-				},
-				{
-					Since: parseTime("2019-01-02 00:00:00"),
-					Until: parseTime("2019-01-03 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
 				},
 			},
-			want: nil,
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: nil,
+			},
 		},
 		{
 			name: "one gap",
 			from: parseTime("2019-01-01 00:00:00"),
 			to:   parseTime("2019-01-03 00:00:00"),
-			timeFrames: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-01 00:00:00"),
-					Until: parseTime("2019-01-02 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
 				},
 			},
-			want: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-02 00:00:00"),
-					Until: parseTime("2019-01-03 00:00:00"),
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
 				},
 			},
 		},
@@ -72,36 +84,109 @@ func TestFindGaps(t *testing.T) {
 			name: "one time frame fully contained within another",
 			from: parseTime("2019-01-01 00:00:00"),
 			to:   parseTime("2019-01-04 00:00:00"),
-			timeFrames: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-01 00:00:00"),
-					Until: parseTime("2019-01-04 00:00:00"),
-				},
-				{
-					Since: parseTime("2019-01-02 00:00:00"),
-					Until: parseTime("2019-01-03 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				2: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-04 00:00:00"),
+					},
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
 				},
 			},
-			want: nil,
+			wantByRepoId: map[int64]TimeFrameSlice{
+				2: nil,
+			},
+		},
+		{
+			name: "gap for repository 1 and 2",
+			from: parseTime("2019-01-01 00:00:00"),
+			to:   parseTime("2019-01-03 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+				},
+				2: {
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
+				},
+			},
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
+				},
+				2: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+				},
+			},
+		},
+		{
+			name: "gap for repository 1 and NOT for repository 2",
+			from: parseTime("2019-01-01 00:00:00"),
+			to:   parseTime("2019-01-03 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+				},
+				2: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
+				},
+			},
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
+				},
+				2: nil,
+			},
 		},
 		{
 			name: "completely non-overlapping time frames",
 			from: parseTime("2019-01-01 00:00:00"),
 			to:   parseTime("2019-01-04 00:00:00"),
-			timeFrames: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-01 00:00:00"),
-					Until: parseTime("2019-01-02 00:00:00"),
-				},
-				{
-					Since: parseTime("2019-01-03 00:00:00"),
-					Until: parseTime("2019-01-04 00:00:00"),
+			timeFrames: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-01 00:00:00"),
+						Until: parseTime("2019-01-02 00:00:00"),
+					},
+					{
+						Since: parseTime("2019-01-03 00:00:00"),
+						Until: parseTime("2019-01-04 00:00:00"),
+					},
 				},
 			},
-			want: TimeFrameSlice{
-				{
-					Since: parseTime("2019-01-02 00:00:00"),
-					Until: parseTime("2019-01-03 00:00:00"),
+			wantByRepoId: map[int64]TimeFrameSlice{
+				1: {
+					{
+						Since: parseTime("2019-01-02 00:00:00"),
+						Until: parseTime("2019-01-03 00:00:00"),
+					},
 				},
 			},
 		},
@@ -109,9 +194,16 @@ func TestFindGaps(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := FindGaps(tt.from, tt.to, tt.timeFrames)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FindGaps() = %v, want %v", got, tt.want)
+			for repoId, timeFrames := range tt.timeFrames {
+				got := FindGaps(tt.from, tt.to, timeFrames)
+				want, ok := tt.wantByRepoId[repoId]
+				if !ok {
+					t.Errorf("Missing expected result for repository ID %d", repoId)
+					continue
+				}
+				if !reflect.DeepEqual(got, want) {
+					t.Errorf("FindGaps() = %v, want %v", got, want)
+				}
 			}
 		})
 	}
