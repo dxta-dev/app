@@ -24,7 +24,7 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 
 	threeMonthsAgo := currentTime.Add(-3 * time.Hour * 24 * 30)
 
-	crawlInstances, err := store.GetCrawlInstances(0, currentTime.Unix())
+	crawlInstances, err := store.GetCrawlInstances(threeMonthsAgo.Unix(), currentTime.Unix())
 	if err != nil {
 		return err
 	}

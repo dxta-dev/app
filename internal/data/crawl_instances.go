@@ -18,8 +18,6 @@ type CrawlInstance struct {
 	TimeFrame
 }
 
-type CrawlInstanceSlice []CrawlInstance
-
 type TimeFrameSlice []TimeFrame
 
 func (tfs TimeFrameSlice) Len() int {
@@ -34,7 +32,7 @@ func (tfs TimeFrameSlice) Swap(i, j int) {
 	tfs[i], tfs[j] = tfs[j], tfs[i]
 }
 
-func (s *Store) GetCrawlInstances(from, to int64) (CrawlInstanceSlice, error) {
+func (s *Store) GetCrawlInstances(from, to int64) ([]CrawlInstance, error) {
 
 	db, err := sql.Open("libsql", s.DbUrl)
 	if err != nil {
