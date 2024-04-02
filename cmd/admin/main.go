@@ -68,8 +68,6 @@ func main() {
 
 	g.GET("/", app.GetCrawlInstancesInfo)
 
-	fmt.Print("Hello, ADMIN! \n")
-
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"

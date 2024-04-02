@@ -13,7 +13,6 @@ import (
 
 func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	r := c.Request()
-	// h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
@@ -23,15 +22,17 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 
 	currentTime := time.Now()
 
-	fifteenMinutesAgo := currentTime.Add(-15 * time.Minute)
-	fifteenMinutesAgoTimestamp := fifteenMinutesAgo.Unix()
+	threeMonthsAgo := currentTime.Add(-3 * time.Hour * 24 * 30)
+	threeMonthsAgoTimestamp := threeMonthsAgo.Unix()
 
-	crawlInstances, err := store.GetCrawlInstances(0, fifteenMinutesAgoTimestamp)
+	crawlInstances, err := store.GetCrawlInstances(0, threeMonthsAgoTimestamp)
 	if err != nil {
 		return err
 	}
 
-	findGaps := data.FindGaps(crawlInstances[0].Since, fifteenMinutesAgo, crawlInstances)
+	// by repositoryId
+
+	findGaps := data.FindGaps(threeMonthsAgo, currentTime, crawlInstances)
 
 	if len(findGaps) > 0 {
 		fmt.Println("Gaps detected:")
