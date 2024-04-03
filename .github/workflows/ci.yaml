@@ -142,7 +142,7 @@ jobs:
         with:
           context: .
           load: true
-          file: ./web.dockerfile
+          file: ./Dockerfile
           tags: ${{ env.TEST_TAG }}
 
       - name: Dry Build Admin
