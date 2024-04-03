@@ -4,7 +4,7 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 
 	"fmt"
-	"time"
+	// "time"
 	"strings"
 )
 
@@ -27,48 +27,170 @@ templ UserInfoBubble(user data.EventUserInfo) {
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
-	<div class="relative z-10">
-		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-		<div class="fixed inset-0 overflow-hidden">
-			<div class="absolute inset-0 overflow-hidden">
-				<div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
-					<div class="pointer-events-auto relative w-screen max-w-md">
-						<div class="absolute left-0 top-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
-							<button
-								hx-trigger="click, keyup[key=='Escape'] from:body"
-								hx-delete={ props.DeleteEndpoint }
-								hx-target={ props.TargetSelector }
-								type="button"
-								class="relative rounded-md text-gray-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white"
-							>
-								<span class="absolute -inset-2.5"></span>
-								<span class="sr-only">Close panel</span>
-								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-								</svg>
-							</button>
-						</div>
-						<div class="flex h-full flex-col overflow-y-scroll bg-white py-6 shadow-xl">
-							<div class="px-4 sm:px-6">
-								<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">
-									{ fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }
-									(<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
-								</h2>
-							</div>
-							<div class="relative mt-6 flex-1 px-4 sm:px-6">								
-								for _, event := range props.Events {
-									<div class="flex items-center gap-1">
-										@UserInfoBubble(event.Actor)
-										<small>{ fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</small>										
-										<small>{ getEventName(event.Type) }</small>
-										<small>{ fmt.Sprintf("%v", event.Id) }</small>
-									</div>
-								}
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+
+<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <!--
+    Background backdrop, show/hide based on modal state.
+
+    Entering: "ease-out duration-300"
+      From: "opacity-0"
+      To: "opacity-100"
+    Leaving: "ease-in duration-200"
+      From: "opacity-100"
+      To: "opacity-0"
+  -->
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+      <!--
+        Modal panel, show/hide based on modal state.
+
+        Entering: "ease-out duration-300"
+          From: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+          To: "opacity-100 translate-y-0 sm:scale-100"
+        Leaving: "ease-in duration-200"
+          From: "opacity-100 translate-y-0 sm:scale-100"
+          To: "opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+      -->
+      <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+        <div>
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+            <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+          <div class="mt-3 text-center sm:mt-5">
+            <div class="flow-root">
+  <ul role="list" class="-mb-8">
+    <li>
+      <div class="relative pb-8">
+        <span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+        <div class="relative flex items-start space-x-3">
+          <div class="relative">
+            <img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src="https://images.unsplash.com/photo-1520785643438-5bf77931f493?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80" alt="" />
+
+            <span class="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
+              <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.58-3.579a.78.78 0 01.527-.224 41.202 41.202 0 005.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zm0 7a1 1 0 100-2 1 1 0 000 2zM8 8a1 1 0 11-2 0 1 1 0 012 0zm5 1a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div>
+              <div class="text-sm">
+                <a href="#" class="font-medium text-gray-900">Eduardo Benz</a>
+              </div>
+              <p class="mt-0.5 text-sm text-gray-500">Commented 6d ago</p>
+            </div>
+            <div class="mt-2 text-sm text-gray-700">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tincidunt nunc ipsum tempor purus vitae id. Morbi in vestibulum nec varius. Et diam cursus quis sed purus nam.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="relative pb-8">
+        <span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+        <div class="relative flex items-start space-x-3">
+          <div>
+            <div class="relative px-1">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
+                <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1 py-1.5">
+            <div class="text-sm text-gray-500">
+              <a href="#" class="font-medium text-gray-900">Hilary Mahy</a>
+              assigned
+              <a href="#" class="font-medium text-gray-900">Kristin Watson</a>
+              <span class="whitespace-nowrap">2d ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="relative pb-8">
+        <span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+        <div class="relative flex items-start space-x-3">
+          <div>
+            <div class="relative px-1">
+              <div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
+                <svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fill-rule="evenodd" d="M5.5 3A2.5 2.5 0 003 5.5v2.879a2.5 2.5 0 00.732 1.767l6.5 6.5a2.5 2.5 0 003.536 0l2.878-2.878a2.5 2.5 0 000-3.536l-6.5-6.5A2.5 2.5 0 008.38 3H5.5zM6 7a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+          <div class="min-w-0 flex-1 py-0">
+            <div class="text-sm leading-8 text-gray-500">
+              <span class="mr-0.5">
+                <a href="#" class="font-medium text-gray-900">Hilary Mahy</a>
+                added tags
+              </span>
+              <span class="mr-0.5">
+                <a href="#" class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+                  <svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
+                    <circle cx="3" cy="3" r="3" />
+                  </svg>
+                  Bug
+                </a>
+                <a href="#" class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+                  <svg class="h-1.5 w-1.5 fill-indigo-500" viewBox="0 0 6 6" aria-hidden="true">
+                    <circle cx="3" cy="3" r="3" />
+                  </svg>
+                  Accessibility
+                </a>
+              </span>
+              <span class="whitespace-nowrap">6h ago</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    <li>
+      <div class="relative pb-8">
+        <div class="relative flex items-start space-x-3">
+          <div class="relative">
+            <img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src="https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?ixlib=rb-=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=8&w=256&h=256&q=80" alt=""/>
+
+            <span class="absolute -bottom-0.5 -right-1 rounded-tl bg-white px-0.5 py-px">
+              <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 2c-2.236 0-4.43.18-6.57.524C1.993 2.755 1 4.014 1 5.426v5.148c0 1.413.993 2.67 2.43 2.902.848.137 1.705.248 2.57.331v3.443a.75.75 0 001.28.53l3.58-3.579a.78.78 0 01.527-.224 41.202 41.202 0 005.183-.5c1.437-.232 2.43-1.49 2.43-2.903V5.426c0-1.413-.993-2.67-2.43-2.902A41.289 41.289 0 0010 2zm0 7a1 1 0 100-2 1 1 0 000 2zM8 8a1 1 0 11-2 0 1 1 0 012 0zm5 1a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+              </svg>
+            </span>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div>
+              <div class="text-sm">
+                <a href="#" class="font-medium text-gray-900">Jason Meyers</a>
+              </div>
+              <p class="mt-0.5 text-sm text-gray-500">Commented 2h ago</p>
+            </div>
+            <div class="mt-2 text-sm text-gray-700">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Tincidunt nunc ipsum tempor purus vitae id. Morbi in vestibulum nec varius. Et diam cursus quis sed purus nam. Scelerisque amet elit non sit ut tincidunt condimentum. Nisl ultrices eu venenatis diam.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+  </ul>
+</div>
+          </div>
+        </div>
+        <div class="mt-5 sm:mt-6">
+		<form action="/" method="get">
+          <button type="button" class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Go back to dashboard</button>
+		</form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 }
