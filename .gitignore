@@ -10,6 +10,7 @@ bin/*
 !bin/.gitkeep
 
 internal/template/*_templ.go
+internal/template/**/*_templ.go
 
 .env
 
@@ -17,3 +18,4 @@ internal/template/*_templ.go
 
 config*.toml
 !config.toml
+

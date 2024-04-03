@@ -11,6 +11,13 @@ type TimeFrame struct {
 	Until time.Time
 }
 
+type CrawlInstance struct {
+	Id           int64
+	RepositoryId int64
+	StartedAt    time.Time
+	TimeFrame
+}
+
 type TimeFrameSlice []TimeFrame
 
 func (tfs TimeFrameSlice) Len() int {
@@ -25,7 +32,7 @@ func (tfs TimeFrameSlice) Swap(i, j int) {
 	tfs[i], tfs[j] = tfs[j], tfs[i]
 }
 
-func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
+func (s *Store) GetCrawlInstances(from, to int64) ([]CrawlInstance, error) {
 
 	db, err := sql.Open("libsql", s.DbUrl)
 	if err != nil {
@@ -34,7 +41,12 @@ func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
 	defer db.Close()
 
 	query := `
-        SELECT since, until
+		SELECT
+			id,
+			repository_id,
+			started_at,
+			since,
+			until
         FROM crawl_instances
         WHERE
         (
@@ -54,18 +66,27 @@ func (s *Store) GetCrawlInstances(from, to int64) (TimeFrameSlice, error) {
 	}
 	defer rows.Close()
 
-	var crawlInstances TimeFrameSlice
+	var crawlInstances []CrawlInstance
 
 	for rows.Next() {
-		var sinceInt, untilInt int64
-		if err := rows.Scan(&sinceInt, &untilInt); err != nil {
+		var id, repositoryId, sinceInt, untilInt, startedAtInt int64
+		if err := rows.Scan(&id, &repositoryId, &startedAtInt, &sinceInt, &untilInt); err != nil {
 			return nil, err
 		}
 
 		since := time.Unix(sinceInt, 0)
 		until := time.Unix(untilInt, 0)
+		startedAt := time.Unix(startedAtInt, 0)
 
-		crawlInstances = append(crawlInstances, TimeFrame{Since: since, Until: until})
+		crawlInstances = append(crawlInstances, CrawlInstance{
+			Id:           id,
+			RepositoryId: repositoryId,
+			StartedAt:    startedAt,
+			TimeFrame: TimeFrame{
+				Since: since,
+				Until: until,
+			},
+		})
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

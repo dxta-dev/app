@@ -1,0 +1,32 @@
+package admin_template
+
+import "github.com/dxta-dev/app/internal/data"
+import "strconv"
+
+type CrawlInstanceInfoProps struct {
+}
+
+templ DashboardAdminPage (gaps data.TimeFrameSlice, repositoryId int64, crawlInstances []data.CrawlInstance) {
+	<div class="container mx-auto py-8">
+        <h1 class="text-3xl font-semibold mb-4">Admin Dashboard</h1>
+		<h2 class="text-xl font-semibold mb-2">Crawl Instances For Period Between: {crawlInstances[0].Since.Format("2006-01-02 15:04:05")} - {crawlInstances[len(crawlInstances)-1].Until.Format("2006-01-02 15:04:05")}</h2>
+		<h2 class="text-xl font-semibold mb-2">Repository ID: {strconv.FormatInt(int64(repositoryId), 10)}</h2>
+		<table class="w-full border-collapse border border-gray-300">
+            <thead>
+                <tr>
+                    <th class="border border-gray-300 px-4 py-2">Gap Start</th>
+                    <th class="border border-gray-300 px-4 py-2">Gap End</th>
+                </tr>
+            </thead>
+			<tbody>
+    			for i := len(gaps) - 1; i >= 0; i-- {
+				<tr>
+                        <td class="border border-gray-300 px-4 py-2">{gaps[i].Since.Format("2006-01-02 15:04:05")}</td>
+                        <td class="border border-gray-300 px-4 py-2">{gaps[i].Until.Format("2006-01-02 15:04:05")}</td>
+                </tr>
+				}
+			</tbody>
+		</table>
+	</div>
+
+}
