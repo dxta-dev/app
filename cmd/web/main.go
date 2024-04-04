@@ -81,6 +81,8 @@ func main() {
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 
+	g.GET("/:mrid/details", app.MergeRequestDetailsPage)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"

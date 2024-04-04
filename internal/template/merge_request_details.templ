@@ -1,0 +1,110 @@
+package template
+
+import (
+	// "github.com/dxta-dev/app/internal/data"
+
+	"fmt"
+	"time"
+)
+
+
+
+templ MergeRequestDetails(props MergeRequestInfoProps) {
+
+<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-sm sm:p-6">
+        <div>
+          <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full">
+            <div class="absolute top-0 right-0 -ml-8 flex pr-2 pt-4 sm:-ml-10 sm:pr-4">
+            <h2 class="text-lg font-semibold leading-6 text-gray-900 mb-2" id="slide-over-title">
+              { fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }
+              (<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
+            </h2>
+							<button
+								hx-trigger="click, keyup[key=='Escape'] from:body"
+								hx-delete={ props.DeleteEndpoint }
+								hx-target={ props.TargetSelector }
+								type="button"
+								class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+							>
+								<span class="absolute -inset-2.5"></span>
+								<span class="sr-only">Close panel</span>
+								<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+									<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+								</svg>
+							</button>
+						</div>
+          </div>
+          <div class="mt-3 text-center sm:mt-5">
+            <div class="flow-root">
+  <ul role="list" class="-mb-8">
+    <li>
+      for i, event := range props.Events {
+      <div class="relative pb-8">
+        if i != len(props.Events) - 1 {
+          <span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+        }
+        <div class="relative flex items-start space-x-3">
+          <div class="relative">
+            <img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={fmt.Sprint(event.Actor.AvatarUrl)} alt="" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div>
+              <div class="text-sm">
+                <a href="#" class="font-medium text-gray-900">{fmt.Sprint(event.Actor.Name)} {fmt.Sprint()}</a>
+              </div>
+              <p class="mt-0.5 text-sm text-gray-500">{ getEventName(event.Type) } at { fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+            </div>
+            <div class="mt-2 text-sm text-gray-700">
+              // <p>{ getEventName(event.Type) }</p>
+              <div class="min-w-0 flex-1 py-0">
+            <div class="text-sm leading-8 text-gray-500">
+              <span class="mr-0.5">
+                <a href="#" class="font-medium text-gray-900">Hilary Mahy</a>
+                added tags
+              </span>
+              <span class="mr-0.5">
+                <a href="#" class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+                  <svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
+                    <circle cx="3" cy="3" r="3" />
+                  </svg>
+                  Bug
+                </a>
+                <a href="#" class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+                  <svg class="h-1.5 w-1.5 fill-indigo-500" viewBox="0 0 6 6" aria-hidden="true">
+                    <circle cx="3" cy="3" r="3" />
+                  </svg>
+                  Accessibility
+                </a>
+              </span>
+              <span class="whitespace-nowrap">6h ago</span>
+            </div>
+          </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </li>
+  </ul>
+</div>
+          </div>
+        </div>
+        <div class="mt-5 sm:mt-6">
+		<form action="/" method="get">
+          <button hx-trigger="click, keyup[key=='Escape'] from:body"
+					hx-delete={ props.DeleteEndpoint }
+					hx-target={ props.TargetSelector }
+					type="button" class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Go back to dashboard</button>
+		</form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+}
