@@ -55,6 +55,14 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 								{ fmt.Sprintf("%v", props.Events[0].MergeRequestTitle) }
 								(<a class="text-blue-600" href={ templ.URL(props.Events[0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0].MergeRequestCanonId) }</a>)
 							</h2>
+							<div class="mt-5 sm:mt-6 pb-8">
+								<a href={ templ.URL(props.DeleteEndpoint + "/details") }>
+									<button
+ 										type="button"
+ 										class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+									>Explore more</button>
+								</a>
+							</div>
 							<div class="flow-root">
 								<ul role="list" class="-mb-8">
 									<li>
@@ -98,14 +106,6 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 								</ul>
 							</div>
 						</div>
-					</div>
-					<div class="mt-5 sm:mt-6">
-					<a href={ templ.URL(props.DeleteEndpoint + "/details") }>
-							<button
- 								type="button"
- 								class="inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-							>Explore more</button>
-					</a>
 					</div>
 				</div>
 			</div>

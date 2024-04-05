@@ -117,3 +117,70 @@ func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
 	c.NoContent(http.StatusOK)
 	return nil
 }
+
+func (a *App) GetMergeRequestDetails(c echo.Context) error {
+	r := c.Request()
+	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+
+	store := &data.Store{
+		DbUrl: tenantDatabaseUrl,
+	}
+
+	paramMrId := c.Param("mrid")
+	mrId, err := strconv.ParseInt(paramMrId, 10, 64)
+
+	if paramMrId == "" || err != nil {
+		return c.String(400, "")
+	}
+
+	parsedURL, err := url.Parse(h.HxCurrentURL)
+
+	if err != nil {
+		return err
+	}
+
+	week := parsedURL.Query().Get("week")
+
+	state := DashboardState{
+		week: week,
+		mr:   &mrId,
+	}
+
+	if team := parsedURL.Query().Get("team"); team != "" {
+		teamId, err := strconv.ParseInt(team, 10, 64)
+
+		if err != nil {
+			return err
+		}
+
+		a.State.Team = &teamId
+	}
+
+	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
+
+	nextDetailsUrl := fmt.Sprintf("%s/details", nextUrl)
+
+	if err != nil {
+		return err
+	}
+
+	c.Response().Header().Set("HX-Push-Url", nextDetailsUrl)
+
+	events, err := store.GetMergeRequestEvents(mrId)
+
+	if err != nil {
+		return err
+	}
+
+	mergeRequestInfoProps := template.MergeRequestInfoProps{
+		Events:         events,
+		DeleteEndpoint: fmt.Sprintf("/%d/details", mrId),
+		TargetSelector: "details",
+	}
+
+	components := template.MergeRequestDetails(mergeRequestInfoProps)
+
+	return components.Render(context.Background(), c.Response().Writer)
+
+}
