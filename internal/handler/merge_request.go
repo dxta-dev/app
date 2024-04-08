@@ -179,7 +179,22 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 		TargetSelector: "details",
 	}
 
-	components := template.MergeRequestDetails(mergeRequestInfoProps)
+	navState, err := a.GetNavState()
+
+	if err != nil {
+		return err
+	}
+
+	page := &template.Page{
+		Title:     "Merge Request Details - DXTA",
+		Boosted:   h.HxBoosted,
+		CacheBust: a.BuildTimestamp,
+		DebugMode: a.DebugMode,
+		NavState:  navState,
+		Nonce:     a.Nonce,
+	}
+
+	components := template.MergeRequestDetails(page, mergeRequestInfoProps)
 
 	return components.Render(context.Background(), c.Response().Writer)
 

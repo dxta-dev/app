@@ -3,6 +3,7 @@ package template
 import (
 )
 
-templ MergeRequestDetails(props MergeRequestInfoProps) {
+templ MergeRequestDetails(page *Page, props MergeRequestInfoProps) {
+	@Layout(page)
 	<h1>Hello World!</h1>
 }
