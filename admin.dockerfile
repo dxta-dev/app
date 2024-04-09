@@ -1,4 +1,4 @@
-FROM oven/bun:1.0.35-debian@sha256:040f410e5c4a5051bc7c45e79acc9dadd162804a541bcfebf51a2e99b9aae83f AS bun
+FROM oven/bun:1.1.3-debian@sha256:a44b49b3cef5ad29b8c1e61566e355b564e84791706fc30f67837053301a57fe AS bun
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN bun install
 RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
 
-FROM golang:1.22-bullseye@sha256:dcff0d950cb4648fec14ee51baa76bf27db3bb1e70a49f75421a8828db7b9910 AS build
+FROM golang:1.22-bullseye@sha256:af93761952000beb347da16073f408508a98655ca00223154b9518f46c77bd07 AS build
 
 WORKDIR /app
 
