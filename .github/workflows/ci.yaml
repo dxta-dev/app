@@ -59,7 +59,7 @@ jobs:
         if: steps.generate-cache.outputs.cache-hit != 'true'
         run: |
           mkdir -p bin/
-          go install github.com/a-h/templ/cmd/templ@v0.2.648
+          go install github.com/a-h/templ/cmd/templ@v0.2.663
           templ generate
           ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
 
