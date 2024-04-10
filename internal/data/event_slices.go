@@ -198,6 +198,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 
 	smushed := SmushEventSlice(events)
 
+	sort.Sort(smushed)
 
 	return smushed, nil
 }
