@@ -22,17 +22,17 @@ const (
 	STARTED_CODING
 	STARTED_PICKUP
 	STARTED_REVIEW
-	NOTED
+	NOTED // treba
 	ASSIGNED
 	CLOSED
-	COMMENTED
-	COMMITTED
+	COMMENTED // treba
+	COMMITTED // treba
 	CONVERT_TO_DRAFT
 	MERGED
 	READY_FOR_REVIEW
 	REVIEW_REQUEST_REMOVED
 	REVIEW_REQUESTED
-	REVIEWED
+	REVIEWED // treba
 	UNASSIGNED
 )
 
@@ -57,6 +57,8 @@ type Event struct {
 }
 
 type EventSlice []Event
+
+type EventSliceSlice []EventSlice
 
 func (d EventSlice) Len() int {
 	return len(d)
@@ -158,10 +160,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 	JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
 	JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
 	JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
-	JOIN transform_forge_users AS author ON author.id = u.author
-	WHERE date.week = ?
-	AND ev.merge_request_event_type IN (2, 7, 9, 15)
-	AND author.bot = 0
+	JOIN transforisCommittedt = 0
 	AND user.bot = 0
 	%s;
 		`, usersInTeamConditionQuery)
@@ -222,6 +221,14 @@ func isReviewed(event Event) bool {
 	return event.Type == REVIEWED
 }
 
+func isNoted(event Event) bool {
+	return event.Type == NOTED
+}
+
+func isCommented(event Event) bool {
+	return event.Type == COMMENTED
+}
+
 func isSameActor(e1 Event, e2 Event) bool {
 	return e1.Actor.Id == e2.Actor.Id
 }
@@ -255,11 +262,53 @@ func SmushEventSlice(events EventSlice) EventSlice {
 
 			for _, e := range smushed {
 
-				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000){
+				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
 				}
 
-				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000){
+				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
+					shouldAppend = false
+				}
+
+			}
+
+			if shouldAppend {
+				smushed = append(smushed, event)
+			}
+
+		}
+
+		result = append(result, smushed...)
+
+	}
+
+	return result
+
+}
+
+func SquashEvent(events EventSlice) EventSlice {
+	grouped := groupEventsByMergeRequest(events)
+
+	var result EventSlice
+
+	for _, slice := range grouped {
+		var smushed EventSlice
+
+		for _, event := range slice {
+			if len(smushed) == 0 {
+				smushed = append(smushed, event)
+				continue
+			}
+
+			shouldAppend := true
+
+			for _, e := range smushed {
+
+				if isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
+					shouldAppend = false
+				}
+
+				if isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
 					shouldAppend = false
 				}
 
