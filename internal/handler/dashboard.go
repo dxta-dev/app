@@ -10,7 +10,6 @@ import (
 	"context"
 	"fmt"
 	"net/url"
-	"sort"
 	"strconv"
 	"time"
 
@@ -39,22 +38,7 @@ func getSwarmSeries(store *data.Store, date time.Time, teamMembers []int64) (tem
 
 	startOfWeek := util.GetStartOfTheWeek(date)
 
-	filteredEvents := []data.Event{}
-
-	for _, e := range events {
-		if e.Type == data.COMMITTED ||
-			e.Type == data.CLOSED ||
-			e.Type == data.REVIEWED ||
-			e.Type == data.STARTED_CODING {
-			filteredEvents = append(filteredEvents, e)
-		}
-	}
-
-	events = filteredEvents
-
 	var times []time.Time
-
-	sort.Sort(events)
 
 	for _, d := range events {
 		t := time.Unix(d.Timestamp/1000, 0)
