@@ -54,12 +54,39 @@ templ mergeRequestStackedList() {
 	</ul>
 
 	//Ready to merge
+/*
+SELECT mr.id,
+       mr.title,
+       mr.web_url,
+       mr.canon_id,
+       metrics.code_addition,
+       metrics.code_deletion
+FROM   transform_merge_requests AS mr
+       JOIN transform_merge_request_metrics AS metrics
+         ON mr.id = metrics.merge_request
+WHERE  metrics.approved = 1
+       AND metrics.merged = 0
+       AND metrics.closed = 0;
+*/
 
 	//Need to be reviewed
+/*
+SELECT
+mr.id,
+		mr.title,
+		mr.web_url,
+		mr.canon_id,
+		metrics.code_addition,
+		metrics.code_deletion
+FROM transform_merge_requests as mr
+JOIN transform_merge_request_metrics as metrics ON mr.id = metrics.merge_request
+WHERE metrics.reviewed = 0
+AND metrics.approved = 0
+AND metrics.merged = 0
+AND metrics.closed = 0;
+*/
 
 	//Still in progress
-
-	//---
 
 	//Merged this week
 
