@@ -304,11 +304,19 @@ func SquashEvent(events EventSlice) EventSlice {
 
 			for _, e := range smushed {
 
-				if isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
+				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
 				}
 
-				if isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
+				if isCommented(e) && isCommented(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
+					shouldAppend = false
+				}
+
+				if isNoted(e) && isNoted(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
+					shouldAppend = false
+				}
+
+				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
 					shouldAppend = false
 				}
 
