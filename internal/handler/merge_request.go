@@ -65,11 +65,10 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	events, err := store.GetMergeRequestEvents(mrId)
 
-	squashedEvents := data.SquashEvent(events)
-
 	if err != nil {
 		return err
 	}
+	squashedEvents := data.SquashEvent(events)
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
 		Events:         squashedEvents,

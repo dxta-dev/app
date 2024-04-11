@@ -54,11 +54,12 @@ type Event struct {
 	MergeRequestCanonId int64
 	MergeRequestTitle   string
 	MergeRequestUrl     string
+	Squashed            bool
 }
 
 type EventSlice []Event
 
-type EventSliceSlice []EventSlice
+type SquashedEventSlice []EventSlice
 
 func (d EventSlice) Len() int {
 	return len(d)
@@ -303,50 +304,35 @@ func SquashEvent(events EventSlice) EventSlice {
 	var result EventSlice
 
 	for _, slice := range grouped {
-		var smushed EventSlice
+		var addedEvents = make(map[*Event]bool)
 
 		for _, event := range slice {
-			if len(smushed) == 0 {
-				smushed = append(smushed, event)
+			if _, ok := addedEvents[&event]; ok {
 				continue
 			}
 
-			shouldAppend := true
-
-			for _, e := range smushed {
-
-				if isStartEpoch(e) {
-					shouldAppend = false
-				}
-
-				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
-					shouldAppend = false
-				}
-
-				if isCommented(e) && isCommented(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
-					shouldAppend = false
-				}
-
-				if isNoted(e) && isNoted(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
-					shouldAppend = false
-				}
-
-				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
-					shouldAppend = false
-				}
-
-			}
-
-			if shouldAppend {
-				smushed = append(smushed, event)
-			}
-
+			event.Squashed = isSquashable(slice, &event, addedEvents)
+			result = append(result, event)
+			addedEvents[&event] = true
 		}
-
-		result = append(result, smushed...)
-
 	}
 
 	return result
+}
 
+func isSquashable(slice EventSlice, event *Event, addedEvents map[*Event]bool) bool {
+	for _, e := range slice {
+		if e.Id == event.Id {
+			continue
+		}
+
+		if isStartEpoch(e) ||
+			(isCommitted(e) && isCommitted(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 60*60*1000)) ||
+			(isCommented(e) && isCommented(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) ||
+			(isNoted(e) && isNoted(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) ||
+			(isReviewed(e) && isReviewed(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) {
+			return true
+		}
+	}
+	return false
 }
