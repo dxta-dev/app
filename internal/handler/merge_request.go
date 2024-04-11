@@ -65,12 +65,14 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	events, err := store.GetMergeRequestEvents(mrId)
 
+	squashedEvents := data.SquashEvent(events)
+
 	if err != nil {
 		return err
 	}
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
-		Events:         events,
+		Events:         squashedEvents,
 		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
 		TargetSelector: "#slide-over",
 	}
