@@ -236,6 +236,10 @@ func isSameActor(e1 Event, e2 Event) bool {
 	return e1.Actor.Id == e2.Actor.Id
 }
 
+func isStartEpoch(event Event) bool {
+	return event.Timestamp < 31536000
+}
+
 func absInt64(x int64) int64 {
 	if x < 0 {
 		return -x
@@ -264,6 +268,10 @@ func SmushEventSlice(events EventSlice) EventSlice {
 			shouldAppend := true
 
 			for _, e := range smushed {
+
+				if isStartEpoch(e) {
+					shouldAppend = false
+				}
 
 				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
@@ -306,6 +314,10 @@ func SquashEvent(events EventSlice) EventSlice {
 			shouldAppend := true
 
 			for _, e := range smushed {
+
+				if isStartEpoch(e) {
+					shouldAppend = false
+				}
 
 				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
