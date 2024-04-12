@@ -68,10 +68,9 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	squashedEvents := data.SquashEvent(events)
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
-		Events:         squashedEvents,
+		Events:         events,
 		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
 		TargetSelector: "#slide-over",
 	}

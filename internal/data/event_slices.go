@@ -54,12 +54,9 @@ type Event struct {
 	MergeRequestCanonId int64
 	MergeRequestTitle   string
 	MergeRequestUrl     string
-	Squashed            bool
 }
 
 type EventSlice []Event
-
-type SquashedEventSlice []EventSlice
 
 func (d EventSlice) Len() int {
 	return len(d)
@@ -73,7 +70,7 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
+func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
@@ -82,6 +79,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 
 	defer db.Close()
 
+	// filter out all events that have null id date
 	query := `
 		SELECT
 			ev.id,
@@ -126,7 +124,9 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		mergeRequestEvents = append(mergeRequestEvents, event)
 	}
 
-	return mergeRequestEvents, nil
+	squashedEvents := SquashEventSlice(mergeRequestEvents)
+
+	return squashedEvents, nil
 }
 
 func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
@@ -237,10 +237,6 @@ func isSameActor(e1 Event, e2 Event) bool {
 	return e1.Actor.Id == e2.Actor.Id
 }
 
-func isStartEpoch(event Event) bool {
-	return event.Timestamp < 31536000
-}
-
 func absInt64(x int64) int64 {
 	if x < 0 {
 		return -x
@@ -250,6 +246,48 @@ func absInt64(x int64) int64 {
 
 func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
 	return absInt64(e2.Timestamp-e1.Timestamp) <= timeframe
+}
+
+func SquashEventSlice(events EventSlice) [][]Event {
+
+	var result [][]Event
+
+	var currentSquashedEvents []Event
+
+	for _, event := range events {
+		if len(currentSquashedEvents) == 0 {
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		lastSquashedEvent := currentSquashedEvents[len(currentSquashedEvents)-1]
+
+		if isCommitted(lastSquashedEvent) &&
+			isCommitted(event) &&
+			isSameActor(lastSquashedEvent, event) &&
+			isInTimeframe(lastSquashedEvent, event, 60*60*1000) {
+
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		if	isSameActor(lastSquashedEvent, event) &&
+			isInTimeframe(lastSquashedEvent, event, 30*60*1000) &&
+			(isReviewed(lastSquashedEvent) && isReviewed(event) ||
+				isNoted(lastSquashedEvent) && isNoted(event) ||
+				isCommented(lastSquashedEvent) && isCommented(event)) {
+
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		result = append(result, currentSquashedEvents)
+		currentSquashedEvents = []Event{event}
+
+	}
+
+	return result
+
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
@@ -269,10 +307,6 @@ func SmushEventSlice(events EventSlice) EventSlice {
 			shouldAppend := true
 
 			for _, e := range smushed {
-
-				if isStartEpoch(e) {
-					shouldAppend = false
-				}
 
 				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
@@ -296,43 +330,4 @@ func SmushEventSlice(events EventSlice) EventSlice {
 
 	return result
 
-}
-
-func SquashEvent(events EventSlice) EventSlice {
-	grouped := groupEventsByMergeRequest(events)
-
-	var result EventSlice
-
-	for _, slice := range grouped {
-		var addedEvents = make(map[*Event]bool)
-
-		for _, event := range slice {
-			if _, ok := addedEvents[&event]; ok {
-				continue
-			}
-
-			event.Squashed = isSquashable(slice, &event, addedEvents)
-			result = append(result, event)
-			addedEvents[&event] = true
-		}
-	}
-
-	return result
-}
-
-func isSquashable(slice EventSlice, event *Event, addedEvents map[*Event]bool) bool {
-	for _, e := range slice {
-		if e.Id == event.Id {
-			continue
-		}
-
-		if isStartEpoch(e) ||
-			(isCommitted(e) && isCommitted(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 60*60*1000)) ||
-			(isCommented(e) && isCommented(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) ||
-			(isNoted(e) && isNoted(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) ||
-			(isReviewed(e) && isReviewed(*event) && isSameActor(e, *event) && isInTimeframe(e, *event, 30*60*1000)) {
-			return true
-		}
-	}
-	return false
 }
