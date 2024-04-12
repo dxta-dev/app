@@ -79,7 +79,6 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	defer db.Close()
 
-	// filter out all events that have null id date
 	query := `
 		SELECT
 			ev.id,
@@ -98,6 +97,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
 		WHERE ev.merge_request =?
 		AND user.bot = 0
+		AND ev.timestamp IS NOT 0
 		ORDER BY ev.timestamp ASC;
 		`
 
@@ -271,7 +271,7 @@ func SquashEventSlice(events EventSlice) [][]Event {
 			continue
 		}
 
-		if	isSameActor(lastSquashedEvent, event) &&
+		if isSameActor(lastSquashedEvent, event) &&
 			isInTimeframe(lastSquashedEvent, event, 30*60*1000) &&
 			(isReviewed(lastSquashedEvent) && isReviewed(event) ||
 				isNoted(lastSquashedEvent) && isNoted(event) ||
@@ -285,6 +285,8 @@ func SquashEventSlice(events EventSlice) [][]Event {
 		currentSquashedEvents = []Event{event}
 
 	}
+
+	fmt.Print("REZULTATIIIIIIIIIIIII", result)
 
 	return result
 
