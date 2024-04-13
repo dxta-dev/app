@@ -286,8 +286,6 @@ func SquashEventSlice(events EventSlice) [][]Event {
 
 	}
 
-	fmt.Print("REZULTATIIIIIIIIIIIII", result)
-
 	return result
 
 }
