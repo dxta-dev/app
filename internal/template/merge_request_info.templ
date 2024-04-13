@@ -132,6 +132,12 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																		{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
 																	</p>
 																</span>
+																<details>
+																	<summary>Show actions</summary>
+																	for _, e := range event {
+																	<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+																	}
+																</details>
 															</div>
 														</div>
 													</div>
