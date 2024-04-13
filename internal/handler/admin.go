@@ -16,7 +16,6 @@ import (
 
 func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	r := c.Request()
-	// h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
