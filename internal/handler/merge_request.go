@@ -134,17 +134,10 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 		return c.String(400, "")
 	}
 
-	size, err := store.GetMergeRequestMetrics(mrId)
+	mrMetricsData, err := store.GetMergeRequestMetricsData(mrId)
 	if err != nil {
 		return err
 	}
-
-	totalCommitsCount, err := store.GetTotalCommitsForMR(mrId)
-	if err != nil {
-		return err
-	}
-
-	fmt.Print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", size, totalCommitsCount)
 
 	parsedURL, err := url.Parse(h.HxCurrentURL)
 
@@ -206,7 +199,7 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 		Nonce:     a.Nonce,
 	}
 
-	components := template.MergeRequestDetails(page, mergeRequestInfoProps, *size, totalCommitsCount)
+	components := template.MergeRequestDetails(page, mergeRequestInfoProps, *mrMetricsData)
 
 	return components.Render(context.Background(), c.Response().Writer)
 
