@@ -134,6 +134,11 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 		return c.String(400, "")
 	}
 
+	mrMetricsData, err := store.GetMergeRequestMetricsData(mrId)
+	if err != nil {
+		return err
+	}
+
 	parsedURL, err := url.Parse(h.HxCurrentURL)
 
 	if err != nil {
@@ -194,7 +199,7 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 		Nonce:     a.Nonce,
 	}
 
-	components := template.MergeRequestDetails(page, mergeRequestInfoProps)
+	components := template.MergeRequestDetails(page, mergeRequestInfoProps, *mrMetricsData)
 
 	return components.Render(context.Background(), c.Response().Writer)
 
