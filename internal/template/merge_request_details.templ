@@ -1,12 +1,8 @@
 package template
 
 import (
-
-	// "github.com/dxta-dev/app/internal/data"
-
 	"fmt"
 	"time"
-	// "strings"
 )
 
 templ MergeRequestDetails(page *Page, props MergeRequestInfoProps) {
@@ -16,27 +12,26 @@ templ MergeRequestDetails(page *Page, props MergeRequestInfoProps) {
 				<div class="flow-root">
 					<ul role="list" class="-mb-8">
 						<li>
-							for i, event := range props.Events {
+							for _, event := range props.Events {
+								for _, e := range event {
 								<div class="relative pb-8">
-									if i != len(props.Events) - 1 {
-										<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-									}
 									<div class="relative flex items-start space-x-3">
 										<div class="relative">
-											<a href={ templ.URL(event.Actor.ProfileUrl) }>
-												<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(event.Actor.AvatarUrl) } alt=""/>
+											<a href={ templ.URL(e.Actor.ProfileUrl) }>
+												<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(e.Actor.AvatarUrl) } alt=""/>
 											</a>
 										</div>
 										<div class="min-w-0 flex-1">
 											<div>
 												<div class="text-sm">
-													<a href={ templ.URL(event.Actor.ProfileUrl) } class="font-medium text-gray-900">{ fmt.Sprint(event.Actor.Name) }</a>
+													<a href={ templ.URL(e.Actor.ProfileUrl) } class="font-medium text-gray-900">{ fmt.Sprint(e.Actor.Name) }</a>
 												</div>
-												<p class="mt-0.5 text-sm text-gray-500">{ getEventName(event.Type) } at { fmt.Sprintf("%v", time.Unix(event.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+												<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
 											</div>
 										</div>
 									</div>
 								</div>
+							}
 							}
 						</li>
 					</ul>

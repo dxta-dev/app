@@ -70,7 +70,7 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
+func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
@@ -97,6 +97,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
 		WHERE ev.merge_request =?
 		AND user.bot = 0
+		AND ev.timestamp IS NOT 0
 		ORDER BY ev.timestamp ASC;
 		`
 
@@ -123,7 +124,9 @@ func (s *Store) GetMergeRequestEvents(mrId int64) (EventSlice, error) {
 		mergeRequestEvents = append(mergeRequestEvents, event)
 	}
 
-	return mergeRequestEvents, nil
+	squashedEvents := SquashEventSlice(mergeRequestEvents)
+
+	return squashedEvents, nil
 }
 
 func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
@@ -222,6 +225,14 @@ func isReviewed(event Event) bool {
 	return event.Type == REVIEWED
 }
 
+func isNoted(event Event) bool {
+	return event.Type == NOTED
+}
+
+func isCommented(event Event) bool {
+	return event.Type == COMMENTED
+}
+
 func isSameActor(e1 Event, e2 Event) bool {
 	return e1.Actor.Id == e2.Actor.Id
 }
@@ -235,6 +246,48 @@ func absInt64(x int64) int64 {
 
 func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
 	return absInt64(e2.Timestamp-e1.Timestamp) <= timeframe
+}
+
+func SquashEventSlice(events EventSlice) [][]Event {
+
+	var result [][]Event
+
+	var currentSquashedEvents []Event
+
+	for _, event := range events {
+		if len(currentSquashedEvents) == 0 {
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		lastSquashedEvent := currentSquashedEvents[len(currentSquashedEvents)-1]
+
+		if isCommitted(lastSquashedEvent) &&
+			isCommitted(event) &&
+			isSameActor(lastSquashedEvent, event) &&
+			isInTimeframe(lastSquashedEvent, event, 60*60*1000) {
+
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		if isSameActor(lastSquashedEvent, event) &&
+			isInTimeframe(lastSquashedEvent, event, 30*60*1000) &&
+			(isReviewed(lastSquashedEvent) && isReviewed(event) ||
+				isNoted(lastSquashedEvent) && isNoted(event) ||
+				isCommented(lastSquashedEvent) && isCommented(event)) {
+
+			currentSquashedEvents = append(currentSquashedEvents, event)
+			continue
+		}
+
+		result = append(result, currentSquashedEvents)
+		currentSquashedEvents = []Event{event}
+
+	}
+
+	return result
+
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
@@ -255,11 +308,11 @@ func SmushEventSlice(events EventSlice) EventSlice {
 
 			for _, e := range smushed {
 
-				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000){
+				if isCommitted(e) && isCommitted(event) && isSameActor(e, event) && isInTimeframe(e, event, 60*60*1000) {
 					shouldAppend = false
 				}
 
-				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000){
+				if isReviewed(e) && isReviewed(event) && isSameActor(e, event) && isInTimeframe(e, event, 30*60*1000) {
 					shouldAppend = false
 				}
 
