@@ -11,7 +11,7 @@ RUN bun install
 RUN bunx tailwindcss -i ./style.css -o ./public/style.css
 
 
-FROM golang:1.22-bullseye@sha256:af93761952000beb347da16073f408508a98655ca00223154b9518f46c77bd07 AS build
+FROM golang:1.22-bullseye@sha256:3b55bf3986b2651a515f48ddf758b80a7d78d8be18706fd98aa74241992dac96 AS build
 
 WORKDIR /app
 
