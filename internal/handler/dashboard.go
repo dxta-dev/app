@@ -278,8 +278,9 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestInfoProps = &template.MergeRequestInfoProps{
 			Events:         events,
-			DeleteEndpoint: fmt.Sprintf("/merge-request/%d", *state.mr),
-			TargetSelector: "#slide-over",
+			DetailsPageUrl: fmt.Sprintf("/mr/%d", *state.mr),
+			DeleteEndpoint: fmt.Sprintf("/mr-info/%d", *state.mr),
+			TargetSelector: "#mr-info",
 		}
 	}
 

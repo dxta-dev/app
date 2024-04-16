@@ -75,10 +75,10 @@ func main() {
 
 	g.GET("/", app.DashboardPage)
 
-	g.GET("/merge-request/:mrid", app.GetMergeRequestInfo)
-	g.DELETE("/merge-request/:mrid", app.RemoveMergeRequestInfo)
+	g.GET("/mr-info/:mrid", app.GetMergeRequestInfo)
+	g.DELETE("/mr-info/:mrid", app.RemoveMergeRequestInfo)
 
-	g.GET("/merge-request/:mrid/details", app.GetMergeRequestDetails)
+	g.GET("/mr/:mrid", app.GetMergeRequestDetails)
 
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)

@@ -10,6 +10,7 @@ import (
 
 type MergeRequestInfoProps struct {
 	Events         [][]data.Event
+	DetailsPageUrl string
 	DeleteEndpoint string
 	TargetSelector string
 }
@@ -27,7 +28,7 @@ templ UserInfoBubble(user data.EventUserInfo) {
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
-	<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+	<div class="relative z-10" aria-labelledby="mr-info-header" role="dialog" aria-modal="true">
 		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 		<div class="fixed inset-0 z-10 w-screen">
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -35,7 +36,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 					<div>
 						<div class="flex justify-between items-center mb-10">
 							<div>
-								<a href={ templ.URL(props.DeleteEndpoint + "/details") } class="inline-block p-2">
+								<a href={ templ.URL(props.DetailsPageUrl) } target="_blank" class="inline-block p-2">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hover:stroke-gray-500">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"></path>
 									</svg>
@@ -44,11 +45,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 							</div>
 							<div>
 								<button
- 									hx-trigger="click, keyup[key=='Escape'] from:body"
- 									hx-delete={ props.DeleteEndpoint }
- 									hx-target={ props.TargetSelector }
- 									type="button"
- 									class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+									hx-trigger="click, keyup[key=='Escape'] from:body"
+									hx-delete={ props.DeleteEndpoint }
+									hx-target={ props.TargetSelector }
+									type="button"
+									class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
 								>
 									<span class="sr-only">Close panel</span>
 									<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -58,7 +59,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 							</div>
 						</div>
 						<div class="mt-3 text-center sm:mt-5">
-							<h2 class="text-lg font-semibold leading-6 text-gray-900 mb-10" id="slide-over-title">
+							<h2 id="mr-info-header" class="text-lg font-semibold leading-6 text-gray-900 mb-10">
 								{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
 								(<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }</a>)
 							</h2>
@@ -135,7 +136,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																<details>
 																	<summary>Show actions</summary>
 																	for _, e := range event {
-																	<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+																		<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
 																	}
 																</details>
 															</div>
