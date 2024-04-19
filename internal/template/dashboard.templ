@@ -50,13 +50,10 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps, page.Nonce)
 		<div
-			aria-labelledby="pop-up-title"
-			role="dialog"
-			aria-modal="true"
-			id="slide-over"
+			id="mr-info"
 		>
 			if (mergeRequestInfoProps != nil) {
-				// @MergeRequestInfo(*mergeRequestInfoProps)
+				@MergeRequestInfo(*mergeRequestInfoProps)
 			}
 		</div>
 	}

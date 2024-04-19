@@ -71,8 +71,9 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
 		Events:         events,
-		DeleteEndpoint: fmt.Sprintf("/merge-request/%d", mrId),
-		TargetSelector: "#slide-over",
+		DetailsPageUrl: fmt.Sprintf("/mr/%d", mrId),
+		DeleteEndpoint: fmt.Sprintf("/mr-info/%d", mrId),
+		TargetSelector: "#mr-info",
 	}
 
 	components := template.MergeRequestInfo(mergeRequestInfoProps)
@@ -164,7 +165,7 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 
 	nextUrl, err := getNextDashboardUrl(a, h.HxCurrentURL, state, nil, true)
 
-	nextDetailsUrl := fmt.Sprintf("%s/details", nextUrl)
+	nextDetailsUrl := fmt.Sprintf("/mr/%s", nextUrl)
 
 	if err != nil {
 		return err
@@ -180,7 +181,7 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
 		Events:         events,
-		DeleteEndpoint: fmt.Sprintf("/%d/details", mrId),
+		DeleteEndpoint: fmt.Sprintf("/mr/%d", mrId),
 		TargetSelector: "details",
 	}
 
