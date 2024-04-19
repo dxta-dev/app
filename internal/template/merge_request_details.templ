@@ -28,7 +28,9 @@ templ MergeRequestDetails(page *Page, props MergeRequestInfoProps, detailsMetric
 												<div class="text-sm">
 													<a href={ templ.URL(e.Actor.ProfileUrl) } class="font-medium text-gray-900">{ fmt.Sprint(e.Actor.Name) }</a>
 												</div>
-												<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+												<a href={ templ.URL(e.HtmlUrl) } target="_blank">
+													<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+												</a>
 											</div>
 										</div>
 									</div>
