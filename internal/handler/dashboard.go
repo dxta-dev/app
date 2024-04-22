@@ -127,6 +127,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	a.GenerateNonce()
 	a.LoadState(r)
 
+	timeNow := time.Now()
 	date := time.Now()
 	var err error
 	var mr *int64 = new(int64)
@@ -292,6 +293,15 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
+	var mergeRequestsInProgress template.MergeRequestStackedListProps
+
+	mergeRequestsInProgress.TimeNow = timeNow
+	mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers)
+
+	if err != nil {
+		return err
+	}
+
 	page := &template.Page{
 		Title:     "Dashboard - DXTA",
 		Boosted:   h.HxBoosted,
@@ -302,7 +312,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		Nonce:     a.Nonce,
 	}
 
-	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps)
+	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps, mergeRequestsInProgress)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
