@@ -6,7 +6,6 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 )
 
-
 templ MergeRequestDetails(page *Page, props MergeRequestInfoProps, detailsMetrics data.MergeRequestData) {
 	@Layout(page) {
 		<div class="flex justify-center max-w-[1440px]">
@@ -16,26 +15,30 @@ templ MergeRequestDetails(page *Page, props MergeRequestInfoProps, detailsMetric
 						<li>
 							for _, event := range props.Events {
 								for _, e := range event {
-								<div class="relative pb-8">
-									<div class="relative flex items-start space-x-3">
-										<div class="relative">
-											<a href={ templ.URL(e.Actor.ProfileUrl) }>
-												<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(e.Actor.AvatarUrl) } alt=""/>
-											</a>
-										</div>
-										<div class="min-w-0 flex-1">
-											<div>
-												<div class="text-sm">
-													<a href={ templ.URL(e.Actor.ProfileUrl) } class="font-medium text-gray-900">{ fmt.Sprint(e.Actor.Name) }</a>
-												</div>
-												<a href={ templ.URL(e.HtmlUrl) } target="_blank">
-													<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+									<div class="relative pb-8">
+										<div class="relative flex items-start space-x-3">
+											<div class="relative">
+												<a href={ templ.URL(e.Actor.ProfileUrl) }>
+													<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(e.Actor.AvatarUrl) } alt=""/>
 												</a>
+											</div>
+											<div class="min-w-0 flex-1">
+												<div>
+													<div class="text-sm">
+														<a href={ templ.URL(e.Actor.ProfileUrl) } class="font-medium text-gray-900">{ fmt.Sprint(e.Actor.Name) }</a>
+													</div>
+													if templ.URL(e.HtmlUrl) != "" {
+														<a href={ templ.URL(e.HtmlUrl) } target="_blank">
+															<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+														</a>
+													} else {
+														<p class="mt-0.5 text-sm text-gray-500">{ getEventName(e.Type) } at { fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+													}
+												</div>
 											</div>
 										</div>
 									</div>
-								</div>
-							}
+								}
 							}
 						</li>
 					</ul>
