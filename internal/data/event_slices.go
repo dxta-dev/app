@@ -54,6 +54,7 @@ type Event struct {
 	MergeRequestCanonId int64
 	MergeRequestTitle   string
 	MergeRequestUrl     string
+	HtmlUrl             string
 }
 
 type EventSlice []Event
@@ -91,7 +92,8 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 			mr.title,
 			mr.web_url,
 			ev.timestamp,
-			ev.merge_request_event_type
+			ev.merge_request_event_type,
+			ev.html_url
 		FROM transform_merge_request_events AS ev
 		JOIN transform_forge_users AS user ON user.id = ev.actor
 		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
@@ -116,7 +118,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 			&event.Id,
 			&event.Actor.Id, &event.Actor.ProfileUrl, &event.Actor.AvatarUrl, &event.Actor.Name,
 			&event.MergeRequestId, &event.MergeRequestCanonId, &event.MergeRequestTitle, &event.MergeRequestUrl,
-			&event.Timestamp, &event.Type,
+			&event.Timestamp, &event.Type, &event.HtmlUrl,
 		); err != nil {
 			log.Fatal(err)
 		}
