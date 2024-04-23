@@ -255,8 +255,13 @@ func SquashEventSlice(events EventSlice) [][]Event {
 	var result [][]Event
 
 	var currentSquashedEvents []Event
+	var merged bool
 
 	for _, event := range events {
+		if event.Type == MERGED {
+			merged = true
+		}
+
 		if len(currentSquashedEvents) == 0 {
 			currentSquashedEvents = append(currentSquashedEvents, event)
 			continue
@@ -288,7 +293,7 @@ func SquashEventSlice(events EventSlice) [][]Event {
 
 	}
 
-	if len(currentSquashedEvents) > 0 {
+	if len(currentSquashedEvents) > 0 && !merged && currentSquashedEvents[0].Type == CLOSED {
 		result = append(result, currentSquashedEvents)
 	}
 
