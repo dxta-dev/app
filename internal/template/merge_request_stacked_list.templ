@@ -66,29 +66,6 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
     }
 	</ul>
 }
-	//Ready to merge
-/*
-SELECT
-  mr.id,
-  mr.title,
-  mr.web_url,
-  mr.canon_id,
-  metrics.code_addition,
-  metrics.code_deletion
-FROM
-  transform_merge_requests AS mr
-  JOIN transform_merge_request_metrics AS metrics ON mr.id = metrics.merge_request
-  JOIN transform_merge_request_fact_dates_junk as dj ON dj.id = metrics.dates_junk
-  JOIN transform_dates as last_updated_at ON last_updated_at.id = dj.last_updated_at
-WHERE
-  metrics.approved = 1
-  AND metrics.merged = 0
-  AND metrics.closed = 0
-ORDER BY
-  last_updated_at.year ASC,
-  last_updated_at.month ASC,
-  last_updated_at.day ASC;
-*/
 
 	//Need to be reviewed
 /*

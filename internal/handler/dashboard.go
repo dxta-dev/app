@@ -302,6 +302,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 
 	var mergeRequestsInProgress template.MergeRequestStackedListProps
+	var mergeRequestsReadyToMerge template.MergeRequestStackedListProps
 	var mergeRequestsMerged template.MergeRequestStackedListProps
 	var mergeRequestsClosed template.MergeRequestStackedListProps
 
@@ -311,10 +312,18 @@ func (a *App) DashboardPage(c echo.Context) error {
 	mergeRequestsMerged.ShowTime = true
 	mergeRequestsInProgress.TimeNow = timeNow
 	mergeRequestsInProgress.ShowTime = false
+	mergeRequestsReadyToMerge.TimeNow = timeNow
+	mergeRequestsReadyToMerge.ShowTime = false
 
 	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+
+		if err != nil {
+			return err
+		}
+
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestsReadyToMerge(teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -351,7 +360,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 		isQueryCurrentWeek,
 		mergeRequestsClosed,
 		mergeRequestsMerged,
-		mergeRequestsInProgress)
+		mergeRequestsInProgress,
+		mergeRequestsReadyToMerge)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
