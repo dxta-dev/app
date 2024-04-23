@@ -312,10 +312,13 @@ func (a *App) DashboardPage(c echo.Context) error {
 	mergeRequestsInProgress.TimeNow = timeNow
 	mergeRequestsInProgress.ShowTime = false
 
-	mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
+	if isQueryCurrentWeek {
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
 
-	if err != nil {
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
@@ -345,6 +348,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		weekPickerProps,
 		mergeRequestInfoProps,
 		teamPickerProps,
+		isQueryCurrentWeek,
 		mergeRequestsClosed,
 		mergeRequestsMerged,
 		mergeRequestsInProgress)
