@@ -306,15 +306,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 	var mergeRequestsMerged template.MergeRequestStackedListProps
 	var mergeRequestsClosed template.MergeRequestStackedListProps
 
-	mergeRequestsClosed.TimeNow = timeNow
-	mergeRequestsClosed.ShowTime = true
-	mergeRequestsMerged.TimeNow = timeNow
-	mergeRequestsMerged.ShowTime = true
-	mergeRequestsInProgress.TimeNow = timeNow
-	mergeRequestsInProgress.ShowTime = false
-	mergeRequestsReadyToMerge.TimeNow = timeNow
-	mergeRequestsReadyToMerge.ShowTime = false
-
 	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
