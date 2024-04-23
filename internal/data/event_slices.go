@@ -128,7 +128,9 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
-	return squashedEvents, nil
+	updatedEvents := ThrowClosedAfterMerged(squashedEvents)
+
+	return updatedEvents, nil
 }
 
 func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
@@ -255,13 +257,8 @@ func SquashEventSlice(events EventSlice) [][]Event {
 	var result [][]Event
 
 	var currentSquashedEvents []Event
-	var merged bool
 
 	for _, event := range events {
-		if event.Type == MERGED {
-			merged = true
-		}
-
 		if len(currentSquashedEvents) == 0 {
 			currentSquashedEvents = append(currentSquashedEvents, event)
 			continue
@@ -293,12 +290,31 @@ func SquashEventSlice(events EventSlice) [][]Event {
 
 	}
 
-	if len(currentSquashedEvents) > 0 && !merged && currentSquashedEvents[0].Type == CLOSED {
+	if len(currentSquashedEvents) > 0 {
 		result = append(result, currentSquashedEvents)
 	}
 
 	return result
 
+}
+
+func hasMergedEvent(events []Event) bool {
+	for _, event := range events {
+		if event.Type == MERGED {
+			return true
+		}
+	}
+	return false
+}
+
+func ThrowClosedAfterMerged(result [][]Event) [][]Event {
+	for _, events := range result {
+		merged := hasMergedEvent(events)
+		if merged && len(result) > 0 && result[len(result)-1][0].Type == CLOSED {
+			return result[:len(result)-1]
+		}
+	}
+	return result
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
