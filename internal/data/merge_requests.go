@@ -154,9 +154,6 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 
 	for rows.Next() {
 		var item MergeRequestListItemData
-		var lastUpdatedAtDate int64
-		var lastUpdatedAtMonth int64
-		var lastUpdatedAtYear int64
 		var userAvatars = make([]UserAvatarUrl, 2+3*10)
 
 		if err := rows.Scan(
@@ -166,9 +163,6 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
-			&lastUpdatedAtDate,
-			&lastUpdatedAtMonth,
-			&lastUpdatedAtYear,
 			&userAvatars[0].UserId, &userAvatars[0].Url,
 			&userAvatars[1].UserId, &userAvatars[1].Url,
 			&userAvatars[2].UserId, &userAvatars[2].Url,
@@ -345,9 +339,6 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 
 	for rows.Next() {
 		var item MergeRequestListItemData
-		var lastUpdatedAtDate int64
-		var lastUpdatedAtMonth int64
-		var lastUpdatedAtYear int64
 		var userAvatars = make([]UserAvatarUrl, 2+3*10)
 
 		if err := rows.Scan(
@@ -357,9 +348,6 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
-			&lastUpdatedAtDate,
-			&lastUpdatedAtMonth,
-			&lastUpdatedAtYear,
 			&userAvatars[0].UserId, &userAvatars[0].Url,
 			&userAvatars[1].UserId, &userAvatars[1].Url,
 			&userAvatars[2].UserId, &userAvatars[2].Url,
@@ -505,7 +493,7 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10
 	WHERE
   	metrics.reviewed = 0
-		AND AND metrics.approved = 0
+		AND metrics.approved = 0
   	AND metrics.merged = 0
   	AND metrics.closed = 0
 		AND author.bot = 0
@@ -537,9 +525,6 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 
 	for rows.Next() {
 		var item MergeRequestListItemData
-		var lastUpdatedAtDate int64
-		var lastUpdatedAtMonth int64
-		var lastUpdatedAtYear int64
 		var userAvatars = make([]UserAvatarUrl, 2+3*10)
 
 		if err := rows.Scan(
@@ -549,9 +534,6 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
-			&lastUpdatedAtDate,
-			&lastUpdatedAtMonth,
-			&lastUpdatedAtYear,
 			&userAvatars[0].UserId, &userAvatars[0].Url,
 			&userAvatars[1].UserId, &userAvatars[1].Url,
 			&userAvatars[2].UserId, &userAvatars[2].Url,
@@ -737,9 +719,6 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 
 	for rows.Next() {
 		var item MergeRequestListItemData
-		var lastUpdatedAtDate int64
-		var lastUpdatedAtMonth int64
-		var lastUpdatedAtYear int64
 		var userAvatars = make([]UserAvatarUrl, 2+3*10)
 
 		if err := rows.Scan(
@@ -749,9 +728,6 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
-			&lastUpdatedAtDate,
-			&lastUpdatedAtMonth,
-			&lastUpdatedAtYear,
 			&userAvatars[0].UserId, &userAvatars[0].Url,
 			&userAvatars[1].UserId, &userAvatars[1].Url,
 			&userAvatars[2].UserId, &userAvatars[2].Url,
