@@ -293,10 +293,38 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
-	var mergeRequestsInProgress template.MergeRequestStackedListProps
+	var nullRows *data.NullRows
 
+	nullRows, err = store.GetNullRows()
+
+	if err != nil {
+		return err
+	}
+
+	var mergeRequestsInProgress template.MergeRequestStackedListProps
+	var mergeRequestsMerged template.MergeRequestStackedListProps
+	var mergeRequestsClosed template.MergeRequestStackedListProps
+
+	mergeRequestsClosed.TimeNow = timeNow
+	mergeRequestsClosed.ShowTime = true
+	mergeRequestsMerged.TimeNow = timeNow
+	mergeRequestsMerged.ShowTime = true
 	mergeRequestsInProgress.TimeNow = timeNow
-	mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers)
+	mergeRequestsInProgress.ShowTime = false
+
+	mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+
+	if err != nil {
+		return err
+	}
+
+	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
+
+	if err != nil {
+		return err
+	}
+
+	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, false)
 
 	if err != nil {
 		return err
@@ -312,7 +340,14 @@ func (a *App) DashboardPage(c echo.Context) error {
 		Nonce:     a.Nonce,
 	}
 
-	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps, mergeRequestsInProgress)
+	components := template.DashboardPage(page,
+		swarmProps,
+		weekPickerProps,
+		mergeRequestInfoProps,
+		teamPickerProps,
+		mergeRequestsClosed,
+		mergeRequestsMerged,
+		mergeRequestsInProgress)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }

@@ -11,42 +11,40 @@ import (
 type MergeRequestStackedListProps struct {
   MergeRequests []data.MergeRequestListItemData
   TimeNow time.Time
+  ShowTime bool
 }
 
-templ mergeRequestStack(title string, time string, timeAgo string, mrUrl string, canonId int64) {
+templ mergeRequestStack(title string, time string, timeAgo string, mrUrl string, canonId int64, avatarUrls []string, showTime bool, codeAdditions int64, codeDeletions int64) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-5 sm:flex-nowrap">
 		<div>
 			<p class="text-sm font-semibold leading-6 text-gray-900">
 				<a href={ templ.SafeURL(mrUrl) } class="hover:underline">{ title }</a>
 			</p>
+      
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				<p>
 					<a href="#" class="hover:underline">#{fmt.Sprintf("%v", canonId)}</a>
 				</p>
+        <p>
+          <span class="text-lime-700 select-none">+{fmt.Sprintf("%v", codeAdditions)}</span>
+          <span class="text-red-700 select-none">-{fmt.Sprintf("%v", codeDeletions)}</span>
+        </p>        
+        if showTime {
 				<svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
 					<circle cx="1" cy="1" r="1"></circle>
 				</svg>
 				<p><time datetime={ time }>{ timeAgo }</time></p>
+        }
 			</div>
 		</div>
 		<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
 			<div class="flex -space-x-0.5">
 				<dt class="sr-only">Commenters</dt>
+        for _, avatarUrl := range avatarUrls {
 				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src=""/>
+					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src={avatarUrl}/>
 				</dd>
-				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src=""/>
-				</dd>
-				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src=""/>
-				</dd>
-				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src=""/>
-				</dd>
-				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src=""/>
-				</dd>
+        }				
 			</div>
 			<div class="flex w-16 gap-x-2.5">
 				<dt>
@@ -64,7 +62,7 @@ templ mergeRequestStack(title string, time string, timeAgo string, mrUrl string,
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 	<ul role="list" class="divide-y divide-gray-100">
     for _, mr := range props.MergeRequests {
-		  @mergeRequestStack(mr.Title, mr.LastUpdatedAt.Format("2006-01-02T15:04Z"), util.FormatDurationDaysAgo(mr.LastUpdatedAt, props.TimeNow), mr.WebUrl, mr.CanonId)      
+		  @mergeRequestStack(mr.Title, mr.LastUpdatedAt.Format("2006-01-02T15:04Z"), util.FormatDurationDaysAgo(mr.LastUpdatedAt, props.TimeNow), mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, props.ShowTime, mr.CodeAdditions, mr.CodeDeletions)
     }
 	</ul>
 }
@@ -140,59 +138,6 @@ WHERE
   AND metrics.approved = 0
   AND metrics.merged = 0
   AND metrics.closed = 0
-ORDER BY
-  last_updated_at.year DESC,
-  last_updated_at.month DESC,
-  last_updated_at.day DESC;
-*/
-	//Merged this week
-/*
-SELECT
-  DISTINCT mr.id,
-  mr.title,
-  mr.web_url,
-  mr.canon_id,
-  metrics.code_addition,
-  metrics.code_deletion
-FROM
-  transform_merge_requests as mr
-  JOIN transform_merge_request_events as events ON mr.id = events.merge_request
-  JOIN transform_dates as occured_on ON occured_on.id = events.occured_on
-  JOIN transform_merge_request_metrics as metrics ON mr.id = metrics.merge_request
-  JOIN transform_merge_request_fact_dates_junk as dj ON dj.id = metrics.dates_junk
-  JOIN transform_dates as last_updated_at ON last_updated_at.id = dj.last_updated_at
-WHERE
-  events.merge_request_event_type = 11
-  AND occured_on.week = '2024-W15'
-  AND metrics.merged = 1
-  AND metrics.closed = 1
-ORDER BY
-  last_updated_at.year DESC,
-  last_updated_at.month DESC,
-  last_updated_at.day DESC;
-*/
-
-	//Closed this week
-/*
-SELECT
-  DISTINCT mr.id,
-  mr.title,
-  mr.web_url,
-  mr.canon_id,
-  metrics.code_addition,
-  metrics.code_deletion
-FROM
-  transform_merge_requests as mr
-  JOIN transform_merge_request_events as events ON mr.id = events.merge_request
-  JOIN transform_dates as occured_on ON occured_on.id = events.occured_on
-  JOIN transform_merge_request_metrics as metrics ON mr.id = metrics.merge_request
-  JOIN transform_merge_request_fact_dates_junk as dj ON dj.id = metrics.dates_junk
-  JOIN transform_dates as last_updated_at ON last_updated_at.id = dj.last_updated_at
-WHERE
-  events.merge_request_event_type = 7
-  AND occured_on.week = '2024-W15'
-  AND metrics.merged = 0
-  AND metrics.closed = 1
 ORDER BY
   last_updated_at.year DESC,
   last_updated_at.month DESC,

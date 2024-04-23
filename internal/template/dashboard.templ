@@ -1,13 +1,19 @@
 package template
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps, teamPickerProps TeamPickerProps, mergeRequestStackedListProps MergeRequestStackedListProps) {
+templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps, teamPickerProps TeamPickerProps,	mergeRequestsClosed MergeRequestStackedListProps,	mergeRequestsMerged MergeRequestStackedListProps,	mergeRequestsInProgress MergeRequestStackedListProps) {
 	@Layout(page) {
 		@teamPicker(teamPickerProps)
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps, page.Nonce)
+		<h1>Closed</h1>
+		<hr/>
+		@mergeRequestStackedList(mergeRequestsClosed)
+		<h1>Merged</h1>
+		<hr/>
+		@mergeRequestStackedList(mergeRequestsMerged)
 		<h1>In Progress</h1>
 		<hr/>
-		@mergeRequestStackedList(mergeRequestStackedListProps)
+		@mergeRequestStackedList(mergeRequestsInProgress)
 		<div
 			id="mr-info"
 		>
