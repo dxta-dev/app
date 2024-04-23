@@ -126,9 +126,33 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 		mergeRequestEvents = append(mergeRequestEvents, event)
 	}
 
+	mergeRequestEvents = filterClosedEvents(mergeRequestEvents)
+
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
+
 	return squashedEvents, nil
+}
+
+func filterClosedEvents(events []Event)  []Event{
+	lastClosedEventPosition := -1
+	isMerged := false
+
+	for i, event := range events {
+		if event.Type == MERGED {
+			isMerged = true
+		}
+
+		if event.Type == CLOSED {
+			lastClosedEventPosition = i
+		}
+	}
+
+	if isMerged && lastClosedEventPosition != -1 {
+		events = append(events[:lastClosedEventPosition], events[lastClosedEventPosition+1:]...)
+	}
+
+	return events
 }
 
 func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
