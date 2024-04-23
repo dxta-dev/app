@@ -288,6 +288,10 @@ func SquashEventSlice(events EventSlice) [][]Event {
 
 	}
 
+	if len(currentSquashedEvents) > 0 {
+		result = append(result, currentSquashedEvents)
+	}
+
 	return result
 
 }
