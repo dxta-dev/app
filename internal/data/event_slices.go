@@ -126,11 +126,33 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 		mergeRequestEvents = append(mergeRequestEvents, event)
 	}
 
+	mergeRequestEvents = filterClosedEvents(mergeRequestEvents)
+
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
-	updatedEvents := ThrowClosedAfterMerged(squashedEvents)
 
-	return updatedEvents, nil
+	return squashedEvents, nil
+}
+
+func filterClosedEvents(events []Event)  []Event{
+	lastClosedEventPosition := -1
+	isMerged := false
+
+	for i, event := range events {
+		if event.Type == MERGED {
+			isMerged = true
+		}
+
+		if event.Type == CLOSED {
+			lastClosedEventPosition = i
+		}
+	}
+
+	if isMerged && lastClosedEventPosition != -1 {
+		events = append(events[:lastClosedEventPosition], events[lastClosedEventPosition+1:]...)
+	}
+
+	return events
 }
 
 func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice, error) {
@@ -296,25 +318,6 @@ func SquashEventSlice(events EventSlice) [][]Event {
 
 	return result
 
-}
-
-func hasMergedEvent(events []Event) bool {
-	for _, event := range events {
-		if event.Type == MERGED {
-			return true
-		}
-	}
-	return false
-}
-
-func ThrowClosedAfterMerged(result [][]Event) [][]Event {
-	for _, events := range result {
-		merged := hasMergedEvent(events)
-		if merged && len(result) > 0 && result[len(result)-1][0].Type == CLOSED {
-			return result[:len(result)-1]
-		}
-	}
-	return result
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
