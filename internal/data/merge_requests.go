@@ -22,6 +22,7 @@ type MergeRequestListItemData struct {
 	CanonId        int64
 	CodeAdditions  int64
 	CodeDeletions  int64
+	ReviewDepth    int64
 	UserAvatarUrls []string
 }
 
@@ -50,6 +51,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 		mr.canon_id,
 		metrics.code_addition,
 		metrics.code_deletion,
+		metrics.review_depth,
 		author.id, author.avatar_url, author.bot,
 		merger.id, merger.avatar_url, merger.bot,
 		approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -164,6 +166,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
+			&item.ReviewDepth,
 			&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 			&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 			&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
@@ -235,6 +238,7 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 		mr.canon_id,
 		metrics.code_addition,
 		metrics.code_deletion,
+		metrics.review_depth,
 		author.id, author.avatar_url, author.bot,
 		merger.id, merger.avatar_url, merger.bot,
 		approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -349,6 +353,7 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
+			&item.ReviewDepth,
 			&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 			&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 			&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
@@ -420,6 +425,7 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 		mr.canon_id,
 		metrics.code_addition,
 		metrics.code_deletion,
+		metrics.review_depth,
 		author.id, author.avatar_url, author.bot,
 		merger.id, merger.avatar_url, merger.bot,
 		approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -535,6 +541,7 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
+			&item.ReviewDepth,
 			&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 			&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 			&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
@@ -613,6 +620,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 		mr.canon_id,
 		metrics.code_addition,
 		metrics.code_deletion,
+		metrics.review_depth,
 		author.id, author.avatar_url, author.bot,
 		merger.id, merger.avatar_url, merger.bot,
 		approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -729,6 +737,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 			&item.CanonId,
 			&item.CodeAdditions,
 			&item.CodeDeletions,
+			&item.ReviewDepth,
 			&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 			&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 			&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
