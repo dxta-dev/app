@@ -127,6 +127,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	a.GenerateNonce()
 	a.LoadState(r)
 
+	timeNow := time.Now()
 	date := time.Now()
 	var err error
 	var mr *int64 = new(int64)
@@ -290,6 +291,53 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
+	var nullRows *data.NullRows
+
+	nullRows, err = store.GetNullRows()
+
+	if err != nil {
+		return err
+	}
+
+	var mergeRequestsInProgress template.MergeRequestStackedListProps
+	var mergeRequestsReadyToMerge template.MergeRequestStackedListProps
+	var mergeRequestsMerged template.MergeRequestStackedListProps
+	var mergeRequestsClosed template.MergeRequestStackedListProps
+	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
+
+	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
+	if isQueryCurrentWeek {
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+
+		if err != nil {
+			return err
+		}
+
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestsReadyToMerge(teamMembers, nullRows.UserId)
+
+		if err != nil {
+			return err
+		}
+
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId)
+
+		if err != nil {
+			return err
+		}
+	}
+
+	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
+
+	if err != nil {
+		return err
+	}
+
+	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, false)
+
+	if err != nil {
+		return err
+	}
+
 	page := &template.Page{
 		Title:     "Dashboard - DXTA",
 		Boosted:   h.HxBoosted,
@@ -300,7 +348,17 @@ func (a *App) DashboardPage(c echo.Context) error {
 		Nonce:     a.Nonce,
 	}
 
-	components := template.DashboardPage(page, swarmProps, weekPickerProps, mergeRequestInfoProps, teamPickerProps)
+	components := template.DashboardPage(page,
+		swarmProps,
+		weekPickerProps,
+		mergeRequestInfoProps,
+		teamPickerProps,
+		isQueryCurrentWeek,
+		mergeRequestsClosed,
+		mergeRequestsMerged,
+		mergeRequestsInProgress,
+		mergeRequestsReadyToMerge,
+		mergeRequestsWaitingForReview)
 
 	return components.Render(context.Background(), c.Response().Writer)
 }
