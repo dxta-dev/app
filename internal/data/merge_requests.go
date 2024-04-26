@@ -599,8 +599,10 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
+	mergedOrClosedEventId := "7"
 	mergedClauseCondition := "0"
 	if andMerged {
+		mergedOrClosedEventId = "11"
 		mergedClauseCondition = "1"
 	}
 
@@ -695,7 +697,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10
 	WHERE
 		occured_on.week = ?
-		AND events.merge_request_event_type = 11
+		AND events.merge_request_event_type = %s
   	AND metrics.merged = %s
   	AND metrics.closed = 1
 		AND author.bot = 0
@@ -706,7 +708,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
   	last_updated_at.month DESC,
   	last_updated_at.day DESC
 	LIMIT 5
-	`, mergedClauseCondition, usersInTeamConditionQuery)
+	`, mergedOrClosedEventId, mergedClauseCondition, usersInTeamConditionQuery)
 
 	defer db.Close()
 
