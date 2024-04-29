@@ -78,6 +78,7 @@ func main() {
 	g.GET("/mr-info/:mrid", app.GetMergeRequestInfo)
 	g.DELETE("/mr-info/:mrid", app.RemoveMergeRequestInfo)
 
+	g.GET("/mr", app.GetMergeRequestStack)
 	g.GET("/mr/:mrid", app.GetMergeRequestDetails)
 
 	g.GET("/metrics/quality", app.QualityMetricsPage)

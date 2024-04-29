@@ -411,11 +411,16 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 	return mergeRequests, nil
 }
 
-func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId int64, shouldLimit bool) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	limit := ""
+	if shouldLimit {
+		limit = "LIMIT 5"
 	}
 
 	db, err := sql.Open("libsql", s.DbUrl)
@@ -519,8 +524,8 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 		last_updated_at.year ASC,
   	last_updated_at.month ASC,
   	last_updated_at.day ASC
-	LIMIT 5
-	`, usersInTeamConditionQuery)
+	%s
+	`, usersInTeamConditionQuery, limit)
 
 	defer db.Close()
 

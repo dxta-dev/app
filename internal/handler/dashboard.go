@@ -309,6 +309,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
+		mergeRequestsInProgress.ShowMore = true
 		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
 
 		if err != nil {
@@ -317,6 +318,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
+		mergeRequestsReadyToMerge.ShowMore = true
 		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestsReadyToMerge(teamMembers, nullRows.UserId)
 
 		if err != nil {
@@ -325,7 +327,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsWaitingForReview.Id = "mrs-waiting-4-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId)
+		mergeRequestsWaitingForReview.ShowMore = true
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId, true)
 
 		if err != nil {
 			return err
@@ -334,6 +337,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
+	mergeRequestsMerged.ShowMore = true
 	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
 
 	if err != nil {
@@ -342,6 +346,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
+	mergeRequestsClosed.ShowMore = true
 	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, false)
 
 	if err != nil {

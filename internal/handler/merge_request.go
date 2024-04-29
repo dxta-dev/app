@@ -205,3 +205,60 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 	return components.Render(context.Background(), c.Response().Writer)
 
 }
+
+func (a *App) GetMergeRequestStack(c echo.Context) error {
+	r := c.Request()
+	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+
+	a.LoadState(r)
+
+	store := &data.Store{
+		DbUrl: tenantDatabaseUrl,
+	}
+
+	var nullRows *data.NullRows
+	var err error
+
+	nullRows, err = store.GetNullRows()
+
+	if err != nil {
+		return err
+	}
+
+	if !r.URL.Query().Has("status") {
+		return fmt.Errorf("missing required query argument 'status'")
+	}
+
+	queryStatus := r.URL.Query().Get("status")
+
+	var mrStackListProps template.MergeRequestStackedListProps
+
+	teamMembers, err := store.GetTeamMembers(a.State.Team)
+	if err != nil {
+		return err
+	}
+
+	if queryStatus == "reviewable" {
+		mrStackListProps.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId, false)
+		mrStackListProps.Id = "waiting-4-review"
+		mrStackListProps.Title = "Waiting for review"
+	} else if queryStatus == "working" {
+
+	} else if queryStatus == "mergeable" {
+
+	} else if queryStatus == "closed" {
+
+	} else if queryStatus == "merged" {
+
+	} else {
+		return fmt.Errorf("invalid query argument 'status' value, should be one of: 'reviewable', 'working', 'mergeable', 'closed', 'merged' but got '%s'", queryStatus)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	components := template.PartialMergeRequestStackedList(mrStackListProps)
+
+	return components.Render(context.Background(), c.Response().Writer)
+}
