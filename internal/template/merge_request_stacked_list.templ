@@ -7,6 +7,8 @@ import (
 )
 
 type MergeRequestStackedListProps struct {
+	Id string
+	Title string
   MergeRequests []data.MergeRequestListItemData
 }
 
@@ -49,9 +51,22 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, ava
 }
 
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
+	<div id={props.Id}>
+		<h1>{props.Title}</h1>
+		<hr/>
 	<ul role="list" class="divide-y divide-gray-100">
     for _, mr := range props.MergeRequests {
 		  @mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
     }
 	</ul>
+	if len(props.MergeRequests) > 0 && props.MergeRequests[0].Count > 5 {
+	<h2 class="underline"><a href="/mr?status=pickup">Show more ({fmt.Sprintf("%v", props.MergeRequests[0].Count-5)})</a></h2>
+	}
+	</div>
+}
+
+templ partialMergeRequestStackedList(props MergeRequestStackedListProps) {
+	for _, mr := range props.MergeRequests {
+		@mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
+	}
 }

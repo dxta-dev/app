@@ -17,6 +17,7 @@ type UserAvatarUrl struct {
 
 type MergeRequestListItemData struct {
 	Id             int64
+	Count          int64
 	Title          string
 	WebUrl         string
 	CanonId        int64
@@ -44,7 +45,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 	week := util.GetFormattedWeek(date)
 
 	query := fmt.Sprintf(`
-	SELECT DISTINCT
+	SELECT
 		mr.id,
 		mr.title,
 		mr.web_url,
@@ -83,7 +84,8 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 		reviewer7.id,  reviewer7.avatar_url,  reviewer7.bot,
 		reviewer8.id,  reviewer8.avatar_url,  reviewer8.bot,
 		reviewer9.id,  reviewer9.avatar_url,  reviewer9.bot,
-		reviewer10.id, reviewer10.avatar_url, reviewer10.bot
+		reviewer10.id, reviewer10.avatar_url, reviewer10.bot,
+		COUNT(mr.id) OVER() as c
 	FROM transform_merge_request_events AS events
 	JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 	JOIN transform_forge_users AS user ON user.id = events.actor
@@ -134,6 +136,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 		AND author.bot = 0
 		AND user.bot = 0
 	%s
+	GROUP BY mr.id
 	LIMIT 5
 	`, usersInTeamConditionQuery)
 
@@ -199,6 +202,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 			&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Bot,
 			&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
 			&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
+			&item.Count,
 		); err != nil {
 			return nil, err
 		}
@@ -231,7 +235,7 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 	}
 
 	query := fmt.Sprintf(`
-	SELECT DISTINCT
+	SELECT
 		mr.id,
 		mr.title,
 		mr.web_url,
@@ -270,7 +274,8 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 		reviewer7.id,  reviewer7.avatar_url,  reviewer7.bot,
 		reviewer8.id,  reviewer8.avatar_url,  reviewer8.bot,
 		reviewer9.id,  reviewer9.avatar_url,  reviewer9.bot,
-		reviewer10.id, reviewer10.avatar_url, reviewer10.bot
+		reviewer10.id, reviewer10.avatar_url, reviewer10.bot,
+		COUNT(mr.id) OVER() as c
 	FROM transform_merge_request_events AS events
 	JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 	JOIN transform_forge_users AS user ON user.id = events.actor
@@ -318,6 +323,7 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 		AND author.bot = 0
 		AND user.bot = 0
 	%s
+	GROUP BY mr.id
 	ORDER BY
 		last_updated_at.year ASC,
   	last_updated_at.month ASC,
@@ -386,6 +392,7 @@ func (s *Store) GetMergeRequestsReadyToMerge(teamMembers []int64, nullUserId int
 			&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Bot,
 			&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
 			&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
+			&item.Count,
 		); err != nil {
 			return nil, err
 		}
@@ -418,8 +425,8 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 	}
 
 	query := fmt.Sprintf(`
-	SELECT DISTINCT
-		mr.id,
+	SELECT
+		mr.id,		
 		mr.title,
 		mr.web_url,
 		mr.canon_id,
@@ -457,7 +464,8 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 		reviewer7.id,  reviewer7.avatar_url,  reviewer7.bot,
 		reviewer8.id,  reviewer8.avatar_url,  reviewer8.bot,
 		reviewer9.id,  reviewer9.avatar_url,  reviewer9.bot,
-		reviewer10.id, reviewer10.avatar_url, reviewer10.bot
+		reviewer10.id, reviewer10.avatar_url, reviewer10.bot,
+		COUNT(mr.id) OVER() as c
 	FROM transform_merge_request_events AS events
 	JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 	JOIN transform_forge_users AS user ON user.id = events.actor
@@ -506,6 +514,7 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 		AND author.bot = 0
 		AND user.bot = 0
 	%s
+	GROUP BY mr.id
 	ORDER BY
 		last_updated_at.year ASC,
   	last_updated_at.month ASC,
@@ -574,6 +583,7 @@ func (s *Store) GetMergeRequestsWaitingForReview(teamMembers []int64, nullUserId
 			&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Bot,
 			&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
 			&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
+			&item.Count,
 		); err != nil {
 			return nil, err
 		}
@@ -615,7 +625,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 	week := util.GetFormattedWeek(date)
 
 	query := fmt.Sprintf(`
-	SELECT DISTINCT
+	SELECT
 		mr.id,
 		mr.title,
 		mr.web_url,
@@ -654,7 +664,8 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 		reviewer7.id,  reviewer7.avatar_url,  reviewer7.bot,
 		reviewer8.id,  reviewer8.avatar_url,  reviewer8.bot,
 		reviewer9.id,  reviewer9.avatar_url,  reviewer9.bot,
-		reviewer10.id, reviewer10.avatar_url, reviewer10.bot
+		reviewer10.id, reviewer10.avatar_url, reviewer10.bot,
+		COUNT(mr.id) OVER() as c
 	FROM transform_merge_request_events AS events
 	JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 	JOIN transform_forge_users AS user ON user.id = events.actor
@@ -703,6 +714,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 		AND author.bot = 0
 		AND user.bot = 0
 	%s
+	GROUP BY mr.id
 	ORDER BY
   	last_updated_at.year DESC,
   	last_updated_at.month DESC,
@@ -772,6 +784,7 @@ func (s *Store) GetMergeRequestsClosed(date time.Time, teamMembers []int64, null
 			&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Bot,
 			&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
 			&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
+			&item.Count,
 		); err != nil {
 			return nil, err
 		}
