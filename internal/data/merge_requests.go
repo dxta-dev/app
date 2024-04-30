@@ -9,26 +9,6 @@ import (
 	"github.com/dxta-dev/app/internal/util"
 )
 
-type UserAvatarUrl struct {
-	UserId int64
-	Url    string
-	Bot    bool
-}
-
-type MergeRequestListItemData struct {
-	Id             int64
-	Count          int64
-	Title          string
-	WebUrl         string
-	CanonId        int64
-	CodeAdditions  int64
-	CodeDeletions  int64
-	ReviewDepth    int64
-	UserAvatarUrls []string
-}
-
-const iMAX_USER_AVATARS_LEN = 6
-
 func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
@@ -137,8 +117,7 @@ func (s *Store) GetMergeRequestsInProgress(date time.Time, teamMembers []int64, 
 		AND user.bot = 0
 	%s
 	GROUP BY mr.id
-	LIMIT 5
-	`, usersInTeamConditionQuery)
+	LIMIT 5;`, usersInTeamConditionQuery)
 
 	defer db.Close()
 

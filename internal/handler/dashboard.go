@@ -309,8 +309,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
-		mergeRequestsInProgress.ShowMore = true
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+		mergeRequestsInProgress.ShowMoreUrl = "/mr-stack/in-progress"
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressCountedList(date, teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -318,16 +318,16 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
-		mergeRequestsReadyToMerge.ShowMore = true
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestsReadyToMerge(teamMembers, nullRows.UserId)
+		mergeRequestsReadyToMerge.ShowMoreUrl = "/mr-stack/ready-to-merge"
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeCountedList(teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
 		}
 
-		mergeRequestsWaitingForReview.Id = "mrs-waiting-4-review"
+		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
-		mergeRequestsWaitingForReview.ShowMore = true
+		mergeRequestsWaitingForReview.ShowMoreUrl = "#"
 		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId, true)
 
 		if err != nil {
@@ -337,7 +337,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
-	mergeRequestsMerged.ShowMore = true
+	mergeRequestsMerged.ShowMoreUrl = "#"
 	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
 
 	if err != nil {
@@ -346,7 +346,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
-	mergeRequestsClosed.ShowMore = true
+	mergeRequestsClosed.ShowMoreUrl = "#"
 	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, false)
 
 	if err != nil {
