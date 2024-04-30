@@ -152,7 +152,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																<details>
 																	<summary>Show actions</summary>
 																	for _, e := range event {
-																		<a href={ templ.URL(e.HtmlUrl) } target="_blank" class="text-sm text-gray-500 inline-block">
+																		<a href={ templ.URL(e.HtmlUrl) } target="_blank" class="text-sm text-gray-500">
 																		<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
 																		</a>
 																	}
