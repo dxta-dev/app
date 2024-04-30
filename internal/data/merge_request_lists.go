@@ -110,14 +110,6 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
-// const mrListOrderByLastUpdatedAtAscending = `last_updated_at.year ASC,
-// 	last_updated_at.month ASC,
-// 	last_updated_at.day ASC`
-
-// const mrListOrderByLastUpdatedAtDescending = `last_updated_at.year DESC,
-// last_updated_at.month DESC,
-// last_updated_at.day DESC`
-
 func scanMergeRequestCountedListItemRow(item *MergeRequestListItemData, userAvatars []UserAvatarUrl, rows *sql.Rows) error {
 	return rows.Scan(
 		&item.Id,
