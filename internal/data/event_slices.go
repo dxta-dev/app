@@ -276,37 +276,62 @@ func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
 func SquashEventSlice(events EventSlice) [][]Event {
 	sort.Sort(events)
 
-	groupedEvents := make(map[string][]Event)
+	groupedCommitted := make(map[string][]Event)
+	groupedDiscussion := make(map[string][]Event)
+
+	var singleEvents []Event
 
 	for _, event := range events {
-		t := time.Unix(event.Timestamp/1000, 0)
-
-		t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
-
-		date := t.Format("2006-01-02")
-
-		groupedEvents[date] = append(groupedEvents[date], event)
+		switch {
+		case isCommitted(event):
+			t := time.Unix(event.Timestamp/1000, 0)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+			date := t.Format("2006-01-02")
+			groupedCommitted[date] = append(groupedCommitted[date], event)
+		case isReviewed(event), isNoted(event), isCommented(event):
+			t := time.Unix(event.Timestamp/1000, 0)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+			date := t.Format("2006-01-02")
+			groupedDiscussion[date] = append(groupedDiscussion[date], event)
+		default:
+			singleEvents = append(singleEvents, event)
+		}
 	}
 
 	var result [][]Event
-	for _, date := range sortedKeys(groupedEvents) {
-		result = append(result, groupedEvents[date])
+
+	for _, event := range singleEvents {
+		result = append(result, []Event{event})
 	}
+
+	var committedDates []string
+	for date := range groupedCommitted {
+		committedDates = append(committedDates, date)
+	}
+	sort.Strings(committedDates)
+
+	for _, date := range committedDates {
+		result = append(result, groupedCommitted[date])
+	}
+
+	var discussionDates []string
+	for date := range groupedDiscussion {
+		discussionDates = append(discussionDates, date)
+	}
+	sort.Strings(discussionDates)
+
+	for _, date := range discussionDates {
+		result = append(result, groupedDiscussion[date])
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		if len(result[i]) == 0 || len(result[j]) == 0 {
+			return false
+		}
+		return result[i][0].Timestamp < result[j][0].Timestamp
+	})
 
 	return result
-}
-
-func sortedKeys(m map[string][]Event) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	sort.Slice(keys, func(i, j int) bool {
-		t1, _ := time.Parse("2006-01-02", keys[i])
-		t2, _ := time.Parse("2006-01-02", keys[j])
-		return t1.Before(t2)
-	})
-	return keys
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
