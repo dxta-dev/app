@@ -130,11 +130,10 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
-
 	return squashedEvents, nil
 }
 
-func filterClosedEvents(events []Event)  []Event{
+func filterClosedEvents(events []Event) []Event {
 	lastClosedEventPosition := -1
 	isMerged := false
 
@@ -275,49 +274,39 @@ func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
 }
 
 func SquashEventSlice(events EventSlice) [][]Event {
+	sort.Sort(events)
 
-	var result [][]Event
-
-	var currentSquashedEvents []Event
+	groupedEvents := make(map[string][]Event)
 
 	for _, event := range events {
-		if len(currentSquashedEvents) == 0 {
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
+		t := time.Unix(event.Timestamp/1000, 0)
 
-		lastSquashedEvent := currentSquashedEvents[len(currentSquashedEvents)-1]
+		t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
 
-		if isCommitted(lastSquashedEvent) &&
-			isCommitted(event) &&
-			isSameActor(lastSquashedEvent, event) &&
-			isInTimeframe(lastSquashedEvent, event, 60*60*1000) {
+		date := t.Format("2006-01-02")
 
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
-
-		if isSameActor(lastSquashedEvent, event) &&
-			isInTimeframe(lastSquashedEvent, event, 30*60*1000) &&
-			(isReviewed(lastSquashedEvent) && isReviewed(event) ||
-				isNoted(lastSquashedEvent) && isNoted(event) ||
-				isCommented(lastSquashedEvent) && isCommented(event)) {
-
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
-
-		result = append(result, currentSquashedEvents)
-		currentSquashedEvents = []Event{event}
-
+		groupedEvents[date] = append(groupedEvents[date], event)
 	}
 
-	if len(currentSquashedEvents) > 0 {
-		result = append(result, currentSquashedEvents)
+	var result [][]Event
+	for _, date := range sortedKeys(groupedEvents) {
+		result = append(result, groupedEvents[date])
 	}
 
 	return result
+}
 
+func sortedKeys(m map[string][]Event) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		t1, _ := time.Parse("2006-01-02", keys[i])
+		t2, _ := time.Parse("2006-01-02", keys[j])
+		return t1.Before(t2)
+	})
+	return keys
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
