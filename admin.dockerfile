@@ -24,7 +24,7 @@ COPY . .
 
 COPY --from=bun /app/public/style.css /app/public/style.css
 
-RUN go install github.com/a-h/templ/cmd/templ@v0.2.648
+RUN go install github.com/a-h/templ/cmd/templ@v0.2.680
 
 RUN templ generate
 
