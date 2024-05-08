@@ -190,7 +190,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	prevWeekParams := url.Values{}
 	prevWeekParams.Set("week", prevWeek)
-	previousWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, prevWeekParams, true)
+	previousWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, prevWeekParams, true)
 
 	if err != nil {
 		return err
@@ -198,7 +198,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	nextWeekParams := url.Values{}
 	nextWeekParams.Set("week", nextWeek)
-	nextWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, nextWeekParams, true)
+	nextWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, nextWeekParams, true)
 
 	if err != nil {
 		return err
@@ -206,7 +206,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	currentWeekParams := url.Values{}
 	currentWeekParams.Set("week", util.GetFormattedWeek(time.Now()))
-	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, currentWeekParams, true)
+	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, currentWeekParams, true)
 
 	if err != nil {
 		return err
