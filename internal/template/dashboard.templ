@@ -6,21 +6,11 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps, page.Nonce)
 		if isQueryCurrentWeek {
-		<h1>Waiting for review</h1>
-		<hr/>
 		@mergeRequestStackedList(mergeRequestsWaitingForReview)
-		<h1>Ready to merge</h1>
-		<hr/>
 		@mergeRequestStackedList(mergeRequestsReadyToMerge)
-		<h1>In progress</h1>
-		<hr/>
 		@mergeRequestStackedList(mergeRequestsInProgress)
 		}
-		<h1>Merged</h1>
-		<hr/>
 		@mergeRequestStackedList(mergeRequestsMerged)
-		<h1>Closed</h1>
-		<hr/>
 		@mergeRequestStackedList(mergeRequestsClosed)
 		<div
 			id="mr-info"
