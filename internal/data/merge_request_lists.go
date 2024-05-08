@@ -260,6 +260,10 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -323,6 +327,10 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -395,6 +403,10 @@ func (s *Store) GetMergeRequestReadyToMergeCountedList(teamMembers []int64, null
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -459,6 +471,10 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -532,6 +548,10 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -596,6 +616,10 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -672,6 +696,10 @@ func (s *Store) GetMergeRequestMergedCountedList(date time.Time, teamMembers []i
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -739,6 +767,10 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -815,6 +847,10 @@ func (s *Store) GetMergeRequestClosedCountedList(date time.Time, teamMembers []i
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
@@ -882,6 +918,10 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
+			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+				break
+			}
+
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
 				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
