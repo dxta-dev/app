@@ -71,11 +71,11 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
+func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer db.Close()
@@ -105,7 +105,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	rows, err := db.Query(query, mrId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
@@ -130,7 +130,30 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
-	return squashedEvents, nil
+	uniqueDates := extractUniqueDates(squashedEvents)
+
+	return squashedEvents, uniqueDates, nil
+}
+
+func extractUniqueDates(events [][]Event) []string {
+	uniqueDatesMap := make(map[string]bool)
+
+	for _, eventList := range events {
+		for _, event := range eventList {
+			date := time.Unix(0, event.Timestamp*int64(time.Millisecond)).Format("2006-01-02")
+
+			if _, exists := uniqueDatesMap[date]; !exists {
+				uniqueDatesMap[date] = true
+			}
+		}
+	}
+
+	var uniqueDates []string
+	for date := range uniqueDatesMap {
+		uniqueDates = append(uniqueDates, date)
+	}
+
+	return uniqueDates
 }
 
 func filterClosedEvents(events []Event) []Event {
