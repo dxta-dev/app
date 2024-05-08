@@ -470,3 +470,426 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 
 	return mergeRequests, nil
 }
+
+const mrListWaitingForReviewCondition = `metrics.reviewed = 0
+		AND metrics.approved = 0
+  	AND metrics.merged = 0
+  	AND metrics.closed = 0
+		AND author.bot = 0
+		AND user.bot = 0`
+
+func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s,
+			COUNT(mr.id) OVER() as c	
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year ASC,
+			last_updated_at.month ASC,
+			last_updated_at.day ASC
+		LIMIT 5;`,
+		mrListDataSelect, mrListTables, mrListWaitingForReviewCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers))
+	for i, v := range teamMembers {
+		queryParams[i] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestCountedListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}
+
+func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year ASC,
+			last_updated_at.month ASC,
+			last_updated_at.day ASC;`,
+		mrListDataSelect, mrListTables, mrListWaitingForReviewCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers))
+	for i, v := range teamMembers {
+		queryParams[i] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}
+
+const mrListMergedCondition = `occured_on.week = ?
+AND events.merge_request_event_type = 11
+AND metrics.merged = 1
+AND metrics.closed = 1
+AND author.bot = 0
+AND user.bot = 0`
+
+func (s *Store) GetMergeRequestMergedCountedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	week := util.GetFormattedWeek(date)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s,
+			COUNT(mr.id) OVER() as c	
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year DESC,
+			last_updated_at.month DESC,
+			last_updated_at.day DESC
+			LIMIT 5;`,
+		mrListDataSelect, mrListTables, mrListMergedCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
+	for i, v := range teamMembers {
+		queryParams[i+1] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestCountedListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}
+
+func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	week := util.GetFormattedWeek(date)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year DESC,
+			last_updated_at.month DESC,
+			last_updated_at.day DESC;`,
+		mrListDataSelect, mrListTables, mrListMergedCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
+	for i, v := range teamMembers {
+		queryParams[i+1] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}
+
+const mrListClosedCondition = `occured_on.week = ?
+AND events.merge_request_event_type = 7
+AND metrics.merged = 0
+AND metrics.closed = 1
+AND author.bot = 0
+AND user.bot = 0`
+
+func (s *Store) GetMergeRequestClosedCountedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	week := util.GetFormattedWeek(date)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s,
+			COUNT(mr.id) OVER() as c	
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year DESC,
+			last_updated_at.month DESC,
+			last_updated_at.day DESC
+			LIMIT 5;`,
+		mrListDataSelect, mrListTables, mrListClosedCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
+	for i, v := range teamMembers {
+		queryParams[i+1] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestCountedListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}
+
+func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	week := util.GetFormattedWeek(date)
+
+	db, err := sql.Open("libsql", s.DbUrl)
+
+	if err != nil {
+		return nil, err
+	}
+
+	query := fmt.Sprintf(`
+		SELECT %s
+		FROM %s
+		WHERE %s
+			%s
+		GROUP BY mr.id
+		ORDER BY
+			last_updated_at.year DESC,
+			last_updated_at.month DESC,
+			last_updated_at.day DESC;`,
+		mrListDataSelect, mrListTables, mrListClosedCondition, usersInTeamConditionQuery)
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
+	for i, v := range teamMembers {
+		queryParams[i+1] = v
+	}
+
+	rows, err := db.Query(query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var mergeRequests []MergeRequestListItemData
+	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+
+	for rows.Next() {
+		var item MergeRequestListItemData
+
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+			return nil, err
+		}
+
+		uniqueUsersMap := make(map[int64]bool)
+		for _, userAvatar := range userAvatars {
+			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
+				uniqueUsersMap[userAvatar.UserId] = true
+				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+			}
+		}
+
+		mergeRequests = append(mergeRequests, item)
+	}
+
+	return mergeRequests, nil
+}

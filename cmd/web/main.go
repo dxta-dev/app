@@ -79,6 +79,9 @@ func main() {
 	g.DELETE("/mr-info/:mrid", app.RemoveMergeRequestInfo)
 	g.GET("/mr-stack/in-progress", app.GetMergeRequestInProgressStack)
 	g.GET("/mr-stack/ready-to-merge", app.GetMergeRequestReadyToMergeStack)
+	g.GET("/mr-stack/waiting-for-review", app.GetMergeRequestWaitingForReviewStack)
+	g.GET("/mr-stack/merged", app.GetMergeRequestMergedStack)
+	g.GET("/mr-stack/closed", app.GetMergeRequestClosedStack)
 
 	g.GET("/mr/:mrid", app.GetMergeRequestDetails)
 
