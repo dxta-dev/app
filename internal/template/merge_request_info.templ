@@ -111,9 +111,6 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 													</div>
 												</div>
 											} else {
-												<h1>
-													{ fmt.Sprintf("%v", len(props.Events)) }
-												</h1>
 												if i < len(props.Events) - 1 {
 													<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 												}
