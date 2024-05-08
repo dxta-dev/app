@@ -132,6 +132,8 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 
 	uniqueDates := extractUniqueDates(squashedEvents)
 
+	sort.Strings(uniqueDates)
+
 	return squashedEvents, uniqueDates, nil
 }
 
