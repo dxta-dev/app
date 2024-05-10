@@ -67,18 +67,24 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 						<div class="flow-root">
 							<ul role="list" class="-mb-8">
 								<li>
-									for _, date := range props.UniqueDates {
+									for i, date := range props.UniqueDates {
 										<div class="relative pb-8">
 											<div class="relative">
+											if i != 0 {
 												<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
 												<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
 													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
 												</div>
+											} else {
+											<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
+												</div>
+											}
 											</div>
 											for i, event := range props.Events {
 												if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
 													<div class="relative py-8">
-														if len(event) <= 1 {
+														if len(event) == 1 {
 															if i < len(props.Events) - 1 {
 																<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 															}
