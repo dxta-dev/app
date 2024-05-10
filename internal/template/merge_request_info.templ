@@ -2,10 +2,9 @@ package template
 
 import (
 	"github.com/dxta-dev/app/internal/data"
-
 	"fmt"
-	"time"
 	"strings"
+	"time"
 )
 
 type MergeRequestInfoProps struct {
@@ -68,101 +67,113 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 						<div class="flow-root">
 							<ul role="list" class="-mb-8">
 								<li>
-									for i, event := range props.Events {
+									for _, date := range props.UniqueDates {
 										<div class="relative pb-8">
-											if len(event) <= 1 {
-												if i < len(props.Events) - 1 {
-													<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-												}
-												<div class="relative flex items-start space-x-3">
-													<div class="relative">
-														<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
-													</div>
-													<div class="min-w-0 flex-1">
-														<div>
-															<div class="text-sm">
-																<a href={ templ.URL(event[0].Actor.ProfileUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
-															</div>
-														</div>
-														<div class="mt-2 text-sm text-gray-700">
-															<div class="min-w-0 flex-1 py-0">
-																<div class="text-sm leading-8 text-gray-500">
-																	if (event[0].HtmlUrl != "") {
-																		<a href={ templ.URL(event[0].HtmlUrl) } target="_blank" class="font-medium text-gray-900">
-																			<span class="mr-0.5">
-																				{ getEventName(event[0].Type) } at
-																			</span>
-																		</a>
-																	} else {
-																		<span class="mr-0.5">
-																			{ getEventName(event[0].Type) } at
-																		</span>
-																	}
+											<div class="relative">
+												<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
+												<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
+												</div>
+											</div>
+											for i, event := range props.Events {
+												if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
+													<div class="relative py-8">
+														if len(event) <= 1 {
+															if i < len(props.Events) - 1 {
+																<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+															}
+															<div class="relative flex items-start space-x-3">
+																<div class="relative">
+																	<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
 																</div>
-																<span class="mr-0.5">
-																	<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																		<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																			<circle cx="3" cy="3" r="3"></circle>
-																		</svg>
-																		{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																	</p>
-																</span>
+																<div class="pr-14 min-w-0 flex-1">
+																	<div>
+																		<div class="text-sm">
+																			<a href={ templ.URL(event[0].Actor.ProfileUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
+																		</div>
+																	</div>
+																	<div class="mt-2 text-sm text-gray-700">
+																		<div class="min-w-0 flex-1 py-0">
+																			<div class="text-sm leading-8 text-gray-500">
+																				if (event[0].HtmlUrl != "") {
+																					<a href={ templ.URL(event[0].HtmlUrl) } target="_blank" class="font-medium text-gray-900">
+																						<span class="mr-0.5">
+																							{ getEventName(event[0].Type) } at
+																						</span>
+																					</a>
+																				} else {
+																					<span class="mr-0.5">
+																						{ getEventName(event[0].Type) } at
+																					</span>
+																				}
+																			</div>
+																			<span class="mr-0.5">
+																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
+																						<circle cx="3" cy="3" r="3"></circle>
+																					</svg>
+																					{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
+																				</p>
+																			</span>
+																		</div>
+																	</div>
+																</div>
 															</div>
-														</div>
+														} else {
+															if i < len(props.Events) - 1 {
+																<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+															}
+															<div class="relative flex items-start space-x-3">
+																<div>
+																	<div class="relative px-1">
+																		<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
+																			<svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+																				<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd"></path>
+																			</svg>
+																		</div>
+																	</div>
+																</div>
+																<div class="pr-14 min-w-0 flex-1 py-1.5">
+																	<div class="text-sm text-gray-500">
+																		<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
+																		made { fmt.Sprint(len(event)) } actions between
+																		<div class="flex flex-wrap justify-center">
+																			<span class="mr-0.5">
+																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
+																						<circle cx="3" cy="3" r="3"></circle>
+																					</svg>
+																					{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
+																				</p>
+																			</span>
+																			<span class="inline-flex items-center gap-x-1.5 text-sm text-gray-500">
+																				<svg class="h-3 w-3 fill-gray-400" viewBox="0 0 24 24" aria-hidden="true">
+																					<path fill="currentColor" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
+																				</svg>
+																			</span>
+																			<span class="mr-0.5">
+																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
+																						<circle cx="3" cy="3" r="3"></circle>
+																					</svg>
+																					{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
+																				</p>
+																			</span>
+																		</div>
+																		<details>
+																			<summary>Show actions</summary>
+																			for _, e := range event {
+																				<a href={ templ.URL(e.HtmlUrl) } target="_blank" class="text-sm text-gray-500">
+																					<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
+																				</a>
+																			}
+																		</details>
+																	</div>
+																</div>
+															</div>
+														}
 													</div>
-												</div>
-											} else {
-												if i < len(props.Events) - 1 {
-													<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 												}
-												<div class="relative flex items-start space-x-3">
-													<div>
-														<div class="relative px-1">
-															<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
-																<svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-																	<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd"></path>
-																</svg>
-															</div>
-														</div>
-													</div>
-													<div class="min-w-0 flex-1 py-1.5">
-														<div class="text-sm text-gray-500">
-															<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
-															made { fmt.Sprint(len(event)) } actions between
-															<div class="flex flex-wrap justify-center">
-																<span class="mr-0.5">
-																	<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																		<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																			<circle cx="3" cy="3" r="3"></circle>
-																		</svg>
-																		{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																	</p>
-																</span>
-																<span class="inline-flex items-center gap-x-1.5 text-sm text-gray-500">
-																	<svg class="h-3 w-3 fill-gray-400" viewBox="0 0 24 24" aria-hidden="true">
-																		<path fill="currentColor" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
-																	</svg>
-																</span>
-																<span class="mr-0.5">
-																	<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																		<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																			<circle cx="3" cy="3" r="3"></circle>
-																		</svg>
-																		{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																	</p>
-																</span>
-															</div>
-															<details>
-																<summary>Show actions</summary>
-																for _, e := range event {
-																	<a href={ templ.URL(e.HtmlUrl) } target="_blank" class="text-sm text-gray-500">
-																		<p>{ fmt.Sprint(e.Actor.Name) } { getEventName(e.Type) } at	{ fmt.Sprintf("%v", time.Unix(e.Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }</p>
-																	</a>
-																}
-															</details>
-														</div>
-													</div>
-												</div>
 											}
 										</div>
 									}
