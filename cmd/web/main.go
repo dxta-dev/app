@@ -47,7 +47,7 @@ func main() {
 		log.Printf("--------------------------------------------------")
 	}
 
-	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
+	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
 
 	if isEndpointProvided {
 		tp, err := initTracer(context.Background())
@@ -60,7 +60,7 @@ func main() {
 			}
 		}()
 	} else {
-		log.Printf("%v", fmt.Errorf("warning: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is not defined"))
+		log.Printf("%v", fmt.Errorf("missing OTEL exporter configuration. Provide one of (OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_TRACES_ENDPOINT) options"))
 	}
 
 	app := &handler.App{
@@ -73,7 +73,7 @@ func main() {
 
 	e := echo.New()
 	if isEndpointProvided {
-		e.Use(otelecho.Middleware("app"))
+		e.Use(otelecho.Middleware("dxta-app"))
 	}
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
