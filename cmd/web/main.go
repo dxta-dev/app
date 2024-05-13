@@ -19,9 +19,12 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
 var BUILDTIME string
@@ -127,9 +130,29 @@ func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	if err != nil {
 		return nil, err
 	}
+	res, err := sdkresource.New(
+		context.Background(),
+		sdkresource.WithAttributes(
+			semconv.ServiceName("dxta-app"),
+			attribute.String("BUILDTIME", BUILDTIME),
+		),
+		sdkresource.WithProcess(),
+		sdkresource.WithContainer(),
+		sdkresource.WithHost(),
+		sdkresource.WithFromEnv(),
+		sdkresource.WithTelemetrySDK(),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
 	tp := sdktrace.NewTracerProvider(
 		sdktrace.WithSampler(sdktrace.AlwaysSample()),
 		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(
+			res,
+		),
 	)
 	otel.SetTracerProvider(tp)
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
