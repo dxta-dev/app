@@ -136,9 +136,6 @@ func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
 			semconv.ServiceName("dxta-app"),
 			attribute.String("BUILDTIME", BUILDTIME),
 		),
-		sdkresource.WithProcess(),
-		sdkresource.WithFromEnv(),
-		sdkresource.WithTelemetrySDK(),
 	)
 
 	if err != nil {
