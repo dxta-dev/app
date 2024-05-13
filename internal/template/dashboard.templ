@@ -2,6 +2,7 @@ package template
 
 templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps, teamPickerProps TeamPickerProps,	isQueryCurrentWeek bool, mergeRequestsClosed MergeRequestStackedListProps,	mergeRequestsMerged MergeRequestStackedListProps,	mergeRequestsInProgress MergeRequestStackedListProps, mergeRequestsReadyToMerge MergeRequestStackedListProps, mergeRequestsWaitingForReview MergeRequestStackedListProps) {
 	@Layout(page) {
+		<h1> HELLO! Is the PR env working? </h1>
 		@teamPicker(teamPickerProps)
 		@weekPicker(weekPickerProps)
 		@swarm(swarmProps, page.Nonce)
