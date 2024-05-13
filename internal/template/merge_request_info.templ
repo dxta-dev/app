@@ -33,9 +33,9 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 		<div class="fixed top-20 inset-0 z-10 w-screen">
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6">
-					<div class="sticky top-0 z-20 h-[50px] bg-white">
-						<div class="flex top-0 h-[42px] p-1 justify-between items-center">
-							<div>
+					<div class="sticky top-0 z-20 h-24 bg-white">
+						<div class="flex top-0 h-[60px] p-1 justify-between items-center">
+							<div class="pt-4">
 								<a href={ templ.URL(props.DetailsPageUrl) } target="_blank" class="inline-block p-2">
 									<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6 hover:stroke-gray-500">
 										<path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15"></path>
@@ -43,7 +43,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 									<span></span>
 								</a>
 							</div>
-							<div>
+						<h2 id="mr-info-header" class="pt-20 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10">
+							{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
+							(<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }</a>)
+						</h2>
+							<div class="pt-4">
 								<button
  									hx-trigger="click, keyup[key=='Escape'] from:body"
  									hx-delete={ props.DeleteEndpoint }
@@ -60,15 +64,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 						</div>
 					</div>
 					<div class="mt-3 text-center sm:mt-5">
-						<h2 id="mr-info-header" class="text-lg font-semibold leading-6 text-gray-900 mb-10">
-							{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
-							(<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }</a>)
-						</h2>
 						<div class="flow-root">
 							<ul role="list" class="-mb-8">
 								<li>
 									for i, date := range props.UniqueDates {
-										<div class="relative pb-8">
+										<div class="relative py-8">
 											<div class="relative">
 											if i != 0 {
 												<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
@@ -76,7 +76,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
 												</div>
 											} else {
-											<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+												<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
 													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
 												</div>
 											}
@@ -104,23 +104,15 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																				if (event[0].HtmlUrl != "") {
 																					<a href={ templ.URL(event[0].HtmlUrl) } target="_blank" class="font-medium text-gray-900">
 																						<span class="mr-0.5">
-																							{ getEventName(event[0].Type) } at
+																							{ getEventName(event[0].Type) }
 																						</span>
 																					</a>
 																				} else {
 																					<span class="mr-0.5">
-																						{ getEventName(event[0].Type) } at
+																						{ getEventName(event[0].Type) }
 																					</span>
 																				}
 																			</div>
-																			<span class="mr-0.5">
-																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																						<circle cx="3" cy="3" r="3"></circle>
-																					</svg>
-																					{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																				</p>
-																			</span>
 																		</div>
 																	</div>
 																</div>
@@ -142,30 +134,8 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																<div class="pr-14 min-w-0 flex-1 py-1.5">
 																	<div class="text-sm text-gray-500">
 																		<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
-																		made { fmt.Sprint(len(event)) } actions between
-																		<div class="flex flex-wrap justify-center">
-																			<span class="mr-0.5">
-																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																						<circle cx="3" cy="3" r="3"></circle>
-																					</svg>
-																					{ fmt.Sprintf("%v", time.Unix(event[0].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																				</p>
-																			</span>
-																			<span class="inline-flex items-center gap-x-1.5 text-sm text-gray-500">
-																				<svg class="h-3 w-3 fill-gray-400" viewBox="0 0 24 24" aria-hidden="true">
-																					<path fill="currentColor" d="M12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM16 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"></path>
-																				</svg>
-																			</span>
-																			<span class="mr-0.5">
-																				<p class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
-																					<svg class="h-1.5 w-1.5 fill-red-500" viewBox="0 0 6 6" aria-hidden="true">
-																						<circle cx="3" cy="3" r="3"></circle>
-																					</svg>
-																					{ fmt.Sprintf("%v", time.Unix(event[len(event) - 1].Timestamp / 1000, 0).Format("2006-01-02 15:04:05")) }
-																				</p>
-																			</span>
-																		</div>
+																		made { fmt.Sprint(len(event)) } actions
+
 																		<details>
 																			<summary>Show actions</summary>
 																			for _, e := range event {
