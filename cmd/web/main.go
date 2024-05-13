@@ -5,6 +5,7 @@ import (
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/util"
 
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,10 +16,18 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
+
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/propagation"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var BUILDTIME string
 var DEBUG string
+
+var tracer = otel.Tracer("dxta-dev")
 
 func main() {
 
@@ -40,6 +49,16 @@ func main() {
 		log.Printf("--------------------------------------------------")
 	}
 
+	tp, err := initTracer()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if err := tp.Shutdown(context.Background()); err != nil {
+			log.Printf("Error shutting down tracer provider: %v", err)
+		}
+	}()
+
 	app := &handler.App{
 		HTMX:           htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
@@ -49,6 +68,7 @@ func main() {
 	app.GenerateNonce()
 
 	e := echo.New()
+	e.Use(otelecho.Middleware("app"))
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
@@ -94,4 +114,18 @@ func main() {
 	}
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 
+}
+
+func initTracer() (*sdktrace.TracerProvider, error) {
+	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+	if err != nil {
+		return nil, err
+	}
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(exporter),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp, nil
 }
