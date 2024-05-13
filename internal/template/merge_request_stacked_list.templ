@@ -3,11 +3,14 @@ package template
 import (
   "github.com/dxta-dev/app/internal/data"
 
-  "fmt"
+  "fmt"	
 )
 
 type MergeRequestStackedListProps struct {
+	Id string
+	Title string
   MergeRequests []data.MergeRequestListItemData
+	ShowMoreUrl string
 }
 
 templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, avatarUrls []string, codeAdditions int64, codeDeletions int64, reviewDepth int64) {
@@ -49,9 +52,30 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, ava
 }
 
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
-	<ul role="list" class="divide-y divide-gray-100">
-    for _, mr := range props.MergeRequests {
-		  @mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
-    }
-	</ul>
+	<div id={props.Id}>	
+		<h1>{props.Title}</h1>
+		<hr/>
+		<ul role="list" class="divide-y divide-gray-100">
+			for _, mr := range props.MergeRequests {
+				@mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
+			}
+			// TODO: remove condition ShowMoreUrl != "#"
+			if props.ShowMoreUrl != "#" && len(props.MergeRequests) > 0 && props.MergeRequests[0].Count > 5 {
+				<li>				
+					<h2 class="underline">
+					<a hx-get={props.ShowMoreUrl} 
+						 hx-target={fmt.Sprintf("#%s ul", props.Id)} 
+						 hx-swap="innerHTML" 
+						 href={templ.SafeURL(props.ShowMoreUrl)}>Show more ({fmt.Sprintf("%v", props.MergeRequests[0].Count-5)})</a>
+					</h2>
+				</li>
+			}
+		</ul>
+	</div>
+}
+
+templ PartialMergeRequestStackedList(props MergeRequestStackedListProps) {
+	for _, mr := range props.MergeRequests {
+		@mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
+	}
 }

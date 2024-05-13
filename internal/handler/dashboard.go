@@ -190,7 +190,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	prevWeekParams := url.Values{}
 	prevWeekParams.Set("week", prevWeek)
-	previousWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, prevWeekParams, true)
+	previousWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, prevWeekParams, true)
 
 	if err != nil {
 		return err
@@ -198,7 +198,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	nextWeekParams := url.Values{}
 	nextWeekParams.Set("week", nextWeek)
-	nextWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, nextWeekParams, true)
+	nextWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, nextWeekParams, true)
 
 	if err != nil {
 		return err
@@ -206,7 +206,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	currentWeekParams := url.Values{}
 	currentWeekParams.Set("week", util.GetFormattedWeek(time.Now()))
-	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, state, currentWeekParams, true)
+	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, currentWeekParams, true)
 
 	if err != nil {
 		return err
@@ -308,32 +308,47 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestsInProgress(date, teamMembers, nullRows.UserId)
+		mergeRequestsInProgress.Id = "mrs-in-progress"
+		mergeRequestsInProgress.Title = "In progress"
+		mergeRequestsInProgress.ShowMoreUrl = "/mr-stack/in-progress"
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressCountedList(timeNow, teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
 		}
 
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestsReadyToMerge(teamMembers, nullRows.UserId)
+		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
+		mergeRequestsReadyToMerge.Title = "Ready to merge"
+		mergeRequestsReadyToMerge.ShowMoreUrl = "/mr-stack/ready-to-merge"
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeCountedList(teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
 		}
 
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestsWaitingForReview(teamMembers, nullRows.UserId)
+		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
+		mergeRequestsWaitingForReview.Title = "Waiting for review"
+		mergeRequestsWaitingForReview.ShowMoreUrl = "/mr-stack/waiting-for-review"
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
 		}
 	}
 
-	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, true)
+	mergeRequestsMerged.Id = "mrs-merged"
+	mergeRequestsMerged.Title = "Merged"
+	mergeRequestsMerged.ShowMoreUrl = "/mr-stack/merged"
+	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedCountedList(date, teamMembers, nullRows.UserId)
 
 	if err != nil {
 		return err
 	}
 
-	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestsClosed(date, teamMembers, nullRows.UserId, false)
+	mergeRequestsClosed.Id = "mrs-closed"
+	mergeRequestsClosed.Title = "Closed"
+	mergeRequestsClosed.ShowMoreUrl = "/mr-stack/closed"
+	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedCountedList(date, teamMembers, nullRows.UserId)
 
 	if err != nil {
 		return err
