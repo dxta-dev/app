@@ -137,8 +137,6 @@ func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
 			attribute.String("BUILDTIME", BUILDTIME),
 		),
 		sdkresource.WithProcess(),
-		sdkresource.WithContainer(),
-		sdkresource.WithHost(),
 		sdkresource.WithFromEnv(),
 		sdkresource.WithTelemetrySDK(),
 	)
