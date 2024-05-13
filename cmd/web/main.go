@@ -19,15 +19,13 @@ import (
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
 var BUILDTIME string
 var DEBUG string
-
-var tracer = otel.Tracer("dxta-dev")
 
 func main() {
 
@@ -49,15 +47,21 @@ func main() {
 		log.Printf("--------------------------------------------------")
 	}
 
-	tp, err := initTracer()
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer func() {
-		if err := tp.Shutdown(context.Background()); err != nil {
-			log.Printf("Error shutting down tracer provider: %v", err)
+	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
+
+	if isEndpointProvided {
+		tp, err := initTracer(context.Background())
+		if err != nil {
+			log.Fatal(err)
 		}
-	}()
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Printf("Error shutting down tracer provider: %v", err)
+			}
+		}()
+	} else {
+		log.Printf("%v", fmt.Errorf("warning: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is not defined"))
+	}
 
 	app := &handler.App{
 		HTMX:           htmx.New(),
@@ -68,7 +72,9 @@ func main() {
 	app.GenerateNonce()
 
 	e := echo.New()
-	e.Use(otelecho.Middleware("app"))
+	if isEndpointProvided {
+		e.Use(otelecho.Middleware("app"))
+	}
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
@@ -116,8 +122,8 @@ func main() {
 
 }
 
-func initTracer() (*sdktrace.TracerProvider, error) {
-	exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
+func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
+	exporter, err := otlptracegrpc.New(ctx)
 	if err != nil {
 		return nil, err
 	}
