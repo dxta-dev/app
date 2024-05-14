@@ -71,11 +71,11 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
+func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, [][]string, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	defer db.Close()
@@ -105,7 +105,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 
 	rows, err := db.Query(query, mrId)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 	defer rows.Close()
 
@@ -132,9 +132,11 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 
 	uniqueDates := extractUniqueDates(squashedEvents)
 
+	uniqueAvatarUrls := extractUniqueAuthorAvatarUrl(squashedEvents)
+
 	sort.Strings(uniqueDates)
 
-	return squashedEvents, uniqueDates, nil
+	return squashedEvents, uniqueDates, uniqueAvatarUrls, nil
 }
 
 func extractUniqueDates(events [][]Event) []string {
@@ -156,6 +158,26 @@ func extractUniqueDates(events [][]Event) []string {
 	}
 
 	return uniqueDates
+}
+
+func extractUniqueAuthorAvatarUrl(events [][]Event) [][]string {
+	uniqueAuthorsMap := make(map[string]bool)
+	uniqueAuthorsSlice := [][]string{}
+
+	for _, eventList := range events {
+		newArr := []string{}
+		for _, event := range eventList {
+			author := event.Actor.AvatarUrl
+			if !uniqueAuthorsMap[author] {
+				newArr = append(newArr, author)
+				uniqueAuthorsMap[author] = true
+			}
+		}
+		uniqueAuthorsSlice = append(uniqueAuthorsSlice, newArr)
+		uniqueAuthorsMap = make(map[string]bool)
+	}
+
+	return uniqueAuthorsSlice
 }
 
 func filterClosedEvents(events []Event) []Event {

@@ -8,11 +8,12 @@ import (
 )
 
 type MergeRequestInfoProps struct {
-	Events         [][]data.Event
-	UniqueDates    []string
-	DetailsPageUrl string
-	DeleteEndpoint string
-	TargetSelector string
+	Events           [][]data.Event
+	UniqueDates      []string
+	UniqueAvatarUrls [][]string
+	DetailsPageUrl   string
+	DeleteEndpoint   string
+	TargetSelector   string
 }
 
 templ UserInfoBubble(user data.EventUserInfo) {
@@ -43,10 +44,10 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 									<span></span>
 								</a>
 							</div>
-						<h2 id="mr-info-header" class="pt-20 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10">
-							{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
-							(<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }</a>)
-						</h2>
+							<h2 id="mr-info-header" class="pt-20 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10">
+								{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
+								(<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }</a>)
+							</h2>
 							<div class="pt-4">
 								<button
  									hx-trigger="click, keyup[key=='Escape'] from:body"
@@ -70,16 +71,16 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 									for i, date := range props.UniqueDates {
 										<div class="relative py-8">
 											<div class="relative">
-											if i != 0 {
-												<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
-												<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
-													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
-												</div>
-											} else {
-												<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
-													<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
-												</div>
-											}
+												if i != 0 {
+													<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
+													<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+														<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
+													</div>
+												} else {
+													<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+														<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
+													</div>
+												}
 											</div>
 											for i, event := range props.Events {
 												if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
@@ -122,20 +123,28 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 															}
 															<div class="relative flex items-start space-x-3">
-																<div>
-																	<div class="relative px-1">
-																		<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 ring-8 ring-white">
-																			<svg class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-																				<path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-5.5-2.5a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0zM10 12a5.99 5.99 0 00-4.793 2.39A6.483 6.483 0 0010 16.5a6.483 6.483 0 004.793-2.11A5.99 5.99 0 0010 12z" clip-rule="evenodd"></path>
-																			</svg>
+																<div class="relative">
+																	<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
+																		<div class="flex ">
+																			<dt class="sr-only">Commenters</dt>
+																			for _, url := range uniqueAvatarUrls(event) {
+																				<div class="relative">
+																					if len(uniqueAvatarUrls(event)) == 1 {
+																						<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ url } alt=""/>
+																					} else {
+																						<dd>
+																							<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" src={ url } alt=""/>
+																						</dd>
+																					}
+																				</div>
+																			}
 																		</div>
-																	</div>
+																	</dl>
 																</div>
 																<div class="pr-14 min-w-0 flex-1 py-1.5">
 																	<div class="text-sm text-gray-500">
 																		<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
 																		made { fmt.Sprint(len(event)) } actions
-
 																		<details>
 																			<summary>Show actions</summary>
 																			for _, e := range event {
