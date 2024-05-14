@@ -57,11 +57,21 @@ func main() {
 	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
 
 	if isEndpointProvided {
-		tp, err := initTracer(context.Background())
+		res, err := sdkresource.New(
+			context.Background(),
+			sdkresource.WithAttributes(
+				semconv.ServiceName("dxta-app"),
+				attribute.String("BUILDTIME", BUILDTIME),
+			),
+		)
 		if err != nil {
 			log.Fatal(err)
 		}
-		mp, err := initMeter(context.Background())
+		tp, err := initTracer(context.Background(), res)
+		if err != nil {
+			log.Fatal(err)
+		}
+		mp, err := initMeter(context.Background(), res)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -145,19 +155,8 @@ func main() {
 
 }
 
-func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
+func initTracer(ctx context.Context, res *sdkresource.Resource) (*sdktrace.TracerProvider, error) {
 	exporter, err := otlptracegrpc.New(ctx)
-	if err != nil {
-		return nil, err
-	}
-	res, err := sdkresource.New(
-		context.Background(),
-		sdkresource.WithAttributes(
-			semconv.ServiceName("dxta-app"),
-			attribute.String("BUILDTIME", BUILDTIME),
-		),
-	)
-
 	if err != nil {
 		return nil, err
 	}
@@ -174,13 +173,13 @@ func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	return tp, nil
 }
 
-func initMeter(ctx context.Context) (*sdkmetric.MeterProvider, error) {
+func initMeter(ctx context.Context, res *sdkresource.Resource) (*sdkmetric.MeterProvider, error) {
 	exporter, err := otlpmetricgrpc.New(ctx)
 	if err != nil {
 		return nil, err
 	}
 	read := sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(60*time.Second))
-	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(read))
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(read), sdkmetric.WithResource(res))
 	otel.SetMeterProvider(provider)
 	return provider, nil
 }
