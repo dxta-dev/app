@@ -41,6 +41,28 @@ func getEventName(eventType data.EventType) string {
 	return "Invalid EventType"
 }
 
+type ActorInfo struct {
+    AvatarUrl string
+    Name      string
+}
+
+func uniqueActorInfo(input []data.Event) []ActorInfo {
+    uniqueMap := make(map[string]ActorInfo)
+    var uniqueSlice []ActorInfo
+
+    for _, event := range input {
+        if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
+            uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
+                AvatarUrl: event.Actor.AvatarUrl,
+                Name:      event.Actor.Name,
+            }
+            uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
+        }
+    }
+
+    return uniqueSlice
+}
+
 script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
 
 	if (circleIds === null) {

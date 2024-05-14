@@ -71,11 +71,11 @@ func (d EventSlice) Swap(i, j int) {
 	d[i], d[j] = d[j], d[i]
 }
 
-func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
+func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 	db, err := sql.Open("libsql", s.DbUrl)
 
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer db.Close()
@@ -105,7 +105,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	rows, err := db.Query(query, mrId)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	defer rows.Close()
 
@@ -130,11 +130,55 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, error) {
 
 	squashedEvents := SquashEventSlice(mergeRequestEvents)
 
+	uniqueDates := extractUniqueDates(squashedEvents)
 
-	return squashedEvents, nil
+	sort.Strings(uniqueDates)
+
+	return squashedEvents, uniqueDates, nil
 }
 
-func filterClosedEvents(events []Event)  []Event{
+func extractUniqueDates(events [][]Event) []string {
+	uniqueDatesMap := make(map[string]bool)
+
+	for _, eventList := range events {
+		for _, event := range eventList {
+			date := time.Unix(0, event.Timestamp*int64(time.Millisecond)).Format("2006-01-02")
+
+			if _, exists := uniqueDatesMap[date]; !exists {
+				uniqueDatesMap[date] = true
+			}
+		}
+	}
+
+	var uniqueDates []string
+	for date := range uniqueDatesMap {
+		uniqueDates = append(uniqueDates, date)
+	}
+
+	return uniqueDates
+}
+
+func extractUniqueAuthorAvatarUrl(events [][]Event) [][]string {
+	uniqueAuthorsMap := make(map[string]bool)
+	uniqueAuthorsSlice := [][]string{}
+
+	for _, eventList := range events {
+		newArr := []string{}
+		for _, event := range eventList {
+			author := event.Actor.AvatarUrl
+			if !uniqueAuthorsMap[author] {
+				newArr = append(newArr, author)
+				uniqueAuthorsMap[author] = true
+			}
+		}
+		uniqueAuthorsSlice = append(uniqueAuthorsSlice, newArr)
+		uniqueAuthorsMap = make(map[string]bool)
+	}
+
+	return uniqueAuthorsSlice
+}
+
+func filterClosedEvents(events []Event) []Event {
 	lastClosedEventPosition := -1
 	isMerged := false
 
@@ -275,49 +319,64 @@ func isInTimeframe(e1 Event, e2 Event, timeframe int64) bool {
 }
 
 func SquashEventSlice(events EventSlice) [][]Event {
+	sort.Sort(events)
+
+	groupedCommitted := make(map[string][]Event)
+	groupedDiscussion := make(map[string][]Event)
+
+	var singleEvents []Event
+
+	for _, event := range events {
+		switch {
+		case isCommitted(event):
+			t := time.Unix(event.Timestamp/1000, 0)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+			date := t.Format("2006-01-02")
+			groupedCommitted[date] = append(groupedCommitted[date], event)
+		case isReviewed(event), isNoted(event), isCommented(event):
+			t := time.Unix(event.Timestamp/1000, 0)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+			date := t.Format("2006-01-02")
+			groupedDiscussion[date] = append(groupedDiscussion[date], event)
+		default:
+			singleEvents = append(singleEvents, event)
+		}
+	}
 
 	var result [][]Event
 
-	var currentSquashedEvents []Event
-
-	for _, event := range events {
-		if len(currentSquashedEvents) == 0 {
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
-
-		lastSquashedEvent := currentSquashedEvents[len(currentSquashedEvents)-1]
-
-		if isCommitted(lastSquashedEvent) &&
-			isCommitted(event) &&
-			isSameActor(lastSquashedEvent, event) &&
-			isInTimeframe(lastSquashedEvent, event, 60*60*1000) {
-
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
-
-		if isSameActor(lastSquashedEvent, event) &&
-			isInTimeframe(lastSquashedEvent, event, 30*60*1000) &&
-			(isReviewed(lastSquashedEvent) && isReviewed(event) ||
-				isNoted(lastSquashedEvent) && isNoted(event) ||
-				isCommented(lastSquashedEvent) && isCommented(event)) {
-
-			currentSquashedEvents = append(currentSquashedEvents, event)
-			continue
-		}
-
-		result = append(result, currentSquashedEvents)
-		currentSquashedEvents = []Event{event}
-
+	for _, event := range singleEvents {
+		result = append(result, []Event{event})
 	}
 
-	if len(currentSquashedEvents) > 0 {
-		result = append(result, currentSquashedEvents)
+	var committedDates []string
+	for date := range groupedCommitted {
+		committedDates = append(committedDates, date)
 	}
+	sort.Strings(committedDates)
+
+	for _, date := range committedDates {
+		result = append(result, groupedCommitted[date])
+	}
+
+	var discussionDates []string
+	for date := range groupedDiscussion {
+		discussionDates = append(discussionDates, date)
+	}
+	sort.Strings(discussionDates)
+
+	for _, date := range discussionDates {
+		result = append(result, groupedDiscussion[date])
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		if len(result[i]) == 0 || len(result[j]) == 0 {
+			return false
+		}
+		return result[i][0].Timestamp < result[j][0].Timestamp
+	})
 
 	return result
-
 }
 
 func SmushEventSlice(events EventSlice) EventSlice {
