@@ -63,19 +63,18 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Push-Url", nextUrl)
 
-	events, uniqueDates, uniqueAvatarUrls, err := store.GetMergeRequestEvents(mrId)
+	events, uniqueDates, err := store.GetMergeRequestEvents(mrId)
 
 	if err != nil {
 		return err
 	}
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
-		Events:           events,
-		UniqueDates:      uniqueDates,
-		UniqueAvatarUrls: uniqueAvatarUrls,
-		DetailsPageUrl:   fmt.Sprintf("/mr/%d", mrId),
-		DeleteEndpoint:   fmt.Sprintf("/mr-info/%d", mrId),
-		TargetSelector:   "#mr-info",
+		Events:         events,
+		UniqueDates:    uniqueDates,
+		DetailsPageUrl: fmt.Sprintf("/mr/%d", mrId),
+		DeleteEndpoint: fmt.Sprintf("/mr-info/%d", mrId),
+		TargetSelector: "#mr-info",
 	}
 
 	components := template.MergeRequestInfo(mergeRequestInfoProps)
@@ -175,18 +174,17 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 
 	c.Response().Header().Set("HX-Push-Url", nextDetailsUrl)
 
-	events, uniqueDates, uniqueAvatarUrls, err := store.GetMergeRequestEvents(mrId)
+	events, uniqueDates, err := store.GetMergeRequestEvents(mrId)
 
 	if err != nil {
 		return err
 	}
 
 	mergeRequestInfoProps := template.MergeRequestInfoProps{
-		Events:           events,
-		UniqueDates:      uniqueDates,
-		UniqueAvatarUrls: uniqueAvatarUrls,
-		DeleteEndpoint:   fmt.Sprintf("/mr/%d", mrId),
-		TargetSelector:   "details",
+		Events:         events,
+		UniqueDates:    uniqueDates,
+		DeleteEndpoint: fmt.Sprintf("/mr/%d", mrId),
+		TargetSelector: "details",
 	}
 
 	navState, err := a.GetNavState()

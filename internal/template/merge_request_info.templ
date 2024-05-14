@@ -8,12 +8,11 @@ import (
 )
 
 type MergeRequestInfoProps struct {
-	Events           [][]data.Event
-	UniqueDates      []string
-	UniqueAvatarUrls [][]string
-	DetailsPageUrl   string
-	DeleteEndpoint   string
-	TargetSelector   string
+	Events         [][]data.Event
+	UniqueDates    []string
+	DetailsPageUrl string
+	DeleteEndpoint string
+	TargetSelector string
 }
 
 templ UserInfoBubble(user data.EventUserInfo) {
@@ -96,7 +95,9 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 															}
 															<div class="relative flex items-start space-x-3">
 																<div class="relative">
-																	<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
+																	<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+																		<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
+																	</div>
 																</div>
 																<div class="pr-14 min-w-0 flex-1">
 																	<div>
@@ -132,14 +133,18 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																	<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
 																		<div class="flex ">
 																			<dt class="sr-only">Commenters</dt>
-																			for _, url := range uniqueAvatarUrls(event) {
+																			for _, actor := range uniqueActorInfo(event) {
 																				<div class="relative">
-																					if len(uniqueAvatarUrls(event)) == 1 {
-																						<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" src={ url } alt=""/>
+																					if len(uniqueActorInfo(event)) == 1 {
+																						<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+																							<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
+																						</div>
 																					} else {
-																						<dd>
-																							<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" src={ url } alt=""/>
-																						</dd>
+																						<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+																							<dd>
+																								<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
+																							</dd>
+																						</div>
 																					}
 																				</div>
 																			}

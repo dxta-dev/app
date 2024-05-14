@@ -271,19 +271,18 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	if state.mr != nil {
 
-		events, uniqueDates, uniqueAvatarUrls, err := store.GetMergeRequestEvents(*state.mr)
+		events, uniqueDates, err := store.GetMergeRequestEvents(*state.mr)
 
 		if err != nil {
 			return err
 		}
 
 		mergeRequestInfoProps = &template.MergeRequestInfoProps{
-			Events:           events,
-			UniqueDates:      uniqueDates,
-			UniqueAvatarUrls: uniqueAvatarUrls,
-			DetailsPageUrl:   fmt.Sprintf("/mr/%d", *state.mr),
-			DeleteEndpoint:   fmt.Sprintf("/mr-info/%d", *state.mr),
-			TargetSelector:   "#mr-info",
+			Events:         events,
+			UniqueDates:    uniqueDates,
+			DetailsPageUrl: fmt.Sprintf("/mr/%d", *state.mr),
+			DeleteEndpoint: fmt.Sprintf("/mr-info/%d", *state.mr),
+			TargetSelector: "#mr-info",
 		}
 	}
 

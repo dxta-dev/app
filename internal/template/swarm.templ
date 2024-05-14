@@ -41,14 +41,22 @@ func getEventName(eventType data.EventType) string {
 	return "Invalid EventType"
 }
 
-func uniqueAvatarUrls(input []data.Event) []string {
-    uniqueMap := make(map[string]bool)
-    var uniqueSlice []string
+type ActorInfo struct {
+    AvatarUrl string
+    Name      string
+}
+
+func uniqueActorInfo(input []data.Event) []ActorInfo {
+    uniqueMap := make(map[string]ActorInfo)
+    var uniqueSlice []ActorInfo
 
     for _, event := range input {
-        if !uniqueMap[event.Actor.AvatarUrl] {
-            uniqueMap[event.Actor.AvatarUrl] = true
-            uniqueSlice = append(uniqueSlice, event.Actor.AvatarUrl)
+        if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
+            uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
+                AvatarUrl: event.Actor.AvatarUrl,
+                Name:      event.Actor.Name,
+            }
+            uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
         }
     }
 
