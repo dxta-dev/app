@@ -2,26 +2,24 @@ package data
 
 import (
 	"database/sql"
-	"fmt"
+
 	_ "modernc.org/sqlite"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
 
 type NullRows struct {
-	DateId 		int64
-	UserId 		int64
-	MergeRequestId 	int64
-	RepositoryId 	int64
+	DateId         int64
+	UserId         int64
+	MergeRequestId int64
+	RepositoryId   int64
 }
 
 var nullRows *NullRows = nil
 
-
 func (s *Store) GetNullRows() (*NullRows, error) {
 
 	if nullRows != nil {
-		fmt.Println("Returning cached null rows")
 		return nullRows, nil
 	}
 
