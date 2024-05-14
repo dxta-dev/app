@@ -18,6 +18,7 @@ import (
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
 
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	instrhost "go.opentelemetry.io/contrib/instrumentation/host"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -73,6 +74,10 @@ func main() {
 			}
 		}()
 
+		err = instrhost.Start(instrhost.WithMeterProvider(mp))
+		if err != nil {
+			log.Fatal(err)
+		}
 		err = instrruntime.Start(instrruntime.WithMinimumReadMemStatsInterval(60 * time.Second))
 		if err != nil {
 			log.Fatal(err)
@@ -174,7 +179,7 @@ func initMeter(ctx context.Context) (*sdkmetric.MeterProvider, error) {
 	if err != nil {
 		return nil, err
 	}
-	read := sdkmetric.NewPeriodicReader(exporter)
+	read := sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(60*time.Second))
 	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(read))
 	otel.SetMeterProvider(provider)
 	return provider, nil
