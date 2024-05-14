@@ -5,6 +5,7 @@ import (
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/util"
 
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -15,6 +16,15 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
 	echoMiddleware "github.com/labstack/echo/v4/middleware"
+
+	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/propagation"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
 )
 
 var BUILDTIME string
@@ -40,6 +50,22 @@ func main() {
 		log.Printf("--------------------------------------------------")
 	}
 
+	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
+
+	if isEndpointProvided {
+		tp, err := initTracer(context.Background())
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer func() {
+			if err := tp.Shutdown(context.Background()); err != nil {
+				log.Printf("Error shutting down tracer provider: %v", err)
+			}
+		}()
+	} else {
+		log.Printf("%v", fmt.Errorf("missing OTEL exporter configuration. Provide one of (OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_TRACES_ENDPOINT) options"))
+	}
+
 	app := &handler.App{
 		HTMX:           htmx.New(),
 		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
@@ -49,6 +75,9 @@ func main() {
 	app.GenerateNonce()
 
 	e := echo.New()
+	if isEndpointProvided {
+		e.Use(otelecho.Middleware("dxta-app"))
+	}
 	e.Use(echoMiddleware.Logger())
 	e.Use(echoMiddleware.Recover())
 	e.Use(echoMiddleware.GzipWithConfig(echoMiddleware.GzipConfig{Level: 6}))
@@ -94,4 +123,33 @@ func main() {
 	}
 	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 
+}
+
+func initTracer(ctx context.Context) (*sdktrace.TracerProvider, error) {
+	exporter, err := otlptracegrpc.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+	res, err := sdkresource.New(
+		context.Background(),
+		sdkresource.WithAttributes(
+			semconv.ServiceName("dxta-app"),
+			attribute.String("BUILDTIME", BUILDTIME),
+		),
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tp := sdktrace.NewTracerProvider(
+		sdktrace.WithSampler(sdktrace.AlwaysSample()),
+		sdktrace.WithBatcher(exporter),
+		sdktrace.WithResource(
+			res,
+		),
+	)
+	otel.SetTracerProvider(tp)
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(propagation.TraceContext{}, propagation.Baggage{}))
+	return tp, nil
 }
