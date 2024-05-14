@@ -153,8 +153,13 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 																</div>
 																<div class="pr-14 min-w-0 flex-1 py-1.5">
 																	<div class="text-sm text-gray-500">
-																		<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
-																		made { fmt.Sprint(len(event)) } actions
+																		<a href={ templ.URL(event[0].MergeRequestUrl) } target="_blank" class="font-medium text-gray-900">
+	                                                                    if getEventName(event[0].Type) == "COMMITTED" {
+																			CODING
+																		} else {
+																			DISCUSSION
+																		}
+																		</a>
 																		<details>
 																			<summary>Show actions</summary>
 																			for _, e := range event {
