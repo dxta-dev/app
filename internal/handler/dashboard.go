@@ -324,7 +324,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
 		mergeRequestsInProgress.ShowMoreUrl = "/mr-stack/in-progress"
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressCountedList(timeNow, teamMembers, nullRows.UserId)
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressCountedList(timeNow, teamMembers, nullRows.UserId, nullRows.DateId)
 
 		if err != nil {
 			return err
@@ -342,7 +342,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
 		mergeRequestsWaitingForReview.ShowMoreUrl = "/mr-stack/waiting-for-review"
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, nullRows.UserId)
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, nullRows.UserId, nullRows.DateId)
 
 		if err != nil {
 			return err

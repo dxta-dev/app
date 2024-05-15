@@ -206,9 +206,10 @@ const mrListInProgressCondition = `occured_on.week = ?
 	AND metrics.merged = 0
 	AND metrics.closed = 0
 	AND author.bot = 0
-	AND user.bot = 0`
+	AND user.bot = 0
+	AND dj.started_pickup_at = ?`
 
-func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers []int64, nullUserId int64, nullDateId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -234,10 +235,11 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams := make([]interface{}, len(teamMembers)+2)
 	queryParams[0] = week
+	queryParams[1] = nullDateId
 	for i, v := range teamMembers {
-		queryParams[i+1] = v
+		queryParams[i+2] = v
 	}
 
 	rows, err := db.Query(query, queryParams...)
@@ -276,7 +278,7 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 	return mergeRequests, nil
 }
 
-func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int64, nullUserId int64, nullDateId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -301,10 +303,11 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams := make([]interface{}, len(teamMembers)+2)
 	queryParams[0] = week
+	queryParams[1] = nullDateId
 	for i, v := range teamMembers {
-		queryParams[i+1] = v
+		queryParams[i+2] = v
 	}
 
 	rows, err := db.Query(query, queryParams...)
@@ -492,9 +495,10 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
   	AND metrics.merged = 0
   	AND metrics.closed = 0
 		AND author.bot = 0
-		AND user.bot = 0`
+		AND user.bot = 0
+		AND dj.started_pickup_at != ?`
 
-func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, nullUserId int64, nullDateId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -523,9 +527,10 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers))
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = nullDateId
 	for i, v := range teamMembers {
-		queryParams[i] = v
+		queryParams[i+1] = v
 	}
 
 	rows, err := db.Query(query, queryParams...)
@@ -564,7 +569,7 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 	return mergeRequests, nil
 }
 
-func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUserId int64, nullDateId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -591,9 +596,10 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers))
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = nullDateId
 	for i, v := range teamMembers {
-		queryParams[i] = v
+		queryParams[i+1] = v
 	}
 
 	rows, err := db.Query(query, queryParams...)
