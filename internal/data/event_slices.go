@@ -206,7 +206,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
