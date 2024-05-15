@@ -1,12 +1,10 @@
 package data
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
 	"github.com/dxta-dev/app/internal/util"
-	"go.opentelemetry.io/otel"
 
 	"database/sql"
 	"log"
@@ -216,9 +214,6 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 
 	defer db.Close()
 
-	ctx, span := otel.Tracer("get-event-slices").Start(context.Background(), "GetEventSlices")
-	defer span.End()
-
 	week := util.GetFormattedWeek(date)
 
 	query := fmt.Sprintf(`
@@ -250,7 +245,7 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.QueryContext(ctx, query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
