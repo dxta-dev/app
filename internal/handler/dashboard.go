@@ -119,6 +119,7 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
+	ctx := c.Request().Context()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 	var err error
@@ -134,6 +135,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	store := &data.Store{
 		DbUrl:      tenantDatabaseUrl,
 		DriverName: driverName,
+		Context:    ctx,
 	}
 
 	a.GenerateNonce()
