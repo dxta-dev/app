@@ -1,11 +1,13 @@
 package handler
 
 import (
+	"github.com/XSAM/otelsql"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/graph"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
+	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 
 	"context"
 	"fmt"
@@ -117,11 +119,23 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
+	ctx := c.Request().Context()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+	var err error
+
+	driverName, err := otelsql.Register("libsql", otelsql.WithAttributes(
+		semconv.ServiceName("turso"),
+	))
+	if err != nil {
+		driverName = "libsql"
+		fmt.Println("Failed to register otelsql driver")
+	}
 
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: driverName,
+		Context:    ctx,
 	}
 
 	a.GenerateNonce()
@@ -129,7 +143,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	timeNow := time.Now()
 	date := time.Now()
-	var err error
 	var mr *int64 = new(int64)
 	*mr, err = strconv.ParseInt(r.URL.Query().Get("mr"), 10, 64)
 	if err != nil {
