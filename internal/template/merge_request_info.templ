@@ -3,7 +3,6 @@ package template
 import (
 	"github.com/dxta-dev/app/internal/data"
 	"fmt"
-	"strings"
 	"time"
 )
 
@@ -13,18 +12,6 @@ type MergeRequestInfoProps struct {
 	DetailsPageUrl string
 	DeleteEndpoint string
 	TargetSelector string
-}
-
-templ UserInfoBubble(user data.EventUserInfo) {
-	<span class="flex overflow-visible items-center gap-1">
-		if (user.Id == 1) {
-			<div class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-gray-300"></div>
-			<small>&lt;Unknown/&gt;</small>
-		} else {
-			<img class="inline-block h-6 w-6 rounded-full ring-2 ring-white" src={ fmt.Sprintf(user.AvatarUrl) }/>
-			{ strings.Split(user.Name, " ")[0] }
-		}
-	</span>
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -51,7 +38,7 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 					</svg>
 				</a>
 			</div>
-			<h2 id="mr-info-header" class="pt-20 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10">
+			<h2 id="mr-info-header" class="pt-16 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10">
 				{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
 				(
 				<a class="text-blue-600" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">
@@ -67,7 +54,7 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
  					hx-delete={ props.DeleteEndpoint }
  					hx-target={ props.TargetSelector }
  					type="button"
- 					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white"
+ 					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
 				>
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -89,14 +76,10 @@ templ MergeRequestDates(props MergeRequestInfoProps) {
 							<div class="relative">
 								if i != 0 {
 									<div class="absolute left-0 top-1/2 h-0.5 w-full bg-gray-300"></div>
-									<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
-										<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
-									</div>
-								} else {
-									<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
-										<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
-									</div>
 								}
+								<div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transform rounded-lg bg-white px-3 py-1 shadow-md">
+									<p class="text-sm text-gray-600">{ fmt.Sprintf("%v", date) }</p>
+								</div>
 							</div>
 							@MergeRequestEventsList(props, date)
 						</div>
@@ -105,6 +88,23 @@ templ MergeRequestDates(props MergeRequestInfoProps) {
 			</ul>
 		</div>
 	</div>
+}
+
+templ MergeRequestEventsList(props MergeRequestInfoProps, date string) {
+	for i, event := range props.Events {
+		if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
+			<div class="relative py-8">
+				if i < len(props.Events) - 1 {
+					<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+				}
+				if len(event) == 1 {
+					@SingleEvents(event)
+				} else {
+					@SquashedEvents(event)
+				}
+			</div>
+		}
+	}
 }
 
 templ SingleEvents(event []data.Event) {
@@ -167,26 +167,6 @@ templ SquashedEvents(event []data.Event) {
 		</div>
 		@MergeRequestCodingDiscussions(event)
 	</div>
-}
-
-templ MergeRequestEventsList(props MergeRequestInfoProps, date string) {
-	for i, event := range props.Events {
-		if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
-			<div class="relative py-8">
-				if len(event) == 1 {
-					if i < len(props.Events) - 1 {
-						<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-					}
-					@SingleEvents(event)
-				} else {
-					if i < len(props.Events) - 1 {
-						<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
-					}
-					@SquashedEvents(event)
-				}
-			</div>
-		}
-	}
 }
 
 templ MergeRequestCodingDiscussions(event []data.Event) {
