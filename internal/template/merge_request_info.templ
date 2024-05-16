@@ -34,11 +34,11 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6">
 					@MergeRequestHeader(props)
+					@MergeRequestDates(props)
 				</div>
 			</div>
 		</div>
 	</div>
-	@MergeRequestDates(props)
 }
 
 templ MergeRequestHeader(props MergeRequestInfoProps) {
@@ -107,6 +107,68 @@ templ MergeRequestDates(props MergeRequestInfoProps) {
 	</div>
 }
 
+templ SingleEvents(event []data.Event) {
+	<div class="relative flex items-start space-x-3">
+		<div class="relative">
+			<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+				<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
+			</div>
+		</div>
+		<div class="pr-14 min-w-0 flex-1">
+			<div>
+				<div class="text-sm">
+					<a href={ templ.URL(event[0].Actor.ProfileUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
+				</div>
+			</div>
+			<div class="mt-2 text-sm text-gray-700">
+				<div class="min-w-0 flex-1 py-0">
+					<div class="text-sm leading-8 text-gray-500">
+						if (event[0].HtmlUrl != "") {
+							<a href={ templ.URL(event[0].HtmlUrl) } target="_blank" class="font-medium text-gray-900">
+								<span class="mr-0.5">
+									{ getEventName(event[0].Type) }
+								</span>
+							</a>
+						} else {
+							<span class="mr-0.5">
+								{ getEventName(event[0].Type) }
+							</span>
+						}
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ SquashedEvents(event []data.Event) {
+	<div class="relative flex items-start space-x-3">
+		<div class="relative">
+			<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
+				<div class="flex ">
+					<dt class="sr-only">Commenters</dt>
+					for _, actor := range uniqueActorInfo(event) {
+						<div class="relative">
+							if len(uniqueActorInfo(event)) == 1 {
+								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
+								</div>
+							} else {
+								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+									<dd>
+										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
+									</dd>
+								</div>
+							}
+						</div>
+					}
+				</div>
+			</dl>
+		</div>
+		@MergeRequestCodingDiscussions(event)
+	</div>
+}
+
 templ MergeRequestEventsList(props MergeRequestInfoProps, date string) {
 	for i, event := range props.Events {
 		if time.Unix(event[0].Timestamp/1000, 0).Format("2006-01-02") == date {
@@ -115,66 +177,12 @@ templ MergeRequestEventsList(props MergeRequestInfoProps, date string) {
 					if i < len(props.Events) - 1 {
 						<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 					}
-					<div class="relative flex items-start space-x-3">
-						<div class="relative">
-							<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
-								<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
-							</div>
-						</div>
-						<div class="pr-14 min-w-0 flex-1">
-							<div>
-								<div class="text-sm">
-									<a href={ templ.URL(event[0].Actor.ProfileUrl) } target="_blank" class="font-medium text-gray-900">{ fmt.Sprint(event[0].Actor.Name) }</a>
-								</div>
-							</div>
-							<div class="mt-2 text-sm text-gray-700">
-								<div class="min-w-0 flex-1 py-0">
-									<div class="text-sm leading-8 text-gray-500">
-										if (event[0].HtmlUrl != "") {
-											<a href={ templ.URL(event[0].HtmlUrl) } target="_blank" class="font-medium text-gray-900">
-												<span class="mr-0.5">
-													{ getEventName(event[0].Type) }
-												</span>
-											</a>
-										} else {
-											<span class="mr-0.5">
-												{ getEventName(event[0].Type) }
-											</span>
-										}
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
+					@SingleEvents(event)
 				} else {
 					if i < len(props.Events) - 1 {
 						<span class="absolute left-5 top-5 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
 					}
-					<div class="relative flex items-start space-x-3">
-						<div class="relative">
-							<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
-								<div class="flex ">
-									<dt class="sr-only">Commenters</dt>
-									for _, actor := range uniqueActorInfo(event) {
-										<div class="relative">
-											if len(uniqueActorInfo(event)) == 1 {
-												<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
-													<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
-												</div>
-											} else {
-												<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
-													<dd>
-														<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
-													</dd>
-												</div>
-											}
-										</div>
-									}
-								</div>
-							</dl>
-						</div>
-						@MergeRequestCodingDiscussions(event)
-					</div>
+					@SquashedEvents(event)
 				}
 			</div>
 		}
