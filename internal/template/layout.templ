@@ -42,7 +42,7 @@ templ Layout(page *Page) {
 			@Navigation(page.NavState, page.DebugMode)
 		}
 		<body>
-			@Content() {
+			@Content(page) {
 				{ children... }
 			}
 		</body>
@@ -59,10 +59,14 @@ templ Head(title string, bust string, nonce string) {
 	</head>
 }
 
-templ Content() {
-	<main class="max-w-[1440px] mx-auto">
+templ Content(page *Page) {
+	if page.Boosted {
 		{ children... }
-	</main>
+	} else {
+		<main class="max-w-[1440px] mx-auto">
+			{ children... }
+		</main>
+	}
 }
 
 templ Navigation(navigation NavState, debug bool) {
@@ -84,7 +88,7 @@ templ Navigation(navigation NavState, debug bool) {
 			</div>
 		</div>
 	}
-	<div hx-boost="true" hx-target="main" hx-sync="this" hx-swap="outerHTML show:unset"  class="w-full mx-auto">
+	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset"  class="w-full mx-auto">
 		<div
 			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
 		>
