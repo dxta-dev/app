@@ -11,9 +11,19 @@ import (
 )
 
 type AverageMRSizeByWeek struct {
-	Week string
-	Size int
-	N    int
+	Week     string
+	Size     int
+	N        int
+	HasValue bool
+}
+
+func NewAverageMRSizeByWeek(week string, size int, n int) AverageMRSizeByWeek {
+	return AverageMRSizeByWeek{
+		Week:     week,
+		Size:     size,
+		N:        n,
+		HasValue: true,
+	}
 }
 
 func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[string]AverageMRSizeByWeek, float64, error) {
@@ -74,13 +84,15 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 	mrSizeByWeeks := make(map[string]AverageMRSizeByWeek)
 
 	for rows.Next() {
-		var mrweek AverageMRSizeByWeek
+		var week string
+		var size int
+		var n int
 
-		if err := rows.Scan(&mrweek.Size, &mrweek.Week, &mrweek.N); err != nil {
+		if err := rows.Scan(&size, &week, &n); err != nil {
 			return nil, 0, err
 		}
 
-		mrSizeByWeeks[mrweek.Week] = mrweek
+		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, size, n)
 	}
 
 	totalMRSizeCount := 0
@@ -90,9 +102,10 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 		totalMRSizeCount += mrSizeByWeeks[week].Size
 		if _, ok := mrSizeByWeeks[week]; !ok {
 			mrSizeByWeeks[week] = AverageMRSizeByWeek{
-				Week: week,
-				Size: 0,
-				N:    0,
+				Week:     week,
+				Size:     0,
+				N:        0,
+				HasValue: false,
 			}
 		}
 	}
@@ -103,8 +116,17 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 }
 
 type AverageMrReviewDepthByWeek struct {
-	Week  string
-	Depth float32
+	Week     string
+	Depth    float32
+	HasValue bool
+}
+
+func NewAverageMrReviewDepthByWeek(week string, depth float32) AverageMrReviewDepthByWeek {
+	return AverageMrReviewDepthByWeek{
+		Week:     week,
+		Depth:    depth,
+		HasValue: true,
+	}
 }
 
 func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[string]AverageMrReviewDepthByWeek, float64, error) {
@@ -163,13 +185,14 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 	mrReviewDepthByWeeks := make(map[string]AverageMrReviewDepthByWeek)
 
 	for rows.Next() {
-		var mrweek AverageMrReviewDepthByWeek
+		var week string
+		var depth float32
 
-		if err := rows.Scan(&mrweek.Depth, &mrweek.Week); err != nil {
+		if err := rows.Scan(&depth, &week); err != nil {
 			return nil, 0, err
 		}
 
-		mrReviewDepthByWeeks[mrweek.Week] = mrweek
+		mrReviewDepthByWeeks[week] = NewAverageMrReviewDepthByWeek(week, depth)
 	}
 
 	totalReviewDepthCount := float32(0)
@@ -179,8 +202,9 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 		totalReviewDepthCount += mrReviewDepthByWeeks[week].Depth
 		if _, ok := mrReviewDepthByWeeks[week]; !ok {
 			mrReviewDepthByWeeks[week] = AverageMrReviewDepthByWeek{
-				Week:  week,
-				Depth: 0,
+				Week:     week,
+				Depth:    0,
+				HasValue: false,
 			}
 		}
 	}
@@ -290,8 +314,17 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 }
 
 type MrCountByWeek struct {
-	Week  string
-	Count int
+	Week     string
+	Count    int
+	HasValue bool
+}
+
+func NewMrCountByWeek(week string, count int) MrCountByWeek {
+	return MrCountByWeek{
+		Week:     week,
+		Count:    count,
+		HasValue: true,
+	}
 }
 
 func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (map[string]MrCountByWeek, float64, error) {
@@ -350,13 +383,14 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 	mrCountByWeeks := make(map[string]MrCountByWeek)
 
 	for rows.Next() {
-		var mrweek MrCountByWeek
+		var week string
+		var count int
 
-		if err := rows.Scan(&mrweek.Count, &mrweek.Week); err != nil {
+		if err := rows.Scan(&count, &week); err != nil {
 			return nil, 0, err
 		}
 
-		mrCountByWeeks[mrweek.Week] = mrweek
+		mrCountByWeeks[week] = NewMrCountByWeek(week, count)
 	}
 
 	totalMergedCount := 0
@@ -366,8 +400,9 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 		totalMergedCount += mrCountByWeeks[week].Count
 		if _, ok := mrCountByWeeks[week]; !ok {
 			mrCountByWeeks[week] = MrCountByWeek{
-				Week:  week,
-				Count: 0,
+				Week:     week,
+				Count:    0,
+				HasValue: false,
 			}
 		}
 	}
