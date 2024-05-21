@@ -4,6 +4,7 @@ go 1.22.2
 
 require (
 	github.com/BurntSushi/toml v1.3.2
+	github.com/XSAM/otelsql v0.31.0
 	github.com/a-h/templ v0.2.680
 	github.com/donseba/go-htmx v1.8.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
@@ -18,11 +19,10 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.26.0
 	go.opentelemetry.io/otel/sdk v1.26.0
 	go.opentelemetry.io/otel/sdk/metric v1.26.0
-	modernc.org/sqlite v1.29.9
+	modernc.org/sqlite v1.29.10
 )
 
 require (
-	github.com/XSAM/otelsql v0.31.0 // indirect
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
 	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
