@@ -71,11 +71,18 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageMrSizeXValues := make([]float64, len(weeks))
 	averageMrSizeYValues := make([]float64, len(weeks))
+	formattedAverageMrSizeYValues := make([]string, len(weeks))
 	startEndWeek := make([]template.StartEndWeek, len(weeks))
 
 	for i, week := range weeks {
 		averageMrSizeXValues[i] = float64(i)
-		averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
+		if averageMrSize[week].HasValue {
+			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
+			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
+		} else {
+			formattedAverageMrSizeYValues[i] = "No Data"
+		}
+
 		startWeek, endWeek, err := util.ParseYearWeek(week)
 		if err != nil {
 			return err
@@ -84,12 +91,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 			Start: startWeek.Format("Jan 02"),
 			End:   endWeek.Format("Jan 02"),
 		}
-	}
-
-	formattedAverageMrSizeYValues := make([]string, len(averageMrSizeYValues))
-
-	for i, value := range averageMrSizeYValues {
-		formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(value)
 	}
 
 	averageMrSizeSeries := template.TimeSeries{
@@ -108,16 +109,16 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageReviewDepthXValues := make([]float64, len(weeks))
 	averageReviewDepthYValues := make([]float64, len(weeks))
+	formattedAverageReviewDepthYValues := make([]string, len(weeks))
 
 	for i, week := range weeks {
 		averageReviewDepthXValues[i] = float64(i)
-		averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
-	}
-
-	formattedAverageReviewDepthYValues := make([]string, len(averageReviewDepthYValues))
-
-	for i, value := range averageReviewDepthYValues {
-		formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(value)
+		if averageReviewDepth[week].HasValue {
+			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
+			formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
+		} else {
+			formattedAverageReviewDepthYValues[i] = "No Data"
+		}
 	}
 
 	averageReviewDepthSeries := template.TimeSeries{
@@ -136,16 +137,16 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	averageMrHandoverMetricsByNWeeksXValues := make([]float64, len(weeks))
 	averageMrHandoverMetricsByNWeeksYValues := make([]float64, len(weeks))
+	formattedAverageMrHandoverMetricsByNWeeksYValues := make([]string, len(weeks))
 
 	for i, week := range weeks {
 		averageMrHandoverMetricsByNWeeksXValues[i] = float64(i)
-		averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
-	}
-
-	formattedAverageMrHandoverMetricsByNWeeksYValues := make([]string, len(averageMrHandoverMetricsByNWeeksYValues))
-
-	for i, value := range averageMrHandoverMetricsByNWeeksYValues {
-		formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(value)
+		if mergeRequestHandover[week].HasValue {
+			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
+			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
+		} else {
+			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "No Data"
+		}
 	}
 
 	averageHandoverSeries := template.TimeSeries{
@@ -164,16 +165,16 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	mergeRequestWithoutReviewXValues := make([]float64, len(weeks))
 	mergeRequestWithoutReviewYValues := make([]float64, len(weeks))
+	formattedMergeRequestWithoutReviewYValues := make([]string, len(weeks))
 
 	for i, week := range weeks {
 		mergeRequestWithoutReviewXValues[i] = float64(i)
-		mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
-	}
-
-	formattedMergeRequestWithoutReviewYValues := make([]string, len(mergeRequestWithoutReviewYValues))
-
-	for i, value := range mergeRequestWithoutReviewYValues {
-		formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(value)
+		if mergeRequestWithoutReview[week].HasValue {
+			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
+			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
+		} else {
+			formattedMergeRequestWithoutReviewYValues[i] = "No Data"
+		}
 	}
 
 	mrsMergedWithoutReviewSeries := template.TimeSeries{
