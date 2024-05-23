@@ -76,8 +76,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrSizeXValues[i] = float64(i)
-		if averageMrSize[week].HasValue {
-			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
+
+		if averageMrSize[week].Size != nil {
+			averageMrSizeYValues[i] = float64(*averageMrSize[week].Size)
 			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
 		} else {
 			formattedAverageMrSizeYValues[i] = "No Data"
@@ -169,8 +170,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		mergeRequestWithoutReviewXValues[i] = float64(i)
-		if mergeRequestWithoutReview[week].HasValue {
-			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
+
+		if mergeRequestWithoutReview[week].Count != nil {
+			mergeRequestWithoutReviewYValues[i] = float64(*mergeRequestWithoutReview[week].Count)
 			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
 		} else {
 			formattedMergeRequestWithoutReviewYValues[i] = "No Data"

@@ -11,23 +11,20 @@ import (
 )
 
 type AverageMRSizeByWeek struct {
-	Week     string
-	Size     int
-	N        int
-	HasValue bool
+	Week string
+	Size *int32
+	N    int32
 }
 
-func NewAverageMRSizeByWeek(week string, size int, n int) AverageMRSizeByWeek {
+func NewAverageMRSizeByWeek(week string, size *int32, n int32) AverageMRSizeByWeek {
 	return AverageMRSizeByWeek{
-		Week:     week,
-		Size:     size,
-		N:        n,
-		HasValue: true,
+		Week: week,
+		Size: size,
+		N:    n,
 	}
 }
 
 func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[string]AverageMRSizeByWeek, float64, error) {
-
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
 	usersInTeamConditionQuery := ""
@@ -58,11 +55,9 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 		usersInTeamConditionQuery)
 
 	db, err := sql.Open("libsql", s.DbUrl)
-
 	if err != nil {
 		return nil, 0, err
 	}
-
 	defer db.Close()
 
 	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
@@ -74,43 +69,53 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 	}
 
 	rows, err := db.Query(query, queryParams...)
-
 	if err != nil {
 		return nil, 0, err
 	}
-
 	defer rows.Close()
 
 	mrSizeByWeeks := make(map[string]AverageMRSizeByWeek)
 
 	for rows.Next() {
 		var week string
-		var size int
-		var n int
+		var size sql.NullInt32
+		var n int32
 
 		if err := rows.Scan(&size, &week, &n); err != nil {
 			return nil, 0, err
 		}
 
-		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, size, n)
+		var sizePtr *int32
+		if size.Valid {
+			s := size.Int32
+			sizePtr = &s
+		}
+
+		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, sizePtr, n)
 	}
 
-	totalMRSizeCount := 0
-	numOfWeeksWithMRSize := len(mrSizeByWeeks)
+	var totalMRSizeCount int32
+	var numOfWeeksWithMRSize int32
 
 	for _, week := range weeks {
-		totalMRSizeCount += mrSizeByWeeks[week].Size
-		if _, ok := mrSizeByWeeks[week]; !ok {
+		if mrSize, ok := mrSizeByWeeks[week]; ok {
+			if mrSize.Size != nil {
+				totalMRSizeCount += *mrSize.Size
+				numOfWeeksWithMRSize++
+			}
+		} else {
 			mrSizeByWeeks[week] = AverageMRSizeByWeek{
-				Week:     week,
-				Size:     0,
-				N:        0,
-				HasValue: false,
+				Week: week,
+				Size: nil,
+				N:    0,
 			}
 		}
 	}
 
-	averageMRSizeByXWeeks := float64(totalMRSizeCount) / float64(numOfWeeksWithMRSize)
+	var averageMRSizeByXWeeks float64
+	if numOfWeeksWithMRSize > 0 {
+		averageMRSizeByXWeeks = float64(totalMRSizeCount) / float64(numOfWeeksWithMRSize)
+	}
 
 	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
@@ -314,16 +319,14 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 }
 
 type MrCountByWeek struct {
-	Week     string
-	Count    int
-	HasValue bool
+	Week  string
+	Count *int32
 }
 
-func NewMrCountByWeek(week string, count int) MrCountByWeek {
+func NewMrCountByWeek(week string, count *int32) MrCountByWeek {
 	return MrCountByWeek{
-		Week:     week,
-		Count:    count,
-		HasValue: true,
+		Week:  week,
+		Count: count,
 	}
 }
 
@@ -384,30 +387,43 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 
 	for rows.Next() {
 		var week string
-		var count int
+		var count sql.NullInt32
 
 		if err := rows.Scan(&count, &week); err != nil {
 			return nil, 0, err
 		}
 
-		mrCountByWeeks[week] = NewMrCountByWeek(week, count)
+		var countPtr *int32
+		if count.Valid {
+			c := count.Int32
+			countPtr = &c
+		}
+
+		mrCountByWeeks[week] = NewMrCountByWeek(week, countPtr)
 	}
 
-	totalMergedCount := 0
+	var totalMergedCount int32
 	numOfWeeksWithMerged := len(mrCountByWeeks)
 
 	for _, week := range weeks {
-		totalMergedCount += mrCountByWeeks[week].Count
-		if _, ok := mrCountByWeeks[week]; !ok {
+
+		if mrCount, ok := mrCountByWeeks[week]; ok {
+			if mrCount.Count != nil {
+				totalMergedCount += *mrCount.Count
+				numOfWeeksWithMerged++
+			}
+		} else {
 			mrCountByWeeks[week] = MrCountByWeek{
-				Week:     week,
-				Count:    0,
-				HasValue: false,
+				Week:  week,
+				Count: nil,
 			}
 		}
 	}
 
-	averageMergedByXWeeks := float64(totalMergedCount) / float64(numOfWeeksWithMerged)
+	var averageMergedByXWeeks float64
+	if numOfWeeksWithMerged > 0 {
+		averageMergedByXWeeks = float64(totalMergedCount) / float64(numOfWeeksWithMerged)
+	}
 
 	return mrCountByWeeks, averageMergedByXWeeks, nil
 }
