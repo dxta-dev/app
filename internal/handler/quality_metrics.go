@@ -124,7 +124,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageReviewDepthXValues[i] = float64(i)
-		if averageReviewDepth[week].HasValue {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || averageReviewDepth[week].Depth > 0 {
 			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 			formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
 		} else {
@@ -152,7 +152,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrHandoverMetricsByNWeeksXValues[i] = float64(i)
-		if mergeRequestHandover[week].HasValue {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || mergeRequestHandover[week].Handover > 0 {
 			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
 		} else {

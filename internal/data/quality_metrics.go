@@ -111,16 +111,14 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 }
 
 type AverageMrReviewDepthByWeek struct {
-	Week     string
-	Depth    float32
-	HasValue bool
+	Week  string
+	Depth float32
 }
 
 func NewAverageMrReviewDepthByWeek(week string, depth float32) AverageMrReviewDepthByWeek {
 	return AverageMrReviewDepthByWeek{
-		Week:     week,
-		Depth:    depth,
-		HasValue: true,
+		Week:  week,
+		Depth: depth,
 	}
 }
 
@@ -190,16 +188,15 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 		mrReviewDepthByWeeks[week] = NewAverageMrReviewDepthByWeek(week, depth)
 	}
 
-	totalReviewDepthCount := float32(0)
+	var totalReviewDepthCount float32
 	numOfWeeksWithReviewDepth := len(mrReviewDepthByWeeks)
 
 	for _, week := range weeks {
 		totalReviewDepthCount += mrReviewDepthByWeeks[week].Depth
 		if _, ok := mrReviewDepthByWeeks[week]; !ok {
 			mrReviewDepthByWeeks[week] = AverageMrReviewDepthByWeek{
-				Week:     week,
-				Depth:    0,
-				HasValue: false,
+				Week:  week,
+				Depth: 0,
 			}
 		}
 	}
@@ -212,14 +209,12 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 type AverageHandoverPerMR struct {
 	Week     string
 	Handover float32
-	HasValue bool
 }
 
 func NewAverageHandoverPerMR(week string, handover float32) AverageHandoverPerMR {
 	return AverageHandoverPerMR{
 		Week:     week,
 		Handover: handover,
-		HasValue: true,
 	}
 }
 
@@ -289,7 +284,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 		mrHandoverByWeeks[week] = NewAverageHandoverPerMR(week, handover)
 	}
 
-	totalHandoverCount := float32(0)
+	var totalHandoverCount float32
 	numOfWeeksWithHandover := len(mrHandoverByWeeks)
 
 	for _, week := range weeks {
@@ -298,7 +293,6 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 			mrHandoverByWeeks[week] = AverageHandoverPerMR{
 				Week:     week,
 				Handover: 0,
-				HasValue: false,
 			}
 		}
 	}
