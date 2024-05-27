@@ -7,9 +7,10 @@ type QualityMetricsProps struct {
 	AverageHandoverTimeSeriesProps    TimeSeriesProps
 }
 
-templ QualityMetricsPage(page *Page, props QualityMetricsProps,  teamPickerProps TeamPickerProps) {
+templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps TeamPickerProps) {
 	@Layout(page) {
-  @teamPicker(teamPickerProps)
+		@newTeamPicker(teamPickerProps)
+		@teamPicker(teamPickerProps)
 		<h1 class="text-4xl font-bold mb-8 text-center">Quality Metrics</h1>
 		<div class="grid grid-cols-2">
 			<div class="inline-block px-9 py-4" id="mr-size-chart">
