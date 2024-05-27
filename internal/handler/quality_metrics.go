@@ -40,6 +40,31 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	crawlInstanceFrom := util.GetFormattedWeek(crawlInstances[0].Since)
 	crawlInstanceTo := util.GetFormattedWeek(crawlInstances[len(crawlInstances)-1].Until)
 
+	instanceByRepo := make(map[int64]data.TimeFrameSlice)
+	for _, instance := range crawlInstances {
+		instanceByRepo[instance.RepositoryId] = append(instanceByRepo[instance.RepositoryId], instance.TimeFrame)
+	}
+
+	var findGaps data.TimeFrameSlice
+
+	uniqueYearWeekGaps := make(map[string]bool)
+
+	for _, timeFrames := range instanceByRepo {
+		findGaps = data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
+		if len(findGaps) > 0 {
+			for _, gap := range findGaps {
+				for d := gap.Since; d.Before(gap.Until) || d.Equal(gap.Until); d = d.AddDate(0, 0, 1) {
+					year, week := d.ISOWeek()
+					combination := fmt.Sprintf("%d-W%02d", year, week)
+
+					if _, found := uniqueYearWeekGaps[combination]; !found {
+						uniqueYearWeekGaps[combination] = true
+					}
+				}
+			}
+		}
+	}
+
 	teams, err := store.GetTeams()
 
 	if err != nil {
@@ -87,9 +112,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrSizeXValues[i] = float64(i)
-		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || averageMrSize[week].Size > 0 {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) ||
+			(averageMrSize[week].Size > 0 && !uniqueYearWeekGaps[week]) {
 			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
 			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
+		} else if uniqueYearWeekGaps[week] {
+			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
+			formattedAverageMrSizeYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageMrSizeYValues[i])
 		} else {
 			formattedAverageMrSizeYValues[i] = "No Data"
 		}
@@ -124,9 +153,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageReviewDepthXValues[i] = float64(i)
-		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || averageReviewDepth[week].Depth > 0 {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) ||
+			(averageReviewDepth[week].Depth > 0 && !uniqueYearWeekGaps[week]) {
 			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 			formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
+		} else if uniqueYearWeekGaps[week] {
+			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
+			formattedAverageReviewDepthYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageReviewDepthYValues[i])
 		} else {
 			formattedAverageReviewDepthYValues[i] = "No Data"
 		}
@@ -152,9 +185,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrHandoverMetricsByNWeeksXValues[i] = float64(i)
-		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || mergeRequestHandover[week].Handover > 0 {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) ||
+			(mergeRequestHandover[week].Handover > 0 && !uniqueYearWeekGaps[week]) {
 			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
+		} else if uniqueYearWeekGaps[week] {
+			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
+			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
 		} else {
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "No Data"
 		}
@@ -181,9 +218,13 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	for i, week := range weeks {
 		mergeRequestWithoutReviewXValues[i] = float64(i)
 
-		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && mergeRequestWithoutReview[week].Count >= 0) || mergeRequestWithoutReview[week].Count > 0 {
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && mergeRequestWithoutReview[week].Count >= 0) ||
+			(mergeRequestWithoutReview[week].Count > 0 && !uniqueYearWeekGaps[week]) {
 			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
+		} else if uniqueYearWeekGaps[week] {
+			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
+			formattedMergeRequestWithoutReviewYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
 		} else {
 			formattedMergeRequestWithoutReviewYValues[i] = "No Data"
 		}
