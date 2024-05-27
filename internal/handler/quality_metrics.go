@@ -23,11 +23,22 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	a.GenerateNonce()
 	a.LoadState(r)
 
+	currentTime := time.Now()
+
+	threeMonthsAgo := currentTime.Add(-3 * time.Hour * 24 * 30)
+
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	store := &data.Store{
 		DbUrl: tenantDatabaseUrl,
 	}
+	crawlInstances, err := store.GetCrawlInstances(threeMonthsAgo.Unix(), currentTime.Unix())
+	if err != nil {
+		return err
+	}
+
+	crawlInstanceFrom := util.GetFormattedWeek(crawlInstances[0].Since)
+	crawlInstanceTo := util.GetFormattedWeek(crawlInstances[len(crawlInstances)-1].Until)
 
 	teams, err := store.GetTeams()
 
@@ -76,9 +87,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrSizeXValues[i] = float64(i)
-
-		if averageMrSize[week].Size != nil {
-			averageMrSizeYValues[i] = float64(*averageMrSize[week].Size)
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && averageMrSize[week].Size >= 0) || averageMrSize[week].Size > 0 {
+			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
 			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
 		} else {
 			formattedAverageMrSizeYValues[i] = "No Data"
@@ -171,8 +181,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	for i, week := range weeks {
 		mergeRequestWithoutReviewXValues[i] = float64(i)
 
-		if mergeRequestWithoutReview[week].Count != nil {
-			mergeRequestWithoutReviewYValues[i] = float64(*mergeRequestWithoutReview[week].Count)
+		if (week >= crawlInstanceFrom && week <= crawlInstanceTo && mergeRequestWithoutReview[week].Count >= 0) || mergeRequestWithoutReview[week].Count > 0 {
+			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
 		} else {
 			formattedMergeRequestWithoutReviewYValues[i] = "No Data"

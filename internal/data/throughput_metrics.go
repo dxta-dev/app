@@ -192,22 +192,22 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 	}
 
 	query := fmt.Sprintf(`
-    SELECT
-        COUNT(*),
-        opened_dates.week
-    FROM transform_merge_request_metrics AS metrics
-    JOIN transform_merge_request_fact_dates_junk AS dates_junk
-    ON metrics.dates_junk = dates_junk.id
-    JOIN transform_dates AS opened_dates
-    ON dates_junk.opened_at = opened_dates.id
-    JOIN transform_merge_request_fact_users_junk AS uj
-    ON metrics.users_junk = uj.id
-    JOIN transform_forge_users AS author
-    ON uj.author = author.id
-    WHERE opened_dates.week IN (%s)
-    AND author.bot = 0
-    %s
-    GROUP BY opened_dates.week`,
+	SELECT
+		COUNT (*),
+		opened_dates.week
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dates_junk
+	ON metrics.dates_junk = dates_junk.id
+	JOIN transform_dates AS opened_dates
+	ON dates_junk.opened_at = opened_dates.id
+	JOIN transform_merge_request_fact_users_junk AS uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users AS author
+	ON uj.author = author.id
+	WHERE opened_dates.week IN (%s)
+	AND author.bot = 0
+	%s
+	GROUP BY opened_dates.week`,
 		placeholders,
 		usersInTeamConditionQuery)
 
@@ -238,42 +238,28 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 	mrCountByWeeks := make(map[string]MrCountByWeek)
 
 	for rows.Next() {
-		var week string
-		var count sql.NullInt32
+		var prCount MrCountByWeek
 
-		if err := rows.Scan(&count, &week); err != nil {
+		if err := rows.Scan(&prCount.Count, &prCount.Week); err != nil {
 			return nil, 0, err
 		}
-		var countPtr *int32
-		if count.Valid {
-			c := count.Int32
-			countPtr = &c
-		}
-
-		mrCountByWeeks[week] = NewMrCountByWeek(week, countPtr)
+		mrCountByWeeks[prCount.Week] = prCount
 	}
 
 	var totalMRCount int32
 	numOfWeeksWithMR := len(mrCountByWeeks)
 
 	for _, week := range weeks {
-		if mrCount, ok := mrCountByWeeks[week]; ok {
-			if mrCount.Count != nil {
-				totalMRCount += *mrCount.Count
-				numOfWeeksWithMR++
-			}
-		} else {
+		totalMRCount += mrCountByWeeks[week].Count
+		if _, ok := mrCountByWeeks[week]; !ok {
 			mrCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
-				Count: nil,
+				Count: 0,
 			}
 		}
 	}
 
-	var averageMRCountByXWeeks float64
-	if numOfWeeksWithMR > 0 {
-		averageMRCountByXWeeks = float64(totalMRCount) / float64(numOfWeeksWithMR)
-	}
+	averageMRCountByXWeeks := float64(totalMRCount) / float64(numOfWeeksWithMR)
 
 	return mrCountByWeeks, averageMRCountByXWeeks, nil
 }

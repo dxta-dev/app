@@ -99,7 +99,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		totalMrsOpenedXValues[i] = float64(i)
-		totalMrsOpenedYValues[i] = float64(*totalMrsOpened[week].Count)
+		totalMrsOpenedYValues[i] = float64(totalMrsOpened[week].Count)
 	}
 
 	formattedTotalMrsOpenedYValues := make([]string, len(totalMrsOpenedYValues))

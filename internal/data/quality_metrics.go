@@ -12,11 +12,11 @@ import (
 
 type AverageMRSizeByWeek struct {
 	Week string
-	Size *int32
+	Size int32
 	N    int32
 }
 
-func NewAverageMRSizeByWeek(week string, size *int32, n int32) AverageMRSizeByWeek {
+func NewAverageMRSizeByWeek(week string, size int32, n int32) AverageMRSizeByWeek {
 	return AverageMRSizeByWeek{
 		Week: week,
 		Size: size,
@@ -78,35 +78,25 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 
 	for rows.Next() {
 		var week string
-		var size sql.NullInt32
+		var size int32
 		var n int32
 
 		if err := rows.Scan(&size, &week, &n); err != nil {
 			return nil, 0, err
 		}
 
-		var sizePtr *int32
-		if size.Valid {
-			s := size.Int32
-			sizePtr = &s
-		}
-
-		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, sizePtr, n)
+		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, size, n)
 	}
 
 	var totalMRSizeCount int32
 	var numOfWeeksWithMRSize int32
 
 	for _, week := range weeks {
-		if mrSize, ok := mrSizeByWeeks[week]; ok {
-			if mrSize.Size != nil {
-				totalMRSizeCount += *mrSize.Size
-				numOfWeeksWithMRSize++
-			}
-		} else {
+		totalMRSizeCount += mrSizeByWeeks[week].Size
+		if _, ok := mrSizeByWeeks[week]; !ok {
 			mrSizeByWeeks[week] = AverageMRSizeByWeek{
 				Week: week,
-				Size: nil,
+				Size: 0,
 				N:    0,
 			}
 		}
@@ -320,10 +310,10 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 
 type MrCountByWeek struct {
 	Week  string
-	Count *int32
+	Count int32
 }
 
-func NewMrCountByWeek(week string, count *int32) MrCountByWeek {
+func NewMrCountByWeek(week string, count int32) MrCountByWeek {
 	return MrCountByWeek{
 		Week:  week,
 		Count: count,
@@ -387,35 +377,24 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 
 	for rows.Next() {
 		var week string
-		var count sql.NullInt32
+		var count int32
 
 		if err := rows.Scan(&count, &week); err != nil {
 			return nil, 0, err
 		}
 
-		var countPtr *int32
-		if count.Valid {
-			c := count.Int32
-			countPtr = &c
-		}
-
-		mrCountByWeeks[week] = NewMrCountByWeek(week, countPtr)
+		mrCountByWeeks[week] = NewMrCountByWeek(week, count)
 	}
 
 	var totalMergedCount int32
 	numOfWeeksWithMerged := len(mrCountByWeeks)
 
 	for _, week := range weeks {
-
-		if mrCount, ok := mrCountByWeeks[week]; ok {
-			if mrCount.Count != nil {
-				totalMergedCount += *mrCount.Count
-				numOfWeeksWithMerged++
-			}
-		} else {
+		totalMergedCount += mrCountByWeeks[week].Count
+		if _, ok := mrCountByWeeks[week]; !ok {
 			mrCountByWeeks[week] = MrCountByWeek{
 				Week:  week,
-				Count: nil,
+				Count: 0,
 			}
 		}
 	}
