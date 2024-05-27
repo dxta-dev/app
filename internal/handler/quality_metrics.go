@@ -40,6 +40,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	crawlInstanceFrom := util.GetFormattedWeek(crawlInstances[0].Since)
 	crawlInstanceTo := util.GetFormattedWeek(crawlInstances[len(crawlInstances)-1].Until)
 
+	cutOffWeeks := template.CutOffWeeks{Start: crawlInstanceFrom, End: crawlInstanceTo}
+
 	instanceByRepo := make(map[int64]data.TimeFrameSlice)
 	for _, instance := range crawlInstances {
 		instanceByRepo[instance.RepositoryId] = append(instanceByRepo[instance.RepositoryId], instance.TimeFrame)
@@ -116,10 +118,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 			(averageMrSize[week].Size > 0 && !uniqueYearWeekGaps[week]) {
 			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
 			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
-		} else if uniqueYearWeekGaps[week] {
+		} else if uniqueYearWeekGaps[week] && week >= crawlInstanceFrom && week <= crawlInstanceTo {
 			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
 			formattedAverageMrSizeYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageMrSizeYValues[i])
+		} else if week < crawlInstanceFrom {
+			averageMrSizeYValues[i] = 0
+			formattedAverageMrSizeYValues[i] = "No Data"
+		} else if week > crawlInstanceTo {
+			averageMrSizeYValues[i] = 0
+			formattedAverageMrSizeYValues[i] = "No Data"
 		} else {
+			averageMrSizeYValues[i] = 0
 			formattedAverageMrSizeYValues[i] = "No Data"
 		}
 
@@ -143,6 +152,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	averageMrSizeSeriesProps := template.TimeSeriesProps{
 		Series:           averageMrSizeSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedAverageMrSizeYValues,
 		InfoText:         fmt.Sprintf("AVG Size per week: %v", util.FormatYAxisValues(averageMrSizeByNWeeks)),
 	}
@@ -175,6 +185,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	averageReviewDepthSeriesProps := template.TimeSeriesProps{
 		Series:           averageReviewDepthSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedAverageReviewDepthYValues,
 		InfoText:         fmt.Sprintf("AVG Depth per week: %v", util.FormatYAxisValues(averageReviewDepthByNWeeks)),
 	}
@@ -207,6 +218,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	averageHandoverSeriesProps := template.TimeSeriesProps{
 		Series:           averageHandoverSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedAverageMrHandoverMetricsByNWeeksYValues,
 		InfoText:         fmt.Sprintf("AVG Handovers per week: %v", util.FormatYAxisValues(averageMrHandoverMetricsByNWeeks)),
 	}
@@ -240,6 +252,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	mrsMergedWithoutReviewSeriesProps := template.TimeSeriesProps{
 		Series:           mrsMergedWithoutReviewSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedMergeRequestWithoutReviewYValues,
 		InfoText:         fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
 	}

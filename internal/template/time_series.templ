@@ -13,9 +13,15 @@ script setData(yValues []string, startEndWeek []StartEndWeek, valueName string) 
 	});
 }
 
+type CutOffWeeks struct {
+	Start string
+	End string
+}
+
 type TimeSeriesProps struct {
 	Series TimeSeries
 	StartEndWeeks []StartEndWeek
+	CutOffWeeks CutOffWeeks
 	FormattedYValues []string
 	InfoText string
 }
@@ -23,7 +29,7 @@ type TimeSeriesProps struct {
 templ timeSeries(props TimeSeriesProps, valueName string) {
 	<div>
 		<p>{props.InfoText}</p>
-		@TimeSeriesChart(props.Series)
+		@TimeSeriesChart(props.Series, props.CutOffWeeks)
 		@setData(props.FormattedYValues, props.StartEndWeeks, valueName)
 	</div>
 }

@@ -159,7 +159,19 @@ func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Rend
 	}
 }
 
-func TimeSeriesChart(series TimeSeries) templ.Component {
+func CutOffLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
+		f := util.GetMonospaceFont()
+
+		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
+			FontColor: chart.ColorBlue,
+			FontSize:  12,
+			Font:      f,
+		})
+	}
+}
+
+func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 	YAxisValues := getYAxisValues(series.YValues)
 
 	f := util.GetMonospaceFont()

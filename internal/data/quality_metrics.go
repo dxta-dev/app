@@ -89,7 +89,7 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 	}
 
 	var totalMRSizeCount int32
-	var numOfWeeksWithMRSize int32
+	numOfWeeksWithMRSize := len(mrSizeByWeeks)
 
 	for _, week := range weeks {
 		totalMRSizeCount += mrSizeByWeeks[week].Size
