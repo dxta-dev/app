@@ -189,6 +189,8 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 	dotXValues := series.XValues[cutoffIndex:]
 	dotYValues := series.YValues[cutoffIndex:]
+	lineXValues := series.XValues[cutoffIndex-1:]
+	lineYValues := series.YValues[cutoffIndex-1:]
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -203,8 +205,8 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 	lineSeries := chart.ContinuousSeries{
 		Name:    series.Title,
-		XValues: series.XValues,
-		YValues: series.YValues,
+		XValues: lineXValues,
+		YValues: lineYValues,
 		Style: chart.Style{
 			StrokeWidth: 3,
 			StrokeColor: chart.ColorBlue,
@@ -329,7 +331,6 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 		graph.Elements = append(graph.Elements, MonthLabel(&graph, monthLabel))
 	}
-
 	graph.Series = append(graph.Series, lineSeries)
 	graph.Series = append(graph.Series, mainSeries)
 
