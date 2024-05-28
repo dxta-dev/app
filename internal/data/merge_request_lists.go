@@ -496,8 +496,8 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
 		AND mr.id NOT IN (
 			SELECT DISTINCT events.merge_request
 			FROM transform_merge_request_events AS events
-			JOIN transform_dates as occurred_on ON occured_on.id = events.occured_on
-			WHERE week = ?
+			JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
+			WHERE occured_on.week = ?
 			AND events.merge_request_event_type = 9			
 		)`
 
