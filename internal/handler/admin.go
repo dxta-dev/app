@@ -40,7 +40,6 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	var components templ.Component
 
 	for repositoryId, timeFrames := range instanceByRepo {
-		fmt.Print("FREJMOVIIII", timeFrames)
 		fmt.Printf("RepositoryId %d\n", repositoryId)
 		findGaps = data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
 		if len(findGaps) > 0 {
