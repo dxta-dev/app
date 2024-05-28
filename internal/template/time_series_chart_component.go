@@ -12,6 +12,7 @@ import (
 	"github.com/a-h/templ"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/wcharczuk/go-chart/v2"
+	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
 type TimeSeries struct {
@@ -176,6 +177,19 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 	f := util.GetMonospaceFont()
 
+	firstDay, _, err := util.ParseYearWeek(series.Weeks[0])
+	if err != nil {
+		log.Fatal(err)
+	}
+	cutoffDate, _, err := util.ParseYearWeek(cutoff.Start)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cutoffIndex := int(cutoffDate.Sub(firstDay).Hours() / 24 / 7)
+
+	dotXValues := series.XValues[cutoffIndex:]
+	dotYValues := series.YValues[cutoffIndex:]
+
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
 			StrokeWidth: chart.Disabled,
@@ -183,8 +197,8 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 			DotColor:    chart.ColorBlue,
 		},
 		Name:    series.Title,
-		XValues: series.XValues,
-		YValues: series.YValues,
+		XValues: dotXValues,
+		YValues: dotYValues,
 	}
 
 	lineSeries := chart.ContinuousSeries{
@@ -228,10 +242,6 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 		})
 	}
 
-	firstDay, _, err := util.ParseYearWeek(series.Weeks[0])
-	if err != nil {
-		log.Fatal(err)
-	}
 	months := util.GetStartOfMonths(series.Weeks)
 	monthLabels := []label{}
 
@@ -298,30 +308,18 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 	}
 
-	cutoffDate, _, err := util.ParseYearWeek(cutoff.Start)
-	if err != nil {
-		log.Fatal(err)
-	}
-	cutoffXValue := cutoffDate.Sub(firstDay).Hours() / 24 / 7
-
-	backgroundFill := chart.ContinuousSeries{
-		XValues: []float64{0, cutoffXValue, cutoffXValue, 0},
-		YValues: []float64{0, 0, YAxisValues[len(YAxisValues)-1], YAxisValues[len(YAxisValues)-1]},
-		Style: chart.Style{
-			FillColor: chart.ColorBlue,
-		},
-	}
-	graph.Series = append(graph.Series, backgroundFill)
+	cutoffXValue := cutoffIndex - 1
 
 	cutoffLine := chart.ContinuousSeries{
-		XValues: []float64{cutoffXValue, cutoffXValue},
+		XValues: []float64{float64(cutoffXValue), float64(cutoffXValue)},
 		YValues: []float64{0, YAxisValues[len(YAxisValues)-1]},
 		Style: chart.Style{
 			StrokeWidth: 2.0,
-			StrokeColor: chart.ColorBlue,
+			StrokeColor: drawing.ColorFromHex("cd5c5c"),
 		},
 	}
 	graph.Series = append(graph.Series, cutoffLine)
+
 	for i, monthLabel := range monthLabels {
 		if i == len(monthLabels)-1 {
 			monthLabel.x = (620-monthLabel.x)/2 + monthLabel.x
