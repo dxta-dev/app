@@ -3,7 +3,7 @@ module github.com/dxta-dev/app
 go 1.22.2
 
 require (
-	github.com/BurntSushi/toml v1.3.2
+	github.com/BurntSushi/toml v1.4.0
 	github.com/XSAM/otelsql v0.31.0
 	github.com/a-h/templ v0.2.707
 	github.com/donseba/go-htmx v1.8.0
