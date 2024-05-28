@@ -160,14 +160,14 @@ func MonthLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Rend
 	}
 }
 
-func CutOffLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
+func CutoffLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Renderable {
 	return func(r chart.Renderer, box chart.Box, defaults chart.Style) {
 		f := util.GetMonospaceFont()
-
 		chart.Draw.Text(r, l.text, l.x, l.y, chart.Style{
-			FontColor: chart.ColorBlue,
-			FontSize:  12,
-			Font:      f,
+			FontColor:           chart.ColorBlack,
+			FontSize:            12,
+			Font:                f,
+			TextRotationDegrees: -90,
 		})
 	}
 }
@@ -321,6 +321,13 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 		},
 	}
 	graph.Series = append(graph.Series, cutoffLine)
+
+	cutoffLabel := label{
+		x:    int(float64(cutoffXValue) * (620 / float64(len(series.Weeks)))),
+		y:    230,
+		text: "DATA UNAVAILABLE",
+	}
+	graph.Elements = append(graph.Elements, CutoffLabel(&graph, cutoffLabel))
 
 	for i, monthLabel := range monthLabels {
 		if i == len(monthLabels)-1 {
