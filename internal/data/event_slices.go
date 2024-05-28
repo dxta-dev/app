@@ -72,7 +72,7 @@ func (d EventSlice) Swap(i, j int) {
 }
 
 func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, nil, err
@@ -103,7 +103,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 		ORDER BY ev.timestamp ASC;
 		`
 
-	rows, err := db.Query(query, mrId)
+	rows, err := db.QueryContext(s.Context, query, mrId)
 	if err != nil {
 		return nil, nil, err
 	}

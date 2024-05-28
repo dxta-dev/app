@@ -18,7 +18,7 @@ type TeamSlice []Team
 
 
 func (s *Store) GetTeams() (TeamSlice, error) {
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	query := `SELECT id, name FROM tenant_teams`
 
@@ -28,7 +28,7 @@ func (s *Store) GetTeams() (TeamSlice, error) {
 
 	defer db.Close()
 
-	rows, err := db.Query(query)
+	rows, err := db.QueryContext(s.Context, query)
 
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (s *Store) GetTeamMembers(team *int64) ([]int64, error) {
 		return []int64{}, nil
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	query := `SELECT member FROM tenant_team_members where team = ?`
 
@@ -69,7 +69,7 @@ func (s *Store) GetTeamMembers(team *int64) ([]int64, error) {
 
 	defer db.Close()
 
-	rows, err := db.Query(query, team)
+	rows, err := db.QueryContext(s.Context, query, team)
 
 	if err != nil {
 		return nil, err

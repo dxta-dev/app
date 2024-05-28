@@ -41,7 +41,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[st
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -57,7 +57,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[st
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -129,7 +129,7 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -145,7 +145,7 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -212,7 +212,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -228,7 +228,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -297,7 +297,7 @@ func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -313,7 +313,7 @@ func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -384,7 +384,7 @@ func (s *Store) GetMergeFrequency(weeks []string, teamMembers []int64) (map[stri
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -400,7 +400,7 @@ func (s *Store) GetMergeFrequency(weeks []string, teamMembers []int64) (map[stri
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
