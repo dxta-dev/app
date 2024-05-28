@@ -81,7 +81,7 @@ func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 	}
 
 	var mrStackListProps template.MergeRequestStackedListProps
-	mrStackListProps.MergeRequests, err = store.GetMergeRequestWaitingForReviewList(teamMembers, nullRows.UserId, nullRows.DateId)
+	mrStackListProps.MergeRequests, err = store.GetMergeRequestWaitingForReviewList(teamMembers, time.Now(), nullRows.UserId)
 
 	if err != nil {
 		return err
@@ -126,7 +126,7 @@ func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 	}
 
 	var mrStackListProps template.MergeRequestStackedListProps
-	mrStackListProps.MergeRequests, err = store.GetMergeRequestInProgressList(time.Now(), teamMembers, nullRows.UserId, nullRows.DateId)
+	mrStackListProps.MergeRequests, err = store.GetMergeRequestInProgressList(time.Now(), teamMembers, nullRows.UserId)
 
 	if err != nil {
 		return err
