@@ -298,6 +298,30 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 
 	}
 
+	cutoffDate, _, err := util.ParseYearWeek(cutoff.Start)
+	if err != nil {
+		log.Fatal(err)
+	}
+	cutoffXValue := cutoffDate.Sub(firstDay).Hours() / 24 / 7
+
+	backgroundFill := chart.ContinuousSeries{
+		XValues: []float64{0, cutoffXValue, cutoffXValue, 0},
+		YValues: []float64{0, 0, YAxisValues[len(YAxisValues)-1], YAxisValues[len(YAxisValues)-1]},
+		Style: chart.Style{
+			FillColor: chart.ColorBlue,
+		},
+	}
+	graph.Series = append(graph.Series, backgroundFill)
+
+	cutoffLine := chart.ContinuousSeries{
+		XValues: []float64{cutoffXValue, cutoffXValue},
+		YValues: []float64{0, YAxisValues[len(YAxisValues)-1]},
+		Style: chart.Style{
+			StrokeWidth: 2.0,
+			StrokeColor: chart.ColorBlue,
+		},
+	}
+	graph.Series = append(graph.Series, cutoffLine)
 	for i, monthLabel := range monthLabels {
 		if i == len(monthLabels)-1 {
 			monthLabel.x = (620-monthLabel.x)/2 + monthLabel.x
