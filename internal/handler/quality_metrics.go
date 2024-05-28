@@ -167,10 +167,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 			(averageReviewDepth[week].Depth > 0 && !uniqueYearWeekGaps[week]) {
 			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 			formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
-		} else if uniqueYearWeekGaps[week] {
+		} else if uniqueYearWeekGaps[week] && week >= crawlInstanceFrom && week <= crawlInstanceTo {
 			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
 			formattedAverageReviewDepthYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageReviewDepthYValues[i])
+		} else if week < crawlInstanceFrom {
+			averageReviewDepthYValues[i] = 0
+			formattedAverageReviewDepthYValues[i] = "No Data"
+		} else if week > crawlInstanceTo {
+			averageReviewDepthYValues[i] = 0
+			formattedAverageReviewDepthYValues[i] = "No Data"
 		} else {
+			averageReviewDepthYValues[i] = 0
 			formattedAverageReviewDepthYValues[i] = "No Data"
 		}
 	}
@@ -200,10 +207,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 			(mergeRequestHandover[week].Handover > 0 && !uniqueYearWeekGaps[week]) {
 			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
-		} else if uniqueYearWeekGaps[week] {
+		} else if uniqueYearWeekGaps[week] && week >= crawlInstanceFrom && week <= crawlInstanceTo {
 			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
+		} else if week < crawlInstanceFrom {
+			averageMrHandoverMetricsByNWeeksYValues[i] = 0
+			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "No Data"
+		} else if week > crawlInstanceTo {
+			averageMrHandoverMetricsByNWeeksYValues[i] = 0
+			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "No Data"
 		} else {
+			averageMrHandoverMetricsByNWeeksYValues[i] = 0
 			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = "No Data"
 		}
 	}
@@ -234,10 +248,17 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 			(mergeRequestWithoutReview[week].Count > 0 && !uniqueYearWeekGaps[week]) {
 			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
-		} else if uniqueYearWeekGaps[week] {
+		} else if uniqueYearWeekGaps[week] && week >= crawlInstanceFrom && week <= crawlInstanceTo {
 			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
 			formattedMergeRequestWithoutReviewYValues[i] = "Uncomplete Data: " + util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
+		} else if week < crawlInstanceFrom {
+			mergeRequestWithoutReviewYValues[i] = 0
+			formattedMergeRequestWithoutReviewYValues[i] = "No Data"
+		} else if week > crawlInstanceTo {
+			mergeRequestWithoutReviewYValues[i] = 0
+			formattedMergeRequestWithoutReviewYValues[i] = "No Data"
 		} else {
+			mergeRequestWithoutReviewYValues[i] = 0
 			formattedMergeRequestWithoutReviewYValues[i] = "No Data"
 		}
 	}
