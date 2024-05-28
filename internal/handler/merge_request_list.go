@@ -8,10 +8,9 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
-
-	"context"
 
 	"github.com/labstack/echo/v4"
 )
@@ -60,8 +59,11 @@ func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 
 	a.LoadState(r)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	var nullRows *data.NullRows
@@ -87,7 +89,7 @@ func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 
 	components := template.PartialMergeRequestStackedList(mrStackListProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
 
 func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
@@ -102,8 +104,11 @@ func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 
 	a.LoadState(r)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	var nullRows *data.NullRows
@@ -129,7 +134,7 @@ func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 
 	components := template.PartialMergeRequestStackedList(mrStackListProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
 
 func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
@@ -144,8 +149,11 @@ func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
 
 	a.LoadState(r)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	var nullRows *data.NullRows
@@ -171,7 +179,7 @@ func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
 
 	components := template.PartialMergeRequestStackedList(mrStackListProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
 
 func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
@@ -186,8 +194,11 @@ func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
 
 	a.LoadState(r)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	var nullRows *data.NullRows
@@ -213,7 +224,7 @@ func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
 
 	components := template.PartialMergeRequestStackedList(mrStackListProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
 
 func (a *App) GetMergeRequestClosedStack(c echo.Context) error {
@@ -228,8 +239,11 @@ func (a *App) GetMergeRequestClosedStack(c echo.Context) error {
 
 	a.LoadState(r)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	var nullRows *data.NullRows
@@ -255,5 +269,5 @@ func (a *App) GetMergeRequestClosedStack(c echo.Context) error {
 
 	components := template.PartialMergeRequestStackedList(mrStackListProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }

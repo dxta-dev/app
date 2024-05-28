@@ -1,13 +1,12 @@
 package handler
 
 import (
-	"github.com/XSAM/otelsql"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/graph"
 	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
-	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 
 	"context"
 	"fmt"
@@ -119,22 +118,14 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
-	ctx := c.Request().Context()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 	var err error
 
-	driverName, err := otelsql.Register("libsql", otelsql.WithAttributes(
-		semconv.ServiceName("turso"),
-	))
-	if err != nil {
-		driverName = "libsql"
-		fmt.Println("Failed to register otelsql driver")
-	}
-
+	ctx := c.Request().Context()
 	store := &data.Store{
 		DbUrl:      tenantDatabaseUrl,
-		DriverName: driverName,
+		DriverName: otel.GetDriverName(),
 		Context:    ctx,
 	}
 

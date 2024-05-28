@@ -33,8 +33,7 @@ func (tfs TimeFrameSlice) Swap(i, j int) {
 }
 
 func (s *Store) GetCrawlInstances(from, to int64) ([]CrawlInstance, error) {
-
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -60,7 +59,7 @@ func (s *Store) GetCrawlInstances(from, to int64) ([]CrawlInstance, error) {
         )
         `
 
-	rows, err := db.Query(query, from, to, from, from, to, from, to, from, to, to, from, to)
+	rows, err := db.QueryContext(s.Context, query, from, to, from, from, to, from, to, from, to, to, from, to)
 	if err != nil {
 		return nil, err
 	}

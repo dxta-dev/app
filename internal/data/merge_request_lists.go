@@ -215,7 +215,7 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -225,7 +225,7 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 
 	query := fmt.Sprintf(`
 	SELECT %s,
-		COUNT(mr.id) OVER() as c	
+		COUNT(mr.id) OVER() as c
 	FROM %s
 	WHERE %s
 		%s
@@ -240,7 +240,7 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -283,7 +283,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -307,7 +307,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -356,7 +356,7 @@ func (s *Store) GetMergeRequestReadyToMergeCountedList(teamMembers []int64, null
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -364,7 +364,7 @@ func (s *Store) GetMergeRequestReadyToMergeCountedList(teamMembers []int64, null
 
 	query := fmt.Sprintf(`
 		SELECT %s,
-			COUNT(mr.id) OVER() as c	
+			COUNT(mr.id) OVER() as c
 		FROM %s
 		WHERE %s
 			%s
@@ -383,7 +383,7 @@ func (s *Store) GetMergeRequestReadyToMergeCountedList(teamMembers []int64, null
 		queryParams[i] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -426,7 +426,7 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -451,7 +451,7 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 		queryParams[i] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -501,7 +501,7 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -509,7 +509,7 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 
 	query := fmt.Sprintf(`
 		SELECT %s,
-			COUNT(mr.id) OVER() as c	
+			COUNT(mr.id) OVER() as c
 		FROM %s
 		WHERE %s
 			%s
@@ -528,7 +528,7 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 		queryParams[i] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -571,7 +571,7 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -596,7 +596,7 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 		queryParams[i] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -648,7 +648,7 @@ func (s *Store) GetMergeRequestMergedCountedList(date time.Time, teamMembers []i
 
 	week := util.GetFormattedWeek(date)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -656,7 +656,7 @@ func (s *Store) GetMergeRequestMergedCountedList(date time.Time, teamMembers []i
 
 	query := fmt.Sprintf(`
 		SELECT %s,
-			COUNT(mr.id) OVER() as c	
+			COUNT(mr.id) OVER() as c
 		FROM %s
 		WHERE %s
 			%s
@@ -676,7 +676,7 @@ func (s *Store) GetMergeRequestMergedCountedList(date time.Time, teamMembers []i
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -721,7 +721,7 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 
 	week := util.GetFormattedWeek(date)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -747,7 +747,7 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -799,7 +799,7 @@ func (s *Store) GetMergeRequestClosedCountedList(date time.Time, teamMembers []i
 
 	week := util.GetFormattedWeek(date)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -807,7 +807,7 @@ func (s *Store) GetMergeRequestClosedCountedList(date time.Time, teamMembers []i
 
 	query := fmt.Sprintf(`
 		SELECT %s,
-			COUNT(mr.id) OVER() as c	
+			COUNT(mr.id) OVER() as c
 		FROM %s
 		WHERE %s
 			%s
@@ -827,7 +827,7 @@ func (s *Store) GetMergeRequestClosedCountedList(date time.Time, teamMembers []i
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -872,7 +872,7 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 
 	week := util.GetFormattedWeek(date)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -898,7 +898,7 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 		queryParams[i+1] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, err
