@@ -26,7 +26,7 @@ func (s *Store) GetMergeRequestMetricsData(mrId int64) (*MergeRequestData, error
         AND events.merge_request = ?
     `
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -34,13 +34,13 @@ func (s *Store) GetMergeRequestMetricsData(mrId int64) (*MergeRequestData, error
 
 	var mrData MergeRequestData
 
-	metricsRow := db.QueryRow(metricsQuery, mrId)
+	metricsRow := db.QueryRowContext(s.Context, metricsQuery, mrId)
 	err = metricsRow.Scan(&mrData.Metrics.MrSize, &mrData.Metrics.Handover, &mrData.Metrics.ReviewDepth)
 	if err != nil {
 		return nil, err
 	}
 
-	commitsRow := db.QueryRow(commitsQuery, mrId)
+	commitsRow := db.QueryRowContext(s.Context, commitsQuery, mrId)
 	err = commitsRow.Scan(&mrData.TotalCommits)
 	if err != nil {
 		return nil, err

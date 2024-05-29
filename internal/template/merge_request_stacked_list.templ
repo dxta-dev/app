@@ -1,42 +1,42 @@
 package template
 
 import (
-  "github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/data"
 
-  "fmt"	
+	"fmt"
 )
 
 type MergeRequestStackedListProps struct {
-	Id string
-	Title string
-  MergeRequests []data.MergeRequestListItemData
-	ShowMoreUrl string
+	Id            string
+	Title         string
+	MergeRequests []data.MergeRequestListItemData
+	ShowMoreUrl   string
 }
 
 templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, avatarUrls []string, codeAdditions int64, codeDeletions int64, reviewDepth int64) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-5 sm:flex-nowrap">
 		<div>
 			<p class="text-sm font-semibold leading-6 text-gray-900">
-					<a hx-get={ fmt.Sprintf("/mr-info/%v",id) } hx-target="#mr-info" href={ templ.SafeURL(fmt.Sprintf("/mr-info/%v",id)) } class="hover:underline">{title}</a>
+				<a hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" href={ templ.SafeURL(fmt.Sprintf("/mr-info/%v", id)) } class="hover:underline">{ title }</a>
 			</p>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				<p>
-				<a href={ templ.SafeURL(mrUrl) } class="hover:underline">#{fmt.Sprintf("%v", canonId)}</a>
+					<a href={ templ.SafeURL(mrUrl) } class="hover:underline">#{ fmt.Sprintf("%v", canonId) }</a>
 				</p>
-        <p>
-          <span class="text-lime-700 select-none">+{fmt.Sprintf("%v", codeAdditions)}</span>
-          <span class="text-red-700 select-none">-{fmt.Sprintf("%v", codeDeletions)}</span>
-        </p>
+				<p>
+					<span class="text-lime-700 select-none">+{ fmt.Sprintf("%v", codeAdditions) }</span>
+					<span class="text-red-700 select-none">-{ fmt.Sprintf("%v", codeDeletions) }</span>
+				</p>
 			</div>
 		</div>
 		<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
 			<div class="flex -space-x-0.5">
 				<dt class="sr-only">Commenters</dt>
-        for _, avatarUrl := range avatarUrls {
-				<dd>
-					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src={avatarUrl}/>
-				</dd>
-        }				
+				for _, avatarUrl := range avatarUrls {
+					<dd>
+						<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src={ avatarUrl }/>
+					</dd>
+				}
 			</div>
 			<div class="flex w-16 gap-x-2.5">
 				<dt>
@@ -45,37 +45,46 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, ava
 						<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
 					</svg>
 				</dt>
-				<dd class="text-sm leading-6 text-gray-900">{fmt.Sprintf("%v", reviewDepth)}</dd>
+				<dd class="text-sm leading-6 text-gray-900">{ fmt.Sprintf("%v", reviewDepth) }</dd>
 			</div>
 		</dl>
 	</li>
 }
 
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
-	<div id={props.Id}>	
-		<h1>{props.Title}</h1>
+	<div id={ props.Id }>
+		<div>{ props.Title }</div>
 		<hr/>
 		<ul role="list" class="divide-y divide-gray-100">
 			for _, mr := range props.MergeRequests {
-				@mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
-			}
-			// TODO: remove condition ShowMoreUrl != "#"
-			if props.ShowMoreUrl != "#" && len(props.MergeRequests) > 0 && props.MergeRequests[0].Count > 5 {
-				<li>				
-					<h2 class="underline">
-					<a hx-get={props.ShowMoreUrl} 
-						 hx-target={fmt.Sprintf("#%s ul", props.Id)} 
-						 hx-swap="innerHTML" 
-						 href={templ.SafeURL(props.ShowMoreUrl)}>Show more ({fmt.Sprintf("%v", props.MergeRequests[0].Count-5)})</a>
-					</h2>
-				</li>
+				@mergeRequestStack(mr.Id, mr.Title, mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
 			}
 		</ul>
+		// TODO: remove condition ShowMoreUrl != "#"
+		if props.ShowMoreUrl != "#" && len(props.MergeRequests) > 0 && props.MergeRequests[0].Count > 5 {
+			<div class="relative">
+				<div class="absolute inset-0 flex items-center" aria-hidden="true">
+					<div class="w-full border-t border-gray-300"></div>
+				</div>
+				<div class="relative flex justify-center">
+					<span class="bg-white px-2 text-sm text-gray-500">
+						<a
+							hx-get={ props.ShowMoreUrl }
+							hx-target={ fmt.Sprintf("#%s ul", props.Id) }
+							hx-swap="innerHTML"
+							href={ templ.SafeURL(props.ShowMoreUrl) }
+						>
+							Show more ({ fmt.Sprintf("%v", props.MergeRequests[0].Count-5) })
+						</a>
+					</span>
+				</div>
+			</div>
+		}
 	</div>
 }
 
 templ PartialMergeRequestStackedList(props MergeRequestStackedListProps) {
 	for _, mr := range props.MergeRequests {
-		@mergeRequestStack(mr.Id, mr.Title,  mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
+		@mergeRequestStack(mr.Id, mr.Title, mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
 	}
 }

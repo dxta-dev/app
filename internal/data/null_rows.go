@@ -23,7 +23,7 @@ func (s *Store) GetNullRows() (*NullRows, error) {
 		return nullRows, nil
 	}
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, err
@@ -33,7 +33,7 @@ func (s *Store) GetNullRows() (*NullRows, error) {
 
 	nullRows = &NullRows{}
 
-	err = db.QueryRow("SELECT dates_id, users_id, merge_requests_id, repository_id FROM transform_null_rows LIMIT 1;").Scan(
+	err = db.QueryRowContext(s.Context, "SELECT dates_id, users_id, merge_requests_id, repository_id FROM transform_null_rows LIMIT 1;").Scan(
 		&nullRows.DateId, &nullRows.UserId,
 		&nullRows.MergeRequestId, &nullRows.RepositoryId,
 	)

@@ -3,9 +3,9 @@ package handler
 import (
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 
-	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -21,8 +21,11 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	paramMrId := c.Param("mrid")
@@ -79,7 +82,7 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 
 	components := template.MergeRequestInfo(mergeRequestInfoProps)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
 
 func (a *App) RemoveMergeRequestInfo(c echo.Context) error {
@@ -125,8 +128,11 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
+	ctx := c.Request().Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	paramMrId := c.Param("mrid")
@@ -204,6 +210,5 @@ func (a *App) GetMergeRequestDetails(c echo.Context) error {
 
 	components := template.MergeRequestDetails(page, mergeRequestInfoProps, *mrMetricsData)
 
-	return components.Render(context.Background(), c.Response().Writer)
-
+	return components.Render(ctx, c.Response().Writer)
 }
