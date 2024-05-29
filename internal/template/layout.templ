@@ -38,12 +38,11 @@ type Page struct {
 templ Layout(page *Page) {
 	<html>
 		@Head(page.Title, page.CacheBust, page.Nonce)
-		if !page.Boosted && !page.Requested {
-			@Navigation(page.NavState, page.DebugMode)
-		}
 		<body>
-			@Content(page) {
-				{ children... }
+			@NewNavigation(page.NavState, page.DebugMode) {
+				@Content(page) {
+					{ children... }
+				}
 			}
 		</body>
 	</html>
@@ -69,6 +68,61 @@ templ Content(page *Page) {
 	}
 }
 
+templ NewNavigation(navigation NavState, debug bool) {
+	<div>
+		<!-- Static sidebar for desktop -->
+		<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
+			<div class="flex h-16 shrink-0 items-center justify-center">
+				<!-- logo goes here -->
+			</div>
+			<nav
+				hx-boost="true"
+				hx-target="main"
+				hx-swap="innerHTML show:unset"
+				class="mt-8"
+			>
+				<ul role="list" class="flex flex-col items-center space-y-1">
+					<li>
+						<!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
+						<a
+							href={ templ.SafeURL(navigation.Root) }
+							class="bg-gray-800 text-white group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
+						>
+							D
+							<span class="sr-only">Dashboard</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href={ templ.SafeURL(navigation.Metrics.Quality) }
+							class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
+						>
+							Q
+							<span class="sr-only">Quality Metrics</span>
+						</a>
+					</li>
+					<li>
+						<a
+							href={ templ.SafeURL(navigation.Metrics.Throughput) }
+							class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
+						>
+							T
+							<span class="sr-only">Throughput Metrics</span>
+						</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+		<main>
+			<div>
+				<div class="px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
+					{ children... }
+				</div>
+			</div>
+		</main>
+	</div>
+}
+
 templ Navigation(navigation NavState, debug bool) {
 	if debug {
 		<div class="rounded-md bg-yellow-50 p-4">
@@ -88,7 +142,7 @@ templ Navigation(navigation NavState, debug bool) {
 			</div>
 		</div>
 	}
-	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset"  class="w-full mx-auto">
+	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset" class="w-full mx-auto">
 		<div
 			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
 		>
