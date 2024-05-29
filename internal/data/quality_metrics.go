@@ -79,15 +79,13 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 	mrSizeByWeeks := make(map[string]AverageMRSizeByWeek)
 
 	for rows.Next() {
-		var week string
-		var size int32
-		var n int32
+		var avgMrSizeWeek AverageMRSizeByWeek
 
-		if err := rows.Scan(&size, &week, &n); err != nil {
+		if err := rows.Scan(&avgMrSizeWeek.Size, &avgMrSizeWeek.Week, &avgMrSizeWeek.N); err != nil {
 			return nil, 0, err
 		}
 
-		mrSizeByWeeks[week] = NewAverageMRSizeByWeek(week, size, n)
+		mrSizeByWeeks[avgMrSizeWeek.Week] = NewAverageMRSizeByWeek(avgMrSizeWeek.Week, avgMrSizeWeek.Size, avgMrSizeWeek.N)
 	}
 
 	var totalMRSizeCount int32
@@ -104,10 +102,7 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 		}
 	}
 
-	var averageMRSizeByXWeeks float64
-	if numOfWeeksWithMRSize > 0 {
-		averageMRSizeByXWeeks = float64(totalMRSizeCount) / float64(numOfWeeksWithMRSize)
-	}
+	averageMRSizeByXWeeks := float64(totalMRSizeCount) / float64(numOfWeeksWithMRSize)
 
 	return mrSizeByWeeks, averageMRSizeByXWeeks, nil
 }
@@ -180,14 +175,13 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 	mrReviewDepthByWeeks := make(map[string]AverageMrReviewDepthByWeek)
 
 	for rows.Next() {
-		var week string
-		var depth float32
+		var avgReviewWeek AverageMrReviewDepthByWeek
 
-		if err := rows.Scan(&depth, &week); err != nil {
+		if err := rows.Scan(&avgReviewWeek.Depth, &avgReviewWeek.Week); err != nil {
 			return nil, 0, err
 		}
 
-		mrReviewDepthByWeeks[week] = NewAverageMrReviewDepthByWeek(week, depth)
+		mrReviewDepthByWeeks[avgReviewWeek.Week] = NewAverageMrReviewDepthByWeek(avgReviewWeek.Week, avgReviewWeek.Depth)
 	}
 
 	var totalReviewDepthCount float32
@@ -276,14 +270,13 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 	mrHandoverByWeeks := make(map[string]AverageHandoverPerMR)
 
 	for rows.Next() {
-		var week string
-		var handover float32
+		var avgHandoverWeek AverageHandoverPerMR
 
-		if err := rows.Scan(&handover, &week); err != nil {
+		if err := rows.Scan(&avgHandoverWeek.Handover, &avgHandoverWeek.Week); err != nil {
 			return nil, 0, err
 		}
 
-		mrHandoverByWeeks[week] = NewAverageHandoverPerMR(week, handover)
+		mrHandoverByWeeks[avgHandoverWeek.Week] = NewAverageHandoverPerMR(avgHandoverWeek.Week, avgHandoverWeek.Handover)
 	}
 
 	var totalHandoverCount float32
@@ -372,14 +365,13 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 	mrCountByWeeks := make(map[string]MrCountByWeek)
 
 	for rows.Next() {
-		var week string
-		var count int32
+		var mrCountWeek MrCountByWeek
 
-		if err := rows.Scan(&count, &week); err != nil {
+		if err := rows.Scan(&mrCountWeek.Count, &mrCountWeek.Week); err != nil {
 			return nil, 0, err
 		}
 
-		mrCountByWeeks[week] = NewMrCountByWeek(week, count)
+		mrCountByWeeks[mrCountWeek.Week] = NewMrCountByWeek(mrCountWeek.Week, mrCountWeek.Count)
 	}
 
 	var totalMergedCount int32
@@ -395,10 +387,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 		}
 	}
 
-	var averageMergedByXWeeks float64
-	if numOfWeeksWithMerged > 0 {
-		averageMergedByXWeeks = float64(totalMergedCount) / float64(numOfWeeksWithMerged)
-	}
+	averageMergedByXWeeks := float64(totalMergedCount) / float64(numOfWeeksWithMerged)
 
 	return mrCountByWeeks, averageMergedByXWeeks, nil
 }
