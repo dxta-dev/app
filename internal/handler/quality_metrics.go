@@ -25,7 +25,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	currentTime := time.Now()
 
-	threeMonthsAgo := currentTime.Add(-3 * time.Hour * 24 * 30)
+	numWeeksAgo := currentTime.Add(-12 * 7 * 24 * time.Hour)
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
@@ -35,7 +35,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		DriverName: otel.GetDriverName(),
 		Context:    ctx,
 	}
-	crawlInstances, err := store.GetCrawlInstances(threeMonthsAgo.Unix(), currentTime.Unix())
+	crawlInstances, err := store.GetCrawlInstances(numWeeksAgo.Unix(), currentTime.Unix())
 	if err != nil {
 		return err
 	}
@@ -55,7 +55,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	uniqueYearWeekGaps := make(map[string]bool)
 
 	for _, timeFrames := range instanceByRepo {
-		findGaps = data.FindGaps(threeMonthsAgo, currentTime, timeFrames)
+		findGaps = data.FindGaps(numWeeksAgo, currentTime, timeFrames)
 		if len(findGaps) > 0 {
 			for _, gap := range findGaps {
 				for d := gap.Since; d.Before(gap.Until) || d.Equal(gap.Until); d = d.AddDate(0, 0, 1) {
