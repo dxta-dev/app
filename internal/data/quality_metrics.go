@@ -54,7 +54,8 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
+
 	if err != nil {
 		return nil, 0, err
 	}
@@ -68,7 +69,8 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
+
 	if err != nil {
 		return nil, 0, err
 	}
@@ -151,7 +153,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -167,7 +169,7 @@ func (s *Store) GetAverageReviewDepth(weeks []string, teamMembers []int64) (map[
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -247,7 +249,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -263,7 +265,7 @@ func (s *Store) GetAverageHandoverPerMR(weeks []string, teamMembers []int64) (ma
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err
@@ -343,7 +345,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 		placeholders,
 		usersInTeamConditionQuery)
 
-	db, err := sql.Open("libsql", s.DbUrl)
+	db, err := sql.Open(s.DriverName, s.DbUrl)
 
 	if err != nil {
 		return nil, 0, err
@@ -359,7 +361,7 @@ func (s *Store) GetMRsMergedWithoutReview(weeks []string, teamMembers []int64) (
 		queryParams[i+len(weeks)] = v
 	}
 
-	rows, err := db.Query(query, queryParams...)
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
 
 	if err != nil {
 		return nil, 0, err

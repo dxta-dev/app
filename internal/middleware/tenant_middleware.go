@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/util"
 
 	"context"
@@ -25,10 +26,10 @@ const TenantDatabaseURLContext tenantContextKey = "tenant_db_url"
 const TenantDatabasesGlobalContext string = "tenant_db_map"
 
 // TODO(scalability?): change from const map fetch to cache per tenant?
-func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) {
+func getTenantToDatabaseURLMap(ctx context.Context, superDatabaseUrl string) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
-	db, err := sql.Open("libsql", superDatabaseUrl)
+db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
 
 	if err != nil {
 		return nil, err
@@ -43,7 +44,7 @@ func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) 
 		FROM tenants
 	`
 
-	rows, err := db.Query(query)
+	rows, err := db.QueryContext(ctx, query)
 
 	if err != nil {
 		return nil, err
@@ -65,7 +66,7 @@ func getTenantToDatabaseURLMap(superDatabaseUrl string) (TenantDbUrlMap, error) 
 	return tenantToDatabaseURLMap, nil
 }
 
-func getTenantDatabaseURL(config *util.Config, tenantKey string) (string, bool, error) {
+func getTenantDatabaseURL(ctx context.Context, config *util.Config, tenantKey string) (string, bool, error) {
 
 	if !config.ShouldUseSuperDatabase {
 		configTenant, configContainsTenant := config.Tenants[tenantKey]
@@ -77,7 +78,7 @@ func getTenantDatabaseURL(config *util.Config, tenantKey string) (string, bool, 
 		return *configTenant.DatabaseUrl, true, nil
 	}
 
-	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap(*config.SuperDatabaseUrl)
+	tenantsToDatabaseURLMap, err := getTenantToDatabaseURLMap(ctx, *config.SuperDatabaseUrl)
 
 	if err != nil {
 		return "", false, err
@@ -130,7 +131,7 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(config, subdomain)
+		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(ctx, config, subdomain)
 
 		if err != nil {
 			log.Panicln("Error getting tenant database URL", err)

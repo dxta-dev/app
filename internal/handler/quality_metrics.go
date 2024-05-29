@@ -6,10 +6,10 @@ import (
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
-	"context"
 	"time"
 
 	"github.com/donseba/go-htmx"
@@ -29,8 +29,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 	crawlInstances, err := store.GetCrawlInstances(threeMonthsAgo.Unix(), currentTime.Unix())
 	if err != nil {
@@ -266,5 +269,5 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	components := template.QualityMetricsPage(page, props, teamPickerProps)
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }

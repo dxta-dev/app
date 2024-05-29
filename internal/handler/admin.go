@@ -1,12 +1,12 @@
 package handler
 
 import (
-	"context"
 	"time"
 
 	"github.com/a-h/templ"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
+	"github.com/dxta-dev/app/internal/otel"
 	admin_template "github.com/dxta-dev/app/internal/template/admin"
 
 	"fmt"
@@ -18,8 +18,11 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	r := c.Request()
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
+	ctx := r.Context()
 	store := &data.Store{
-		DbUrl: tenantDatabaseUrl,
+		DbUrl:      tenantDatabaseUrl,
+		DriverName: otel.GetDriverName(),
+		Context:    ctx,
 	}
 
 	currentTime := time.Now()
@@ -53,5 +56,5 @@ func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 		components = admin_template.DashboardAdminPage(findGaps, repositoryId, crawlInstances)
 	}
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }
