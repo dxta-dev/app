@@ -187,10 +187,15 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 	}
 	cutoffIndex := int(cutoffDate.Sub(firstDay).Hours() / 24 / 7)
 
-	dotXValues := series.XValues[cutoffIndex:]
-	dotYValues := series.YValues[cutoffIndex:]
-	lineXValues := series.XValues[cutoffIndex-1:]
-	lineYValues := series.YValues[cutoffIndex-1:]
+	var filteredXValues []float64
+	var filteredYValues []float64
+
+	for i := range series.XValues {
+		if i >= cutoffIndex {
+			filteredXValues = append(filteredXValues, series.XValues[i])
+			filteredYValues = append(filteredYValues, series.YValues[i])
+		}
+	}
 
 	mainSeries := chart.ContinuousSeries{
 		Style: chart.Style{
@@ -199,14 +204,14 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 			DotColor:    chart.ColorBlue,
 		},
 		Name:    series.Title,
-		XValues: dotXValues,
-		YValues: dotYValues,
+		XValues: filteredXValues,
+		YValues: filteredYValues,
 	}
 
 	lineSeries := chart.ContinuousSeries{
 		Name:    series.Title,
-		XValues: lineXValues,
-		YValues: lineYValues,
+		XValues: filteredXValues,
+		YValues: filteredYValues,
 		Style: chart.Style{
 			StrokeWidth: 3,
 			StrokeColor: chart.ColorBlue,
@@ -313,7 +318,7 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 	cutoffXValue := cutoffIndex - 1
 
 	cutoffLine := chart.ContinuousSeries{
-		XValues: []float64{float64(cutoffXValue), float64(cutoffXValue)},
+		XValues: []float64{float64(cutoffXValue) + 0.75, float64(cutoffXValue) + 0.75},
 		YValues: []float64{0, YAxisValues[len(YAxisValues)-1]},
 		Style: chart.Style{
 			StrokeWidth: 2.0,
@@ -323,9 +328,9 @@ func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
 	graph.Series = append(graph.Series, cutoffLine)
 
 	cutoffLabel := label{
-		x:    int(float64(cutoffXValue) * (620 / float64(len(series.Weeks)))),
+		x:    int((float64(cutoffXValue) + 0.75) * (620 / float64(len(series.Weeks)))),
 		y:    230,
-		text: "DATA UNAVAILABLE",
+		text: "MISSING DATA",
 	}
 	graph.Elements = append(graph.Elements, CutoffLabel(&graph, cutoffLabel))
 

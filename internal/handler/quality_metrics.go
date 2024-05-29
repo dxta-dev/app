@@ -114,12 +114,8 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrSizeXValues[i] = float64(i)
-		if uniqueYearWeekGaps[week] {
-			averageMrSizeYValues[i] = 0
-		} else {
-			averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
-			formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
-		}
+		averageMrSizeYValues[i] = float64(averageMrSize[week].Size)
+		formattedAverageMrSizeYValues[i] = util.FormatYAxisValues(averageMrSizeYValues[i])
 
 		startWeek, endWeek, err := util.ParseYearWeek(week)
 		if err != nil {
@@ -152,12 +148,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageReviewDepthXValues[i] = float64(i)
-		if uniqueYearWeekGaps[week] {
-			averageReviewDepthYValues[i] = 0
-		} else {
-			averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
-			formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
-		}
+		averageReviewDepthYValues[i] = float64(averageReviewDepth[week].Depth)
+		formattedAverageReviewDepthYValues[i] = util.FormatYAxisValues(averageReviewDepthYValues[i])
+
 	}
 
 	averageReviewDepthSeries := template.TimeSeries{
@@ -181,12 +174,10 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		averageMrHandoverMetricsByNWeeksXValues[i] = float64(i)
-		if uniqueYearWeekGaps[week] {
-			averageMrHandoverMetricsByNWeeksYValues[i] = 0
-		} else {
-			averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
-			formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
-		}
+
+		averageMrHandoverMetricsByNWeeksYValues[i] = float64(mergeRequestHandover[week].Handover)
+		formattedAverageMrHandoverMetricsByNWeeksYValues[i] = util.FormatYAxisValues(averageMrHandoverMetricsByNWeeksYValues[i])
+
 	}
 
 	averageHandoverSeries := template.TimeSeries{
@@ -210,12 +201,9 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	for i, week := range weeks {
 		mergeRequestWithoutReviewXValues[i] = float64(i)
-		if uniqueYearWeekGaps[week] {
-			mergeRequestWithoutReviewYValues[i] = 0
-		} else {
-			mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
-			formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
-		}
+		mergeRequestWithoutReviewYValues[i] = float64(mergeRequestWithoutReview[week].Count)
+		formattedMergeRequestWithoutReviewYValues[i] = util.FormatYAxisValues(mergeRequestWithoutReviewYValues[i])
+
 	}
 
 	mrsMergedWithoutReviewSeries := template.TimeSeries{
