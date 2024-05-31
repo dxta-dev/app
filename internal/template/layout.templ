@@ -26,6 +26,7 @@ type NavState struct {
 }
 
 type Page struct {
+	RouteId   string
 	Title     string
 	Boosted   bool
 	Requested bool
@@ -39,10 +40,9 @@ templ Layout(page *Page) {
 	<html>
 		@Head(page.Title, page.CacheBust, page.Nonce)
 		<body>
-			@NewNavigation(page.NavState, page.DebugMode) {
-				@Content(page) {
-					{ children... }
-				}
+			@NewNavigation(page)
+			@Content(page) {
+				{ children... }
 			}
 		</body>
 	</html>
@@ -62,13 +62,31 @@ templ Content(page *Page) {
 	if page.Boosted {
 		{ children... }
 	} else {
-		<main class="max-w-[1440px] mx-auto">
+		<main class="max-w-[1440px] mx-auto lg:pl-20">
 			{ children... }
 		</main>
 	}
 }
 
-templ NewNavigation(navigation NavState, debug bool) {
+func GetClassStateOfNewNavigationSidebarLink(page *Page, routeId string) string {
+	if page.RouteId == routeId {
+		return "bg-gray-800 text-white"
+	}
+	return "text-gray-400 hover:text-white hover:bg-gray-800"
+}
+
+templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, routeName string, content templ.Component) {
+	<li>
+		<a
+			href={ templ.SafeURL(routeURL) }
+			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId))}>
+			@content
+			<span class="sr-only">{routeName}</span>
+		</a>
+	</li>
+}
+
+templ NewNavigation(page *Page) {
 	<div>
 		<!-- Static sidebar for desktop -->
 		<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
@@ -82,44 +100,12 @@ templ NewNavigation(navigation NavState, debug bool) {
 				class="mt-8"
 			>
 				<ul role="list" class="flex flex-col items-center space-y-1">
-					<li>
-						<!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
-						<a
-							href={ templ.SafeURL(navigation.Root) }
-							class="bg-gray-800 text-white group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
-						>
-							D
-							<span class="sr-only">Dashboard</span>
-						</a>
-					</li>
-					<li>
-						<a
-							href={ templ.SafeURL(navigation.Metrics.Quality) }
-							class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
-						>
-							Q
-							<span class="sr-only">Quality Metrics</span>
-						</a>
-					</li>
-					<li>
-						<a
-							href={ templ.SafeURL(navigation.Metrics.Throughput) }
-							class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold"
-						>
-							T
-							<span class="sr-only">Throughput Metrics</span>
-						</a>
-					</li>
+					@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", templ.Raw("D"))
+					@NewNavigationSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality,"Quality Metrics", templ.Raw("Q"))
+					@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput,"Throughpu Metrics", templ.Raw("T"))					
 				</ul>
 			</nav>
-		</div>
-		<main>
-			<div>
-				<div class="px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
-					{ children... }
-				</div>
-			</div>
-		</main>
+		</div>		
 	</div>
 }
 
