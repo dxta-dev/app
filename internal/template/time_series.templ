@@ -1,5 +1,9 @@
 package template
 
+import (
+	"github.com/dxta-dev/app/internal/data"
+)
+
 script setData(yValues []string, startEndWeek []StartEndWeek, valueName string) {
 	const parent = document.currentScript.parentNode;
 	const svg = parent.querySelector(`svg`);
@@ -13,15 +17,11 @@ script setData(yValues []string, startEndWeek []StartEndWeek, valueName string) 
 	});
 }
 
-type CutOffWeeks struct {
-	Start string
-	End string
-}
 
 type TimeSeriesProps struct {
 	Series TimeSeries
 	StartEndWeeks []StartEndWeek
-	CutOffWeeks CutOffWeeks
+	CutOffWeeks data.CutOffWeeks
 	FormattedYValues []string
 	InfoText string
 }

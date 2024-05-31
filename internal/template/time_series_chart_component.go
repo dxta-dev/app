@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/a-h/templ"
+	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/wcharczuk/go-chart/v2"
 	"github.com/wcharczuk/go-chart/v2/drawing"
@@ -172,7 +173,7 @@ func CutoffLabel(c *chart.Chart, l label, userDefaults ...chart.Style) chart.Ren
 	}
 }
 
-func TimeSeriesChart(series TimeSeries, cutoff CutOffWeeks) templ.Component {
+func TimeSeriesChart(series TimeSeries, cutoff data.CutOffWeeks) templ.Component {
 	YAxisValues := getYAxisValues(series.YValues)
 
 	f := util.GetMonospaceFont()

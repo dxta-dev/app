@@ -4,11 +4,56 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 
 	_ "modernc.org/sqlite"
 
+	"github.com/dxta-dev/app/internal/util"
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
+
+type CutOffWeeks struct {
+	Start string
+	End   string
+}
+
+func GetUniqueYearWeekGaps(crawlInstances []CrawlInstance) (uniqueYearWeekGaps map[string]bool, cutOffWeeks CutOffWeeks) {
+
+	currentTime := time.Now()
+
+	numWeeksAgo := currentTime.Add(-12 * 7 * 24 * time.Hour)
+
+	crawlInstanceFrom := util.GetFormattedWeek(crawlInstances[0].Since)
+	crawlInstanceTo := util.GetFormattedWeek(crawlInstances[len(crawlInstances)-1].Until)
+
+	cutOffWeeks = CutOffWeeks{Start: crawlInstanceFrom, End: crawlInstanceTo}
+
+	instanceByRepo := make(map[int64]TimeFrameSlice)
+	for _, instance := range crawlInstances {
+		instanceByRepo[instance.RepositoryId] = append(instanceByRepo[instance.RepositoryId], instance.TimeFrame)
+	}
+
+	var findGaps TimeFrameSlice
+
+	uniqueYearWeekGaps = make(map[string]bool)
+
+	for _, timeFrames := range instanceByRepo {
+		findGaps = FindGaps(numWeeksAgo, currentTime, timeFrames)
+		if len(findGaps) > 0 {
+			for _, gap := range findGaps {
+				for d := gap.Since; d.Before(gap.Until) || d.Equal(gap.Until); d = d.AddDate(0, 0, 1) {
+					year, week := d.ISOWeek()
+					combination := fmt.Sprintf("%d-W%02d", year, week)
+
+					if _, found := uniqueYearWeekGaps[combination]; !found {
+						uniqueYearWeekGaps[combination] = true
+					}
+				}
+			}
+		}
+	}
+	return uniqueYearWeekGaps, cutOffWeeks
+}
 
 type AverageMRSizeByWeek struct {
 	Week string
