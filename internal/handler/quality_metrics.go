@@ -40,7 +40,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
-	_, cutOffWeeks := data.GetUniqueYearWeekGaps(crawlInstances)
+	cutOffWeeks := data.GetCutOffWeeks(crawlInstances)
 
 	teams, err := store.GetTeams()
 
