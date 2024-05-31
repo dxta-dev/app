@@ -12,8 +12,8 @@ templ weekPicker(props WeekPickerProps) {
 	<form>
 		//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 		<input
-			hx-target="main"
-			hx-swap="innerHTML"
+			hx-target="body"
+			hx-swap="innerHTML show:unset"
 			hx-get="/"
 			id="week"
 			type="week"
