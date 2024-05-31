@@ -7,7 +7,7 @@ import (
 )
 
 type CodeChangesCount struct {
-	Count int
+	Count int32
 	Week  string
 }
 
@@ -76,7 +76,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[st
 		codeChangesByWeek[codeChangesCount.Week] = codeChangesCount
 	}
 
-	totalCodeChangesCount := 0
+	var totalCodeChangesCount int32
 	numOfWeeksWithCodeChanges := len(codeChangesByWeek)
 
 	for _, week := range weeks {
@@ -99,7 +99,7 @@ func (s *Store) GetTotalCodeChanges(weeks []string, teamMembers []int64) (map[st
 
 type CommitCountByWeek struct {
 	Week  string
-	Count int
+	Count int32
 }
 
 func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string]CommitCountByWeek, float64, error) {
@@ -164,7 +164,7 @@ func (s *Store) GetTotalCommits(weeks []string, teamMembers []int64) (map[string
 		commitCountByWeeks[commitCount.Week] = commitCount
 	}
 
-	totalCommitCount := 0
+	var totalCommitCount int32
 	numOfWeeksWithCommits := len(commitCountByWeeks)
 
 	for _, week := range weeks {
@@ -266,7 +266,7 @@ func (s *Store) GetTotalMrsOpened(weeks []string, teamMembers []int64) (map[stri
 
 type TotalReviewsByWeek struct {
 	Week  string
-	Count int
+	Count int32
 }
 
 func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string]TotalReviewsByWeek, float64, error) {
@@ -331,7 +331,7 @@ func (s *Store) GetTotalReviews(weeks []string, teamMembers []int64) (map[string
 		totalReviewsByWeek[reviewCount.Week] = reviewCount
 	}
 
-	totalReviewsCount := 0
+	var totalReviewsCount int32
 	numOfWeeksWithReviews := len(totalReviewsByWeek)
 
 	for _, week := range weeks {

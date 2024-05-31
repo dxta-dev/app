@@ -23,6 +23,10 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	a.GenerateNonce()
 	a.LoadState(r)
 
+	currentTime := time.Now()
+
+	numWeeksAgo := currentTime.Add(-12 * 7 * 24 * time.Hour)
+
 	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	ctx := r.Context()
@@ -31,6 +35,13 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		DriverName: otel.GetDriverName(),
 		Context:    ctx,
 	}
+
+	crawlInstances, err := store.GetCrawlInstances(numWeeksAgo.Unix(), currentTime.Unix())
+	if err != nil {
+		return err
+	}
+
+	cutOffWeeks := data.GetCutOffWeeks(crawlInstances)
 
 	teams, err := store.GetTeams()
 
@@ -87,6 +98,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	averageTotalCommitsSeriesProps := template.TimeSeriesProps{
 		Series:           averageTotalCommitsSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedTotalCommitsYValues,
 		InfoText:         fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
 	}
@@ -121,6 +133,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	averageMrsOpenedSeriesProps := template.TimeSeriesProps{
 		Series:           averageMrsOpenedSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedTotalMrsOpenedYValues,
 		InfoText:         fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
 	}
@@ -155,6 +168,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	averageMergeFrequencySeriesProps := template.TimeSeriesProps{
 		Series:           averageMergeFrequencySeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedMergeFrequencyYValues,
 		InfoText:         fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
 	}
@@ -189,6 +203,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	averageReviewsSeriesProps := template.TimeSeriesProps{
 		Series:           averageReviewsSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedTotalReviewsYValues,
 		InfoText:         fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
 	}
@@ -218,6 +233,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	averageTotalCodeChangesProps := template.TimeSeriesProps{
 		Series:           averageCodeChangesSeries,
 		StartEndWeeks:    startEndWeek,
+		CutOffWeeks:      cutOffWeeks,
 		FormattedYValues: formattedTotalCodeChangesYValues,
 		InfoText:         fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
 	}

@@ -182,6 +182,7 @@ func TimeSeriesChart(series TimeSeries, cutoff data.CutOffWeeks) templ.Component
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	cutoffDate, _, err := util.ParseYearWeek(cutoff.Start)
 	if err != nil {
 		log.Fatal(err)
