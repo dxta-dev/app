@@ -191,11 +191,18 @@ func TimeSeriesChart(series TimeSeries, cutoff data.CutOffWeeks) templ.Component
 
 	var filteredXValues []float64
 	var filteredYValues []float64
+	var filteredXValuesLines []float64
+	var filteredYValuesLines []float64
 
 	for i := range series.XValues {
 		if i >= cutoffIndex {
 			filteredXValues = append(filteredXValues, series.XValues[i])
 			filteredYValues = append(filteredYValues, series.YValues[i])
+			filteredXValuesLines = append(filteredXValuesLines, series.XValues[i])
+			filteredYValuesLines = append(filteredYValuesLines, series.YValues[i])
+		} else {
+			filteredXValues = append(filteredXValues, math.NaN())
+			filteredYValues = append(filteredYValues, math.NaN())
 		}
 	}
 
@@ -212,8 +219,8 @@ func TimeSeriesChart(series TimeSeries, cutoff data.CutOffWeeks) templ.Component
 
 	lineSeries := chart.ContinuousSeries{
 		Name:    series.Title,
-		XValues: filteredXValues,
-		YValues: filteredYValues,
+		XValues: filteredXValuesLines,
+		YValues: filteredYValuesLines,
 		Style: chart.Style{
 			StrokeWidth: 3,
 			StrokeColor: chart.ColorBlue,
