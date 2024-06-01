@@ -17,7 +17,14 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, ava
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-5 sm:flex-nowrap">
 		<div>
 			<p class="text-sm font-semibold leading-6 text-gray-900">
-				<a hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" href={ templ.SafeURL(fmt.Sprintf("/mr-info/%v", id)) } class="hover:underline">{ title }</a>
+				<a
+					hx-get={ fmt.Sprintf("/mr-info/%v", id) }
+					hx-target="#mr-info"
+					href={ templ.SafeURL(fmt.Sprintf("/mr-info/%v", id)) }
+					class="hover:underline"
+				>
+					{ title }
+				</a>
 			</p>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				<p>
@@ -52,9 +59,12 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, ava
 }
 
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
-	<div id={ props.Id }>
-		<div>{ props.Title }</div>
-		<hr/>
+	<div class="pt-8 pb-5" id={ props.Id }>
+		<div class="border-b border-gray-200 pb-3">
+			<div class="-ml-2 -mt-2 flex flex-wrap items-baseline">
+				<div class="ml-2 mt-2 text-base font-semibold leading-6 text-gray-900">{ props.Title }</div>
+			</div>
+		</div>
 		<ul role="list" class="divide-y divide-gray-100">
 			for _, mr := range props.MergeRequests {
 				@mergeRequestStack(mr.Id, mr.Title, mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
