@@ -142,8 +142,6 @@ func main() {
 	g.GET("/mr-stack/merged", app.GetMergeRequestMergedStack)
 	g.GET("/mr-stack/closed", app.GetMergeRequestClosedStack)
 
-	g.GET("/mr/:mrid", app.GetMergeRequestDetails)
-
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
 
