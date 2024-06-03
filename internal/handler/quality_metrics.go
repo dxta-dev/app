@@ -229,6 +229,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	}
 
 	page := &template.Page{
+		RouteId:   "/metrics/quality",
 		Title:     "Quality Metrics - DXTA",
 		Boosted:   h.HxBoosted,
 		CacheBust: a.BuildTimestamp,

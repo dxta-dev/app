@@ -359,6 +359,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 
 	page := &template.Page{
+		RouteId:   "/",
 		Title:     "Dashboard - DXTA",
 		Boosted:   h.HxBoosted,
 		Requested: h.HxRequest,

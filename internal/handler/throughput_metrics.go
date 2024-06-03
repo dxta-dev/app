@@ -262,6 +262,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	}
 
 	page := &template.Page{
+		RouteId:   "/metrics/throughput",
 		Title:     "Throughput Metrics - DXTA",
 		Boosted:   h.HxBoosted,
 		CacheBust: a.BuildTimestamp,
