@@ -234,7 +234,7 @@ func (s *Store) GetMergeRequestInProgressCountedList(date time.Time, teamMembers
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams := make([]interface{}, len(teamMembers)+2)
 	queryParams[0] = week
 	for i, v := range teamMembers {
 		queryParams[i+1] = v
@@ -301,7 +301,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams := make([]interface{}, len(teamMembers)+2)
 	queryParams[0] = week
 	for i, v := range teamMembers {
 		queryParams[i+1] = v
@@ -492,14 +492,23 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
   	AND metrics.merged = 0
   	AND metrics.closed = 0
 		AND author.bot = 0
-		AND user.bot = 0`
+		AND user.bot = 0
+		AND mr.id NOT IN (
+			SELECT DISTINCT events.merge_request
+			FROM transform_merge_request_events AS events
+			JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
+			WHERE occured_on.week = ?
+			AND events.merge_request_event_type = 9			
+		)`
 
-func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
 		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
 	}
+
+	week := util.GetFormattedWeek(date)
 
 	db, err := sql.Open(s.DriverName, s.DbUrl)
 
@@ -523,9 +532,10 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers))
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
 	for i, v := range teamMembers {
-		queryParams[i] = v
+		queryParams[i+1] = v
 	}
 
 	rows, err := db.QueryContext(s.Context, query, queryParams...)
@@ -564,7 +574,7 @@ func (s *Store) GetMergeRequestWaitingForReviewCountedList(teamMembers []int64, 
 	return mergeRequests, nil
 }
 
-func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -576,6 +586,8 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 	if err != nil {
 		return nil, err
 	}
+
+	week := util.GetFormattedWeek(date)
 
 	query := fmt.Sprintf(`
 		SELECT %s
@@ -591,9 +603,10 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, nullUse
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(teamMembers))
+	queryParams := make([]interface{}, len(teamMembers)+1)
+	queryParams[0] = week
 	for i, v := range teamMembers {
-		queryParams[i] = v
+		queryParams[i+1] = v
 	}
 
 	rows, err := db.QueryContext(s.Context, query, queryParams...)

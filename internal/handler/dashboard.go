@@ -333,7 +333,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
 		mergeRequestsWaitingForReview.ShowMoreUrl = "/mr-stack/waiting-for-review"
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, nullRows.UserId)
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, timeNow, nullRows.UserId)
 
 		if err != nil {
 			return err
