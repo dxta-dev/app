@@ -6,31 +6,23 @@ import (
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
 	"time"
 
 	"github.com/donseba/go-htmx"
-	"github.com/labstack/echo/v4"
-)
+	"github.com/labstack/echo/v4")
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	a.GenerateNonce()
 	a.LoadState(r)
 
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
-
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
 
 	teams, err := store.GetTeams()
 

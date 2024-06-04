@@ -6,7 +6,6 @@ import (
 	"github.com/a-h/templ"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	admin_template "github.com/dxta-dev/app/internal/template/admin"
 
 	"fmt"
@@ -16,14 +15,9 @@ import (
 
 func (a *App) GetCrawlInstancesInfo(c echo.Context) error {
 	r := c.Request()
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	currentTime := time.Now()
 
