@@ -4,11 +4,9 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/graph"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
-	"context"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -119,15 +117,12 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 	var err error
 
 	ctx := c.Request().Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
+
+	fmt.Printf("%v\n", store)
 
 	a.GenerateNonce()
 	a.LoadState(r)
@@ -387,5 +382,5 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsReadyToMerge,
 		mergeRequestsWaitingForReview)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }

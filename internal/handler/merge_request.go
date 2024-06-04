@@ -3,7 +3,6 @@ package handler
 import (
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 
 	"fmt"
@@ -19,14 +18,9 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
 
 	paramMrId := c.Param("mrid")
 	mrId, err := strconv.ParseInt(paramMrId, 10, 64)
