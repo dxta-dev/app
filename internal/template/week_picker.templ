@@ -9,9 +9,11 @@ type WeekPickerProps struct {
 }
 
 templ weekPicker(props WeekPickerProps) {
-	<form>
+	<form class="m-0">
 		//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 		<input
+			class="hidden"
+			id="week-picker"
 			hx-target="body"
 			hx-swap="innerHTML show:unset"
 			hx-get="/"
@@ -21,25 +23,83 @@ templ weekPicker(props WeekPickerProps) {
 			value={ props.Week }
 			max={ props.CurrentWeek }
 		/>
+		<div class="inline-flex divide-x divide-indigo-700 rounded-md shadow-sm">
+			<a
+				class="inline-flex items-center rounded-l-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+				aria-haspopup="listbox"
+				aria-expanded="true"
+				aria-labelledby="listbox-label"
+				href={ templ.SafeURL(props.PreviousWeekUrl) }
+			>
+				<span class="sr-only">Previous week</span>
+				<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M12.79 5.23a.75.75 0 01-.02 1.06L8.832 10l3.938 3.71a.75.75 0 11-1.04 1.08l-4.5-4.25a.75.75 0 010-1.08l4.5-4.25a.75.75 0 011.06.02z" clip-rule="evenodd"></path>
+				</svg>
+			</a>
+			<div class="inline-flex items-center bg-indigo-600 px-3 py-2 text-white shadow-sm">
+				<p class="text-sm font-semibold">{ props.Week }</p>
+			</div>			
+			<button
+				type="button"
+				class="inline-flex items-center bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+				aria-haspopup="listbox"
+				aria-expanded="true"
+				aria-labelledby="listbox-label"
+				onclick="document.getElementById('week-picker').showPicker()"
+			>
+				<span class="sr-only">Select week</span>
+				<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
+				</svg>
+			</button>
+			
+			if props.NextWeekUrl != "" {
+				<a
+				class="inline-flex items-center rounded-l-none rounded-r-md bg-indigo-600 p-2 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 focus:ring-offset-gray-50"
+				aria-haspopup="listbox"
+				aria-expanded="true"
+				aria-labelledby="listbox-label"
+				href={ templ.SafeURL(props.NextWeekUrl) }
+			>
+				<span class="sr-only">Next week</span>
+				<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"></path>
+				</svg>
+			</a>
+			} else {
+				<a
+				class="inline-flex items-center rounded-l-none rounded-r-md bg-indigo-400 p-2 focus:outline-none"
+				aria-haspopup="listbox"
+				aria-expanded="true"
+				aria-labelledby="listbox-label"
+				disabled
+			>
+				<span class="sr-only">Next week</span>
+				<svg class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+					<path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd"></path>
+				</svg>
+			</a>
+			}
+		</div>
 	</form>
-	<div class="relative h-8 flex items-center justify-center">
-		<a
-			href={ templ.SafeURL(props.PreviousWeekUrl) }
-			class="inset-y-0 left-0 w-32"
-		>
-			Previous Week
-		</a>
-		<a
-			href={ templ.SafeURL(props.CurrentWeekUrl) }
-			class="inset-y-0 top-0 w-32"
-		>
-			Current Week
-		</a>
-		<a
-			href={ templ.SafeURL(props.NextWeekUrl) }
-			class="inset-y-0 right-0 w-32"
-		>
-			Next Week
-		</a>
-	</div>
+	// <div class="relative h-8 flex items-center justify-center">
+	// 	<a
+	// 		href={ templ.SafeURL(props.PreviousWeekUrl) }
+	// 		class="inset-y-0 left-0 w-32"
+	// 	>
+	// 		Previous Week
+	// 	</a>
+	// 	<a
+	// 		href={ templ.SafeURL(props.CurrentWeekUrl) }
+	// 		class="inset-y-0 top-0 w-32"
+	// 	>
+	// 		Current Week
+	// 	</a>
+	// 	<a
+	// 		href={ templ.SafeURL(props.NextWeekUrl) }
+	// 		class="inset-y-0 right-0 w-32"
+	// 	>
+	// 		Next Week
+	// 	</a>
+	// </div>
 }
