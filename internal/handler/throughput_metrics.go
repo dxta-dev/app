@@ -6,7 +6,6 @@ import (
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
@@ -23,14 +22,8 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	a.GenerateNonce()
 	a.LoadState(r)
 
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
-
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	teams, err := store.GetTeams()
 
