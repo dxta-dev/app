@@ -2,11 +2,12 @@ package template
 
 templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps, teamPickerProps TeamPickerProps, isQueryCurrentWeek bool, mergeRequestsClosed MergeRequestStackedListProps, mergeRequestsMerged MergeRequestStackedListProps, mergeRequestsInProgress MergeRequestStackedListProps, mergeRequestsReadyToMerge MergeRequestStackedListProps, mergeRequestsWaitingForReview MergeRequestStackedListProps) {
 	@Layout(page) {
-		<div class="bg-white sticky top-0 z-10 border-b">
-			<ul class="flex justify-end gap-1">
+		<ul class="flex gap-1">
 				@teamPicker(teamPickerProps)
 				@weekPicker(weekPickerProps)
-			</ul>
+		</ul>
+		<div class="bg-white sticky top-0 z-10 border-b">
+			@weekNav(weekPickerProps)
 			@swarm(swarmProps, page.Nonce)
 		</div>
 		if isQueryCurrentWeek {
