@@ -131,6 +131,7 @@ func main() {
 
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
+	g.Use(middleware.StoreMiddleware())
 
 	g.GET("/", app.DashboardPage)
 

@@ -4,11 +4,9 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/graph"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
-	"context"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -119,15 +117,12 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 	var err error
 
 	ctx := c.Request().Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
+
+	fmt.Printf("%v\n", store)
 
 	a.GenerateNonce()
 	a.LoadState(r)
@@ -191,6 +186,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 
 	prevWeek, nextWeek := util.GetPrevNextWeek(date)
+	queriedWeek := util.GetFormattedWeek(date)
+	currentWeek := util.GetFormattedWeek(time.Now())
 
 	prevWeekParams := url.Values{}
 	prevWeekParams.Set("week", prevWeek)
@@ -208,8 +205,12 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
+	if queriedWeek == currentWeek {
+		nextWeekUrl = ""
+	}
+
 	currentWeekParams := url.Values{}
-	currentWeekParams.Set("week", util.GetFormattedWeek(time.Now()))
+	currentWeekParams.Set("week", currentWeek)
 	currentWeekUrl, err := getNextDashboardUrl(a, r.URL.Path, DashboardState{mr: nil, week: state.week}, currentWeekParams, true)
 
 	if err != nil {
@@ -217,7 +218,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 
 	weekPickerProps := template.WeekPickerProps{
-		Week:            util.GetFormattedWeek(date),
+		Week:            queriedWeek,
 		CurrentWeek:     util.GetFormattedWeek(time.Now()),
 		PreviousWeekUrl: previousWeekUrl,
 		CurrentWeekUrl:  currentWeekUrl,
@@ -310,7 +311,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	var mergeRequestsClosed template.MergeRequestStackedListProps
 	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
 
-	isQueryCurrentWeek := util.GetFormattedWeek(date) == util.GetFormattedWeek(timeNow)
+	isQueryCurrentWeek := queriedWeek == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
@@ -381,5 +382,5 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsReadyToMerge,
 		mergeRequestsWaitingForReview)
 
-	return components.Render(context.Background(), c.Response().Writer)
+	return components.Render(ctx, c.Response().Writer)
 }

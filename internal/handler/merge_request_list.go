@@ -8,7 +8,6 @@ import (
 	"github.com/donseba/go-htmx"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
 
@@ -50,7 +49,7 @@ func loadHxCurrentURLState(h htmx.HxRequestHeader) (*MergeRequestListRequestStat
 func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	state, err := loadHxCurrentURLState(h)
 	if err != nil {
@@ -60,11 +59,6 @@ func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
 
 	var nullRows *data.NullRows
 
@@ -95,7 +89,8 @@ func (a *App) GetMergeRequestWaitingForReviewStack(c echo.Context) error {
 func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
+
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	state, err := loadHxCurrentURLState(h)
 	if err != nil {
@@ -105,11 +100,6 @@ func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
 
 	var nullRows *data.NullRows
 
@@ -140,7 +130,6 @@ func (a *App) GetMergeRequestInProgressStack(c echo.Context) error {
 func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	state, err := loadHxCurrentURLState(h)
 	if err != nil {
@@ -150,11 +139,8 @@ func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	var nullRows *data.NullRows
 
@@ -185,7 +171,6 @@ func (a *App) GetMergeRequestReadyToMergeStack(c echo.Context) error {
 func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	state, err := loadHxCurrentURLState(h)
 	if err != nil {
@@ -195,11 +180,7 @@ func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	var nullRows *data.NullRows
 
@@ -230,7 +211,6 @@ func (a *App) GetMergeRequestMergedStack(c echo.Context) error {
 func (a *App) GetMergeRequestClosedStack(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
-	tenantDatabaseUrl := r.Context().Value(middleware.TenantDatabaseURLContext).(string)
 
 	state, err := loadHxCurrentURLState(h)
 	if err != nil {
@@ -240,11 +220,7 @@ func (a *App) GetMergeRequestClosedStack(c echo.Context) error {
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := &data.Store{
-		DbUrl:      tenantDatabaseUrl,
-		DriverName: otel.GetDriverName(),
-		Context:    ctx,
-	}
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	var nullRows *data.NullRows
 
