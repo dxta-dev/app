@@ -14,6 +14,15 @@ type MergeRequestInfoProps struct {
 	TargetSelector string
 }
 
+script ClosePopover() {
+		const popover = document.getElementById("mr-info");
+		popover.addEventListener("beforetoggle", (event) => {
+			const searchParams = new URLSearchParams(document.location.search);
+			searchParams.delete("mr");
+			window.history.pushState({}, "", `${document.location.pathname}${searchParams.toString()}`);
+		});
+}
+
 templ MergeRequestInfo(props MergeRequestInfoProps) {
 	<div class="relative z-10" aria-labelledby="mr-info-header" role="dialog" aria-modal="true">
 		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
@@ -29,6 +38,9 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 }
 
 templ MergeRequestHeader(props MergeRequestInfoProps) {
+	<h1>
+		 {fmt.Sprintf("%v", props.DeleteEndpoint) }
+	</h1>
 	<div class="sticky top-0 z-20 h-24 bg-white">
 		<div class="flex top-0 h-[60px] p-1 justify-between items-center">
 			<h2 id="mr-info-header" class="pt-16 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10 mx-auto">
@@ -43,12 +55,10 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 			</h2>
 			<div class="pt-4">
 				<button
- 					hx-trigger="click, keyup[key=='Escape'] from:body"
- 					hx-delete={ props.DeleteEndpoint }
- 					hx-target={ props.TargetSelector }
  					type="button"
+					id="hideBtn"
  					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
-				>
+				>@ClosePopover()
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>

@@ -81,6 +81,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		searchParams.set('mr', mrid);
 		const endpointWithMrid = `${endpoint}${mrid}`;
 		const mrUrl = new URL(endpointWithMrid, document.location.origin);
+		console.log(mrUrl.toString());
 		htmx.ajax('GET', mrUrl.toString(), '#mr-info');
 	}
 

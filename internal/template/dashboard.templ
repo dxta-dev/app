@@ -13,7 +13,7 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 		@mergeRequestStackedList(mergeRequestsMerged)
 		@mergeRequestStackedList(mergeRequestsClosed)
 		<div
-			id="mr-info"
+			id="mr-info" popover
 		>
 			if (mergeRequestInfoProps != nil) {
 				@MergeRequestInfo(*mergeRequestInfoProps)
