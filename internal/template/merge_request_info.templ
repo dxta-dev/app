@@ -16,11 +16,17 @@ type MergeRequestInfoProps struct {
 
 script ClosePopover() {
 		const popover = document.getElementById("mr-info");
+		const closeBtn = document.getElementById("hideBtn")
+
 		popover.addEventListener("beforetoggle", (event) => {
 			const searchParams = new URLSearchParams(document.location.search);
 			searchParams.delete("mr");
 			window.history.pushState({}, "", `${document.location.pathname}${searchParams.toString()}`);
 		});
+
+		closeBtn.addEventListener("click", (event) => {
+			popover.hidePopover();
+		})
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -38,9 +44,6 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 }
 
 templ MergeRequestHeader(props MergeRequestInfoProps) {
-	<h1>
-		 {fmt.Sprintf("%v", props.DeleteEndpoint) }
-	</h1>
 	<div class="sticky top-0 z-20 h-24 bg-white">
 		<div class="flex top-0 h-[60px] p-1 justify-between items-center">
 			<h2 id="mr-info-header" class="pt-16 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10 mx-auto">
