@@ -122,8 +122,6 @@ func (a *App) DashboardPage(c echo.Context) error {
 	ctx := c.Request().Context()
 	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
-	fmt.Printf("%v\n", store)
-
 	a.GenerateNonce()
 	a.LoadState(r)
 

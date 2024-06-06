@@ -7,23 +7,26 @@ import (
 )
 
 type MergeRequestInfoProps struct {
-	Events         [][]data.Event
-	UniqueDates    []string
-	DetailsPageUrl string
-	TargetSelector string
-	ShouldOpenMrInfo   bool
+	Events           [][]data.Event
+	UniqueDates      []string
+	DetailsPageUrl   string
+	TargetSelector   string
+	ShouldOpenMrInfo bool
 }
 
 script ClosePopover() {
 	const popover = document.getElementById("mr-info");
-	const closeBtn = document.getElementById("mr-info-hide-btn");
 
-	popover.addEventListener("beforetoggle", (event) => {
-	const searchParams = new URLSearchParams(document.location.search);
-		searchParams.delete("mr");
-		params = searchParams.toString();
-		window.history.pushState({}, "", `${document.location.pathname}${params.length === 0 ? '' : '?'}${params}`);
+	popover.addEventListener("toggle", (event) => {
+		if (event.newState === "closed") {
+			const searchParams = new URLSearchParams(document.location.search);
+			searchParams.delete("mr");
+			params = searchParams.toString();
+			window.history.pushState({}, "", `${document.location.pathname}${params.length === 0 ? '' : '?'}${params}`);
+			popover.innerHTML = "";
+		}
 	});
+
 }
 
 script ShowMrInfo() {
