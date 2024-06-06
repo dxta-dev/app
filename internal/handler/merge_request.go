@@ -71,7 +71,7 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		UniqueDates:    uniqueDates,
 		DetailsPageUrl: fmt.Sprintf("/mr/%d", mrId),
 		TargetSelector: "#mr-info",
-		ShouldReload: !(h.HxBoosted && h.HxRequest) && state.mr != nil,
+		ShouldOpenMrInfo: !(h.HxBoosted && h.HxRequest) && state.mr != nil,
 	}
 
 	components := template.MergeRequestInfo(mergeRequestInfoProps)
