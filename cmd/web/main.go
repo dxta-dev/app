@@ -1,9 +1,9 @@
 package main
 
 import (
+	"github.com/dxta-dev/app/internal/config"
 	"github.com/dxta-dev/app/internal/handler"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/util"
 
 	"context"
 	"fmt"
@@ -36,7 +36,8 @@ var DEBUG string
 
 func main() {
 
-	config, err := util.GetConfig()
+	config, err := config.Load(DEBUG == "true")
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -129,7 +130,7 @@ func main() {
 
 	g := e.Group("")
 
-	g.Use(middleware.ConfigMiddleware(config))
+	g.Use(middleware.ConfigMiddleware(&config))
 	g.Use(middleware.TenantMiddleware)
 	g.Use(middleware.StoreMiddleware())
 

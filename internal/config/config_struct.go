@@ -35,7 +35,7 @@ type Config struct {
 	IsMultiTenant          bool
 	IsSuperDatabaseEnabled bool
 	SuperDatabaseUrl       string
-	tenants                []Tenant
+	Tenants                []Tenant
 }
 
 func getConfig(config *config) (Config, error) {
@@ -83,7 +83,7 @@ func getConfig(config *config) (Config, error) {
 				return Config{}, errors.New("both database url and file path cannot be empty")
 			}
 
-			out.tenants = append(out.tenants, tenant)
+			out.Tenants = append(out.Tenants, tenant)
 		}
 	}
 
