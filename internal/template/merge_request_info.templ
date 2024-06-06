@@ -24,10 +24,6 @@ script ClosePopover() {
 		params = searchParams.toString();
 		window.history.pushState({}, "", `${document.location.pathname}${params.length === 0 ? '' : '?'}${params}`);
 	});
-
-	closeBtn.addEventListener("click", (event) => {
-		popover.hidePopover();
-	});
 }
 
 script OpenOnReload() {
@@ -72,6 +68,8 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 					type="button"
 					id="mr-info-hide-btn"
 					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
+					popovertarget="mr-info"
+					popovertargetaction="hide"
 				>
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
