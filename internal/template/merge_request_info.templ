@@ -21,7 +21,7 @@ script ClosePopover() {
 		popover.addEventListener("beforetoggle", (event) => {
 			const searchParams = new URLSearchParams(document.location.search);
 			searchParams.delete("mr");
-			window.history.pushState({}, "", `${document.location.pathname}${searchParams.toString()}`);
+			window.history.pushState({}, "", `${document.location.pathname}?${searchParams.toString()}`);
 		});
 
 		closeBtn.addEventListener("click", (event) => {
