@@ -16,7 +16,7 @@ func TestGetConfig(t *testing.T) {
 		{
 			name: "SuperDatabaseUrl provided",
 			input: &config{
-				superDatabaseUrl: stringPtr("http://super.database.url"),
+				superDatabaseUrl: "http://super.database.url",
 			},
 			want: Config{
 				IsMultiTenant:          true,
@@ -30,18 +30,18 @@ func TestGetConfig(t *testing.T) {
 			input: &config{
 				tenants: map[string]tenant{
 					"tenant1": {
-						subdomain:        stringPtr("tenant1"),
-						databaseFilePath: stringPtr("/path/to/db1"),
+						subdomain:        "tenant1",
+						databaseFilePath: "/path/to/db1",
 					},
 					"tenant2": {
-						subdomain:   stringPtr("tenant2"),
-						databaseUrl: stringPtr("http://tenant2.database.url"),
+						subdomain:   "tenant2",
+						databaseUrl: "http://tenant2.database.url",
 					},
 				},
 			},
 			want: Config{
 				IsMultiTenant: true,
-				tenants: []Tenant{
+				Tenants: []Tenant{
 					{
 						Name:              "tenant1",
 						Subdomain:         "tenant1",
@@ -91,6 +91,3 @@ func TestGetConfig(t *testing.T) {
 	}
 }
 
-func stringPtr(s string) *string {
-	return &s
-}

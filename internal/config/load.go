@@ -1,11 +1,12 @@
 package config
 
 import (
+	"strings"
+
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
-	"strings"
 )
 
 var k = koanf.New(".")
@@ -32,6 +33,7 @@ func Load(debug bool) (Config, error) {
 	)
 
 	out, err := unmarshal(k)
+
 
 	if (err != nil) {
 		return Config{}, err

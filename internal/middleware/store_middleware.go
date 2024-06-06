@@ -14,7 +14,7 @@ func StoreMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			ctx := r.Context()
-			tenantDatabaseURL := ctx.Value(TenantDatabaseURLContext).(string)
+			tenantDatabaseURL := ctx.Value(TenantDatabaseUrlKey).(string)
 
 			driverName := otel.GetDriverName()
 

@@ -5,16 +5,6 @@ import (
 	"strings"
 )
 
-type tenant struct {
-	subdomain        *string `koanf:"subdomain"`
-	databaseFilePath *string `koanf:"database_file_path"`
-	databaseUrl      *string `koanf:"database_url"`
-}
-
-type config struct {
-	tenants          map[string]tenant `koanf:"tenants"`
-	superDatabaseUrl *string           `koanf:"super_database_url"`
-}
 
 type DatabaseType int32
 
@@ -42,8 +32,8 @@ func getConfig(config *config) (Config, error) {
 
 	out := Config{}
 
-	if config.superDatabaseUrl != nil && *config.superDatabaseUrl != "" {
-		out.SuperDatabaseUrl = *config.superDatabaseUrl
+	if config.superDatabaseUrl != "" {
+		out.SuperDatabaseUrl = config.superDatabaseUrl
 		out.IsSuperDatabaseEnabled = true
 		out.IsMultiTenant = true
 		return out, nil
@@ -53,7 +43,7 @@ func getConfig(config *config) (Config, error) {
 		out.IsMultiTenant = true
 	}
 
-	if (config.superDatabaseUrl == nil || *config.superDatabaseUrl != "") && (config.tenants == nil || len(config.tenants) == 0) {
+	if (config.superDatabaseUrl != "") && (config.tenants == nil || len(config.tenants) == 0) {
 		return Config{}, errors.New("both super database url and tenants cannot be empty")
 	}
 
@@ -63,23 +53,23 @@ func getConfig(config *config) (Config, error) {
 				Name: key,
 			}
 
-			if t.subdomain != nil && *t.subdomain != "" {
-				tenant.Subdomain = *t.subdomain
+			if t.subdomain != "" {
+				tenant.Subdomain = t.subdomain
 			} else {
 				tenant.Subdomain = strings.ToLower(key)
 			}
 
-			if t.databaseUrl != nil && *t.databaseUrl != "" {
-				tenant.DatabaseUrl = *t.databaseUrl
+			if t.databaseUrl != "" {
+				tenant.DatabaseUrl = t.databaseUrl
 				tenant.DatabaseType = LibSQL
 			}
 
-			if t.databaseFilePath != nil && *t.databaseFilePath != "" {
-				tenant.LocalDatabasePath = *t.databaseFilePath
+			if t.databaseFilePath != "" {
+				tenant.LocalDatabasePath = t.databaseFilePath
 				tenant.DatabaseType = SQLite
 			}
 
-			if (t.databaseUrl == nil || *t.databaseUrl == "") && (t.databaseFilePath == nil || *t.databaseFilePath == "")  {
+			if t.databaseUrl == "" && t.databaseFilePath == "" {
 				return Config{}, errors.New("both database url and file path cannot be empty")
 			}
 

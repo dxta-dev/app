@@ -16,8 +16,7 @@ func WithConfigContext(parent context.Context, config *config.Config) context.Co
 	return context.WithValue(parent, ConfigContext, config)
 }
 
-func ConfigMiddleware(config *config.Config) func(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
+func ConfigMiddleware(config *config.Config) func(next echo.HandlerFunc) echo.HandlerFunc { return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			ctx := r.Context()

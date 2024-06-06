@@ -36,7 +36,7 @@ var DEBUG string
 
 func main() {
 
-	config, err := config.Load(DEBUG == "true")
+	conf, err := config.Load(DEBUG == "true")
 
 	if err != nil {
 		log.Fatal(err)
@@ -130,7 +130,7 @@ func main() {
 
 	g := e.Group("")
 
-	g.Use(middleware.ConfigMiddleware(&config))
+	g.Use(middleware.ConfigMiddleware(&conf))
 	g.Use(middleware.TenantMiddleware)
 	g.Use(middleware.StoreMiddleware())
 
