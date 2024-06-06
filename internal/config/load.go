@@ -1,7 +1,6 @@
 package config
 
 import (
-	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/parsers/toml"
 	"github.com/knadh/koanf/providers/env"
 	"github.com/knadh/koanf/providers/file"
@@ -20,8 +19,6 @@ func Load(debug bool) (Config, error) {
 	if debug {
 		_ = k.Load(file.Provider("config.dev.toml"), toml.Parser())
 	}
-
-	_ = k.Load(file.Provider(".env"), dotenv.Parser())
 
 	_ = k.Load(
 		env.Provider(
