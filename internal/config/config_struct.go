@@ -1,6 +1,9 @@
 package config
 
-import "strings"
+import (
+	"errors"
+	"strings"
+)
 
 type tenant struct {
 	subdomain        *string `koanf:"subdomain"`
@@ -35,19 +38,23 @@ type Config struct {
 	tenants                []Tenant
 }
 
-func getConfig(config *config) Config {
+func getConfig(config *config) (Config, error) {
 
 	out := Config{}
 
 	if config.superDatabaseUrl != nil && *config.superDatabaseUrl != "" {
 		out.SuperDatabaseUrl = *config.superDatabaseUrl
 		out.IsSuperDatabaseEnabled = true
-		out.IsMultiTenant = false
-		return out
+		out.IsMultiTenant = true
+		return out, nil
 	}
 
 	if config.tenants != nil && len(config.tenants) > 1 {
 		out.IsMultiTenant = true
+	}
+
+	if (config.superDatabaseUrl == nil || *config.superDatabaseUrl != "") && (config.tenants == nil || len(config.tenants) == 0) {
+		return Config{}, errors.New("both super database url and tenants cannot be empty")
 	}
 
 	if config.tenants != nil {
@@ -72,9 +79,13 @@ func getConfig(config *config) Config {
 				tenant.DatabaseType = SQLite
 			}
 
+			if (t.databaseUrl == nil || *t.databaseUrl == "") && (t.databaseFilePath == nil || *t.databaseFilePath == "")  {
+				return Config{}, errors.New("both database url and file path cannot be empty")
+			}
+
 			out.tenants = append(out.tenants, tenant)
 		}
 	}
 
-	return out
+	return out, nil
 }

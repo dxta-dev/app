@@ -13,7 +13,7 @@ var k = koanf.New(".")
 
 var prefix = "DXTA_"
 
-func Load(debug bool) error {
+func Load(debug bool) (Config, error) {
 
 	_ = k.Load(file.Provider("config.toml"), toml.Parser())
 
@@ -34,7 +34,11 @@ func Load(debug bool) error {
 		nil,
 	)
 
+	out, err := unmarshal(k)
 
+	if (err != nil) {
+		return Config{}, err
+	}
 
-	return nil
+	return out, nil
 }
