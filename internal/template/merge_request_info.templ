@@ -10,8 +10,8 @@ type MergeRequestInfoProps struct {
 	Events         [][]data.Event
 	UniqueDates    []string
 	DetailsPageUrl string
-	DeleteEndpoint string
 	TargetSelector string
+	ShouldReload   bool
 }
 
 script ClosePopover() {
@@ -27,12 +27,8 @@ script ClosePopover() {
 }
 
 script OpenOnReload() {
-	const searchParams = new URLSearchParams(document.location.search);
-	const mrIdFromUrl = searchParams.get('mr');
-	if (mrIdFromUrl) {
-		const popover = document.getElementById("mr-info");
-		popover.showPopover();
-	}
+	const popover = document.getElementById("mr-info");
+	popover.showPopover();
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -41,8 +37,10 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 		<div class="fixed top-20 inset-0 z-10 w-screen">
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6">
-					@OpenOnReload()
-					@MergeRequestHeader(props)
+					if props.ShouldReload {
+						@OpenOnReload()
+					}
+					MergeRequestHeader(props)
 					@MergeRequestDates(props)
 				</div>
 			</div>

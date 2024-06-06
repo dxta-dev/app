@@ -286,7 +286,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 			Events:         events,
 			UniqueDates:    uniqueDates,
 			DetailsPageUrl: fmt.Sprintf("/mr/%d", *state.mr),
-			DeleteEndpoint: fmt.Sprintf("/mr-info/%d", *state.mr),
+			ShouldReload:   !(h.HxBoosted && h.HxRequest) && state.mr != nil,
 			TargetSelector: "#mr-info",
 		}
 	}
