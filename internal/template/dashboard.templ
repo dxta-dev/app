@@ -1,10 +1,21 @@
 package template
 
-templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPickerProps, mergeRequestInfoProps *MergeRequestInfoProps, teamPickerProps TeamPickerProps, isQueryCurrentWeek bool, mergeRequestsClosed MergeRequestStackedListProps, mergeRequestsMerged MergeRequestStackedListProps, mergeRequestsInProgress MergeRequestStackedListProps, mergeRequestsReadyToMerge MergeRequestStackedListProps, mergeRequestsWaitingForReview MergeRequestStackedListProps) {
+templ DashboardPage(
+	page *Page,
+	swarmProps SwarmProps,
+	weekPickerProps WeekPickerProps,
+	mergeRequestInfoProps *MergeRequestInfoProps,
+	teamPickerProps TeamPickerProps,
+	isQueryCurrentWeek bool,
+	mergeRequestsClosed MergeRequestStackedListProps,
+	mergeRequestsMerged MergeRequestStackedListProps,
+	mergeRequestsInProgress MergeRequestStackedListProps,
+	mergeRequestsReadyToMerge MergeRequestStackedListProps,
+	mergeRequestsWaitingForReview MergeRequestStackedListProps) {
 	@Layout(page) {
 		<ul class="flex gap-1">
-				@teamPicker(teamPickerProps)
-				@weekPicker(weekPickerProps)
+			@teamPicker(teamPickerProps)
+			@weekPicker(weekPickerProps)
 		</ul>
 		<div class="bg-white sticky top-0 z-10 border-b">
 			@weekNav(weekPickerProps)
@@ -18,7 +29,8 @@ templ DashboardPage(page *Page, swarmProps SwarmProps, weekPickerProps WeekPicke
 		@mergeRequestStackedList(mergeRequestsMerged)
 		@mergeRequestStackedList(mergeRequestsClosed)
 		<div
-			id="mr-info" popover
+			id="mr-info"
+			popover
 		>
 			if (mergeRequestInfoProps != nil) {
 				@MergeRequestInfo(*mergeRequestInfoProps)

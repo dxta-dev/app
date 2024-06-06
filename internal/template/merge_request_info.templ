@@ -15,18 +15,19 @@ type MergeRequestInfoProps struct {
 }
 
 script ClosePopover() {
-		const popover = document.getElementById("mr-info");
-		const closeBtn = document.getElementById("hideBtn")
+	const popover = document.getElementById("mr-info");
+	const closeBtn = document.getElementById("mr-info-hide-btn");
 
-		popover.addEventListener("beforetoggle", (event) => {
-			const searchParams = new URLSearchParams(document.location.search);
-			searchParams.delete("mr");
-			window.history.pushState({}, "", `${document.location.pathname}?${searchParams.toString()}`);
-		});
+	popover.addEventListener("beforetoggle", (event) => {
+	const searchParams = new URLSearchParams(document.location.search);
+		searchParams.delete("mr");
+		params = searchParams.toString();
+		window.history.pushState({}, "", `${document.location.pathname}${params.length === 0 ? '' : '?'}${params}`);
+	});
 
-		closeBtn.addEventListener("click", (event) => {
-			popover.hidePopover();
-		})
+	closeBtn.addEventListener("click", (event) => {
+		popover.hidePopover();
+	});
 }
 
 script OpenOnReload() {
@@ -68,15 +69,16 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 			</h2>
 			<div class="pt-4">
 				<button
- 					type="button"
-					id="hideBtn"
- 					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
-				>@ClosePopover()
+					type="button"
+					id="mr-info-hide-btn"
+					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
+				>
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
 					</svg>
 				</button>
+				@ClosePopover()
 			</div>
 		</div>
 	</div>

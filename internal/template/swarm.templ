@@ -14,25 +14,24 @@ type SwarmProps struct {
 }
 
 var eventTypeNames = map[data.EventType]string{
-	data.UNKNOWN:               "UNKNOWN",
-	data.OPENED:                "OPENED",
-	data.STARTED_CODING:        "STARTED_CODING",
-	data.STARTED_PICKUP:        "STARTED_PICKUP",
-	data.STARTED_REVIEW:        "STARTED_REVIEW",
-	data.NOTED:                 "NOTED",
-	data.ASSIGNED:              "ASSIGNED",
-	data.CLOSED:                "CLOSED",
-	data.COMMENTED:             "COMMENTED",
-	data.COMMITTED:             "COMMITTED",
-	data.CONVERT_TO_DRAFT:      "CONVERT_TO_DRAFT",
-	data.MERGED:                "MERGED",
-	data.READY_FOR_REVIEW:      "READY_FOR_REVIEW",
-	data.REVIEW_REQUEST_REMOVED:"REVIEW_REQUEST_REMOVED",
-	data.REVIEW_REQUESTED:      "REVIEW_REQUESTED",
-	data.REVIEWED:              "REVIEWED",
-	data.UNASSIGNED:            "UNASSIGNED",
+	data.UNKNOWN:                "UNKNOWN",
+	data.OPENED:                 "OPENED",
+	data.STARTED_CODING:         "STARTED_CODING",
+	data.STARTED_PICKUP:         "STARTED_PICKUP",
+	data.STARTED_REVIEW:         "STARTED_REVIEW",
+	data.NOTED:                  "NOTED",
+	data.ASSIGNED:               "ASSIGNED",
+	data.CLOSED:                 "CLOSED",
+	data.COMMENTED:              "COMMENTED",
+	data.COMMITTED:              "COMMITTED",
+	data.CONVERT_TO_DRAFT:       "CONVERT_TO_DRAFT",
+	data.MERGED:                 "MERGED",
+	data.READY_FOR_REVIEW:       "READY_FOR_REVIEW",
+	data.REVIEW_REQUEST_REMOVED: "REVIEW_REQUEST_REMOVED",
+	data.REVIEW_REQUESTED:       "REVIEW_REQUESTED",
+	data.REVIEWED:               "REVIEWED",
+	data.UNASSIGNED:             "UNASSIGNED",
 }
-
 
 func getEventName(eventType data.EventType) string {
 	if name, exists := eventTypeNames[eventType]; exists {
@@ -42,25 +41,25 @@ func getEventName(eventType data.EventType) string {
 }
 
 type ActorInfo struct {
-    AvatarUrl string
-    Name      string
+	AvatarUrl string
+	Name      string
 }
 
 func uniqueActorInfo(input []data.Event) []ActorInfo {
-    uniqueMap := make(map[string]ActorInfo)
-    var uniqueSlice []ActorInfo
+	uniqueMap := make(map[string]ActorInfo)
+	var uniqueSlice []ActorInfo
 
-    for _, event := range input {
-        if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
-            uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
-                AvatarUrl: event.Actor.AvatarUrl,
-                Name:      event.Actor.Name,
-            }
-            uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
-        }
-    }
+	for _, event := range input {
+		if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
+			uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
+				AvatarUrl: event.Actor.AvatarUrl,
+				Name:      event.Actor.Name,
+			}
+			uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
+		}
+	}
 
-    return uniqueSlice
+	return uniqueSlice
 }
 
 script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
@@ -125,7 +124,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	circles.forEach((circle, i) => {
 		let strokes = [];
 		let lines = [];
-		circle.addEventListener("mouseover", (e) => {
+		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			circles = orderCircles(circles);
@@ -147,7 +146,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			}
 		});
 
-		circle.addEventListener("mouseout", (e) => {
+		circle.addEventListener("mouseout", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			for (let i = 0; i < circles.length; i++) {
@@ -162,12 +161,12 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			lines = [];
 		});
 
-		circle.addEventListener("click", (e) => {
+		circle.addEventListener("click", () => {
 			const popover = document.getElementById("mr-info");
 			popover.showPopover();
 			getCircleInfo(Number(circle.getAttribute("data-merge-request-id")));
-
 		});
+
 	});
 
 
