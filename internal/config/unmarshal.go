@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"sort"
 
 	"github.com/knadh/koanf/v2"
@@ -19,7 +18,7 @@ type config struct {
 	superDatabaseUrl string
 }
 
-func unmarshal(k *koanf.Koanf) (Config, error) {
+func unmarshal(k *koanf.Koanf) (config, error) {
 	out := config{}
 
 	out.port = k.Int("port")
@@ -38,12 +37,8 @@ func unmarshal(k *koanf.Koanf) (Config, error) {
 		tenant.databaseFilePath = k.String("tenants." + key + ".database_file_path")
 		tenant.databaseUrl = k.String("tenants." + key + ".database_url")
 
-		fmt.Println("Tenant: ", key, tenant)
-
 		out.tenants[key] = tenant
 	}
 
-	fmt.Println("Config: ", out)
-
-	return getConfig(&out)
+	return out, nil
 }

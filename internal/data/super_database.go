@@ -4,11 +4,47 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/dxta-dev/app/internal/config"
 	"github.com/dxta-dev/app/internal/otel"
 )
 
-func getTenants(ctx context.Context, superDatabaseUrl string) ([]config.Tenant, error) {
+type Tenant struct {
+	Subdomain string
+	DatabaseUrl string
+}
+
+func GetTenantBySubdomain(ctx context.Context, superDatabaseUrl string, subdomain string) (Tenant, error) {
+	db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
+
+	if err != nil {
+		return Tenant{}, err
+	}
+
+	defer db.Close()
+
+	query := `
+		SELECT
+			db_url
+		FROM tenants
+		WHERE subdomain = ?
+	`
+
+	var tenant Tenant
+
+	tenant.Subdomain = subdomain
+
+
+	err = db.QueryRowContext(ctx, query).Scan(
+		&tenant.DatabaseUrl,
+	)
+
+	if (err != nil) {
+		return Tenant{}, err
+	}
+
+	return tenant, nil
+}
+
+func GetTenants(ctx context.Context, superDatabaseUrl string) ([]Tenant, error) {
 	db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
 
 	if err != nil {
@@ -32,15 +68,14 @@ func getTenants(ctx context.Context, superDatabaseUrl string) ([]config.Tenant, 
 
 	defer rows.Close()
 
-	var tenants []config.Tenant
+	var tenants []Tenant
 
 	for rows.Next() {
-		var tenant config.Tenant
+		var tenant Tenant
 		err := rows.Scan(&tenant.Subdomain, &tenant.DatabaseUrl)
 		if err != nil {
 			return nil, err
 		}
-		tenant.DatabaseType = config.LibSQL
 		tenant.Name = tenant.Subdomain
 		tenants = append(tenants, tenant)
 	}

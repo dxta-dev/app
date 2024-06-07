@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -21,7 +22,7 @@ var DEBUG string
 
 func main() {
 
-	conf, err := config.Load(DEBUG == "true")
+	conf, err := config.Load(context.Background(), DEBUG == "true")
 	if err != nil {
 		log.Fatal(err)
 	}

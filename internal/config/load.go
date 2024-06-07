@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"strings"
 
 	"github.com/knadh/koanf/parsers/toml"
@@ -13,8 +14,7 @@ var k = koanf.New(".")
 
 var prefix = "DXTA_"
 
-func Load(debug bool) (Config, error) {
-
+func Load(ctx context.Context, debug bool) (Config, error) {
 	_ = k.Load(file.Provider("config.toml"), toml.Parser())
 
 	if debug {
@@ -32,12 +32,13 @@ func Load(debug bool) (Config, error) {
 		nil,
 	)
 
-	out, err := unmarshal(k)
-
+	c, err := unmarshal(k)
 
 	if (err != nil) {
 		return Config{}, err
 	}
+
+	out, err := getConfig(ctx, &c)
 
 	return out, nil
 }

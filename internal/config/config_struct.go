@@ -1,23 +1,17 @@
 package config
 
 import (
+	"context"
 	"errors"
 	"strings"
+
+	"github.com/dxta-dev/app/internal/data"
 )
 
-
-type DatabaseType int32
-
-const (
-	SQLite DatabaseType = iota
-	LibSQL
-)
 
 type Tenant struct {
 	Name              string
 	Subdomain         string
-	DatabaseType      DatabaseType
-	LocalDatabasePath string
 	DatabaseUrl       string
 }
 
@@ -28,7 +22,7 @@ type Config struct {
 	Tenants                []Tenant
 }
 
-func getConfig(config *config) (Config, error) {
+func getConfig(ctx context.Context, config *config) (Config, error) {
 
 	out := Config{}
 
@@ -36,6 +30,23 @@ func getConfig(config *config) (Config, error) {
 		out.SuperDatabaseUrl = config.superDatabaseUrl
 		out.IsSuperDatabaseEnabled = true
 		out.IsMultiTenant = true
+		ts, err := data.GetTenants(ctx, config.superDatabaseUrl)
+
+		if err != nil {
+			return Config{}, err
+		}
+
+		for _, t := range ts {
+			tenant := Tenant {
+				Name: t.Name,
+				Subdomain: t.Subdomain,
+				DatabaseUrl: t.DatabaseUrl,
+			}
+
+			out.Tenants = append(out.Tenants, tenant)
+		}
+
+
 		return out, nil
 	}
 
@@ -61,12 +72,10 @@ func getConfig(config *config) (Config, error) {
 
 			if t.databaseUrl != "" {
 				tenant.DatabaseUrl = t.databaseUrl
-				tenant.DatabaseType = LibSQL
 			}
 
 			if t.databaseFilePath != "" {
-				tenant.LocalDatabasePath = t.databaseFilePath
-				tenant.DatabaseType = SQLite
+				tenant.DatabaseUrl = t.databaseFilePath
 			}
 
 			if t.databaseUrl == "" && t.databaseFilePath == "" {
