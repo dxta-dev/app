@@ -36,7 +36,7 @@ type Page struct {
 	Nonce     string
 }
 
-templ Layout(page *Page) {
+templ Layout(page *Page, props TeamPickerProps) {
 	<html>
 		@Head(page.Title, page.CacheBust, page.Nonce)
 		<body>
@@ -59,7 +59,7 @@ templ Layout(page *Page) {
 				</div>
 			}
 			<div id="app">
-				@NewNavigation(page)
+				@NewNavigation(page, props)
 				@Content(page) {
 					{ children... }
 				}
@@ -78,28 +78,6 @@ templ Head(title string, bust string, nonce string) {
 	</head>
 }
 
-templ TeamPickerStuff() {
-	<div class="lg:pl-20 sticky top-0">
-		<div class="sticky top-0 right-0 z-40 flex justify-end h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-			<div class="relative">
-				<button type="button" popovertarget="teams-overlay" class="-m-1.5 flex items-center p-1.5" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-					<span class="sr-only">Open user menu</span>
-					<img class="h-8 w-8 rounded-full bg-gray-50" src="https://avatars.githubusercontent.com/u/103996436?v=4" alt=""/>
-					<span class="hidden lg:flex lg:items-center">
-						<span class="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">Tom Cook</span>
-						<svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-							<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
-						</svg>
-					</span>
-				</button>
-				<div id="teams-overlay" popover class="fixed right-0 z-10 mt-28 mr-8 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-					<a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-0">Your profile</a>
-					<a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-1">Sign out</a>
-				</div>
-			</div>
-		</div>
-	</div>
-}
 
 templ Content(page *Page) {
 	<main class="lg:pl-20">
@@ -131,7 +109,7 @@ templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, rout
 	</li>
 }
 
-templ NewNavigation(page *Page) {
+templ NewNavigation(page *Page, props TeamPickerProps) {
 	<!-- Static sidebar for desktop -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
 		<div class="flex h-16 shrink-0 items-center justify-center">
@@ -150,7 +128,7 @@ templ NewNavigation(page *Page) {
 			</ul>
 		</nav>
 	</div>
-	@TeamPickerStuff()
+	@teamPicker(props)
 }
 
 templ Navigation(navigation NavState, debug bool) {

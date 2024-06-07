@@ -8,7 +8,7 @@ type QualityMetricsProps struct {
 }
 
 templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps TeamPickerProps) {
-	@Layout(page) {
+	@Layout(page, teamPickerProps) {
 		@teamPicker(teamPickerProps)
 		<h1 class="text-4xl font-bold mb-8 text-center">Quality Metrics</h1>
 		<div class="grid grid-cols-2">
