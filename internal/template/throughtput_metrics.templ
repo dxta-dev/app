@@ -10,7 +10,6 @@ type ThroughputMetricsProps struct {
 
 templ ThroughputMetricsPage(page *Page, props ThroughputMetricsProps, teamPickerProps TeamPickerProps) {
 	@Layout(page, teamPickerProps){
-		@teamPicker(teamPickerProps)
 		<div class="">
 			<h1 class="text-4xl font-bold mb-8 text-center">Throughput Metrics</h1>
 			<div class="grid grid-cols-2">
