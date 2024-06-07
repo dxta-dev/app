@@ -70,8 +70,8 @@ func (a *App) GetMergeRequestInfo(c echo.Context) error {
 		Events:         events,
 		UniqueDates:    uniqueDates,
 		DetailsPageUrl: fmt.Sprintf("/mr/%d", mrId),
-		DeleteEndpoint: fmt.Sprintf("/mr-info/%d", mrId),
 		TargetSelector: "#mr-info",
+		ShouldOpenMrInfo: !(h.HxBoosted && h.HxRequest) && state.mr != nil,
 	}
 
 	components := template.MergeRequestInfo(mergeRequestInfoProps)

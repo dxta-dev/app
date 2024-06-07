@@ -7,11 +7,31 @@ import (
 )
 
 type MergeRequestInfoProps struct {
-	Events         [][]data.Event
-	UniqueDates    []string
-	DetailsPageUrl string
-	DeleteEndpoint string
-	TargetSelector string
+	Events           [][]data.Event
+	UniqueDates      []string
+	DetailsPageUrl   string
+	TargetSelector   string
+	ShouldOpenMrInfo bool
+}
+
+script ClosePopover() {
+	const popover = document.getElementById("mr-info");
+
+	popover.addEventListener("toggle", (event) => {
+		if (event.newState === "closed") {
+			const searchParams = new URLSearchParams(document.location.search);
+			searchParams.delete("mr");
+			params = searchParams.toString();
+			window.history.pushState({}, "", `${document.location.pathname}${params.length === 0 ? '' : '?'}${params}`);
+			popover.innerHTML = "";
+		}
+	});
+
+}
+
+script ShowMrInfo() {
+	const popover = document.getElementById("mr-info");
+	popover.showPopover();
 }
 
 templ MergeRequestInfo(props MergeRequestInfoProps) {
@@ -20,6 +40,9 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 		<div class="fixed top-20 inset-0 z-10 w-screen">
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
 				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6">
+					if props.ShouldOpenMrInfo {
+						@ShowMrInfo()
+					}
 					@MergeRequestHeader(props)
 					@MergeRequestDates(props)
 				</div>
@@ -43,17 +66,18 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 			</h2>
 			<div class="pt-4">
 				<button
- 					hx-trigger="click, keyup[key=='Escape'] from:body"
- 					hx-delete={ props.DeleteEndpoint }
- 					hx-target={ props.TargetSelector }
- 					type="button"
- 					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
+					type="button"
+					id="mr-info-hide-btn"
+					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
+					popovertarget="mr-info"
+					popovertargetaction="hide"
 				>
 					<span class="sr-only">Close panel</span>
 					<svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
 					</svg>
 				</button>
+				@ClosePopover()
 			</div>
 		</div>
 	</div>

@@ -83,6 +83,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		const endpointWithMrid = `${endpoint}${mrid}`;
 		const mrUrl = new URL(endpointWithMrid, document.location.origin);
 		htmx.ajax('GET', mrUrl.toString(), '#mr-info');
+
 	}
 
 	const lineAtrs = [
@@ -142,7 +143,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	circles.forEach((circle, i) => {
 		let strokes = [];
 		let lines = [];
-		circle.addEventListener("mouseover", (e) => {
+		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			circles = orderCircles(circles);
@@ -185,7 +186,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			}
 		});
 
-		circle.addEventListener("mouseout", (e) => {
+		circle.addEventListener("mouseout", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			for (let i = 0; i < circles.length; i++) {
@@ -200,11 +201,16 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			lines = [];
 		});
 
-		circle.addEventListener("click", (e) => {
+		circle.addEventListener("click", () => {
+			const popover = document.getElementById("mr-info");
+			popover.showPopover();
 			getCircleInfo(Number(circle.getAttribute("data-merge-request-id")));
-
 		});
+
 	});
+
+
+
 }
 
 templ swarm(props SwarmProps, nonce string) {
