@@ -7,34 +7,33 @@ import (
 )
 
 type SwarmProps struct {
-	Series               SwarmSeries
-	StartOfTheWeek       time.Time
-	EventIds             []int64
-	EventMergeRequestIds []int64
+	Series                 SwarmSeries
+	StartOfTheWeek         time.Time
+	EventIds               []int64
+	EventMergeRequestIds   []int64
 	StartedMergeRequestIds []int64
-	ClosedMergeRequestIds []int64
+	ClosedMergeRequestIds  []int64
 }
 
 var eventTypeNames = map[data.EventType]string{
-	data.UNKNOWN:               "UNKNOWN",
-	data.OPENED:                "OPENED",
-	data.STARTED_CODING:        "STARTED_CODING",
-	data.STARTED_PICKUP:        "STARTED_PICKUP",
-	data.STARTED_REVIEW:        "STARTED_REVIEW",
-	data.NOTED:                 "NOTED",
-	data.ASSIGNED:              "ASSIGNED",
-	data.CLOSED:                "CLOSED",
-	data.COMMENTED:             "COMMENTED",
-	data.COMMITTED:             "COMMITTED",
-	data.CONVERT_TO_DRAFT:      "CONVERT_TO_DRAFT",
-	data.MERGED:                "MERGED",
-	data.READY_FOR_REVIEW:      "READY_FOR_REVIEW",
-	data.REVIEW_REQUEST_REMOVED:"REVIEW_REQUEST_REMOVED",
-	data.REVIEW_REQUESTED:      "REVIEW_REQUESTED",
-	data.REVIEWED:              "REVIEWED",
-	data.UNASSIGNED:            "UNASSIGNED",
+	data.UNKNOWN:                "UNKNOWN",
+	data.OPENED:                 "OPENED",
+	data.STARTED_CODING:         "STARTED_CODING",
+	data.STARTED_PICKUP:         "STARTED_PICKUP",
+	data.STARTED_REVIEW:         "STARTED_REVIEW",
+	data.NOTED:                  "NOTED",
+	data.ASSIGNED:               "ASSIGNED",
+	data.CLOSED:                 "CLOSED",
+	data.COMMENTED:              "COMMENTED",
+	data.COMMITTED:              "COMMITTED",
+	data.CONVERT_TO_DRAFT:       "CONVERT_TO_DRAFT",
+	data.MERGED:                 "MERGED",
+	data.READY_FOR_REVIEW:       "READY_FOR_REVIEW",
+	data.REVIEW_REQUEST_REMOVED: "REVIEW_REQUEST_REMOVED",
+	data.REVIEW_REQUESTED:       "REVIEW_REQUESTED",
+	data.REVIEWED:               "REVIEWED",
+	data.UNASSIGNED:             "UNASSIGNED",
 }
-
 
 func getEventName(eventType data.EventType) string {
 	if name, exists := eventTypeNames[eventType]; exists {
@@ -44,25 +43,25 @@ func getEventName(eventType data.EventType) string {
 }
 
 type ActorInfo struct {
-    AvatarUrl string
-    Name      string
+	AvatarUrl string
+	Name      string
 }
 
 func uniqueActorInfo(input []data.Event) []ActorInfo {
-    uniqueMap := make(map[string]ActorInfo)
-    var uniqueSlice []ActorInfo
+	uniqueMap := make(map[string]ActorInfo)
+	var uniqueSlice []ActorInfo
 
-    for _, event := range input {
-        if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
-            uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
-                AvatarUrl: event.Actor.AvatarUrl,
-                Name:      event.Actor.Name,
-            }
-            uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
-        }
-    }
+	for _, event := range input {
+		if _, ok := uniqueMap[event.Actor.AvatarUrl]; !ok {
+			uniqueMap[event.Actor.AvatarUrl] = ActorInfo{
+				AvatarUrl: event.Actor.AvatarUrl,
+				Name:      event.Actor.Name,
+			}
+			uniqueSlice = append(uniqueSlice, uniqueMap[event.Actor.AvatarUrl])
+		}
+	}
 
-    return uniqueSlice
+	return uniqueSlice
 }
 
 script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64, startedMergeRequestIds []int64, closedMergeRequestIds []int64) {
@@ -86,17 +85,34 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		htmx.ajax('GET', mrUrl.toString(), '#mr-info');
 	}
 
-	function createLineBetweenCircles(x1, y1, x2, y2) {
+	const lineAtrs = [
+		["stroke", "blue"],
+		["stroke-width", "2"],
+	]
+
+	const dashedLineAtrs = [
+		...lineAtrs,
+		["stroke-dasharray", "6"],
+	]
+
+	function createLine(x1, y1, x2, y2, atrs) {
 		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
 		line.setAttribute("x1", x1);
 		line.setAttribute("y1", y1);
 		line.setAttribute("x2", x2);
 		line.setAttribute("y2", y2);
-		line.setAttribute("stroke", "blue");
-		line.setAttribute("stroke-width", "2");
+
+		atrs.forEach(([key, value]) => {
+			line.setAttribute(key, value);
+		});
 
 		return line;
+
+	}
+
+	function createLineBetweenCircles(x1, y1, x2, y2) {
+		return createLine(x1, y1, x2, y2, lineAtrs);
 	}
 
 	function calculateDistance(x1, y1, x2, y2) {
@@ -131,17 +147,23 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			circles = orderCircles(circles);
 			prevCircle = circles[0];
-			lastCircle = circles[circles.length - 1];			
+			lastCircle = circles[circles.length - 1];
 
 			if (!startedMergeRequestIds.includes(Number(mergeRequestId))) {
-				const line = createLineBetweenCircles(prevCircle.getAttribute("cx"),prevCircle.getAttribute("cy"), "0", prevCircle.getAttribute("cy"))
-				line.setAttribute("stroke-dasharray", "6");
+				const line = createLine(
+					prevCircle.getAttribute("cx"), prevCircle.getAttribute("cy"),
+					0, 195/2,
+					dashedLineAtrs
+				);
 				lines.push(line);
 				svg.appendChild(line);
 			}
 			if (!closedMergeRequestIds.includes(Number(mergeRequestId))) {
-				const line = createLineBetweenCircles(lastCircle.getAttribute("cx"),lastCircle.getAttribute("cy"), "9001", lastCircle.getAttribute("cy"))
-				line.setAttribute("stroke-dasharray", "6");
+				const line = createLine(
+					lastCircle.getAttribute("cx"), lastCircle.getAttribute("cy"),
+					1405, 195/2,
+					dashedLineAtrs
+				);
 				lines.push(line);
 				svg.appendChild(line);
 			}
@@ -161,7 +183,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);
 			}
-		});		
+		});
 
 		circle.addEventListener("mouseout", (e) => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
