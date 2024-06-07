@@ -11,6 +11,8 @@ type SwarmProps struct {
 	StartOfTheWeek       time.Time
 	EventIds             []int64
 	EventMergeRequestIds []int64
+	StartedMergeRequestIds []int64
+	ClosedMergeRequestIds []int64
 }
 
 var eventTypeNames = map[data.EventType]string{
@@ -63,7 +65,7 @@ func uniqueActorInfo(input []data.Event) []ActorInfo {
     return uniqueSlice
 }
 
-script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64) {
+script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64, startedMergeRequestIds []int64, closedMergeRequestIds []int64) {
 
 	if (circleIds === null) {
 		return;
@@ -84,7 +86,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		htmx.ajax('GET', mrUrl.toString(), '#mr-info');
 	}
 
-	function createLineBetweenCircles(x1, y1, x2, y2) {
+	function createLineBetweenCircles(x1, y1, x2, y2, dashed = false) {
 		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
 		line.setAttribute("x1", x1);
@@ -93,6 +95,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		line.setAttribute("y2", y2);
 		line.setAttribute("stroke", "blue");
 		line.setAttribute("stroke-width", "2");
+		if (dashed) line.setAttribute("stroke-dasharray", "6");
 
 		return line;
 	}
@@ -129,6 +132,19 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 			circles = orderCircles(circles);
 			prevCircle = circles[0];
+			lastCircle = circles[circles.length - 1];			
+			
+			if (!startedMergeRequestIds.includes(Number(mergeRequestId))) {
+				const line = createLineBetweenCircles(prevCircle.getAttribute("cx"),prevCircle.getAttribute("cy"), "0", prevCircle.getAttribute("cy"), true)
+				lines.push(line);
+				svg.appendChild(line);
+			}
+			if (!closedMergeRequestIds.includes(Number(mergeRequestId))) {
+				const line = createLineBetweenCircles(lastCircle.getAttribute("cx"),lastCircle.getAttribute("cy"), "9001", lastCircle.getAttribute("cy"), true)
+				lines.push(line);
+				svg.appendChild(line);
+			}
+
 			for (let i = 0; i < circles.length; i++) {
 				circles[i].setAttribute("r", size + 2);
 				strokes.push(circles[i].style.stroke);
@@ -144,7 +160,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);
 			}
-		});
+		});		
 
 		circle.addEventListener("mouseout", (e) => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
@@ -176,6 +192,6 @@ templ swarm(props SwarmProps, nonce string) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "mr-info/", props.EventIds, props.EventMergeRequestIds)
+		@getChart("#swarm-chart", "mr-info/", props.EventIds, props.EventMergeRequestIds, props.StartedMergeRequestIds, props.ClosedMergeRequestIds)
 	</div>
 }

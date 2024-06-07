@@ -260,16 +260,34 @@ func (a *App) DashboardPage(c echo.Context) error {
 	}
 	var eventIds []int64
 	var eventMergeRequestIds []int64
+	var mergeRequestsStartedThisWeek = make(map[int64]bool)
+	var mergeRequestsClosedThisWeek = make(map[int64]bool)
 	for _, event := range swarmSeries.Events {
 		eventIds = append(eventIds, event.Id)
+		if event.Type == data.STARTED_CODING {
+			mergeRequestsStartedThisWeek[event.MergeRequestId] = true
+		}
+		if event.Type == data.MERGED || event.Type == data.CLOSED || queriedWeek == currentWeek {
+			mergeRequestsClosedThisWeek[event.MergeRequestId] = true
+		}
 		eventMergeRequestIds = append(eventMergeRequestIds, event.MergeRequestId)
+	}
+	var startedMergeRequestIds []int64
+	var closedMergeRequestIds []int64
+	for id, _ := range mergeRequestsStartedThisWeek {
+		startedMergeRequestIds = append(startedMergeRequestIds, id)
+	}
+	for id, _ := range mergeRequestsClosedThisWeek {
+		closedMergeRequestIds = append(closedMergeRequestIds, id)
 	}
 
 	swarmProps := template.SwarmProps{
-		Series:               swarmSeries,
-		StartOfTheWeek:       util.GetStartOfTheWeek(date),
-		EventIds:             eventIds,
-		EventMergeRequestIds: eventMergeRequestIds,
+		Series:                 swarmSeries,
+		StartOfTheWeek:         util.GetStartOfTheWeek(date),
+		EventIds:               eventIds,
+		EventMergeRequestIds:   eventMergeRequestIds,
+		StartedMergeRequestIds: startedMergeRequestIds,
+		ClosedMergeRequestIds:  closedMergeRequestIds,
 	}
 
 	var mergeRequestInfoProps *template.MergeRequestInfoProps
