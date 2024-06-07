@@ -46,9 +46,9 @@ templ Layout(page *Page) {
 						<div class="flex-shrink-0">
 							<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 								<path
-									fill-rule="evenodd"
-									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-									clip-rule="evenodd"
+ 									fill-rule="evenodd"
+ 									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+ 									clip-rule="evenodd"
 								></path>
 							</svg>
 						</div>
@@ -79,29 +79,26 @@ templ Head(title string, bust string, nonce string) {
 }
 
 templ TeamPickerStuff() {
-	<div class="lg:pl-20">
-    <div class="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
-		  <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-900/10" aria-hidden="true"></div>
-
-          <div class="relative">
-            <button type="button" class="-m-1.5 flex items-center p-1.5" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
-              <span class="sr-only">Open user menu</span>
-              <img class="h-8 w-8 rounded-full bg-gray-50" src="https://avatars.githubusercontent.com/u/103996436?v=4" alt=""></img>
-              <span class="hidden lg:flex lg:items-center">
-                <span class="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">Tom Cook</span>
-                <svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                </svg>
-              </span>
-            </button>
-            <div class="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-0">Your profile</a>
-              <a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-1">Sign out</a>
-            </div>
-          </div>
-          </div>
-          </div>
+	<div class="lg:pl-20 sticky top-0">
+		<div class="sticky top-0 right-0 z-40 flex justify-end h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+			<div class="relative">
+				<button type="button" popovertarget="teams-overlay" class="-m-1.5 flex items-center p-1.5" id="user-menu-button" aria-expanded="false" aria-haspopup="true">
+					<span class="sr-only">Open user menu</span>
+					<img class="h-8 w-8 rounded-full bg-gray-50" src="https://avatars.githubusercontent.com/u/103996436?v=4" alt=""/>
+					<span class="hidden lg:flex lg:items-center">
+						<span class="ml-4 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">Tom Cook</span>
+						<svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+							<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
+						</svg>
+					</span>
+				</button>
+				<div id="teams-overlay" popover class="fixed right-0 z-10 mt-28 mr-8 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+					<a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-0">Your profile</a>
+					<a href="#" class="block px-3 py-1 text-sm leading-6 text-gray-900" role="menuitem" tabindex="-1" id="user-menu-item-1">Sign out</a>
+				</div>
+			</div>
+		</div>
+	</div>
 }
 
 templ Content(page *Page) {
@@ -125,8 +122,8 @@ func GetClassStateOfNewNavigationSidebarLink(page *Page, routeId string) string 
 templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, routeName string, content templ.Component) {
 	<li>
 		<a
-			href={ templ.SafeURL(routeURL) }
-			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
+ 			href={ templ.SafeURL(routeURL) }
+ 			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
 		>
 			@content
 			<span class="sr-only">{ routeName }</span>
@@ -141,10 +138,10 @@ templ NewNavigation(page *Page) {
 			<!-- logo goes here -->
 		</div>
 		<nav
-			hx-boost="true"
-			hx-target="#app"
-			hx-swap="innerHTML show:unset"
-			class="mt-8"
+ 			hx-boost="true"
+ 			hx-target="#app"
+ 			hx-swap="innerHTML show:unset"
+ 			class="mt-8"
 		>
 			<ul role="list" class="flex flex-col items-center space-y-1">
 				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", templ.Raw("D"))
@@ -153,14 +150,13 @@ templ NewNavigation(page *Page) {
 			</ul>
 		</nav>
 	</div>
-			@TeamPickerStuff()
-
+	@TeamPickerStuff()
 }
 
 templ Navigation(navigation NavState, debug bool) {
 	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset" class="w-full mx-auto">
 		<div
-			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
+ 			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
 		>
 			<div class="flex flex-row items-center justify-between lg:justify-start">
 				<a href={ templ.SafeURL(navigation.Root) } class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
@@ -171,24 +167,24 @@ templ Navigation(navigation NavState, debug bool) {
 				<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Root) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Root) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Dashboard
 						</a>
 					</li>
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Metrics.Quality) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Metrics.Quality) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Quality Metrics
 						</a>
 					</li>
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Metrics.Throughput) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Metrics.Throughput) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Throughput Metrics
 						</a>
