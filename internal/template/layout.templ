@@ -36,7 +36,7 @@ type Page struct {
 	Nonce     string
 }
 
-templ Layout(page *Page) {
+templ Layout(page *Page, props TeamPickerProps) {
 	<html>
 		@Head(page.Title, page.CacheBust, page.Nonce)
 		<body>
@@ -46,9 +46,9 @@ templ Layout(page *Page) {
 						<div class="flex-shrink-0">
 							<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 								<path
-									fill-rule="evenodd"
-									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-									clip-rule="evenodd"
+ 									fill-rule="evenodd"
+ 									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+ 									clip-rule="evenodd"
 								></path>
 							</svg>
 						</div>
@@ -59,7 +59,7 @@ templ Layout(page *Page) {
 				</div>
 			}
 			<div id="app">
-				@NewNavigation(page)
+				@NewNavigation(page, props)
 				@Content(page) {
 					{ children... }
 				}
@@ -77,6 +77,7 @@ templ Head(title string, bust string, nonce string) {
 		<link href={ fmt.Sprintf("/style.css?t=%s", bust) } rel="stylesheet"/>
 	</head>
 }
+
 
 templ Content(page *Page) {
 	<main class="lg:pl-20">
@@ -99,8 +100,8 @@ func GetClassStateOfNewNavigationSidebarLink(page *Page, routeId string) string 
 templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, routeName string, content templ.Component) {
 	<li>
 		<a
-			href={ templ.SafeURL(routeURL) }
-			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
+ 			href={ templ.SafeURL(routeURL) }
+ 			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
 		>
 			@content
 			<span class="sr-only">{ routeName }</span>
@@ -108,17 +109,17 @@ templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, rout
 	</li>
 }
 
-templ NewNavigation(page *Page) {
+templ NewNavigation(page *Page, props TeamPickerProps) {
 	<!-- Static sidebar for desktop -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
 		<div class="flex h-16 shrink-0 items-center justify-center">
 			<!-- logo goes here -->
 		</div>
 		<nav
-			hx-boost="true"
-			hx-target="#app"
-			hx-swap="innerHTML show:unset"
-			class="mt-8"
+ 			hx-boost="true"
+ 			hx-target="#app"
+ 			hx-swap="innerHTML show:unset"
+ 			class="mt-8"
 		>
 			<ul role="list" class="flex flex-col items-center space-y-1">
 				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", templ.Raw("D"))
@@ -127,12 +128,13 @@ templ NewNavigation(page *Page) {
 			</ul>
 		</nav>
 	</div>
+	@teamPicker(props)
 }
 
 templ Navigation(navigation NavState, debug bool) {
 	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset" class="w-full mx-auto">
 		<div
-			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
+ 			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
 		>
 			<div class="flex flex-row items-center justify-between lg:justify-start">
 				<a href={ templ.SafeURL(navigation.Root) } class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
@@ -143,24 +145,24 @@ templ Navigation(navigation NavState, debug bool) {
 				<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Root) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Root) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Dashboard
 						</a>
 					</li>
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Metrics.Quality) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Metrics.Quality) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Quality Metrics
 						</a>
 					</li>
 					<li>
 						<a
-							href={ templ.SafeURL(navigation.Metrics.Throughput) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
+ 							href={ templ.SafeURL(navigation.Metrics.Throughput) }
+ 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
 						>
 							Throughput Metrics
 						</a>
