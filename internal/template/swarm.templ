@@ -86,7 +86,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		htmx.ajax('GET', mrUrl.toString(), '#mr-info');
 	}
 
-	function createLineBetweenCircles(x1, y1, x2, y2, dashed = false) {
+	function createLineBetweenCircles(x1, y1, x2, y2) {
 		const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
 
 		line.setAttribute("x1", x1);
@@ -95,7 +95,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		line.setAttribute("y2", y2);
 		line.setAttribute("stroke", "blue");
 		line.setAttribute("stroke-width", "2");
-		if (dashed) line.setAttribute("stroke-dasharray", "6");
 
 		return line;
 	}
@@ -133,14 +132,16 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			circles = orderCircles(circles);
 			prevCircle = circles[0];
 			lastCircle = circles[circles.length - 1];			
-			
+
 			if (!startedMergeRequestIds.includes(Number(mergeRequestId))) {
-				const line = createLineBetweenCircles(prevCircle.getAttribute("cx"),prevCircle.getAttribute("cy"), "0", prevCircle.getAttribute("cy"), true)
+				const line = createLineBetweenCircles(prevCircle.getAttribute("cx"),prevCircle.getAttribute("cy"), "0", prevCircle.getAttribute("cy"))
+				line.setAttribute("stroke-dasharray", "6");
 				lines.push(line);
 				svg.appendChild(line);
 			}
 			if (!closedMergeRequestIds.includes(Number(mergeRequestId))) {
-				const line = createLineBetweenCircles(lastCircle.getAttribute("cx"),lastCircle.getAttribute("cy"), "9001", lastCircle.getAttribute("cy"), true)
+				const line = createLineBetweenCircles(lastCircle.getAttribute("cx"),lastCircle.getAttribute("cy"), "9001", lastCircle.getAttribute("cy"))
+				line.setAttribute("stroke-dasharray", "6");
 				lines.push(line);
 				svg.appendChild(line);
 			}
