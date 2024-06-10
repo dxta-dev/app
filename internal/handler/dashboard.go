@@ -270,8 +270,9 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 		eventMergeRequestIds = append(eventMergeRequestIds, event.MergeRequestId)
 	}
-	var startedMergeRequestIds []int64
-	var closedMergeRequestIds []int64
+	startedMergeRequestIds := []int64{}
+	closedMergeRequestIds := []int64{}
+
 	for id, _ := range mergeRequestsStartedThisWeek {
 		startedMergeRequestIds = append(startedMergeRequestIds, id)
 	}
