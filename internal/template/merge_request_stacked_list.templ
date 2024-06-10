@@ -10,7 +10,6 @@ type MergeRequestStackedListProps struct {
 	Id            string
 	Title         string
 	MergeRequests []data.MergeRequestListItemData
-	ShowMoreUrl   string
 }
 
 
@@ -65,27 +64,7 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 			for _, mr := range props.MergeRequests {
 				@mergeRequestStack(mr.Id, mr.Title, mr.WebUrl, mr.CanonId, mr.UserAvatarUrls, mr.CodeAdditions, mr.CodeDeletions, mr.ReviewDepth)
 			}
-		</ul>
-		// TODO: remove condition ShowMoreUrl != "#"
-		if props.ShowMoreUrl != "#" && len(props.MergeRequests) > 0 && props.MergeRequests[0].Count > 5 {
-			<div class="relative">
-				<div class="absolute inset-0 flex items-center" aria-hidden="true">
-					<div class="w-full border-t border-gray-300"></div>
-				</div>
-				<div class="relative flex justify-center">
-					<span class="bg-white px-2 text-sm text-gray-500">
-						<a
-							hx-get={ props.ShowMoreUrl }
-							hx-target={ fmt.Sprintf("#%s ul", props.Id) }
-							hx-swap="innerHTML"
-							href={ templ.SafeURL(props.ShowMoreUrl) }
-						>
-							Show more ({ fmt.Sprintf("%v", props.MergeRequests[0].Count-5) })
-						</a>
-					</span>
-				</div>
-			</div>
-		}
+		</ul>		
 	</div>
 }
 
