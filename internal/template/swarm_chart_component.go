@@ -66,7 +66,6 @@ func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Compon
 			GridMinorStyle: chart.Hidden(),
 		},
 		Series: []chart.Series{
-			mainSeries,
 		},
 		Width:  1405,
 		Height: 227,
@@ -94,6 +93,8 @@ func swarmChartComponent(series SwarmSeries, startOfWeek time.Time) templ.Compon
 		}
 		graph.Series = append(graph.Series, gridLine)
 	}
+
+	graph.Series = append(graph.Series, mainSeries)
 
 	buffer := bytes.NewBuffer([]byte{})
 	err := graph.Render(chart.SVG, buffer)
