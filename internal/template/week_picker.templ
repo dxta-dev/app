@@ -45,20 +45,20 @@ templ weekPicker(props WeekPickerProps) {
 }
 
 templ weekNav(props WeekPickerProps) {
-	<div class="flex items-center justify-between px-[400px]">
+	<div class="flex items-center min-w-full">
 		<a href={ templ.SafeURL(props.PreviousWeekUrl) }>
 			<span class="sr-only">Previous week</span>
-			<button class="h-[20px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 border border-blue-700 rounded">
-            <span>&#9664;</span> Prev Week
+			<button class="w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 border border-indigo-700 rounded">
+				<span>&#9664;</span> Prev Week
 			</button>
 		</a>
-		<span>{ props.Week }</span>
+		<span class="text-center grow max-w-[calc(100%-280px)]">{ props.Week }</span>
 		if props.NextWeekUrl != "" {
 			<a href={ templ.SafeURL(props.NextWeekUrl) }>
 				<span class="sr-only">Next week</span>
-				<button class="h-[20px] bg-blue-500 hover:bg-blue-700 text-white font-bold px-4 border border-blue-700 rounded">
-                Next Week <span>&#9654;</span>
-			</button>
+				<button class="w-[140px] bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-4 py-2.5 border border-indigo-700 rounded">
+					Next Week <span>&#9654;</span>
+				</button>
 			</a>
 		}
 	</div>
