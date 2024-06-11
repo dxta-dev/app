@@ -13,10 +13,10 @@ templ DashboardPage(
 	mergeRequestsReadyToMerge MergeRequestStackedListProps,
 	mergeRequestsWaitingForReview MergeRequestStackedListProps) {
 	@Layout(page, teamPickerProps) {
-		<ul class="flex gap-1">
+		<ul class="fixed top-[68px] flex gap-1">
 			@weekPicker(weekPickerProps)
 		</ul>
-		<div class="bg-white sticky top-[64px] z-10 border-b">
+		<div class="bg-white sticky top-[110px] z-10 border-b">
 			@weekNav(weekPickerProps)
 			@swarm(swarmProps, page.Nonce)
 		</div>
