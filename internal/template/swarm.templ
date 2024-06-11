@@ -73,9 +73,35 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	const svg = document.querySelector(`${chartId} > svg`);
     const circles = document.querySelectorAll(`${chartId} > svg > circle`);
 
-    function moveToTop(element) {
-        element.parentNode.appendChild(element);
-    }
+	function createFilter() {
+		const filter = document.createElementNS("http://www.w3.org/2000/svg", "filter");
+		filter.setAttribute("id", "swarm-blur");
+
+		const feGaussianBlur = document.createElementNS("http://www.w3.org/2000/svg", "feGaussianBlur");
+		feGaussianBlur.setAttribute("in", "SourceGraphic");
+		feGaussianBlur.setAttribute("stdDeviation", "1");
+
+		filter.appendChild(feGaussianBlur);
+		svg.appendChild(filter);
+	}
+
+	createFilter();
+
+
+
+	function toggleBlur(elements) {
+		elements.forEach((element) => {
+			if (element.getAttribute("filter") === "url(#swarm-blur)") {
+				element.removeAttribute("filter");
+			} else {
+				element.setAttribute("filter", "url(#swarm-blur)");
+			}
+		});
+	}
+
+	function moveToTop(element) {
+		element.parentNode.appendChild(element);
+	}
 
 	function getCircleInfo(mrid) {
 		const searchParams = new URLSearchParams(document.location.search);
@@ -145,7 +171,13 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+
+			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
+
+			toggleBlur(otherCircles);
+
 			circles = orderCircles(circles);
 			prevCircle = circles[0];
 			lastCircle = circles[circles.length - 1];
@@ -189,6 +221,11 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		circle.addEventListener("mouseout", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+
+			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
+
+			toggleBlur(otherCircles);
+
 			for (let i = 0; i < circles.length; i++) {
 				circles[i].setAttribute("r", size);
 				circles[i].style.stroke = strokes[i];

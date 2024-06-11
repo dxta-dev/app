@@ -270,8 +270,9 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 		eventMergeRequestIds = append(eventMergeRequestIds, event.MergeRequestId)
 	}
-	var startedMergeRequestIds []int64
-	var closedMergeRequestIds []int64
+	startedMergeRequestIds := []int64{}
+	closedMergeRequestIds := []int64{}
+
 	for id, _ := range mergeRequestsStartedThisWeek {
 		startedMergeRequestIds = append(startedMergeRequestIds, id)
 	}
@@ -299,11 +300,11 @@ func (a *App) DashboardPage(c echo.Context) error {
 		}
 
 		mergeRequestInfoProps = &template.MergeRequestInfoProps{
-			Events:         events,
-			UniqueDates:    uniqueDates,
-			DetailsPageUrl: fmt.Sprintf("/mr/%d", *state.mr),
-			ShouldOpenMrInfo:   !(h.HxBoosted && h.HxRequest) && state.mr != nil,
-			TargetSelector: "#mr-info",
+			Events:           events,
+			UniqueDates:      uniqueDates,
+			DetailsPageUrl:   fmt.Sprintf("/mr/%d", *state.mr),
+			ShouldOpenMrInfo: !(h.HxBoosted && h.HxRequest) && state.mr != nil,
+			TargetSelector:   "#mr-info",
 		}
 	}
 
@@ -331,8 +332,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
-		mergeRequestsInProgress.ShowMoreUrl = "/mr-stack/in-progress"
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressCountedList(timeNow, teamMembers, nullRows.UserId)
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(timeNow, teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -340,8 +340,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
-		mergeRequestsReadyToMerge.ShowMoreUrl = "/mr-stack/ready-to-merge"
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeCountedList(teamMembers, nullRows.UserId)
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -349,8 +348,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
-		mergeRequestsWaitingForReview.ShowMoreUrl = "/mr-stack/waiting-for-review"
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewCountedList(teamMembers, timeNow, nullRows.UserId)
+		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -359,8 +357,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
-	mergeRequestsMerged.ShowMoreUrl = "/mr-stack/merged"
-	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedCountedList(date, teamMembers, nullRows.UserId)
+	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(date, teamMembers, nullRows.UserId)
 
 	if err != nil {
 		return err
@@ -368,8 +365,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
-	mergeRequestsClosed.ShowMoreUrl = "/mr-stack/closed"
-	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedCountedList(date, teamMembers, nullRows.UserId)
+	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(date, teamMembers, nullRows.UserId)
 
 	if err != nil {
 		return err
