@@ -1,11 +1,12 @@
 package template
 
 type WeekPickerProps struct {
-	Week            string
-	CurrentWeek     string
-	CurrentWeekUrl  string
-	PreviousWeekUrl string
-	NextWeekUrl     string
+	Week              string
+	StartEndWeekDates string
+	CurrentWeek       string
+	CurrentWeekUrl    string
+	PreviousWeekUrl   string
+	NextWeekUrl       string
 }
 
 templ weekPicker(props WeekPickerProps) {
@@ -26,7 +27,7 @@ templ weekPicker(props WeekPickerProps) {
 			/>
 			<div class="inline-flex">
 				<div class="inline-flex items-center px-3 py-2">
-					<p>{ props.Week }</p>
+					<p>{ props.StartEndWeekDates }</p>
 				</div>
 				<span
  					type="button"

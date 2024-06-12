@@ -70,6 +70,30 @@ func GetStartOfTheWeek(date time.Time) time.Time {
 	return startOfWeek
 }
 
+func GetStartEndWeekDates(yearWeek string) (string, error) {
+	var year, week int
+	_, err := fmt.Sscanf(yearWeek, "%4d-W%2d", &year, &week)
+	if err != nil {
+		return "", fmt.Errorf("invalid format")
+	}
+
+	firstDayOfYear := time.Date(year, time.January, 1, 0, 0, 0, 0, time.UTC)
+
+	daysOffset := (week - 1) * 7
+	firstDayOfWeek := firstDayOfYear.AddDate(0, 0, daysOffset)
+
+	for firstDayOfWeek.Weekday() != time.Monday {
+		firstDayOfWeek = firstDayOfWeek.AddDate(0, 0, -1)
+	}
+
+	lastDayOfWeek := firstDayOfWeek.AddDate(0, 0, 6)
+
+	firstDateStr := firstDayOfWeek.Format("Jan 02")
+	lastDateStr := lastDayOfWeek.Format("Jan 02")
+
+	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
+}
+
 func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	parts := strings.Split(yw, "-W")
 	if len(parts) != 2 {

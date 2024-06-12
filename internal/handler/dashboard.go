@@ -215,12 +215,19 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
+	startEndWeekDays, err := util.GetStartEndWeekDates(queriedWeek)
+
+	if err != nil {
+		return err
+	}
+
 	weekPickerProps := template.WeekPickerProps{
-		Week:            queriedWeek,
-		CurrentWeek:     util.GetFormattedWeek(time.Now()),
-		PreviousWeekUrl: previousWeekUrl,
-		CurrentWeekUrl:  currentWeekUrl,
-		NextWeekUrl:     nextWeekUrl,
+		Week:              queriedWeek,
+		StartEndWeekDates: startEndWeekDays,
+		CurrentWeek:       util.GetFormattedWeek(time.Now()),
+		PreviousWeekUrl:   previousWeekUrl,
+		CurrentWeekUrl:    currentWeekUrl,
+		NextWeekUrl:       nextWeekUrl,
 	}
 
 	var templTeams []template.Team
