@@ -2,9 +2,14 @@ package template
 
 templ tooltipTemplate() {
 	<template id="tooltip-template">
-		<div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6">
-			<dt class="truncate text-sm font-medium text-gray-500" data-title></dt>
-			<dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900" data-value></dd>
+		<div class="relative overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 z-10 min-w-[300px]">
+			<dt>
+				<p class="text-sm font-medium text-gray-500" data-title/>
+			</dt>
+			<dd class="flex items-center pt-4">
+				<p class="text-3xl font-semibold text-gray-900" data-value/>
+				<p class="text-sm font-medium text-gray-500" data-subtitle/>
+			</dd>
 		</div>
 	</template>
 }
@@ -12,9 +17,10 @@ templ tooltipTemplate() {
 script tooltip() {
     const svgContainers = document.querySelectorAll('[data-svg-container]');
 
-		const createTooltip = (title, value) => {
+		const createTooltip = (title, subtitle, value) => {
 			const template = document.getElementById("tooltip-template").content.children[0].cloneNode(true);
 			template.querySelector("[data-title]").textContent = title;
+			template.querySelector("[data-subtitle]").textContent = subtitle;
 			template.querySelector("[data-value]").textContent = value;
 			return template;
 		}
@@ -66,7 +72,7 @@ script tooltip() {
 				if (tooltipElement) {
 					hoverCircle.remove();
 					tooltipElement.remove();					
-				tooltipElement = undefined;
+					tooltipElement = undefined;
 				}
 			}
 
@@ -80,14 +86,19 @@ script tooltip() {
 				const endDay = c.getAttribute('end-day');
 				clearTooltip();
 
-				tooltipElement = createTooltip(valueName, dataYValue);
+				tooltipElement = createTooltip(`${startDay} - ${endDay}`, valueName, dataYValue);
 				c.parentNode.insertBefore(hoverCircle, c.previousSibling);
 				hoverCircle.setAttribute("cx", circleX);
-				hoverCircle.setAttribute("cy", circleY);
+				hoverCircle.setAttribute("cy", circleY);				
 				svgOverlay.appendChild(tooltipElement);
 				const tooltipElementRect = tooltipElement.getBoundingClientRect();
-				const tooltipX = circleX - tooltipElementRect.width/2;
-				const tooltipY = circleY - (tooltipElementRect.height+12);
+				const svgRect = svg.getBoundingClientRect();
+				const halfWidth = tooltipElementRect.width / 2
+				let tooltipX = circleX - tooltipElementRect.width / 2;
+				let tooltipY = circleY - (tooltipElementRect.height + 12);
+				if (tooltipX < 0) tooltipX = 0;
+				if ((tooltipX + tooltipElementRect.width) > svgRect.width) tooltipX = circleX - tooltipElementRect.width
+				if (tooltipY < 0) tooltipY = tooltipY + tooltipElementRect.height + 24;
 				svgOverlay.setAttribute("style", `top: ${tooltipY}px; left: ${tooltipX}px`);
 			});
         });

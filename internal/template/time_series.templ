@@ -25,7 +25,7 @@ templ timeSeries(props TimeSeriesProps, valueName string) {
 		<p>{ props.InfoText }</p>
 		<div class="relative" data-svg-container>
 			@TimeSeriesChart(props.Series)
-			<div style="visibility: hidden;" class="absolute" data-svg-overlay>
+			<div class="absolute" data-svg-overlay>
 			</div>
 		</div>
 		@setData(props.FormattedYValues, props.StartEndWeeks, valueName)
