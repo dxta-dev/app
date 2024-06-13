@@ -29,7 +29,7 @@ templ weekPicker(props WeekPickerProps) {
 				<div class="inline-flex items-center px-3 py-2">
 					<p>{ props.StartEndWeekDates }</p>
 				</div>
-				<span
+				<button
  					type="button"
  					class="inline-flex items-center p-2"
  					aria-haspopup="listbox"
@@ -41,7 +41,7 @@ templ weekPicker(props WeekPickerProps) {
 					<svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 						<path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"></path>
 					</svg>
-				</span>
+				</button>
 			</div>
 		</form>
 	</div>
@@ -61,9 +61,8 @@ templ weekNav(props WeekPickerProps) {
 			</a>
 		} else {
 			<span class="sr-only text-gray-400">Next week</span>
-<span class="px-[22px] py-2.5 text-gray-400 cursor-not-allowed">Next Week</span>
-<span class="text-gray-400 cursor-not-allowed">&#9654;</span>
-
+			<span class="px-[22px] py-2.5 text-gray-400 cursor-not-allowed">Next Week</span>
+			<span class="text-gray-400 cursor-not-allowed">&#9654;</span>
 		}
 	</div>
 }
