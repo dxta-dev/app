@@ -1,9 +1,34 @@
 package template
 
-script tooltip() {
-    const svgs = document.querySelectorAll('svg');
+templ tooltipTemplate() {
+	<template id="tooltip-template">
+		<div class="relative overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 z-10 min-w-[300px]">
+			<dt>
+				<p class="text-sm font-medium text-gray-500" data-title/>
+			</dt>
+			<dd class="flex items-center pt-4">
+				<p class="text-3xl font-semibold text-gray-900" data-value/>
+				<p class="text-sm font-medium text-gray-500" data-subtitle/>
+			</dd>
+		</div>
+	</template>
+}
 
-    svgs.forEach(svg => {
+script tooltip() {
+    const svgContainers = document.querySelectorAll('[data-svg-container]');
+
+		const createTooltip = (title, subtitle, value) => {
+			const template = document.getElementById("tooltip-template").content.children[0].cloneNode(true);
+			template.querySelector("[data-title]").textContent = title;
+			template.querySelector("[data-subtitle]").textContent = subtitle;
+			template.querySelector("[data-value]").textContent = value;
+			return template;
+		}
+
+    svgContainers.forEach(svgContainer => {
+
+		const svg = svgContainer.querySelector("svg");
+		const svgOverlay = svgContainer.querySelector("[data-svg-overlay]");	
 
 		const svgWidth = Number(svg.getAttribute('width'));
 		const svgHeight = Number(svg.getAttribute('height'));
@@ -13,7 +38,15 @@ script tooltip() {
 		const rectWidth = svgWidth / circles.length;
 		const rectHeight = rectWidth;
 
-        circles.forEach(c => {
+		const hoverCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+		hoverCircle.setAttribute("r", Number(circles[0].getAttribute("r"))+3);
+		hoverCircle.style.stroke = "blue";
+		hoverCircle.style.fill = "white"
+		hoverCircle.style.strokeWidth = "1";
+
+		let tooltipElement;
+
+        circles.forEach(c => {						
             const circleX = c.getAttribute('cx');
             const circleY = c.getAttribute('cy');
 
@@ -35,11 +68,15 @@ script tooltip() {
             rectGroup.appendChild(rect);
 			svg.appendChild(rectGroup);
 
-			let tooltipGroup;
+			const clearTooltip = () => {
+				if (tooltipElement) {
+					hoverCircle.remove();
+					tooltipElement.remove();					
+					tooltipElement = undefined;
+				}
+			}
 
-			rectGroup.addEventListener('mouseleave', function(event) {
-				tooltipGroup.remove();
-			});
+			svgContainer.addEventListener('mouseleave', ()=>clearTooltip());
 
 			rectGroup.addEventListener('mouseenter', function(event) {
 
@@ -47,59 +84,22 @@ script tooltip() {
 				const valueName = c.getAttribute('data-value-name');
 				const startDay = c.getAttribute('start-day');
 				const endDay = c.getAttribute('end-day');
+				clearTooltip();
 
-				let tooltipY = circleY - rectHeight / 2;
-				let tooltipX = circleX - rectWidth / 2;
-
-				tooltipGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
-
-				const content = document.createElementNS("http://www.w3.org/2000/svg", "text");
-				content.style.userSelect = 'none';
-
-				const valueLine = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-				valueLine.textContent = valueName + ': ' + dataYValue;
-
-				const dateLine = document.createElementNS("http://www.w3.org/2000/svg", "tspan");
-				dateLine.textContent = startDay + ' - ' + endDay;
-
-				content.appendChild(valueLine);
-				content.appendChild(dateLine);
-				tooltipGroup.appendChild(content);
-				rectGroup.appendChild(tooltipGroup);
-
-				const contentWidth = Math.max(valueLine.getBBox().width, dateLine.getBBox().width);
-
-				const contentHeight = valueLine.getBBox().height + dateLine.getBBox().height;
-
-				tooltipX = svgWidth - contentWidth < tooltipX ? svgWidth - contentWidth : tooltipX;
-
-				tooltipX = tooltipX < 0 ? 0 : tooltipX;
-
-				tooltipY = contentHeight > tooltipY ? contentHeight : tooltipY;
-
-
-				tooltipGroup.setAttribute('x', tooltipX);
-				tooltipGroup.setAttribute('y', tooltipY);
-
-				content.setAttribute('x', tooltipX);
-				content.setAttribute('y', tooltipY);
-
-				valueLine.setAttribute('x', tooltipX);
-				valueLine.setAttribute('dy', '1.2em');
-
-				dateLine.setAttribute('dy', '1.2em');
-				dateLine.setAttribute('x', tooltipX);
-
-				const backgroundRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-				backgroundRect.setAttribute('width', contentWidth);
-				backgroundRect.setAttribute('height', contentHeight);
-				backgroundRect.setAttribute('fill', 'white');
-
-				backgroundRect.setAttribute('x', tooltipX);
-				backgroundRect.setAttribute('y', tooltipY);
-
-				tooltipGroup.insertBefore(backgroundRect, content);
-
+				tooltipElement = createTooltip(`${startDay} - ${endDay}`, valueName, dataYValue);
+				c.parentNode.insertBefore(hoverCircle, c.previousSibling);
+				hoverCircle.setAttribute("cx", circleX);
+				hoverCircle.setAttribute("cy", circleY);				
+				svgOverlay.appendChild(tooltipElement);
+				const tooltipElementRect = tooltipElement.getBoundingClientRect();
+				const svgRect = svg.getBoundingClientRect();
+				const halfWidth = tooltipElementRect.width / 2
+				let tooltipX = circleX - tooltipElementRect.width / 2;
+				let tooltipY = circleY - (tooltipElementRect.height + 12);
+				if (tooltipX < 0) tooltipX = 0;
+				if ((tooltipX + tooltipElementRect.width) > svgRect.width) tooltipX = svgRect.width - tooltipElementRect.width;
+				if (tooltipY < 0) tooltipY = tooltipY + tooltipElementRect.height + 24;
+				svgOverlay.setAttribute("style", `top: ${tooltipY}px; left: ${tooltipX}px`);
 			});
         });
     });
