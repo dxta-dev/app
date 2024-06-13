@@ -171,6 +171,11 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+			const button = document.querySelector(`button[hx-get="/mr-info/${circle.getAttribute("data-merge-request-id")}"]`);
+
+			if (button) {
+				button.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			}
 
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
