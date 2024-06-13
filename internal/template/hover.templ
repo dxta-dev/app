@@ -97,7 +97,7 @@ script tooltip() {
 				let tooltipX = circleX - tooltipElementRect.width / 2;
 				let tooltipY = circleY - (tooltipElementRect.height + 12);
 				if (tooltipX < 0) tooltipX = 0;
-				if ((tooltipX + tooltipElementRect.width) > svgRect.width) tooltipX = circleX - tooltipElementRect.width
+				if ((tooltipX + tooltipElementRect.width) > svgRect.width) tooltipX = svgRect.width - tooltipElementRect.width;
 				if (tooltipY < 0) tooltipY = tooltipY + tooltipElementRect.height + 24;
 				svgOverlay.setAttribute("style", `top: ${tooltipY}px; left: ${tooltipX}px`);
 			});
