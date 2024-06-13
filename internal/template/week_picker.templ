@@ -10,11 +10,11 @@ type WeekPickerProps struct {
 }
 
 templ weekPicker(props WeekPickerProps) {
-	<div class="text-center grow max-w-[calc(100%-280px)]">
+	<div class="text-center grow max-w-[calc(100%-344px)]">
 		<form class="m-0">
 			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 			<input
- 				class="hidden"
+ 				class="w-0"
  				id="week-picker"
  				hx-target="body"
  				hx-swap="innerHTML show:unset"
@@ -49,20 +49,21 @@ templ weekPicker(props WeekPickerProps) {
 
 templ weekNav(props WeekPickerProps) {
 	<div class="flex items-center min-w-full">
-		<a href={ templ.SafeURL(props.PreviousWeekUrl) }>
+		<a href={ templ.SafeURL(props.PreviousWeekUrl) } class="min-w-[172px]">
 			<span class="sr-only">Previous week</span>
-			<span>&#9664;</span> <span class="px-[22px] py-2.5">Prev Week</span>
+			<span>&#9664;</span> <span class="px-[22px] py-2.5">Previous Week</span>
 		</a>
 		@weekPicker(props)
 		if props.NextWeekUrl != "" {
-			<a href={ templ.SafeURL(props.NextWeekUrl) }>
+			<a href={ templ.SafeURL(props.NextWeekUrl) } class="min-w-[172px] text-right">
 				<span class="sr-only">Next week</span>
 				<span class="px-[22px] py-2.5">Next Week</span> <span>&#9654;</span>
 			</a>
 		} else {
-			<span class="sr-only text-gray-400">Next week</span>
-			<span class="px-[22px] py-2.5 text-gray-400 cursor-not-allowed">Next Week</span>
-			<span class="text-gray-400 cursor-not-allowed">&#9654;</span>
+			<span class="text-gray-400 cursor-not-allowed min-w-[172px] text-right">
+			<span class="px-[22px] py-2.5 ">Next Week</span>
+			<span>&#9654;</span>
+			</span>
 		}
 	</div>
 }
