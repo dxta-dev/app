@@ -18,14 +18,15 @@ type UserAvatarUrl struct {
 }
 
 type MergeRequestListItemData struct {
-	Id             int64
-	Title          string
-	WebUrl         string
-	CanonId        int64
-	CodeAdditions  int64
-	CodeDeletions  int64
-	ReviewDepth    int64
-	UserAvatarUrls []string
+	Id                 int64
+	Title              string
+	WebUrl             string
+	CanonId            int64
+	CodeAdditions      int64
+	CodeDeletions      int64
+	ReviewDepth        int64
+	LastEventTimestamp int64
+	UserAvatarUrls     []string
 }
 
 const mrListDataSelect = `mr.id,
@@ -35,6 +36,7 @@ const mrListDataSelect = `mr.id,
 	metrics.code_addition,
 	metrics.code_deletion,
 	metrics.review_depth,
+	MAX(events.timestamp) as last_event_ts,
 	author.id, author.avatar_url, author.bot,
 	merger.id, merger.avatar_url, merger.bot,
 	approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -118,6 +120,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 		&item.CodeAdditions,
 		&item.CodeDeletions,
 		&item.ReviewDepth,
+		&item.LastEventTimestamp,
 		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
