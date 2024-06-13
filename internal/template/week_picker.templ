@@ -59,6 +59,11 @@ templ weekNav(props WeekPickerProps) {
 				<span class="sr-only">Next week</span>
 				<span class="px-[22px] py-2.5">Next Week</span> <span>&#9654;</span>
 			</a>
+		} else {
+			<span class="sr-only text-gray-400">Next week</span>
+<span class="px-[22px] py-2.5 text-gray-400 cursor-not-allowed">Next Week</span>
+<span class="text-gray-400 cursor-not-allowed">&#9654;</span>
+
 		}
 	</div>
 }
