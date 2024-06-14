@@ -28,6 +28,7 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps 
 				@timeSeries(props.AverageHandoverTimeSeriesProps, "Average Handover per MR")
 			</div>
 		</div>
+		@tooltipTemplate()
 		@tooltip()
 	}
 }
