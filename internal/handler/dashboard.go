@@ -334,6 +334,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	var mergeRequestsMerged template.MergeRequestStackedListProps
 	var mergeRequestsClosed template.MergeRequestStackedListProps
 	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
+	var mergeRequestsStale template.MergeRequestStackedListProps
 
 	isQueryCurrentWeek := queriedWeek == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
@@ -353,13 +354,31 @@ func (a *App) DashboardPage(c echo.Context) error {
 			return err
 		}
 
-		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
-		mergeRequestsWaitingForReview.Title = "Waiting for review"
-		mergeRequestsWaitingForReview.MergeRequests, err = store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
+		mrsInReview, err := store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
 
 		if err != nil {
 			return err
 		}
+
+		var recentMrsWaitingForReview []data.MergeRequestListItemData
+		var staleMrsWaitingForReview []data.MergeRequestListItemData
+		var lastMonday = util.GetStartOfTheWeek(timeNow).Add(-1 * 7 * 24 * time.Hour)
+		for _, mr := range mrsInReview {
+			if mr.LastEventAt.Before(lastMonday) {
+				staleMrsWaitingForReview = append(staleMrsWaitingForReview, mr)
+			} else {
+				recentMrsWaitingForReview = append(recentMrsWaitingForReview, mr)
+			}
+		}
+
+		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
+		mergeRequestsWaitingForReview.Title = "Waiting for review"
+		mergeRequestsWaitingForReview.MergeRequests = recentMrsWaitingForReview
+
+		mergeRequestsStale.Id = "mrs-stale"
+		mergeRequestsStale.Title = "Stale"
+		mergeRequestsStale.MergeRequests = staleMrsWaitingForReview
+
 	}
 
 	mergeRequestsMerged.Id = "mrs-merged"
@@ -399,7 +418,8 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsMerged,
 		mergeRequestsInProgress,
 		mergeRequestsReadyToMerge,
-		mergeRequestsWaitingForReview)
+		mergeRequestsWaitingForReview,
+		mergeRequestsStale)
 
 	return components.Render(ctx, c.Response().Writer)
 }
