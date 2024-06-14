@@ -18,15 +18,15 @@ type UserAvatarUrl struct {
 }
 
 type MergeRequestListItemData struct {
-	Id                 int64
-	Title              string
-	WebUrl             string
-	CanonId            int64
-	CodeAdditions      int64
-	CodeDeletions      int64
-	ReviewDepth        int64
-	LastEventTimestamp int64
-	UserAvatarUrls     []string
+	Id             int64
+	Title          string
+	WebUrl         string
+	CanonId        int64
+	CodeAdditions  int64
+	CodeDeletions  int64
+	ReviewDepth    int64
+	LastEventAt    time.Time
+	UserAvatarUrls []string
 }
 
 const mrListDataSelect = `mr.id,
@@ -112,7 +112,9 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
 func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []UserAvatarUrl, rows *sql.Rows) error {
-	return rows.Scan(
+	var lastEventMilli int64
+
+	err := rows.Scan(
 		&item.Id,
 		&item.Title,
 		&item.WebUrl,
@@ -120,7 +122,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 		&item.CodeAdditions,
 		&item.CodeDeletions,
 		&item.ReviewDepth,
-		&item.LastEventTimestamp,
+		&lastEventMilli,
 		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
@@ -154,6 +156,14 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 		&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
 		&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
 	)
+
+	if err != nil {
+		return err
+	}
+
+	item.LastEventAt = time.UnixMilli(lastEventMilli)
+
+	return nil
 }
 
 const mrListInProgressCondition = `occured_on.week = ?
