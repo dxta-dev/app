@@ -362,9 +362,9 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		var recentMrsWaitingForReview []data.MergeRequestListItemData
 		var staleMrsWaitingForReview []data.MergeRequestListItemData
-		var secToLastMonday = util.GetStartOfTheWeek(timeNow).Add(-2 * 7 * 24 * time.Hour)
+		var lastMonday = util.GetStartOfTheWeek(timeNow).Add(-1 * 7 * 24 * time.Hour)
 		for _, mr := range mrsInReview {
-			if mr.LastEventAt.Before(secToLastMonday) {
+			if mr.LastEventAt.Before(lastMonday) {
 				staleMrsWaitingForReview = append(staleMrsWaitingForReview, mr)
 			} else {
 				recentMrsWaitingForReview = append(recentMrsWaitingForReview, mr)
