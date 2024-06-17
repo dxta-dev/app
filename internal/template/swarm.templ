@@ -157,6 +157,21 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		})
 	}
 
+	function debounce(func, wait) {
+    let timeout;
+    return function executedFunction() {
+        const context = this;
+        const args = arguments;
+        const later = function() {
+            timeout = null;
+            func.apply(context, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
 	const searchParams = new URLSearchParams(document.location.search);
 
 	for (let i = 0; i < circles.length; i++) {
@@ -167,6 +182,11 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	let size = +circles[0].getAttribute("r");
 
 	let highlightedButton = null;
+	let scrollTop = null;
+
+	const debouncedScrollTo = debounce(function(top) {
+    	window.scrollTo({ top: top, behavior: 'smooth' });
+	}, 300);
 
 	circles.forEach((circle, i) => {
 		let strokes = [];
@@ -187,10 +207,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 				const rect = grandparentElement.getBoundingClientRect();
 				const offset = 340; // Magic number
-				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 				const top = rect.top + scrollTop - offset;
 
-				window.scrollTo({ top: top, behavior: 'smooth' });
+    			debouncedScrollTo(top);
 
 			}
 
@@ -264,7 +284,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
                 highlightedButton = null;
             }
 
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+    		debouncedScrollTo(scrollTop);
 		});
 
 
@@ -275,9 +295,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		});
 
 	});
-
-
-
 }
 
 templ swarm(props SwarmProps, nonce string) {
