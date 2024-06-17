@@ -72,8 +72,8 @@ templ Head(title string, bust string, nonce string) {
 	<head>
 		<meta charset="UTF-8"/>
 		<title>{ title }</title>
-		<script nonce={ nonce } src="https://unpkg.com/htmx.org@1.9.9/dist/htmx.min.js"></script>
-		<script nonce={ nonce } src="https://unpkg.com/htmx.org@1.9.9/dist/ext/head-support.js"></script>
+		<script nonce={ nonce } src="https://unpkg.com/htmx.org@2.0.0/dist/htmx.min.js"></script>
+		<script nonce={ nonce } src="https://unpkg.com/htmx-ext-head-support@2.0.0/head-support.js"></script>
 		<link href={ fmt.Sprintf("/style.css?t=%s", bust) } rel="stylesheet"/>
 	</head>
 }
