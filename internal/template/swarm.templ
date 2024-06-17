@@ -157,6 +157,21 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		})
 	}
 
+	function debounce(func, wait) {
+    let timeout;
+    return function executedFunction() {
+        const context = this;
+        const args = arguments;
+        const later = function() {
+            timeout = null;
+            func.apply(context, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+
 	const searchParams = new URLSearchParams(document.location.search);
 
 	for (let i = 0; i < circles.length; i++) {
@@ -166,37 +181,39 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	let size = +circles[0].getAttribute("r");
 
-	let highlightedButton = null; // Variable to keep track of the highlighted button
+	let highlightedButton = null;
+	let scrollTop = null;
 
+	const debouncedScrollTo = debounce(function(top) {
+    	window.scrollTo({ top: top, behavior: 'smooth' });
+	}, 300);
 
 	circles.forEach((circle, i) => {
 		let strokes = [];
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
-			const button = document.querySelector(`button[hx-get="/mr-info/${circle.getAttribute("data-merge-request-id")}"]`);
+			const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
 
 			if (button) {
-				const rect = button.getBoundingClientRect();
-				const offset = 350; // Magic number
-				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				const grandparentElement = button.parentElement.parentElement;
+
+				if (highlightedButton && highlightedButton !== grandparentElement) {
+					highlightedButton.classList.remove('border-2', 'border-blue-500');
+				}
+
+				grandparentElement.classList.add('border-2', 'border-blue-500');
+				highlightedButton = grandparentElement;
+
+				const rect = grandparentElement.getBoundingClientRect();
+				const offset = 340; // Magic number
+				scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 				const top = rect.top + scrollTop - offset;
 
-	    		window.scrollTo({ top: top, behavior: 'smooth' });
- 				if (highlightedButton && highlightedButton !== button) {
-                	highlightedButton.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-            	}
+    			debouncedScrollTo(top);
 
-				button.classList.add('border-2', 'border-red-500', 'animate-flash-border');
-				highlightedButton = button;
-
-				setTimeout(() => {
-					if (highlightedButton === button) {
-						button.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-						highlightedButton = null;
-					}
-				}, 3000);
 			}
+
 
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
@@ -249,7 +266,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
 			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
-
 			toggleBlur(otherCircles);
 
 			for (let i = 0; i < circles.length; i++) {
@@ -262,7 +278,15 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			}
 			strokes = [];
 			lines = [];
+
+			if (highlightedButton) {
+                highlightedButton.classList.remove('border-2', 'border-blue-500');
+                highlightedButton = null;
+            }
+
+    		debouncedScrollTo(scrollTop);
 		});
+
 
 		circle.addEventListener("click", () => {
 			const popover = document.getElementById("mr-info");
@@ -271,9 +295,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		});
 
 	});
-
-
-
 }
 
 templ swarm(props SwarmProps, nonce string) {
