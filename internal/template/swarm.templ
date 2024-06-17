@@ -172,27 +172,27 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		let strokes = [];
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
-		const mergeRequestId = circle.getAttribute("data-merge-request-id");
-		const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
+			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+			const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
 
-		if (button) {
-			const grandparentElement = button.parentElement.parentElement;
+			if (button) {
+				const grandparentElement = button.parentElement.parentElement;
 
-			if (highlightedButton && highlightedButton !== grandparentElement) {
-				highlightedButton.classList.remove('border-2', 'border-blue-500');
+				if (highlightedButton && highlightedButton !== grandparentElement) {
+					highlightedButton.classList.remove('border-2', 'border-blue-500');
+				}
+
+				grandparentElement.classList.add('border-2', 'border-blue-500');
+				highlightedButton = grandparentElement;
+
+				const rect = grandparentElement.getBoundingClientRect();
+				const offset = 340; // Magic number
+				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				const top = rect.top + scrollTop - offset;
+
+				window.scrollTo({ top: top, behavior: 'smooth' });
+
 			}
-
-			grandparentElement.classList.add('border-2', 'border-blue-500');
-			highlightedButton = grandparentElement;
-
-			const rect = grandparentElement.getBoundingClientRect();
-			const offset = 340; // Magic number
-			const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-			const top = rect.top + scrollTop - offset;
-
-			window.scrollTo({ top: top, behavior: 'smooth' });
-
-		}
 
 
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
@@ -246,7 +246,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
 			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
-
 			toggleBlur(otherCircles);
 
 			for (let i = 0; i < circles.length; i++) {
@@ -259,7 +258,15 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			}
 			strokes = [];
 			lines = [];
+
+			if (highlightedButton) {
+                highlightedButton.classList.remove('border-2', 'border-blue-500');
+                highlightedButton = null;
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 		});
+
 
 		circle.addEventListener("click", () => {
 			const popover = document.getElementById("mr-info");
