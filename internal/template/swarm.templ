@@ -166,37 +166,34 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	let size = +circles[0].getAttribute("r");
 
-	let highlightedButton = null; // Variable to keep track of the highlighted button
-
+	let highlightedButton = null;
 
 	circles.forEach((circle, i) => {
 		let strokes = [];
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
-			const mergeRequestId = circle.getAttribute("data-merge-request-id");
-			const button = document.querySelector(`button[hx-get="/mr-info/${circle.getAttribute("data-merge-request-id")}"]`);
+		const mergeRequestId = circle.getAttribute("data-merge-request-id");
+		const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
 
-			if (button) {
-				const rect = button.getBoundingClientRect();
-				const offset = 350; // Magic number
-				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-				const top = rect.top + scrollTop - offset;
+		if (button) {
+			const grandparentElement = button.parentElement.parentElement;
 
-	    		window.scrollTo({ top: top, behavior: 'smooth' });
- 				if (highlightedButton && highlightedButton !== button) {
-                	highlightedButton.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-            	}
-
-				button.classList.add('border-2', 'border-red-500', 'animate-flash-border');
-				highlightedButton = button;
-
-				setTimeout(() => {
-					if (highlightedButton === button) {
-						button.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-						highlightedButton = null;
-					}
-				}, 3000);
+			if (highlightedButton && highlightedButton !== grandparentElement) {
+				highlightedButton.classList.remove('border-2', 'border-blue-500');
 			}
+
+			grandparentElement.classList.add('border-2', 'border-blue-500');
+			highlightedButton = grandparentElement;
+
+			const rect = grandparentElement.getBoundingClientRect();
+			const offset = 340; // Magic number
+			const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+			const top = rect.top + scrollTop - offset;
+
+			window.scrollTo({ top: top, behavior: 'smooth' });
+
+		}
+
 
 			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
