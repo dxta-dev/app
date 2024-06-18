@@ -18,6 +18,7 @@ templ DashboardPage(
 			@weekNav(weekPickerProps)
 			@swarm(swarmProps, page.Nonce)
 		</div>
+		@mergeRequestStackIcons()
 		if isQueryCurrentWeek {
 			@mergeRequestStackedList(mergeRequestsWaitingForReview)
 			@mergeRequestStackedList(mergeRequestsReadyToMerge)
