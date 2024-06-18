@@ -247,8 +247,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	let isScrolling = false;
 
 	window.addEventListener('scroll', () => {
-		console.log(isScrolling, scrollPreviousTop);
-
 		if (!isScrolling) {
         	scrollPreviousTop = window.pageYOffset;
 		}
