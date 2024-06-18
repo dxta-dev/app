@@ -243,7 +243,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}, 300);
 
 	let highlightedButton = null;
-	let scrollTop = null;
+	let scrollPreviousTop = null;
 	let isScrolling = false;
 
 	window.addEventListener('scroll', () => {
@@ -277,13 +277,13 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}
 
 	function clearStackList(mergeRequestId) {
-		isScrolling = false;
 		if (highlightedButton) {
 			highlightedButton.classList.remove('border-2', 'border-blue-500');
 			highlightedButton = null;
 		}
 
-		debouncedScrollTo(scrollTop);
+		debouncedScrollTo(scrollPreviousTop);
+		isScrolling = false;
 	}
 
 	for (let i = 0; i < circles.length; i++) {
