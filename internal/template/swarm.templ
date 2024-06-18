@@ -243,10 +243,12 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}, 300);
 
 	let highlightedButton = null;
-	let scrollTop = null;
+	let scrollPreviousTop = null;
 	let isScrolling = false;
 
 	window.addEventListener('scroll', () => {
+		console.log(isScrolling, scrollPreviousTop);
+
 		if (!isScrolling) {
         	scrollPreviousTop = window.pageYOffset;
 		}
@@ -283,7 +285,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			highlightedButton = null;
 		}
 
-		debouncedScrollTo(scrollTop);
+		debouncedScrollTo(scrollPreviousTop);
 	}
 
 	for (let i = 0; i < circles.length; i++) {
