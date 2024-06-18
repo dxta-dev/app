@@ -309,22 +309,18 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	});
 
-	setTimeout( () => {
+	const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
+	stackListItems.forEach(button => {
+		const mergeRequestId = button.getAttribute("data-merge-request-id");
 		
-		const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
-		stackListItems.forEach(button => {
-			const mergeRequestId = button.getAttribute("data-merge-request-id");
-			
-			button.addEventListener("mouseover", ()=> {
-				highlightSwarmChart(mergeRequestId);
-			});
-
-			button.addEventListener("mouseout", () => {
-				clearSwarmChart(mergeRequestId)
-			});
+		button.addEventListener("mouseover", ()=> {
+			highlightSwarmChart(mergeRequestId);
 		});
 
-	}, 500)
+		button.addEventListener("mouseout", () => {
+			clearSwarmChart(mergeRequestId);
+		});
+	});
 }
 
 templ swarm(props SwarmProps, nonce string) {
@@ -335,6 +331,5 @@ templ swarm(props SwarmProps, nonce string) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "mr-info/", props.EventIds, props.EventMergeRequestIds, props.StartedMergeRequestIds, props.ClosedMergeRequestIds)
 	</div>
 }
