@@ -87,8 +87,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	createFilter();
 
-
-
 	function toggleBlur(elements) {
 		elements.forEach((element) => {
 			if (element.getAttribute("filter") === "url(#swarm-blur)") {
@@ -246,8 +244,18 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	let highlightedButton = null;
 	let scrollTop = null;
+	let isScrolling = false;
+
+	window.addEventListener('scroll', () => {
+		console.log(isScrolling);
+		if (!isScrolling) {
+        	scrollPreviousTop = window.pageYOffset;
+		}
+    });
+
 
 	function highlightStackList(mergeRequestId) {
+		isScrolling = true;
 		const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
 		if (!button) return;
 
@@ -270,13 +278,14 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}
 
 	function clearStackList(mergeRequestId) {
+		isScrolling = false;
 		if (highlightedButton) {
 			highlightedButton.classList.remove('border-2', 'border-blue-500');
 			highlightedButton = null;
 		}
 
 		debouncedScrollTo(scrollTop);
-	}	
+	}
 
 	for (let i = 0; i < circles.length; i++) {
 		circles[i].setAttribute("data-id", circleIds[i]);
@@ -312,7 +321,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
 	stackListItems.forEach(button => {
 		const mergeRequestId = button.getAttribute("data-merge-request-id");
-		
+
 		button.addEventListener("mouseover", ()=> {
 			highlightSwarmChart(mergeRequestId);
 		});
