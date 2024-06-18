@@ -182,16 +182,25 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	let size = +circles[0].getAttribute("r");
 
 	let highlightedButton = null;
-	let scrollTop = null;
+	let scrollPreviousTop = null;
+	let isScrolling = false;
 
 	const debouncedScrollTo = debounce(function(top) {
     	window.scrollTo({ top: top, behavior: 'smooth' });
 	}, 300);
 
+	window.addEventListener('scroll', () => {
+		console.log(isScrolling);
+		if (!isScrolling) {
+        	scrollPreviousTop = window.pageYOffset;
+		}
+    });
+
 	circles.forEach((circle, i) => {
 		let strokes = [];
 		let lines = [];
 		circle.addEventListener("mouseover", () => {
+			isScrolling = true
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
 
@@ -207,11 +216,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 				const rect = grandparentElement.getBoundingClientRect();
 				const offset = 340; // Magic number
-				scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 				const top = rect.top + scrollTop - offset;
 
     			debouncedScrollTo(top);
-
 			}
 
 
@@ -262,6 +270,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		});
 
 		circle.addEventListener("mouseout", () => {
+			isScrolling = false;
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
@@ -284,7 +293,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
                 highlightedButton = null;
             }
 
-    		debouncedScrollTo(scrollTop);
+    		debouncedScrollTo(scrollPreviousTop);
 		});
 
 
