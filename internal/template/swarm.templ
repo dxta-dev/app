@@ -261,14 +261,14 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		const grandparentElement = button.parentElement.parentElement;
 
 		if (highlightedButton && highlightedButton !== grandparentElement) {
-			highlightedButton.classList.remove('box-border', 'border-2', 'border-blue-500', 'p-1');
+			highlightedButton.classList.remove('box-border', 'outline', 'outline-2', 'outline-blue-500', 'outline-offset-2');
 		}
 
-		grandparentElement.classList.add('box-border', 'border-2', 'border-blue-500', 'p-1');
+		grandparentElement.classList.add('box-border', 'outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
 		highlightedButton = grandparentElement;
 
 		const rect = grandparentElement.getBoundingClientRect();
-		const offset = 340 + 32; // Magic number
+		const offset = 340 + 52; // Magic number
 		scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 		const top = rect.top + scrollTop - offset;
 
@@ -278,7 +278,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	function clearStackList(mergeRequestId) {
 		if (highlightedButton) {
-			highlightedButton.classList.remove('box-border', 'border-2', 'border-blue-500', 'p-1');
+			highlightedButton.classList.remove('box-border', 'outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
 			highlightedButton = null;
 		}
 
