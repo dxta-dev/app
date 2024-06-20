@@ -121,7 +121,7 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			class="mt-8"
 		>
 			<ul role="list" class="flex flex-col items-center space-y-1">
-				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(""))
+				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(SVGProps{Width: 32, Height: 32}))
 				@NewNavigationSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality, "Quality Metrics", templ.Raw("Q"))
 				@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughpu Metrics", templ.Raw("T"))
 			</ul>
