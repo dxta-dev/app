@@ -26,6 +26,7 @@ type MergeRequestListItemData struct {
 	CodeDeletions  int64
 	ReviewDepth    int64
 	LastEventAt    time.Time
+	LastEventWeek  string
 	UserAvatarUrls []string
 }
 
@@ -162,6 +163,9 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 	}
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
+
+	item.LastEventWeek = util.GetFormattedWeek(item.LastEventAt)
+	fmt.Print(item.LastEventWeek)
 
 	return nil
 }
@@ -327,7 +331,7 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
 			FROM transform_merge_request_events AS events
 			JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 			WHERE occured_on.week = ?
-			AND events.merge_request_event_type = 9			
+			AND events.merge_request_event_type = 9
 		)`
 
 func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
