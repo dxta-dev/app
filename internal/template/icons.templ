@@ -14,7 +14,8 @@ const (
 )
 
 templ Chevron(direction Direction) {
-	<svg xmlns="http://www.w3.org/2000/svg"
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
 		width="16"
 		height="16"
 		viewBox="0 0 24 24"
@@ -22,18 +23,42 @@ templ Chevron(direction Direction) {
 		stroke="currentColor"
 		stroke-width="2"
 		stroke-linecap="round"
-		stroke-linejoin="round">
+		stroke-linejoin="round"
+	>
 		<path
 			if direction == Up {
 				d="M18 15l-6-6-6 6"
-			} else if direction == Down {
-				d="M6 9l6 6 6-6"
-			} else if direction == Left {
-				d="m15 18-6-6 6-6"
-			} else if direction == Right {
-				d="m9 6 6 6-6 6"
-
 			}
+			else
+			if direction == Down {
+				d="M6 9l6 6 6-6"
+			}
+			else
+			if direction == Left {
+				d="m15 18-6-6 6-6"
+			}
+			else
+			if direction == Right {
+				d="m9 6 6 6-6 6"
+			}
+		></path>
+	</svg>
+}
+
+templ Checkmark() {
+	<svg
+		xmlns="http://www.w3.org/2000/svg"
+		viewBox="0 0 24 24"
+		width="24"
+		height="24"
+		fill="currentColor"
+		stroke="currentColor"
+		stroke-width="1"
+		stroke-linecap="round"
+		stroke-linejoin="round"
+	>
+		<path
+			d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
 		></path>
 	</svg>
 }
