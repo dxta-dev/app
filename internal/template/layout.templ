@@ -46,9 +46,9 @@ templ Layout(page *Page, props TeamPickerProps) {
 						<div class="flex-shrink-0">
 							<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
 								<path
- 									fill-rule="evenodd"
- 									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
- 									clip-rule="evenodd"
+									fill-rule="evenodd"
+									d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+									clip-rule="evenodd"
 								></path>
 							</svg>
 						</div>
@@ -78,7 +78,6 @@ templ Head(title string, bust string, nonce string) {
 	</head>
 }
 
-
 templ Content(page *Page) {
 	<main class="lg:pl-20">
 		<div class="px-4 py-10 sm:px-6 lg:px-8 lg:py-6">
@@ -100,13 +99,48 @@ func GetClassStateOfNewNavigationSidebarLink(page *Page, routeId string) string 
 templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, routeName string, content templ.Component) {
 	<li>
 		<a
- 			href={ templ.SafeURL(routeURL) }
- 			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
+			href={ templ.SafeURL(routeURL) }
+			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
 		>
 			@content
 			<span class="sr-only">{ routeName }</span>
 		</a>
 	</li>
+}
+
+templ UseDashboardIcon(id string, height, width int) {
+	<svg
+		if height != 0 {
+			height={ fmt.Sprintf("%d", height) }
+		}
+		if width != 0 {
+			width={ fmt.Sprintf("%d", width) }
+		}
+	>
+		<use href={ "#" + id }></use>
+	</svg>
+}
+
+templ DashboardIcon(id string) {
+	<svg
+		width="32"
+		height="32"
+		viewBox="0 0 24 24"
+		fill="none"
+		xmlns="http://www.w3.org/2000/svg"
+		if id != "" {
+			id={ id }
+		}
+	>
+		<circle cx="6" cy="6" r="4" fill="#4CAF50"></circle>
+		<circle cx="18" cy="6" r="4" fill="#2196F3"></circle>
+		<circle cx="6" cy="18" r="4" fill="#FFC107"></circle>
+		<circle cx="18" cy="18" r="4" fill="#F44336"></circle>
+		<line x1="4" y1="0" x2="4" y2="24" stroke="white" stroke-width="1"></line>
+		<line y1="20" x2="24" y2="20" stroke="white" stroke-width="1"></line>
+		<line x1="20" y1="0" x2="20" y2="24" stroke="white" stroke-width="1"></line>
+		<line y1="4" x2="24" y2="4" stroke="white" stroke-width="1"></line>
+	</svg>
 }
 
 templ NewNavigation(page *Page, props TeamPickerProps) {
@@ -116,59 +150,17 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			<!-- logo goes here -->
 		</div>
 		<nav
- 			hx-boost="true"
- 			hx-target="#app"
- 			hx-swap="innerHTML show:unset"
- 			class="mt-8"
+			hx-boost="true"
+			hx-target="#app"
+			hx-swap="innerHTML show:unset"
+			class="mt-8"
 		>
 			<ul role="list" class="flex flex-col items-center space-y-1">
-				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", templ.Raw("D"))
+				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(""))
 				@NewNavigationSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality, "Quality Metrics", templ.Raw("Q"))
 				@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughpu Metrics", templ.Raw("T"))
 			</ul>
 		</nav>
 	</div>
 	@teamPicker(props)
-}
-
-templ Navigation(navigation NavState, debug bool) {
-	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset" class="w-full mx-auto">
-		<div
- 			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
-		>
-			<div class="flex flex-row items-center justify-between lg:justify-start">
-				<a href={ templ.SafeURL(navigation.Root) } class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
-					DXTA
-				</a>
-			</div>
-			<nav class="flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden">
-				<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
-					<li>
-						<a
- 							href={ templ.SafeURL(navigation.Root) }
- 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Dashboard
-						</a>
-					</li>
-					<li>
-						<a
- 							href={ templ.SafeURL(navigation.Metrics.Quality) }
- 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Quality Metrics
-						</a>
-					</li>
-					<li>
-						<a
- 							href={ templ.SafeURL(navigation.Metrics.Throughput) }
- 							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Throughput Metrics
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
 }
