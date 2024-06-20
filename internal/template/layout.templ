@@ -108,41 +108,6 @@ templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, rout
 	</li>
 }
 
-templ UseDashboardIcon(id string, height, width int) {
-	<svg
-		if height != 0 {
-			height={ fmt.Sprintf("%d", height) }
-		}
-		if width != 0 {
-			width={ fmt.Sprintf("%d", width) }
-		}
-	>
-		<use href={ "#" + id }></use>
-	</svg>
-}
-
-templ DashboardIcon(id string) {
-	<svg
-		width="32"
-		height="32"
-		viewBox="0 0 24 24"
-		fill="none"
-		xmlns="http://www.w3.org/2000/svg"
-		if id != "" {
-			id={ id }
-		}
-	>
-		<circle cx="6" cy="6" r="4" fill="#4CAF50"></circle>
-		<circle cx="18" cy="6" r="4" fill="#2196F3"></circle>
-		<circle cx="6" cy="18" r="4" fill="#FFC107"></circle>
-		<circle cx="18" cy="18" r="4" fill="#F44336"></circle>
-		<line x1="4" y1="0" x2="4" y2="24" stroke="white" stroke-width="1"></line>
-		<line y1="20" x2="24" y2="20" stroke="white" stroke-width="1"></line>
-		<line x1="20" y1="0" x2="20" y2="24" stroke="white" stroke-width="1"></line>
-		<line y1="4" x2="24" y2="4" stroke="white" stroke-width="1"></line>
-	</svg>
-}
-
 templ NewNavigation(page *Page, props TeamPickerProps) {
 	<!-- Static sidebar for desktop -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
