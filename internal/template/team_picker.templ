@@ -43,7 +43,7 @@ templ TeamPickerStuff(props TeamPickerProps) {
 					<span class="sr-only">Open user menu</span>
 					<span class="hidden lg:flex lg:items-center">
 						<span class="px-2 text-sm font-semibold leading-6 text-gray-900" aria-hidden="true">{ getSelectedTeam(props).Name }</span>
-						@Chevron(Down)
+						@ChevronIcon(Down)
 					</span>
 				</button>
 				@teamPickerPopover(props)
@@ -60,7 +60,7 @@ templ teamPickerPopoverItem(team Team, selected bool) {
 					<p class="font-normal">{ team.Name }</p>
 					if selected {
 						<span class="text-indigo-600">
-							@Checkmark()
+							@CheckmarkIcon()
 						</span>
 					}
 				</div>
@@ -79,7 +79,7 @@ templ teamPickerPopover(props TeamPickerProps) {
 							<p class="font-normal">All teams</p>
 							if props.SelectedTeam == nil {
 								<span class="text-indigo-600">
-									@Checkmark()
+									@CheckmarkIcon()
 								</span>
 							}
 						</div>

@@ -38,7 +38,7 @@ templ weekPicker(props WeekPickerProps) {
 						<p>{ props.StartEndWeekDates }</p>
 					</div>
 					<span class="sr-only">Select week</span>
-					@Chevron(Down)
+					@ChevronIcon(Down)
 				</button>
 			</div>
 		</form>
@@ -52,7 +52,7 @@ templ weekNav(props WeekPickerProps) {
 				class="inline-flex items-center"
 				href={ templ.SafeURL(props.PreviousWeekUrl) }
 			>
-				@Chevron(Left)
+				@ChevronIcon(Left)
 				<span class="px-2 py-2.5">Previous Week</span>
 			</a>
 		</div>
@@ -66,14 +66,14 @@ templ weekNav(props WeekPickerProps) {
 					<span class="px-2 py-2.5">
 						Next Week
 					</span>
-					@Chevron(Right)
+					@ChevronIcon(Right)
 				</a>
 			} else {
 				<span class="inline-flex items-center text-gray-400 cursor-not-allowed">
 					<span class="px-2 py-2.5 ">
 						Next Week
 					</span>
-					@Chevron(Right)
+					@ChevronIcon(Right)
 				</span>
 			}
 		</div>
