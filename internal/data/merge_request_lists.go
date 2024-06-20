@@ -165,7 +165,6 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
 	item.LastEventWeek = util.GetFormattedWeek(item.LastEventAt)
-	fmt.Print(item.LastEventWeek)
 
 	return nil
 }
