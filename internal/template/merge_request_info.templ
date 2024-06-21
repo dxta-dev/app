@@ -127,7 +127,7 @@ templ MergeRequestEventsList(props MergeRequestInfoProps, date string) {
 templ SingleEvents(event []data.Event) {
 	<div class="relative flex items-start space-x-3">
 		<div class="relative">
-			<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+			<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
 				<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) } alt=""/>
 			</div>
 		</div>
@@ -167,11 +167,11 @@ templ SquashedEvents(event []data.Event) {
 					for _, actor := range uniqueActorInfo(event) {
 						<div class="relative">
 							if len(uniqueActorInfo(event)) == 1 {
-								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
 									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
 								</div>
 							} else {
-								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5 hover:opacity-75 duration-100">
+								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
 									<dd>
 										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" title={ actor.Name } src={ actor.AvatarUrl } alt=""/>
 									</dd>
