@@ -329,11 +329,11 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
-	var mergeRequestsInProgress template.MergeRequestStackedListProps
+	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
 	var mergeRequestsReadyToMerge template.MergeRequestStackedListProps
+	var mergeRequestsInProgress template.MergeRequestStackedListProps
 	var mergeRequestsMerged template.MergeRequestStackedListProps
 	var mergeRequestsClosed template.MergeRequestStackedListProps
-	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
 	var mergeRequestsStale template.MergeRequestStackedListProps
 
 	isQueryCurrentWeek := queriedWeek == util.GetFormattedWeek(timeNow)
@@ -341,7 +341,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
 		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(timeNow, teamMembers, nullRows.UserId)
-		mergeRequestsInProgress.IconId = "icon-mr-in-progress"
+		mergeRequestsInProgress.MRStatusIconProps = template.MRInProgressIconProps
 
 		if err != nil {
 			return err
@@ -350,7 +350,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
 		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId)
-		mergeRequestsReadyToMerge.IconId = "icon-mr-queue"
+		mergeRequestsReadyToMerge.MRStatusIconProps = template.MRReadyToBeMergedIconProps
 
 		if err != nil {
 			return err
@@ -376,19 +376,19 @@ func (a *App) DashboardPage(c echo.Context) error {
 		mergeRequestsWaitingForReview.Id = "mrs-waiting-review"
 		mergeRequestsWaitingForReview.Title = "Waiting for review"
 		mergeRequestsWaitingForReview.MergeRequests = recentMrsWaitingForReview
-		mergeRequestsWaitingForReview.IconId = "icon-mr-open"
+		mergeRequestsWaitingForReview.MRStatusIconProps = template.MRWaitingToBeReviewedIconProps
 
 		mergeRequestsStale.Id = "mrs-stale"
 		mergeRequestsStale.Title = "Stale"
 		mergeRequestsStale.MergeRequests = staleMrsWaitingForReview
-		mergeRequestsStale.IconId = "icon-mr-stale"
+		mergeRequestsStale.MRStatusIconProps = template.MRStaleIconProps
 
 	}
 
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
 	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(date, teamMembers, nullRows.UserId)
-	mergeRequestsMerged.IconId = "icon-mr-merged"
+	mergeRequestsMerged.MRStatusIconProps = template.MRMergedIconProps
 
 	if err != nil {
 		return err
@@ -397,7 +397,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
 	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(date, teamMembers, nullRows.UserId)
-	mergeRequestsClosed.IconId = "icon-mr-closed"
+	mergeRequestsClosed.MRStatusIconProps = template.MRClosedIconProps
 
 	if err != nil {
 		return err

@@ -109,7 +109,7 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			class="mt-8"
 		>
 			<ul role="list" class="flex flex-col items-center space-y-1">
-				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", templ.Raw("D"))
+				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(SVGProps{Width: 32, Height: 32}))
 				@NewNavigationSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality, "Quality Metrics", templ.Raw("Q"))
 				@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughpu Metrics", templ.Raw("T"))
 			</ul>
@@ -118,44 +118,3 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 	@teamPicker(props)
 }
 
-templ Navigation(navigation NavState, debug bool) {
-	<div hx-boost="true" hx-target="main" hx-swap="innerHTML show:unset" class="w-full mx-auto">
-		<div
-			class="relative flex flex-col w-full p-5 mx-auto md:items-center md:justify-between md:flex-row max-w-7xl lg:px-16 md:px-12 px-8 xl:px-24"
-		>
-			<div class="flex flex-row items-center justify-between lg:justify-start">
-				<a href={ templ.SafeURL(navigation.Root) } class="text-xl text-gray-900 font-semibold tracking-tighter inline-flex gap-2 items-center">
-					DXTA
-				</a>
-			</div>
-			<nav class="flex-col flex-grow py-12 lg:py-0 md:flex md:justify-end md:flex-row hidden">
-				<ul class="space-y-2 list-none lg:space-y-0 lg:items-center lg:inline-flex">
-					<li>
-						<a
-							href={ templ.SafeURL(navigation.Root) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Dashboard
-						</a>
-					</li>
-					<li>
-						<a
-							href={ templ.SafeURL(navigation.Metrics.Quality) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Quality Metrics
-						</a>
-					</li>
-					<li>
-						<a
-							href={ templ.SafeURL(navigation.Metrics.Throughput) }
-							class="px-2 lg:px-6 py-4 md:px-3 text-sm font-semibold text-slate-600 hover:text-purple-900"
-						>
-							Throughput Metrics
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
-	</div>
-}
