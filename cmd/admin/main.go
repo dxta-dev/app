@@ -1,15 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"time"
 
+	"github.com/dxta-dev/app/internal/config"
 	"github.com/dxta-dev/app/internal/handler"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/util"
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
@@ -21,7 +22,7 @@ var DEBUG string
 
 func main() {
 
-	config, err := util.GetConfig()
+	conf, err := config.Load(context.Background(), DEBUG == "true")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -63,7 +64,7 @@ func main() {
 	e.Use(middleware.HtmxMiddleware)
 	g := e.Group("")
 
-	g.Use(middleware.ConfigMiddleware(config))
+	g.Use(middleware.ConfigMiddleware(&conf))
 	g.Use(middleware.TenantMiddleware)
 
 	g.GET("/", app.GetCrawlInstancesInfo)
