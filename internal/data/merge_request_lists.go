@@ -18,16 +18,17 @@ type UserAvatarUrl struct {
 }
 
 type MergeRequestListItemData struct {
-	Id             int64
-	Title          string
-	WebUrl         string
-	CanonId        int64
-	CodeAdditions  int64
-	CodeDeletions  int64
-	ReviewDepth    int64
-	LastEventAt    time.Time
-	LastEventWeek  string
-	UserAvatarUrls []string
+	Id               int64
+	Title            string
+	WebUrl           string
+	CanonId          int64
+	CodeAdditions    int64
+	CodeDeletions    int64
+	ReviewDepth      int64
+	LastEventAt      time.Time
+	LastSwarmEventAt time.Time
+	LastEventWeek    string
+	UserAvatarUrls   []string
 }
 
 const mrListDataSelect = `mr.id,
@@ -38,6 +39,7 @@ const mrListDataSelect = `mr.id,
 	metrics.code_deletion,
 	metrics.review_depth,
 	MAX(events.timestamp) as last_event_ts,
+    COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
 	author.id, author.avatar_url, author.bot,
 	merger.id, merger.avatar_url, merger.bot,
 	approver1.id,  approver1.avatar_url,  approver1.bot,
@@ -114,6 +116,7 @@ const mrListTables = `transform_merge_request_events AS events
 
 func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []UserAvatarUrl, rows *sql.Rows) error {
 	var lastEventMilli int64
+	var lastSwarmEventAt int64
 
 	err := rows.Scan(
 		&item.Id,
@@ -124,6 +127,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 		&item.CodeDeletions,
 		&item.ReviewDepth,
 		&lastEventMilli,
+		&lastSwarmEventAt,
 		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
 		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
 		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
@@ -164,7 +168,9 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
-	item.LastEventWeek = util.GetFormattedWeek(item.LastEventAt)
+	item.LastSwarmEventAt = time.UnixMilli(lastSwarmEventAt)
+
+	item.LastEventWeek = util.GetFormattedWeek(item.LastSwarmEventAt)
 
 	return nil
 }
@@ -200,7 +206,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 			%s
 		GROUP BY mr.id;`,
 		mrListDataSelect, mrListTables, mrListInProgressCondition, usersInTeamConditionQuery)
-
+	fmt.Print(query)
 	defer db.Close()
 
 	queryParams := make([]interface{}, len(teamMembers)+2)
