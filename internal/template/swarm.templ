@@ -87,8 +87,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	createFilter();
 
-
-
 	function toggleBlur(elements) {
 		elements.forEach((element) => {
 			if (element.getAttribute("filter") === "url(#swarm-blur)") {
@@ -157,50 +155,27 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		})
 	}
 
-	const searchParams = new URLSearchParams(document.location.search);
-
-	for (let i = 0; i < circles.length; i++) {
-		circles[i].setAttribute("data-id", circleIds[i]);
-		circles[i].setAttribute("data-merge-request-id", circleMergeRequestIds[i]);
+	function debounce(func, wait) {
+    let timeout;
+    return function executedFunction() {
+        const context = this;
+        const args = arguments;
+        const later = function() {
+            timeout = null;
+            func.apply(context, args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 	}
 
-	let size = +circles[0].getAttribute("r");
+	let strokes = [];
+	let lines = [];
+	function highlightSwarmChart(mergeRequestId) {
+		let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+		const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
 
-	let highlightedButton = null; // Variable to keep track of the highlighted button
-
-
-	circles.forEach((circle, i) => {
-		let strokes = [];
-		let lines = [];
-		circle.addEventListener("mouseover", () => {
-			const mergeRequestId = circle.getAttribute("data-merge-request-id");
-			const button = document.querySelector(`button[hx-get="/mr-info/${circle.getAttribute("data-merge-request-id")}"]`);
-
-			if (button) {
-				const rect = button.getBoundingClientRect();
-				const offset = 350; // Magic number
-				const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-				const top = rect.top + scrollTop - offset;
-
-	    		window.scrollTo({ top: top, behavior: 'smooth' });
- 				if (highlightedButton && highlightedButton !== button) {
-                	highlightedButton.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-            	}
-
-				button.classList.add('border-2', 'border-red-500', 'animate-flash-border');
-				highlightedButton = button;
-
-				setTimeout(() => {
-					if (highlightedButton === button) {
-						button.classList.remove('border-2', 'border-red-500', 'animate-flash-border');
-						highlightedButton = null;
-					}
-				}, 3000);
-			}
-
-			let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
-
-			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
+		if (circles.length === 0) return; // TODO: minimap pointer
 
 			toggleBlur(otherCircles);
 
@@ -242,27 +217,97 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			for (let i = 0; i < circles.length; i++) {
 				moveToTop(circles[i]);
 			}
+	}
+
+	function clearSwarmChart(mergeRequestId) {
+		const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
+		const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
+
+		if (circles.length === 0) return; // TODO: minimap pointer
+		toggleBlur(otherCircles);
+
+		for (let i = 0; i < circles.length; i++) {
+			circles[i].setAttribute("r", size);
+			circles[i].style.stroke = strokes[i];
+			circles[i].style.strokeWidth = "1";
+		}
+		for (let i = 0; i < lines.length; i++) {
+			lines[i].remove();
+		}
+		strokes = [];
+		lines = [];
+	}
+
+	const debouncedScrollTo = debounce(function(top) {
+    	window.scrollTo({ top: top, behavior: 'smooth' });
+	}, 300);
+
+	let highlightedButton = null;
+	let scrollPreviousTop = null;
+	let isScrolling = false;
+
+	window.addEventListener('scroll', () => {
+		if (!isScrolling) {
+        	scrollPreviousTop = window.pageYOffset;
+		}
+    });
+
+
+	function highlightStackList(mergeRequestId) {
+		isScrolling = true;
+		const button = document.querySelector(`button[hx-get="/mr-info/${mergeRequestId}"]`);
+		if (!button) return;
+
+		const grandparentElement = button.parentElement.parentElement;
+
+		if (highlightedButton && highlightedButton !== grandparentElement) {
+			highlightedButton.classList.remove('outline', 'outline-2', 'outline-blue-500', 'outline-offset-2');
+		}
+
+		grandparentElement.classList.add('outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
+		highlightedButton = grandparentElement;
+
+		const rect = grandparentElement.getBoundingClientRect();
+		const offset = 365 + 52; // Magic number
+		scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+		const top = rect.top + scrollTop - offset;
+
+		debouncedScrollTo(top);
+
+	}
+
+	function clearStackList(mergeRequestId) {
+		if (highlightedButton) {
+			highlightedButton.classList.remove('outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
+			highlightedButton = null;
+		}
+
+		debouncedScrollTo(scrollPreviousTop);
+		isScrolling = false;
+	}
+
+	for (let i = 0; i < circles.length; i++) {
+		circles[i].setAttribute("data-id", circleIds[i]);
+		circles[i].setAttribute("data-merge-request-id", circleMergeRequestIds[i]);
+	}
+
+	let size = +circles[0].getAttribute("r");
+
+	circles.forEach((circle, i) => {
+		circle.addEventListener("mouseover", () => {
+			const mergeRequestId = circle.getAttribute("data-merge-request-id");
+
+			highlightSwarmChart(mergeRequestId);
+			highlightStackList(mergeRequestId);
 		});
 
 		circle.addEventListener("mouseout", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
-			const circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 
-			const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
-
-			toggleBlur(otherCircles);
-
-			for (let i = 0; i < circles.length; i++) {
-				circles[i].setAttribute("r", size);
-				circles[i].style.stroke = strokes[i];
-				circles[i].style.strokeWidth = "1";
-			}
-			for (let i = 0; i < lines.length; i++) {
-				lines[i].remove();
-			}
-			strokes = [];
-			lines = [];
+			clearSwarmChart(mergeRequestId);
+			clearStackList(mergeRequestId);
 		});
+
 
 		circle.addEventListener("click", () => {
 			const popover = document.getElementById("mr-info");
@@ -272,8 +317,18 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	});
 
+	const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
+	stackListItems.forEach(button => {
+		const mergeRequestId = button.getAttribute("data-merge-request-id");
 
+		button.addEventListener("mouseover", ()=> {
+			highlightSwarmChart(mergeRequestId);
+		});
 
+		button.addEventListener("mouseout", () => {
+			clearSwarmChart(mergeRequestId);
+		});
+	});
 }
 
 templ swarm(props SwarmProps, nonce string) {
@@ -284,6 +339,5 @@ templ swarm(props SwarmProps, nonce string) {
 			}
 		</style>
 		@swarmChartComponent(props.Series, props.StartOfTheWeek)
-		@getChart("#swarm-chart", "mr-info/", props.EventIds, props.EventMergeRequestIds, props.StartedMergeRequestIds, props.ClosedMergeRequestIds)
 	</div>
 }

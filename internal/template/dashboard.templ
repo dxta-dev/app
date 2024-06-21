@@ -14,10 +14,11 @@ templ DashboardPage(
 	mergeRequestsWaitingForReview MergeRequestStackedListProps,
 	mergeRequestsStale MergeRequestStackedListProps) {
 	@Layout(page, teamPickerProps) {
-		<div class="bg-white sticky top-[64px] z-10 border-b">
+		<div class="bg-white sticky top-[64px] z-10 border-b pt-10 -mt-10 lg:pt-6 lg:-mt-6">
 			@weekNav(weekPickerProps)
 			@swarm(swarmProps, page.Nonce)
 		</div>
+		@mergeRequestStackIcons()
 		if isQueryCurrentWeek {
 			@mergeRequestStackedList(mergeRequestsWaitingForReview)
 			@mergeRequestStackedList(mergeRequestsReadyToMerge)
@@ -36,5 +37,6 @@ templ DashboardPage(
 				@MergeRequestInfo(*mergeRequestInfoProps)
 			}
 		</div>
+		@getChart("#swarm-chart", "mr-info/", swarmProps.EventIds, swarmProps.EventMergeRequestIds, swarmProps.StartedMergeRequestIds, swarmProps.ClosedMergeRequestIds)
 	}
 }

@@ -26,7 +26,7 @@ jobs:
       - name: Setup bun
         uses: oven-sh/setup-bun@f4d14e03ff726c06358e5557344e1da148b56cf7 # v1.2.2
         with:
-          bun-version: 1.1.12
+          bun-version: 1.1.13
 
       - name: Setup go
         uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
@@ -138,7 +138,7 @@ jobs:
         uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
 
       - name: Dry Build Web
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@94f8f8c2eec4bc3f1d78c1755580779804cb87b2 # v6.0.1
         with:
           context: .
           load: true
@@ -146,7 +146,7 @@ jobs:
           tags: ${{ env.TEST_TAG }}
 
       - name: Dry Build Admin
-        uses: docker/build-push-action@ca052bb54ab0790a636c9b5f226502c73d547a25 # v5.4.0
+        uses: docker/build-push-action@94f8f8c2eec4bc3f1d78c1755580779804cb87b2 # v6.0.1
         with:
           context: .
           load: true
