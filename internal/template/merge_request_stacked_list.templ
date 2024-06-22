@@ -69,8 +69,8 @@ var MRStaleIconProps = MRStatusIconProps{
 
 var SeparatorIconProps = SVGProps{
 	Id: "separator-icon",
-	Width: 1,
-	Height: 1,
+	Width: 2,
+	Height: 2,
 }
 
 templ mergeRequestStackIcons() {
@@ -95,6 +95,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 			</button>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				@UseMRStatusIcon(mrStatusIconProps)
+				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
 					<a href={ templ.SafeURL(mrUrl) } class="hover:underline">#{ fmt.Sprintf("%v", canonId) }</a>
 				</p>
