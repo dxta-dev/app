@@ -67,6 +67,12 @@ var MRStaleIconProps = MRStatusIconProps{
 	MRStatus: Stale,
 }
 
+var SeparatorIconProps = SVGProps{
+	Id: "separator-icon",
+	Width: 1,
+	Height: 1,
+}
+
 templ mergeRequestStackIcons() {
 	<div class="hidden">
 		@MRStatusIcon(MRWaitingToBeReviewedIconProps)
@@ -75,6 +81,7 @@ templ mergeRequestStackIcons() {
 		@MRStatusIcon(MRMergedIconProps)
 		@MRStatusIcon(MRClosedIconProps)
 		@MRStatusIcon(MRStaleIconProps)
+		@SeparatorIcon(SeparatorIconProps)
 	</div>
 }
 
@@ -88,11 +95,10 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 			</button>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				@UseMRStatusIcon(mrStatusIconProps)
-				@SeparatorIcon()
 				<p>
 					<a href={ templ.SafeURL(mrUrl) } class="hover:underline">#{ fmt.Sprintf("%v", canonId) }</a>
 				</p>
-				@SeparatorIcon()
+				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
 					<span class="text-lime-700 select-none" title="Code additions">+{ fmt.Sprintf("%v", codeAdditions) }</span><span class="text-red-700 select-none pl-1" title="Code deletions">-{ fmt.Sprintf("%v", codeDeletions) }</span>
 				</p>

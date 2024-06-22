@@ -215,8 +215,34 @@ templ DashboardIcon(props SVGProps) {
 	</svg>
 }
 
-templ SeparatorIcon() {
-	<svg viewBox="0 0 2 2" class="h-0.5 w-0.5 fill-current">
+templ SeparatorIcon(props SVGProps) {
+	<svg
+		if props.Height != 0 {
+			height={ fmt.Sprintf("%d", props.Height) }
+		}
+		if props.Width != 0 {
+			width={ fmt.Sprintf("%d", props.Width) }
+		}
+		if props.Id != "" {
+			id={ props.Id }
+		}
+		viewBox="0 0 2 2"
+		class="h-0.5 w-0.5"
+		fill="currentColor"
+	>
 		<circle cx="1" cy="1" r="1" />
+		</svg>
+}
+
+templ UseSeparatorIcon(props SVGProps) {
+	<svg
+		if props.Height != 0 {
+			height={ fmt.Sprintf("%d", props.Height) }
+		}
+		if props.Width != 0 {
+			width={ fmt.Sprintf("%d", props.Width) }
+		}
+	>
+		<use href={ "#" + props.Id }></use>
 	</svg>
 }
