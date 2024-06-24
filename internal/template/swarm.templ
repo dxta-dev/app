@@ -332,7 +332,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 }
 
 templ swarm(props SwarmProps, nonce string) {
-	<div class="pl-[10px] pr-[15px] pb-2" id="swarm-chart">
+	<div
+		class="overflow-x-auto pl-[10px] pr-[15px] pb-2"
+		id="swarm-chart"
+	>
 		<style nonce={ nonce } text="text/css">
 			svg > circle:hover {
 				cursor: pointer;
