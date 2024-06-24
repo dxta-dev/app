@@ -268,7 +268,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		highlightedButton = grandparentElement;
 
 		const rect = grandparentElement.getBoundingClientRect();
-		const offset = 365 + 64; // Magic number
+		const offset = 372 + 64; // Magic number
 		scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 		const top = rect.top + scrollTop - offset;
 
