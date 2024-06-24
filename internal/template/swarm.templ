@@ -243,15 +243,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}, 300);
 
 	let highlightedButton = null;
-	let scrollPreviousTop = null;
-	let isScrolling = false;
-
-	window.addEventListener('scroll', () => {
-		if (!isScrolling) {
-        	scrollPreviousTop = window.pageYOffset;
-		}
-    });
-
 
 	function highlightStackList(mergeRequestId) {
 		isScrolling = true;
@@ -281,9 +272,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			highlightedButton.classList.remove('outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
 			highlightedButton = null;
 		}
-
-		debouncedScrollTo(scrollPreviousTop);
-		isScrolling = false;
 	}
 
 	for (let i = 0; i < circles.length; i++) {
