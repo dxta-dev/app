@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/XSAM/otelsql v0.31.0
 	github.com/a-h/templ v0.2.707
-	github.com/donseba/go-htmx v1.8.0
+	github.com/donseba/go-htmx v1.9.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
