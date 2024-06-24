@@ -126,7 +126,7 @@ templ SingleEvents(event []data.Event) {
 	<div class="relative flex items-start space-x-3">
 		<div class="relative">
 			<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
-				<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt="User avatar" title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) }/>
+				<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt={ event[0].Actor.Name + "'s avatar" } title={ fmt.Sprint(event[0].Actor.Name) } src={ fmt.Sprint(event[0].Actor.AvatarUrl) }/>
 			</div>
 		</div>
 		<div class="pr-14 min-w-0 flex-1">
@@ -166,12 +166,12 @@ templ SquashedEvents(event []data.Event) {
 						<div class="relative">
 							if len(uniqueActorInfo(event)) == 1 {
 								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
-									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt="User avatar" title={ actor.Name } src={ actor.AvatarUrl } />
+									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl } />
 								</div>
 							} else {
 								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
 									<dd>
-										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" alt="User avatar" title={ actor.Name } src={ actor.AvatarUrl } />
+										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl } />
 									</dd>
 								</div>
 							}

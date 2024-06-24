@@ -110,7 +110,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 				<dt class="sr-only">Commenters</dt>
 				for _, actor := range actors {
 					<dd>
-						<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url }/>
+						<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url } alt={ actor.Name + "'s avatar" }/>
 					</dd>
 				}
 			</div>
