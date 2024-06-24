@@ -19,7 +19,6 @@ type ListUserInfo struct {
 }
 
 type MergeRequestListItemData struct {
-  
 	Id               int64
 	Title            string
 	WebUrl           string
@@ -30,7 +29,7 @@ type MergeRequestListItemData struct {
 	LastEventAt      time.Time
 	LastSwarmEventAt time.Time
 	LastEventWeek    string
-	Actors        []ListUserInfo
+	Actors           []ListUserInfo
 }
 
 const mrListDataSelect = `mr.id,
@@ -41,7 +40,7 @@ const mrListDataSelect = `mr.id,
 	metrics.code_deletion,
 	metrics.review_depth,
 	MAX(events.timestamp) as last_event_ts,
-  COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
+  	COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
 	author.id, author.avatar_url, author.name, author.bot,
 	merger.id, merger.avatar_url, merger.name, merger.bot,
 	approver1.id,  approver1.avatar_url,  approver1.name,  approver1.bot,

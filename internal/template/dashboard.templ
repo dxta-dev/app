@@ -1,5 +1,6 @@
 package template
 
+
 templ DashboardPage(
 	page *Page,
 	swarmProps SwarmProps,
@@ -37,6 +38,6 @@ templ DashboardPage(
 				@MergeRequestInfo(*mergeRequestInfoProps)
 			}
 		</div>
-		@getChart("#swarm-chart", "mr-info/", swarmProps.EventIds, swarmProps.EventMergeRequestIds, swarmProps.StartedMergeRequestIds, swarmProps.ClosedMergeRequestIds)
+		@getChart("#swarm-chart", "mr-info/", swarmProps.EventIds, swarmProps.EventMergeRequestIds, swarmProps.StartedMergeRequestIds, swarmProps.ClosedMergeRequestIds, weekPickerProps.CurrentWeek)
 	}
 }
