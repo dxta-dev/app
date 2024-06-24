@@ -1,0 +1,59 @@
+package template
+
+import (
+	"fmt"
+)
+
+templ DebugInfoPopoverContent(page *Page) {
+	<li
+		id="debug-info-content"
+		class="cursor-default select-none p-4 text-sm text-gray-900"
+		if page.Boosted {
+			hx-swap-oob="true"
+		}
+	>
+		<div class="flex flex-col">
+			<div class="flex justify-between">
+				<p class="font-semibold">You are in DEBUG MODE</p>
+				<span>
+					<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+						<path
+							fill-rule="evenodd"
+							d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+							clip-rule="evenodd"
+						></path>
+					</svg>
+				</span>
+			</div>
+			<p class="mt-2 text-gray-500">RouteId: { page.RouteId }</p>
+			<p class="mt-2 text-gray-500">HxBoost: { fmt.Sprint(page.Boosted) }</p>
+			<p class="mt-2 text-gray-500">CacheBust: { fmt.Sprint(page.CacheBust) }</p>
+		</div>
+	</li>
+}
+
+templ DebugInfoPopover(page *Page) {
+	if page.Boosted {
+		@DebugInfoPopoverContent(page)
+	} else {
+		<div class="relative">
+			<ul id="debug-info" popover="manual" class="absolute sticky left-24 bottom-4 z-50 mt-2 w-72 divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+				@DebugInfoPopoverContent(page)
+			</ul>
+		</div>
+	}
+}
+
+templ DebugInfoTrigger() {
+	<div class="flex flex-col items-center">
+		<button title="Debug mode" popovertarget="debug-info" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold">
+			<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path
+					fill-rule="evenodd"
+					d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
+					clip-rule="evenodd"
+				></path>
+			</svg>
+		</button>
+	</div>
+}

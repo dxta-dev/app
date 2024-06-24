@@ -11,13 +11,15 @@ import (
 
 const iMAX_USER_AVATARS_LEN = 6
 
-type UserAvatarUrl struct {
+type ListUserInfo struct {
 	UserId int64
 	Url    string
+	Name   string
 	Bot    bool
 }
 
 type MergeRequestListItemData struct {
+  
 	Id               int64
 	Title            string
 	WebUrl           string
@@ -28,7 +30,7 @@ type MergeRequestListItemData struct {
 	LastEventAt      time.Time
 	LastSwarmEventAt time.Time
 	LastEventWeek    string
-	UserAvatarUrls   []string
+	Actors        []ListUserInfo
 }
 
 const mrListDataSelect = `mr.id,
@@ -39,39 +41,39 @@ const mrListDataSelect = `mr.id,
 	metrics.code_deletion,
 	metrics.review_depth,
 	MAX(events.timestamp) as last_event_ts,
-    COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
-	author.id, author.avatar_url, author.bot,
-	merger.id, merger.avatar_url, merger.bot,
-	approver1.id,  approver1.avatar_url,  approver1.bot,
-	approver2.id,  approver2.avatar_url,  approver2.bot,
-	approver3.id,  approver3.avatar_url,  approver3.bot,
-	approver4.id,  approver4.avatar_url,  approver4.bot,
-	approver5.id,  approver5.avatar_url,  approver5.bot,
-	approver6.id,  approver6.avatar_url,  approver6.bot,
-	approver7.id,  approver7.avatar_url,  approver7.bot,
-	approver8.id,  approver8.avatar_url,  approver8.bot,
-	approver9.id,  approver9.avatar_url,  approver9.bot,
-	approver10.id, approver10.avatar_url, approver10.bot,
-	committer1.id,  committer1.avatar_url,  committer1.bot,
-	committer2.id,  committer2.avatar_url,  committer2.bot,
-	committer3.id,  committer3.avatar_url,  committer3.bot,
-	committer4.id,  committer4.avatar_url,  committer4.bot,
-	committer5.id,  committer5.avatar_url,  committer5.bot,
-	committer6.id,  committer6.avatar_url,  committer6.bot,
-	committer7.id,  committer7.avatar_url,  committer7.bot,
-	committer8.id,  committer8.avatar_url,  committer8.bot,
-	committer9.id,  committer9.avatar_url,  committer9.bot,
-	committer10.id, committer10.avatar_url, committer10.bot,
-	reviewer1.id,  reviewer1.avatar_url,  reviewer1.bot,
-	reviewer2.id,  reviewer2.avatar_url,  reviewer2.bot,
-	reviewer3.id,  reviewer3.avatar_url,  reviewer3.bot,
-	reviewer4.id,  reviewer4.avatar_url,  reviewer4.bot,
-	reviewer5.id,  reviewer5.avatar_url,  reviewer5.bot,
-	reviewer6.id,  reviewer6.avatar_url,  reviewer6.bot,
-	reviewer7.id,  reviewer7.avatar_url,  reviewer7.bot,
-	reviewer8.id,  reviewer8.avatar_url,  reviewer8.bot,
-	reviewer9.id,  reviewer9.avatar_url,  reviewer9.bot,
-	reviewer10.id, reviewer10.avatar_url, reviewer10.bot`
+  COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
+	author.id, author.avatar_url, author.name, author.bot,
+	merger.id, merger.avatar_url, merger.name, merger.bot,
+	approver1.id,  approver1.avatar_url,  approver1.name,  approver1.bot,
+	approver2.id,  approver2.avatar_url,  approver2.name,  approver2.bot,
+	approver3.id,  approver3.avatar_url,  approver3.name,  approver3.bot,
+	approver4.id,  approver4.avatar_url,  approver4.name,  approver4.bot,
+	approver5.id,  approver5.avatar_url,  approver5.name,  approver5.bot,
+	approver6.id,  approver6.avatar_url,  approver6.name,  approver6.bot,
+	approver7.id,  approver7.avatar_url,  approver7.name,  approver7.bot,
+	approver8.id,  approver8.avatar_url,  approver8.name,  approver8.bot,
+	approver9.id,  approver9.avatar_url,  approver9.name,  approver9.bot,
+	approver10.id, approver10.avatar_url, approver10.name, approver10.bot,
+	committer1.id,  committer1.avatar_url,  committer1.name,  committer1.bot,
+	committer2.id,  committer2.avatar_url,  committer2.name,  committer2.bot,
+	committer3.id,  committer3.avatar_url,  committer3.name,  committer3.bot,
+	committer4.id,  committer4.avatar_url,  committer4.name,  committer4.bot,
+	committer5.id,  committer5.avatar_url,  committer5.name,  committer5.bot,
+	committer6.id,  committer6.avatar_url,  committer6.name,  committer6.bot,
+	committer7.id,  committer7.avatar_url,  committer7.name,  committer7.bot,
+	committer8.id,  committer8.avatar_url,  committer8.name,  committer8.bot,
+	committer9.id,  committer9.avatar_url,  committer9.name,  committer9.bot,
+	committer10.id, committer10.avatar_url, committer10.name, committer10.bot,
+	reviewer1.id,  reviewer1.avatar_url,  reviewer1.name,  reviewer1.bot,
+	reviewer2.id,  reviewer2.avatar_url,  reviewer2.name,  reviewer2.bot,
+	reviewer3.id,  reviewer3.avatar_url,  reviewer3.name,  reviewer3.bot,
+	reviewer4.id,  reviewer4.avatar_url,  reviewer4.name,  reviewer4.bot,
+	reviewer5.id,  reviewer5.avatar_url,  reviewer5.name,  reviewer5.bot,
+	reviewer6.id,  reviewer6.avatar_url,  reviewer6.name,  reviewer6.bot,
+	reviewer7.id,  reviewer7.avatar_url,  reviewer7.name,  reviewer7.bot,
+	reviewer8.id,  reviewer8.avatar_url,  reviewer8.name,  reviewer8.bot,
+	reviewer9.id,  reviewer9.avatar_url,  reviewer9.name,  reviewer9.bot,
+	reviewer10.id, reviewer10.avatar_url, reviewer10.name, reviewer10.bot`
 
 const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
@@ -114,7 +116,7 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
-func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []UserAvatarUrl, rows *sql.Rows) error {
+func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows) error {
 	var lastEventMilli int64
 	var lastSwarmEventAt int64
 
@@ -128,38 +130,38 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []U
 		&item.ReviewDepth,
 		&lastEventMilli,
 		&lastSwarmEventAt,
-		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Bot,
-		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Bot,
-		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Bot,
-		&userAvatars[3].UserId, &userAvatars[3].Url, &userAvatars[3].Bot,
-		&userAvatars[4].UserId, &userAvatars[4].Url, &userAvatars[4].Bot,
-		&userAvatars[5].UserId, &userAvatars[5].Url, &userAvatars[5].Bot,
-		&userAvatars[6].UserId, &userAvatars[6].Url, &userAvatars[6].Bot,
-		&userAvatars[7].UserId, &userAvatars[7].Url, &userAvatars[7].Bot,
-		&userAvatars[8].UserId, &userAvatars[8].Url, &userAvatars[8].Bot,
-		&userAvatars[9].UserId, &userAvatars[9].Url, &userAvatars[9].Bot,
-		&userAvatars[10].UserId, &userAvatars[10].Url, &userAvatars[10].Bot,
-		&userAvatars[11].UserId, &userAvatars[11].Url, &userAvatars[11].Bot,
-		&userAvatars[12].UserId, &userAvatars[12].Url, &userAvatars[12].Bot,
-		&userAvatars[13].UserId, &userAvatars[13].Url, &userAvatars[13].Bot,
-		&userAvatars[14].UserId, &userAvatars[14].Url, &userAvatars[14].Bot,
-		&userAvatars[15].UserId, &userAvatars[15].Url, &userAvatars[15].Bot,
-		&userAvatars[16].UserId, &userAvatars[16].Url, &userAvatars[16].Bot,
-		&userAvatars[17].UserId, &userAvatars[17].Url, &userAvatars[17].Bot,
-		&userAvatars[18].UserId, &userAvatars[18].Url, &userAvatars[18].Bot,
-		&userAvatars[19].UserId, &userAvatars[19].Url, &userAvatars[19].Bot,
-		&userAvatars[20].UserId, &userAvatars[20].Url, &userAvatars[20].Bot,
-		&userAvatars[21].UserId, &userAvatars[21].Url, &userAvatars[21].Bot,
-		&userAvatars[22].UserId, &userAvatars[22].Url, &userAvatars[22].Bot,
-		&userAvatars[23].UserId, &userAvatars[23].Url, &userAvatars[23].Bot,
-		&userAvatars[24].UserId, &userAvatars[24].Url, &userAvatars[24].Bot,
-		&userAvatars[25].UserId, &userAvatars[25].Url, &userAvatars[25].Bot,
-		&userAvatars[26].UserId, &userAvatars[26].Url, &userAvatars[26].Bot,
-		&userAvatars[27].UserId, &userAvatars[27].Url, &userAvatars[27].Bot,
-		&userAvatars[28].UserId, &userAvatars[28].Url, &userAvatars[28].Bot,
-		&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Bot,
-		&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Bot,
-		&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Bot,
+		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Name, &userAvatars[0].Bot,
+		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Name, &userAvatars[1].Bot,
+		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Name, &userAvatars[2].Bot,
+		&userAvatars[3].UserId, &userAvatars[3].Url, &userAvatars[3].Name, &userAvatars[3].Bot,
+		&userAvatars[4].UserId, &userAvatars[4].Url, &userAvatars[4].Name, &userAvatars[4].Bot,
+		&userAvatars[5].UserId, &userAvatars[5].Url, &userAvatars[5].Name, &userAvatars[5].Bot,
+		&userAvatars[6].UserId, &userAvatars[6].Url, &userAvatars[6].Name, &userAvatars[6].Bot,
+		&userAvatars[7].UserId, &userAvatars[7].Url, &userAvatars[7].Name, &userAvatars[7].Bot,
+		&userAvatars[8].UserId, &userAvatars[8].Url, &userAvatars[8].Name, &userAvatars[8].Bot,
+		&userAvatars[9].UserId, &userAvatars[9].Url, &userAvatars[9].Name, &userAvatars[9].Bot,
+		&userAvatars[10].UserId, &userAvatars[10].Url, &userAvatars[10].Name, &userAvatars[10].Bot,
+		&userAvatars[11].UserId, &userAvatars[11].Url, &userAvatars[11].Name, &userAvatars[11].Bot,
+		&userAvatars[12].UserId, &userAvatars[12].Url, &userAvatars[12].Name, &userAvatars[12].Bot,
+		&userAvatars[13].UserId, &userAvatars[13].Url, &userAvatars[13].Name, &userAvatars[13].Bot,
+		&userAvatars[14].UserId, &userAvatars[14].Url, &userAvatars[14].Name, &userAvatars[14].Bot,
+		&userAvatars[15].UserId, &userAvatars[15].Url, &userAvatars[15].Name, &userAvatars[15].Bot,
+		&userAvatars[16].UserId, &userAvatars[16].Url, &userAvatars[16].Name, &userAvatars[16].Bot,
+		&userAvatars[17].UserId, &userAvatars[17].Url, &userAvatars[17].Name, &userAvatars[17].Bot,
+		&userAvatars[18].UserId, &userAvatars[18].Url, &userAvatars[18].Name, &userAvatars[18].Bot,
+		&userAvatars[19].UserId, &userAvatars[19].Url, &userAvatars[19].Name, &userAvatars[19].Bot,
+		&userAvatars[20].UserId, &userAvatars[20].Url, &userAvatars[20].Name, &userAvatars[20].Bot,
+		&userAvatars[21].UserId, &userAvatars[21].Url, &userAvatars[21].Name, &userAvatars[21].Bot,
+		&userAvatars[22].UserId, &userAvatars[22].Url, &userAvatars[22].Name, &userAvatars[22].Bot,
+		&userAvatars[23].UserId, &userAvatars[23].Url, &userAvatars[23].Name, &userAvatars[23].Bot,
+		&userAvatars[24].UserId, &userAvatars[24].Url, &userAvatars[24].Name, &userAvatars[24].Bot,
+		&userAvatars[25].UserId, &userAvatars[25].Url, &userAvatars[25].Name, &userAvatars[25].Bot,
+		&userAvatars[26].UserId, &userAvatars[26].Url, &userAvatars[26].Name, &userAvatars[26].Bot,
+		&userAvatars[27].UserId, &userAvatars[27].Url, &userAvatars[27].Name, &userAvatars[27].Bot,
+		&userAvatars[28].UserId, &userAvatars[28].Url, &userAvatars[28].Name, &userAvatars[28].Bot,
+		&userAvatars[29].UserId, &userAvatars[29].Url, &userAvatars[29].Name, &userAvatars[29].Bot,
+		&userAvatars[30].UserId, &userAvatars[30].Url, &userAvatars[30].Name, &userAvatars[30].Bot,
+		&userAvatars[31].UserId, &userAvatars[31].Url, &userAvatars[31].Name, &userAvatars[31].Bot,
 	)
 
 	if err != nil {
@@ -224,7 +226,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 	defer rows.Close()
 
 	var mergeRequests []MergeRequestListItemData
-	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+	var userAvatars = make([]ListUserInfo, 2+3*10)
 
 	for rows.Next() {
 		var item MergeRequestListItemData
@@ -235,13 +237,13 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
-			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+			if len(item.Actors) >= iMAX_USER_AVATARS_LEN {
 				break
 			}
 
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
-				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+				item.Actors = append(item.Actors, userAvatar)
 			}
 		}
 
@@ -298,7 +300,7 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 	defer rows.Close()
 
 	var mergeRequests []MergeRequestListItemData
-	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+	var userAvatars = make([]ListUserInfo, 2+3*10)
 
 	for rows.Next() {
 		var item MergeRequestListItemData
@@ -309,13 +311,13 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
-			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+			if len(item.Actors) >= iMAX_USER_AVATARS_LEN {
 				break
 			}
 
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
-				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+				item.Actors = append(item.Actors, userAvatar)
 			}
 		}
 
@@ -383,7 +385,7 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date ti
 	defer rows.Close()
 
 	var mergeRequests []MergeRequestListItemData
-	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+	var userAvatars = make([]ListUserInfo, 2+3*10)
 
 	for rows.Next() {
 		var item MergeRequestListItemData
@@ -394,13 +396,13 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date ti
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
-			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+			if len(item.Actors) >= iMAX_USER_AVATARS_LEN {
 				break
 			}
 
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
-				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+				item.Actors = append(item.Actors, userAvatar)
 			}
 		}
 
@@ -461,7 +463,7 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 	defer rows.Close()
 
 	var mergeRequests []MergeRequestListItemData
-	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+	var userAvatars = make([]ListUserInfo, 2+3*10)
 
 	for rows.Next() {
 		var item MergeRequestListItemData
@@ -472,13 +474,13 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
-			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+			if len(item.Actors) >= iMAX_USER_AVATARS_LEN {
 				break
 			}
 
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
-				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+				item.Actors = append(item.Actors, userAvatar)
 			}
 		}
 
@@ -539,7 +541,7 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 	defer rows.Close()
 
 	var mergeRequests []MergeRequestListItemData
-	var userAvatars = make([]UserAvatarUrl, 2+3*10)
+	var userAvatars = make([]ListUserInfo, 2+3*10)
 
 	for rows.Next() {
 		var item MergeRequestListItemData
@@ -550,13 +552,13 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 
 		uniqueUsersMap := make(map[int64]bool)
 		for _, userAvatar := range userAvatars {
-			if len(item.UserAvatarUrls) >= iMAX_USER_AVATARS_LEN {
+			if len(item.Actors) >= iMAX_USER_AVATARS_LEN {
 				break
 			}
 
 			if userAvatar.UserId != nullUserId && !userAvatar.Bot && !uniqueUsersMap[userAvatar.UserId] {
 				uniqueUsersMap[userAvatar.UserId] = true
-				item.UserAvatarUrls = append(item.UserAvatarUrls, userAvatar.Url)
+				item.Actors = append(item.Actors, userAvatar)
 			}
 		}
 
