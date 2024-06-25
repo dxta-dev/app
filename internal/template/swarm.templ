@@ -243,15 +243,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	}, 300);
 
 	let highlightedButton = null;
-	let scrollPreviousTop = null;
-	let isScrolling = false;
-
-	window.addEventListener('scroll', () => {
-		if (!isScrolling) {
-        	scrollPreviousTop = window.pageYOffset;
-		}
-    });
-
 
 	function highlightStackList(mergeRequestId) {
 		isScrolling = true;
@@ -268,7 +259,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		highlightedButton = grandparentElement;
 
 		const rect = grandparentElement.getBoundingClientRect();
-		const offset = 365 + 64; // Magic number
+		const offset = 372 + 64; // Magic number
 		scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 		const top = rect.top + scrollTop - offset;
 
@@ -281,9 +272,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 			highlightedButton.classList.remove('outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
 			highlightedButton = null;
 		}
-
-		debouncedScrollTo(scrollPreviousTop);
-		isScrolling = false;
 	}
 
 	for (let i = 0; i < circles.length; i++) {
@@ -332,7 +320,10 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 }
 
 templ swarm(props SwarmProps, nonce string) {
-	<div class="pl-[10px] pr-[15px] pb-2" id="swarm-chart">
+	<div
+		class="overflow-x-auto pl-[10px] pr-[15px] pb-2"
+		id="swarm-chart"
+	>
 		<style nonce={ nonce } text="text/css">
 			svg > circle:hover {
 				cursor: pointer;
