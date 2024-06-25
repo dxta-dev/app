@@ -68,8 +68,8 @@ var MRStaleIconProps = MRStatusIconProps{
 }
 
 var SeparatorIconProps = SVGProps{
-	Id: "separator-icon",
-	Width: 2,
+	Id:     "separator-icon",
+	Width:  2,
 	Height: 2,
 }
 
@@ -97,26 +97,32 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 				@UseMRStatusIcon(mrStatusIconProps)
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
+					<span class="sr-only">External pull request</span>
 					<a href={ templ.SafeURL(mrUrl) } class="hover:underline">#{ fmt.Sprintf("%v", canonId) }</a>
 				</p>
 				@UseSeparatorIcon(SeparatorIconProps)
-				<p>
-					<span class="text-lime-700 select-none" title="Code additions">+{ fmt.Sprintf("%v", codeAdditions) }</span><span class="text-red-700 select-none pl-1" title="Code deletions">-{ fmt.Sprintf("%v", codeDeletions) }</span>
-				</p>
+				<div>
+					<span class="sr-only">Code additions</span>
+					<p class="text-lime-700 select-none" title="Code additions">+{ fmt.Sprintf("%v", codeAdditions) }</p>
+				</div>
+				<div>
+					<span class="sr-only">Code deletions</span>
+					<p class="text-red-700 select-none" title="Code deletions">-{ fmt.Sprintf("%v", codeDeletions) }</p>
+				</div>
 			</div>
 		</div>
 		<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
 			<div class="flex -space-x-0.5">
-				<dt class="sr-only">Commenters</dt>
+				<dt class="sr-only">Collaborators</dt>
 				for _, actor := range actors {
 					<dd>
-						<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url }/>
+						<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url } alt={ actor.Name + "'s avatar" }/>
 					</dd>
 				}
 			</div>
 			<div class="flex w-16 gap-x-2.5">
 				<dt>
-					<span class="sr-only">Total reviews</span>
+					<span class="sr-only">Review depth</span>
 					<svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
 					</svg>
