@@ -3,10 +3,14 @@ package data
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/labstack/echo/v4"
 )
 
 const iMAX_USER_AVATARS_LEN = 6
@@ -19,17 +23,19 @@ type ListUserInfo struct {
 }
 
 type MergeRequestListItemData struct {
-	Id                 int64
-	Title              string
-	WebUrl             string
-	CanonId            int64
-	CodeAdditions      int64
-	CodeDeletions      int64
-	ReviewDepth        int64
-	LastEventAt        time.Time
-	LastSwarmEventAt   time.Time
-	LastEventTimestamp int64
-	Actors             []ListUserInfo
+	Id                      int64
+	Title                   string
+	WebUrl                  string
+	CanonId                 int64
+	CodeAdditions           int64
+	CodeDeletions           int64
+	ReviewDepth             int64
+	LastEventAt             time.Time
+	LastSwarmEventAt        time.Time
+	LastEventTimestamp      int64
+	CurrentWeekState        string
+	CurrentMinimapIndicator string
+	Actors                  []ListUserInfo
 }
 
 const mrListDataSelect = `mr.id,
@@ -115,7 +121,29 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
-func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows) error {
+func compareWeeks(week, lastWeek string) string {
+	yearWeek1 := strings.Split(week, "-W")
+	yearWeek2 := strings.Split(lastWeek, "-W")
+
+	year1, err1 := strconv.Atoi(yearWeek1[0])
+	week1, err2 := strconv.Atoi(yearWeek1[1])
+	year2, err3 := strconv.Atoi(yearWeek2[0])
+	week2, err4 := strconv.Atoi(yearWeek2[1])
+
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+		return "error"
+	}
+
+	if year1 == year2 && week1 == week2 {
+		return "curr"
+	} else if year1 > year2 || (year1 == year2 && week1 > week2) {
+		return "prev"
+	} else {
+		return "next"
+	}
+}
+
+func scanMergeRequestListItemRow(r *http.Request, item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows) error {
 	var lastEventMilli int64
 	var lastSwarmEventAt int64
 
@@ -167,9 +195,25 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 		return err
 	}
 
+	currentUrl := r.URL.String()
+
+	parsedUrl, err := url.Parse(currentUrl)
+	if err != nil {
+		return err
+	}
+
+	queryParams := parsedUrl.Query()
+
+	week := queryParams.Get("week")
+	if week == "" {
+		week = util.GetFormattedWeek(time.Now())
+	}
+
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
 	item.LastSwarmEventAt = time.UnixMilli(lastSwarmEventAt)
+
+	item.CurrentMinimapIndicator = compareWeeks(week, util.GetFormattedWeek(item.LastSwarmEventAt))
 
 	item.LastEventTimestamp = item.LastSwarmEventAt.Unix()
 
@@ -185,7 +229,8 @@ const mrListInProgressCondition = `occured_on.week = ?
 	AND author.bot = 0
 	AND user.bot = 0`
 
-func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestInProgressList(c echo.Context, date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	r := c.Request()
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -230,7 +275,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(r, &item, userAvatars, rows); err != nil {
 			return nil, err
 		}
 
@@ -258,7 +303,8 @@ const mrListReadyToMergeCondition = `metrics.approved = 1
 	AND author.bot = 0
 	AND user.bot = 0`
 
-func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestReadyToMergeList(c echo.Context, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	r := c.Request()
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -304,7 +350,7 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(r, &item, userAvatars, rows); err != nil {
 			return nil, err
 		}
 
@@ -340,7 +386,8 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
 			AND events.merge_request_event_type = 9
 		)`
 
-func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestWaitingForReviewList(c echo.Context, teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
+	r := c.Request()
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -389,7 +436,7 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date ti
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(r, &item, userAvatars, rows); err != nil {
 			return nil, err
 		}
 
@@ -418,7 +465,8 @@ AND metrics.closed = 1
 AND author.bot = 0
 AND user.bot = 0`
 
-func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestMergedList(c echo.Context, date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	r := c.Request()
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -467,7 +515,7 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(r, &item, userAvatars, rows); err != nil {
 			return nil, err
 		}
 
@@ -496,7 +544,8 @@ AND metrics.closed = 1
 AND author.bot = 0
 AND user.bot = 0`
 
-func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestClosedList(c echo.Context, date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+	r := c.Request()
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -545,7 +594,7 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(r, &item, userAvatars, rows); err != nil {
 			return nil, err
 		}
 

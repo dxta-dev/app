@@ -340,7 +340,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 	if isQueryCurrentWeek {
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(timeNow, teamMembers, nullRows.UserId)
+		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(c, timeNow, teamMembers, nullRows.UserId)
 		mergeRequestsInProgress.MRStatusIconProps = template.MRInProgressIconProps
 
 		if err != nil {
@@ -349,14 +349,14 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId)
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(c, teamMembers, nullRows.UserId)
 		mergeRequestsReadyToMerge.MRStatusIconProps = template.MRReadyToBeMergedIconProps
 
 		if err != nil {
 			return err
 		}
 
-		mrsInReview, err := store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
+		mrsInReview, err := store.GetMergeRequestWaitingForReviewList(c, teamMembers, timeNow, nullRows.UserId)
 
 		if err != nil {
 			return err
@@ -387,7 +387,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
-	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(date, teamMembers, nullRows.UserId)
+	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(c, date, teamMembers, nullRows.UserId)
 	mergeRequestsMerged.MRStatusIconProps = template.MRMergedIconProps
 
 	if err != nil {
@@ -396,7 +396,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
-	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(date, teamMembers, nullRows.UserId)
+	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(c, date, teamMembers, nullRows.UserId)
 	mergeRequestsClosed.MRStatusIconProps = template.MRClosedIconProps
 
 	if err != nil {

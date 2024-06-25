@@ -64,7 +64,7 @@ func uniqueActorInfo(input []data.Event) []ActorInfo {
 	return uniqueSlice
 }
 
-script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64, startedMergeRequestIds []int64, closedMergeRequestIds []int64, currentWeek string) {
+script getChart(chartId string, endpoint string, circleIds []int64, circleMergeRequestIds []int64, startedMergeRequestIds []int64, closedMergeRequestIds []int64) {
 
 	if (circleIds === null) {
 		return;
@@ -168,43 +168,12 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
     };
 	}
 
-	function compareWeeks(week, lastWeek) {
-    const [year1, week1] = week.split('-W');
-    const [year2, week2] = lastWeek.split('-W');
-
-    const numWeek1 = parseInt(week1, 10);
-    const numWeek2 = parseInt(week2, 10);
-
-	if (year1 === year2 && numWeek1 === numWeek2) {
-        return "curr";
-    } else if (year1 > year2 || (year1 === year2 && numWeek1 > numWeek2)) {
-        return "prev";
-    } else {
-        return "next";
-    }
-}
 
 	let strokes = [];
 	let lines = [];
-	function highlightSwarmChart(mergeRequestId, currentWeek, lastEventWeek) {
+	function highlightSwarmChart(mergeRequestId) {
 		let circles = document.querySelectorAll(`${chartId} > svg > circle[data-merge-request-id="${mergeRequestId}"]`);
 		const otherCircles = document.querySelectorAll(`${chartId} > svg > circle:not([data-merge-request-id="${mergeRequestId}"])`);
-
-		const currentUrl = window.location.href;
-
-			const urlObj = new URL(currentUrl);
-
-			const searchParams = new URLSearchParams(urlObj.search);
-
-			let week = searchParams.get('week');
-
-			if (week === null) {
-				week = currentWeek;
-			}
-
-			const minimapIndicator = compareWeeks(week, lastEventWeek);
-
-			console.log(minimapIndicator);
 
 		if (circles.length === 0) return; // TODO: minimap pointer
 
@@ -328,7 +297,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		circle.addEventListener("mouseover", () => {
 			const mergeRequestId = circle.getAttribute("data-merge-request-id");
 
-			highlightSwarmChart(mergeRequestId, currentWeek);
+			highlightSwarmChart(mergeRequestId);
 			highlightStackList(mergeRequestId);
 		});
 
@@ -354,11 +323,11 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		const lastEventWeek = button.getAttribute('last-event-week');
 
 		button.addEventListener("mouseover", ()=> {
-			highlightSwarmChart(mergeRequestId, currentWeek, lastEventWeek);
+			highlightSwarmChart(mergeRequestId);
 		});
 
 		button.addEventListener("mouseout", () => {
-			clearSwarmChart(mergeRequestId, currentWeek, lastEventWeek);
+			clearSwarmChart(mergeRequestId);
 		});
 	});
 }
