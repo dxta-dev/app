@@ -77,11 +77,11 @@ templ mergeRequestStackIcons() {
 		@MRStatusIcon(MRStaleIconProps)
 	</div>
 }
-templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventWeek string) {
+templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventWeek int64) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-5 sm:flex-nowrap" data-stack-list-item>
 		<div class="w-full pb-4 pl-2">
 			<div>
-				<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) } last-event-week={ fmt.Sprintf("%v", lastEventWeek) }>
+				<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) } data-last-event-timestamp={ fmt.Sprintf("%v", lastEventWeek) }>
 					<p class="text-sm font-semibold leading-6 text-gray-900">
 						{ title }
 					</p>
@@ -142,7 +142,7 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 					mr.CodeDeletions,
 					mr.ReviewDepth,
 					props.MRStatusIconProps,
-					mr.LastEventWeek,
+					mr.LastEventTimestamp,
 				)
 			}
 		</ul>

@@ -19,17 +19,17 @@ type ListUserInfo struct {
 }
 
 type MergeRequestListItemData struct {
-	Id               int64
-	Title            string
-	WebUrl           string
-	CanonId          int64
-	CodeAdditions    int64
-	CodeDeletions    int64
-	ReviewDepth      int64
-	LastEventAt      time.Time
-	LastSwarmEventAt time.Time
-	LastEventWeek    string
-	Actors           []ListUserInfo
+	Id                 int64
+	Title              string
+	WebUrl             string
+	CanonId            int64
+	CodeAdditions      int64
+	CodeDeletions      int64
+	ReviewDepth        int64
+	LastEventAt        time.Time
+	LastSwarmEventAt   time.Time
+	LastEventTimestamp int64
+	Actors             []ListUserInfo
 }
 
 const mrListDataSelect = `mr.id,
@@ -171,7 +171,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 
 	item.LastSwarmEventAt = time.UnixMilli(lastSwarmEventAt)
 
-	item.LastEventWeek = util.GetFormattedWeek(item.LastSwarmEventAt)
+	item.LastEventTimestamp = item.LastSwarmEventAt.Unix()
 
 	return nil
 }
@@ -207,7 +207,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 			%s
 		GROUP BY mr.id;`,
 		mrListDataSelect, mrListTables, mrListInProgressCondition, usersInTeamConditionQuery)
-	fmt.Print(query)
+
 	defer db.Close()
 
 	queryParams := make([]interface{}, len(teamMembers)+2)

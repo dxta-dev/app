@@ -204,6 +204,8 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 			const minimapIndicator = compareWeeks(week, lastEventWeek);
 
+			console.log(minimapIndicator);
+
 		if (circles.length === 0) return; // TODO: minimap pointer
 
 			toggleBlur(otherCircles);
