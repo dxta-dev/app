@@ -85,6 +85,49 @@ templ mergeRequestStackIcons() {
 	</div>
 }
 
+templ mergeRequestStackMRStatus(props MRStatusIconProps) {
+	<span
+		if props.MRStatus == WaitingToBeReviewed {
+			title="Waiting for review"
+		}
+		if props.MRStatus == ReadyToBeMerged {
+			title="Ready to merge"
+		}
+		if props.MRStatus == InProgress {
+			title="In progress"
+		}
+		if props.MRStatus == Merged {
+			title="Merged"
+		}
+		if props.MRStatus == Closed {
+			title="Closed"
+		}
+		if props.MRStatus == Stale {
+			title="Stale"
+		}
+	>
+		if props.MRStatus == WaitingToBeReviewed {
+			<span class="sr-only">Waiting for review</span>
+		}
+		if props.MRStatus == ReadyToBeMerged {
+			<span class="sr-only">Ready to merge</span>
+		}
+		if props.MRStatus == InProgress {
+			<span class="sr-only">In progress</span>
+		}
+		if props.MRStatus == Merged {
+			<span class="sr-only">Merged</span>
+		}
+		if props.MRStatus == Closed {
+			<span class="sr-only">Closed</span>
+		}
+		if props.MRStatus == Stale {
+			<span class="sr-only">Stale</span>
+		}
+		@UseMRStatusIcon(props)
+	</span>
+}
+
 templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-3 m-2 sm:flex-nowrap" data-stack-list-item>
 		<div class="pl-2">
@@ -94,7 +137,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 				</p>
 			</button>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-				@UseMRStatusIcon(mrStatusIconProps)
+				@mergeRequestStackMRStatus(mrStatusIconProps)
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
 					<span class="sr-only">External pull request</span>
@@ -122,7 +165,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 			</div>
 			<div class="flex w-16 gap-x-2.5">
 				<dt>
-					<span class="sr-only">Total reviews</span>
+					<span class="sr-only">Review depth</span>
 					<svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.76c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.076-4.076a1.526 1.526 0 011.037-.443 48.282 48.282 0 005.68-.494c1.584-.233 2.707-1.626 2.707-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0012 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018z"></path>
 					</svg>

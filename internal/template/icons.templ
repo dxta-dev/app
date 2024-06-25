@@ -33,12 +33,8 @@ templ UseMRStatusIcon(props MRStatusIconProps) {
 		if props.SVGProps.Width != 0 {
 			width={ fmt.Sprintf("%d", props.SVGProps.Width) }
 		}
-		role="img"
 	>
 		<use href={ "#" + props.SVGProps.Id }></use>
-		if props.MRStatus == WaitingToBeReviewed {
-			<title>Waiting for review</title>
-		}
 	</svg>
 }
 
