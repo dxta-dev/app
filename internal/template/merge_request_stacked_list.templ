@@ -85,49 +85,6 @@ templ mergeRequestStackIcons() {
 	</div>
 }
 
-templ mergeRequestStackMRStatus(props MRStatusIconProps) {
-	<span
-		if props.MRStatus == WaitingToBeReviewed {
-			title="Waiting for review"
-		}
-		if props.MRStatus == ReadyToBeMerged {
-			title="Ready to merge"
-		}
-		if props.MRStatus == InProgress {
-			title="In progress"
-		}
-		if props.MRStatus == Merged {
-			title="Merged"
-		}
-		if props.MRStatus == Closed {
-			title="Closed"
-		}
-		if props.MRStatus == Stale {
-			title="Stale"
-		}
-	>
-		if props.MRStatus == WaitingToBeReviewed {
-			<span class="sr-only">Waiting for review</span>
-		}
-		if props.MRStatus == ReadyToBeMerged {
-			<span class="sr-only">Ready to merge</span>
-		}
-		if props.MRStatus == InProgress {
-			<span class="sr-only">In progress</span>
-		}
-		if props.MRStatus == Merged {
-			<span class="sr-only">Merged</span>
-		}
-		if props.MRStatus == Closed {
-			<span class="sr-only">Closed</span>
-		}
-		if props.MRStatus == Stale {
-			<span class="sr-only">Stale</span>
-		}
-		@UseMRStatusIcon(props)
-	</span>
-}
-
 templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-3 m-2 sm:flex-nowrap" data-stack-list-item>
 		<div class="pl-2">
@@ -137,7 +94,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 				</p>
 			</button>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
-				@mergeRequestStackMRStatus(mrStatusIconProps)
+				@UseMRStatusIcon(mrStatusIconProps)
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
 					<span class="sr-only">External pull request</span>
