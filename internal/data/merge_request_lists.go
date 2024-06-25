@@ -43,7 +43,6 @@ const mrListDataSelect = `mr.id,
 	metrics.code_deletion,
 	metrics.review_depth,
 	MAX(events.timestamp) as last_event_ts,
-  	COALESCE(MAX(CASE WHEN events.merge_request_event_type IN (2, 7, 9, 11, 15) THEN events.timestamp END), 0) AS last_swarm_event_ts,
 	author.id, author.avatar_url, author.name, author.bot,
 	merger.id, merger.avatar_url, merger.name, merger.bot,
 	approver1.id,  approver1.avatar_url,  approver1.name,  approver1.bot,
@@ -142,7 +141,6 @@ func compareWeeks(week, lastWeek string) string {
 
 func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows, week string) error {
 	var lastEventMilli int64
-	var lastSwarmEventAt int64
 
 	err := rows.Scan(
 		&item.Id,
@@ -153,7 +151,6 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 		&item.CodeDeletions,
 		&item.ReviewDepth,
 		&lastEventMilli,
-		&lastSwarmEventAt,
 		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Name, &userAvatars[0].Bot,
 		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Name, &userAvatars[1].Bot,
 		&userAvatars[2].UserId, &userAvatars[2].Url, &userAvatars[2].Name, &userAvatars[2].Bot,
@@ -194,7 +191,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
-	item.LastSwarmEventAt = time.UnixMilli(lastSwarmEventAt)
+	item.LastSwarmEventAt = time.UnixMilli(lastEventMilli)
 
 	item.CurrentMinimapIndicator = compareWeeks(week, util.GetFormattedWeek(item.LastSwarmEventAt))
 
@@ -279,7 +276,9 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 	return mergeRequests, nil
 }
 
-const mrListReadyToMergeCondition = `metrics.approved = 1
+const mrListReadyToMergeCondition = `
+	events.merge_request_event_type IN (2, 7, 9, 11, 15)
+AND metrics.approved = 1
 	AND metrics.merged = 0
 	AND metrics.closed = 0
 	AND author.bot = 0
@@ -353,7 +352,9 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 	return mergeRequests, nil
 }
 
-const mrListWaitingForReviewCondition = `metrics.reviewed = 0
+const mrListWaitingForReviewCondition = `
+	events.merge_request_event_type IN (2, 7, 9, 11, 15)
+	AND	metrics.reviewed = 0
 		AND metrics.approved = 0
   	AND metrics.merged = 0
   	AND metrics.closed = 0
