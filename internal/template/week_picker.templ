@@ -35,7 +35,7 @@ templ weekPicker(props WeekPickerProps) {
 					onclick="document.getElementById('week-picker').showPicker()"
 				>
 					<div class="inline-flex items-center px-3 py-2">
-						<p>{ props.StartEndWeekDates }</p>
+						<label class="cursor-pointer" for="week-picker">{ props.StartEndWeekDates }</label>
 					</div>
 					<span class="sr-only">Select week</span>
 					@ChevronIcon(Down)
