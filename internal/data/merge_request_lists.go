@@ -3,7 +3,6 @@ package data
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -117,22 +116,17 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
-func compareWeeks(week, lastWeek string) string {
-	yearWeek1 := strings.Split(week, "-W")
-	yearWeek2 := strings.Split(lastWeek, "-W")
+func compareWeeks(week string, lastEventDate time.Time) string {
 
-	year1, err1 := strconv.Atoi(yearWeek1[0])
-	week1, err2 := strconv.Atoi(yearWeek1[1])
-	year2, err3 := strconv.Atoi(yearWeek2[0])
-	week2, err4 := strconv.Atoi(yearWeek2[1])
+	firstWeekDate, lastWeekDate, err := util.ParseYearWeek(week)
 
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		return "error"
+	if err != nil {
+		return ""
 	}
 
-	if year1 == year2 && week1 == week2 {
+	if util.Between(lastEventDate, firstWeekDate, lastWeekDate) {
 		return "curr"
-	} else if year1 > year2 || (year1 == year2 && week1 > week2) {
+	} else if firstWeekDate.After(lastEventDate) {
 		return "prev"
 	} else {
 		return "next"
@@ -191,11 +185,9 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
-	item.LastSwarmEventAt = time.UnixMilli(lastEventMilli)
+	item.CurrentMinimapIndicator = compareWeeks(week, item.LastEventAt)
 
-	item.CurrentMinimapIndicator = compareWeeks(week, util.GetFormattedWeek(item.LastSwarmEventAt))
-
-	item.LastEventTimestamp = item.LastSwarmEventAt.Unix()
+	item.LastEventTimestamp = item.LastEventAt.Unix()
 
 	return nil
 }

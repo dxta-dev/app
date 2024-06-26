@@ -94,6 +94,10 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
 }
 
+func Between(t, start, end time.Time) bool {
+	return !t.Before(start) && !t.After(end)
+}
+
 func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	parts := strings.Split(yw, "-W")
 	if len(parts) != 2 {
