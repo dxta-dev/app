@@ -142,3 +142,20 @@ func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 
 	return startOfWeek, endOfWeek, nil
 }
+
+func CompareWeeks(week string, lastEventDate time.Time) string {
+
+	firstWeekDate, lastWeekDate, err := ParseYearWeek(week)
+
+	if err != nil {
+		return ""
+	}
+
+	if Between(lastEventDate, firstWeekDate, lastWeekDate) {
+		return "curr"
+	} else if firstWeekDate.After(lastEventDate) {
+		return "prev"
+	} else {
+		return "next"
+	}
+}
