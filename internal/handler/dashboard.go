@@ -349,7 +349,7 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId)
+		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId, queriedWeek)
 		mergeRequestsReadyToMerge.MRStatusIconProps = template.MRReadyToBeMergedIconProps
 
 		if err != nil {

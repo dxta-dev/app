@@ -85,11 +85,11 @@ templ mergeRequestStackIcons() {
 	</div>
 }
 
-templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps) {
+templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventTimestamp int64, minimapState string) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-3 m-2 sm:flex-nowrap" data-stack-list-item>
 		<div class="pl-2">
-			<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) }>
-				<p class="text-sm font-semibold leading-6 text-gray-900">
+			<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) } data-last-event-timestamp={ fmt.Sprintf("%v", lastEventTimestamp) }  data-minimap-indicator={ fmt.Sprintf("%v", minimapState) }>
+			<p class="text-sm font-semibold leading-6 text-gray-900">
 					{ title }
 				</p>
 			</button>
@@ -133,6 +133,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 	</li>
 }
 
+
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 	<div id={ props.Id }>
 		<div class="border-b border-gray-200 pb-3 pt-3 bg-white sticky top-[380px]">
@@ -152,8 +153,11 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 					mr.CodeDeletions,
 					mr.ReviewDepth,
 					props.MRStatusIconProps,
+					mr.LastEventTimestamp,
+					mr.CurrentMinimapIndicator,
 				)
 			}
 		</ul>
 	</div>
 }
+

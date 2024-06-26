@@ -19,15 +19,19 @@ type ListUserInfo struct {
 }
 
 type MergeRequestListItemData struct {
-	Id            int64
-	Title         string
-	WebUrl        string
-	CanonId       int64
-	CodeAdditions int64
-	CodeDeletions int64
-	ReviewDepth   int64
-	LastEventAt   time.Time
-	Actors        []ListUserInfo
+	Id                      int64
+	Title                   string
+	WebUrl                  string
+	CanonId                 int64
+	CodeAdditions           int64
+	CodeDeletions           int64
+	ReviewDepth             int64
+	LastEventAt             time.Time
+	LastSwarmEventAt        time.Time
+	LastEventTimestamp      int64
+	CurrentWeekState        string
+	CurrentMinimapIndicator string
+	Actors                  []ListUserInfo
 }
 
 const mrListDataSelect = `mr.id,
@@ -112,7 +116,24 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
-func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows) error {
+func compareWeeks(week string, lastEventDate time.Time) string {
+
+	firstWeekDate, lastWeekDate, err := util.ParseYearWeek(week)
+
+	if err != nil {
+		return ""
+	}
+
+	if !lastEventDate.Before(firstWeekDate) && !lastEventDate.After(lastWeekDate) {
+		return "curr"
+	} else if firstWeekDate.After(lastEventDate) {
+		return "prev"
+	} else {
+		return "next"
+	}
+}
+
+func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows, week string) error {
 	var lastEventMilli int64
 
 	err := rows.Scan(
@@ -163,6 +184,10 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 	}
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
+
+	item.CurrentMinimapIndicator = compareWeeks(week, item.LastEventAt)
+
+	item.LastEventTimestamp = item.LastEventAt.Unix()
 
 	return nil
 }
@@ -221,7 +246,7 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows, week); err != nil {
 			return nil, err
 		}
 
@@ -243,13 +268,15 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 	return mergeRequests, nil
 }
 
-const mrListReadyToMergeCondition = `metrics.approved = 1
+const mrListReadyToMergeCondition = `
+	events.merge_request_event_type IN (2, 7, 9, 11, 15)
+AND metrics.approved = 1
 	AND metrics.merged = 0
 	AND metrics.closed = 0
 	AND author.bot = 0
 	AND user.bot = 0`
 
-func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
+func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId int64, week string) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
 	if len(teamMembers) > 0 {
 		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
@@ -295,7 +322,7 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows, week); err != nil {
 			return nil, err
 		}
 
@@ -317,7 +344,9 @@ func (s *Store) GetMergeRequestReadyToMergeList(teamMembers []int64, nullUserId 
 	return mergeRequests, nil
 }
 
-const mrListWaitingForReviewCondition = `metrics.reviewed = 0
+const mrListWaitingForReviewCondition = `
+	events.merge_request_event_type IN (2, 7, 9, 11, 15)
+	AND	metrics.reviewed = 0
 		AND metrics.approved = 0
   	AND metrics.merged = 0
   	AND metrics.closed = 0
@@ -328,7 +357,7 @@ const mrListWaitingForReviewCondition = `metrics.reviewed = 0
 			FROM transform_merge_request_events AS events
 			JOIN transform_dates AS occured_on ON occured_on.id = events.occured_on
 			WHERE occured_on.week = ?
-			AND events.merge_request_event_type = 9			
+			AND events.merge_request_event_type = 9
 		)`
 
 func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date time.Time, nullUserId int64) ([]MergeRequestListItemData, error) {
@@ -380,7 +409,7 @@ func (s *Store) GetMergeRequestWaitingForReviewList(teamMembers []int64, date ti
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows, week); err != nil {
 			return nil, err
 		}
 
@@ -458,7 +487,7 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows, week); err != nil {
 			return nil, err
 		}
 
@@ -536,7 +565,7 @@ func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, n
 	for rows.Next() {
 		var item MergeRequestListItemData
 
-		if err := scanMergeRequestListItemRow(&item, userAvatars, rows); err != nil {
+		if err := scanMergeRequestListItemRow(&item, userAvatars, rows, week); err != nil {
 			return nil, err
 		}
 
