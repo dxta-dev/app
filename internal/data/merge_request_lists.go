@@ -116,6 +116,23 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS reviewer9   ON reviewer9.id  = u.reviewer9
 	JOIN transform_forge_users AS reviewer10  ON reviewer10.id = u.reviewer10`
 
+func compareWeeks(week string, lastEventDate time.Time) string {
+
+	firstWeekDate, lastWeekDate, err := util.ParseYearWeek(week)
+
+	if err != nil {
+		return ""
+	}
+
+	if !lastEventDate.Before(firstWeekDate) && !lastEventDate.After(lastWeekDate) {
+		return "curr"
+	} else if firstWeekDate.After(lastEventDate) {
+		return "prev"
+	} else {
+		return "next"
+	}
+}
+
 func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []ListUserInfo, rows *sql.Rows, week string) error {
 	var lastEventMilli int64
 
@@ -168,7 +185,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 
 	item.LastEventAt = time.UnixMilli(lastEventMilli)
 
-	item.CurrentMinimapIndicator = util.CompareWeeks(week, item.LastEventAt)
+	item.CurrentMinimapIndicator = compareWeeks(week, item.LastEventAt)
 
 	item.LastEventTimestamp = item.LastEventAt.Unix()
 
