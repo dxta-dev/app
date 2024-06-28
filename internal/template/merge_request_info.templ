@@ -52,30 +52,28 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 }
 
 templ MergeRequestHeader(props MergeRequestInfoProps) {
-	<div class="sticky top-0 z-20 h-24 bg-white">
-		<div class="flex top-0 h-[60px] p-1 justify-between items-center">
-			<h2 id="mr-info-header" class="pt-16 w-96 text-center text-lg font-semibold leading-6 text-gray-900 mb-10 mx-auto">
-				{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }
-
-				(
-				<a class="text-blue-600 flex" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">
+	<div class="bg-white sticky top-0 z-20 px-4 py-6 sm:px-6">
+		<div class="flex items-start justify-between space-x-3">
+			<div class="space-y-1">
+				<p class="text-sm text-gray-500">
+					<a class="flex items-center" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">
 					#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }
 					@OpenInNewTabIcon()
-				</a>
-				)
-			</h2>
-			<div class="pt-4">
-				<button
-					type="button"
+					</a>
+				</p>
+				<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }</h2>
+			</div>
+			<div class="flex h-7 items-center">
+				<button 
+					type="button" 
 					id="mr-info-hide-btn"
-					class="relative rounded-md text-black-300 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white inline-block pt-4 p-2"
+					class="relative text-gray-400 hover:text-gray-500"
 					popovertarget="mr-info"
-					popovertargetaction="hide"
-				>
+					popovertargetaction="hide">
+					<span class="absolute -inset-2.5"></span>
 					<span class="sr-only">Close panel</span>
 					@CrossIcon()
 				</button>
-				@ClosePopover()
 			</div>
 		</div>
 	</div>
@@ -166,12 +164,12 @@ templ SquashedEvents(event []data.Event) {
 						<div class="relative">
 							if len(uniqueActorInfo(event)) == 1 {
 								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
-									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl } />
+									<img class="flex h-10 w-10 items-center justify-center rounded-full bg-gray-400 ring-8 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl }/>
 								</div>
 							} else {
 								<div class="text-smallP text-darkMain dark:text-grayLight font-bold uppercase leading-5">
 									<dd>
-										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl } />
+										<img class="flex h-6 w-6 items-center justify-center rounded-full bg-gray-400 ring-2 ring-white" alt={ actor.Name + "'s avatar" } title={ actor.Name } src={ actor.AvatarUrl }/>
 									</dd>
 								</div>
 							}
