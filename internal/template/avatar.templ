@@ -8,13 +8,19 @@ import (
 templ avatarComponent(actors []data.ListUserInfo) {
 	<div class="flex -space-x-0.5">
 		<dt class="sr-only">Commenters</dt>
-		for _, actor := range actors {
+		for i, actor := range actors {
+			if i <= 4 {
+				<dd>
+					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url } alt={ actor.Name + "'s avatar" }/>
+				</dd>
+			}
+		}
+		if len(actors) > 5 {
 			<dd>
-				<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" src={ fmt.Sprint(actor.Url) } alt="Emma Dorsey"/>
+				<div class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-gray-200 flex items-center justify-center">
+					<span class="text-xs font-medium text-gray-600">{ fmt.Sprintf("+%v", len(actors) - 2) }</span>
+				</div>
 			</dd>
 		}
-		<dd>
-			<div class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white flex items-center justify-center"></div>
-		</dd>
 	</div>
 }
