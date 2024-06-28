@@ -56,20 +56,24 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<p class="text-sm text-gray-500">
-					<a class="flex items-center" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">
-					#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }
-					@OpenInNewTabIcon()
-					</a>
+					{ props.Events[0][0].Repo.Org }/{ props.Events[0][0].Repo.Name }
 				</p>
 				<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }</h2>
+				<p class="text-sm text-gray-500">
+					<a class="flex items-center" href={ templ.URL(props.Events[0][0].MergeRequestUrl) } target="_blank">
+						#{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestCanonId) }
+						@OpenInNewTabIcon()
+					</a>
+				</p>
 			</div>
 			<div class="flex h-7 items-center">
-				<button 
-					type="button" 
+				<button
+					type="button"
 					id="mr-info-hide-btn"
 					class="relative text-gray-400 hover:text-gray-500"
 					popovertarget="mr-info"
-					popovertargetaction="hide">
+					popovertargetaction="hide"
+				>
 					<span class="absolute -inset-2.5"></span>
 					<span class="sr-only">Close panel</span>
 					@CrossIcon()
