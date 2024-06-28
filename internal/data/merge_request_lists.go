@@ -11,6 +11,11 @@ import (
 
 const iMAX_USER_AVATARS_LEN = 6
 
+type RepositoryInfo struct {
+	Name string
+	Org  string
+}
+
 type ListUserInfo struct {
 	UserId int64
 	Url    string
@@ -20,6 +25,7 @@ type ListUserInfo struct {
 
 type MergeRequestListItemData struct {
 	Id                      int64
+	Repo                    RepositoryInfo
 	Title                   string
 	WebUrl                  string
 	CanonId                 int64
@@ -41,6 +47,8 @@ const mrListDataSelect = `mr.id,
 	metrics.code_addition,
 	metrics.code_deletion,
 	metrics.review_depth,
+	repos.name,
+	repos.namespace_name,
 	MAX(events.timestamp) as last_event_ts,
 	author.id, author.avatar_url, author.name, author.bot,
 	merger.id, merger.avatar_url, merger.name, merger.bot,
@@ -80,6 +88,7 @@ const mrListTables = `transform_merge_request_events AS events
 	JOIN transform_forge_users AS user ON user.id = events.actor
 	JOIN transform_merge_requests AS mr ON mr.id = events.merge_request
 	JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
+	JOIN transform_repositories as repos ON repos.id = metrics.repository
 	JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
 	JOIN transform_merge_request_fact_dates_junk AS dj ON dj.id = metrics.dates_junk
 	JOIN transform_dates AS last_updated_at ON last_updated_at.id = dj.last_updated_at
@@ -144,6 +153,8 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 		&item.CodeAdditions,
 		&item.CodeDeletions,
 		&item.ReviewDepth,
+		&item.Repo.Name,
+		&item.Repo.Org,
 		&lastEventMilli,
 		&userAvatars[0].UserId, &userAvatars[0].Url, &userAvatars[0].Name, &userAvatars[0].Bot,
 		&userAvatars[1].UserId, &userAvatars[1].Url, &userAvatars[1].Name, &userAvatars[1].Bot,

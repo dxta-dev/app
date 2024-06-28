@@ -85,7 +85,7 @@ templ mergeRequestStackIcons() {
 	</div>
 }
 
-templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventTimestamp int64, minimapState string) {
+templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventTimestamp int64, minimapState string, repo data.RepositoryInfo) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-3 m-2 sm:flex-nowrap" data-stack-list-item>
 		<div class="pl-2">
 			<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) } data-last-event-timestamp={ fmt.Sprintf("%v", lastEventTimestamp) }  data-minimap-indicator={ fmt.Sprintf("%v", minimapState) }>
@@ -95,6 +95,10 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 			</button>
 			<div class="mt-1 flex items-center gap-x-2 text-xs leading-5 text-gray-500">
 				@UseMRStatusIcon(mrStatusIconProps)
+				@UseSeparatorIcon(SeparatorIconProps)
+				<p>
+					{repo.Org}/{repo.Name}
+				</p>
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
 					<span class="sr-only">External pull request</span>
@@ -148,6 +152,7 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 					props.MRStatusIconProps,
 					mr.LastEventTimestamp,
 					mr.CurrentMinimapIndicator,
+					mr.Repo,
 				)
 			}
 		</ul>
