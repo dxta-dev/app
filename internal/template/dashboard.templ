@@ -17,7 +17,6 @@ templ DashboardPage(
 		<div class="bg-white sticky top-[64px] z-10 border-b pt-6">
 			@weekNav(weekPickerProps)
 			@swarm(swarmProps, page.Nonce)
-			@avatarComponent()
 		</div>
 		@mergeRequestStackIcons()
 		if isQueryCurrentWeek {
