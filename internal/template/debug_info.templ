@@ -1,59 +1,38 @@
 package template
 
 import (
-	"fmt"
+	"strconv"
 )
 
-templ DebugInfoPopoverContent(page *Page) {
-	<li
-		id="debug-info-content"
-		class="cursor-default select-none p-4 text-sm text-gray-900"
-		if page.Boosted {
-			hx-swap-oob="true"
-		}
-	>
-		<div class="flex flex-col">
-			<div class="flex justify-between">
-				<p class="font-semibold">You are in DEBUG MODE</p>
-				<span>
-					<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-						<path
-							fill-rule="evenodd"
-							d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-							clip-rule="evenodd"
-						></path>
-					</svg>
-				</span>
-			</div>
-			<p class="mt-2 text-gray-500">RouteId: { page.RouteId }</p>
-			<p class="mt-2 text-gray-500">HxBoost: { fmt.Sprint(page.Boosted) }</p>
-			<p class="mt-2 text-gray-500">CacheBust: { fmt.Sprint(page.CacheBust) }</p>
+templ DebugInfo(page *Page) {
+	<button popovertarget="debug-popover" class="bg-red-50 p-4 flex">
+		<svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+			<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"></path>
+		</svg>
+		&nbsp;
+		<span class="text-sm text-red-700">
+			If you haven't noticed, this is running in debug mode.
+		</span>
+	</button>
+	<div id="debug-popover" class="max-w-[50%] p-8 shadow-lg bg-red-50" popover>
+		<div class="px-4 sm:px-0">
+			<p class="text-base font-semibold leading-7 text-red-700">PAGE INFO</p>
 		</div>
-	</li>
-}
-
-templ DebugInfoPopover(page *Page) {
-	if page.Boosted {
-		@DebugInfoPopoverContent(page)
-	} else {
-		<div class="relative">
-			<ul id="debug-info" popover="manual" class="absolute sticky left-24 bottom-4 z-50 mt-2 w-72 divide-y divide-gray-200 overflow-hidden rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-				@DebugInfoPopoverContent(page)
-			</ul>
+		<div class="mt-6 border-t border-gray-100">
+			<dl class="divide-y divide-gray-100">
+				<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+					<dt class="text-sm font-medium leading-6 text-red-700">RouteId</dt>
+					<dd class="mt-1 text-sm leading-6 text-red-400 sm:col-span-2 sm:mt-0">{ page.RouteId }</dd>
+				</div>
+				<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+					<dt class="text-sm font-medium leading-6 text-red-700">Boosted</dt>
+					<dd class="mt-1 text-sm leading-6 text-red-400 sm:col-span-2 sm:mt-0">{ strconv.FormatBool(page.Boosted) }</dd>
+				</div>
+				<div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+					<dt class="text-sm font-medium leading-6 text-red-700">Requested</dt>
+					<dd class="mt-1 text-sm leading-6 text-red-400 sm:col-span-2 sm:mt-0">{ strconv.FormatBool(page.Requested) }</dd>
+				</div>
+			</dl>
 		</div>
-	}
-}
-
-templ DebugInfoTrigger() {
-	<div class="flex flex-col items-center">
-		<button title="Debug mode" popovertarget="debug-info" class="text-gray-400 hover:text-white hover:bg-gray-800 group flex gap-x-3 rounded-md p-3 text-sm leading-6 font-semibold">
-			<svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-				<path
-					fill-rule="evenodd"
-					d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z"
-					clip-rule="evenodd"
-				></path>
-			</svg>
-		</button>
 	</div>
 }
