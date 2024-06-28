@@ -40,9 +40,6 @@ templ Layout(page *Page, props TeamPickerProps) {
 	<html>
 		@Head(page.Title, page.CacheBust, page.Nonce)
 		<body>
-			if page.DebugMode {
-				@DebugInfoPopover(page)
-			}
 			<div id="app">
 				@NewNavigation(page, props)
 				@Content(page) {
@@ -99,9 +96,6 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 		<div class="flex h-16 shrink-0 items-center justify-center">
 			<!-- logo goes here -->
 		</div>
-		if page.DebugMode {
-			@DebugInfoTrigger()
-		}
 		<nav
 			hx-boost="true"
 			hx-target="#app"
@@ -115,6 +109,12 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			</ul>
 		</nav>
 	</div>
-	@teamPicker(props)
+	<div class="lg:pl-20 sticky top-0 z-10">
+		<div class="sticky top-0 right-0 z-40 flex justify-end h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+			if page.DebugMode {
+				@DebugInfo(page)
+			}
+			@teamPicker(props)
+		</div>
+	</div>
 }
-
