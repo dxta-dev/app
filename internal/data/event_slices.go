@@ -54,6 +54,7 @@ type Event struct {
 	MergeRequestCanonId int64
 	MergeRequestTitle   string
 	MergeRequestUrl     string
+	Repo                RepositoryInfo
 	HtmlUrl             string
 }
 
@@ -91,12 +92,16 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 			mr.canon_id,
 			mr.title,
 			mr.web_url,
+			repo.name,
+			repo.namespace_name,
 			ev.timestamp,
 			ev.merge_request_event_type,
 			ev.html_url
 		FROM transform_merge_request_events AS ev
 		JOIN transform_forge_users AS user ON user.id = ev.actor
 		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
+		JOIN transform_merge_request_metrics AS metric ON metric.merge_request = mr.id
+		JOIN transform_repositories AS repo ON repo.id = metric.repository
 		WHERE ev.merge_request =?
 		AND user.bot = 0
 		AND ev.timestamp IS NOT 0
@@ -118,6 +123,7 @@ func (s *Store) GetMergeRequestEvents(mrId int64) ([][]Event, []string, error) {
 			&event.Id,
 			&event.Actor.Id, &event.Actor.ProfileUrl, &event.Actor.AvatarUrl, &event.Actor.Name,
 			&event.MergeRequestId, &event.MergeRequestCanonId, &event.MergeRequestTitle, &event.MergeRequestUrl,
+			&event.Repo.Name, &event.Repo.Org,
 			&event.Timestamp, &event.Type, &event.HtmlUrl,
 		); err != nil {
 			log.Fatal(err)
