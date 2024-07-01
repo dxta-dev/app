@@ -10,38 +10,38 @@ type WeekPickerProps struct {
 }
 
 templ weekPicker(props WeekPickerProps) {
-<div class="text-center">
-    <form class="m-0" hx-boost="true" hx-trigger="change">
-        <input
-            class="w-0"
-            id="week-picker"
-            hx-target="body"
-            hx-swap="innerHTML show:unset"
-            hx-get="/"
-            type="week"
-            name="week"
-            value="{props.Week}"
-            max="{props.CurrentWeek}"
-        />
-        <div class="inline-flex">
-            <button
-                type="button"
-                class="inline-flex items-center p-2"
-                aria-haspopup="listbox"
-                aria-expanded="true"
-                aria-labelledby="listbox-label"
-                onclick="document.getElementById('week-picker').showPicker()"
-            >
-                <div class="inline-flex items-center px-3 py-2">
-                    <label class="cursor-pointer" for="week-picker">{props.StartEndWeekDates}</label>
-                </div>
-                <span class="sr-only">Select week</span>
-                @ChevronIcon(Down)
-            </button>
-        </div>
-    </form>
-</div>
-
+	<div class="text-center">
+		<form class="m-0" hx-boost="true" hx-trigger="change">
+			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
+			<input
+				class="w-0"
+				id="week-picker"
+				hx-target="body"
+				hx-swap="innerHTML show:unset"
+				hx-get="/"
+				type="week"
+				name="week"
+				value={ props.Week }
+				max={ props.CurrentWeek }
+			/>
+			<div class="inline-flex">
+				<button
+					type="button"
+					class="inline-flex items-center p-2"
+					aria-haspopup="listbox"
+					aria-expanded="true"
+					aria-labelledby="listbox-label"
+					onclick="document.getElementById('week-picker').showPicker()"
+				>
+					<div class="inline-flex items-center px-3 py-2">
+						<label class="cursor-pointer" for="week-picker">{ props.StartEndWeekDates }</label>
+					</div>
+					<span class="sr-only">Select week</span>
+					@ChevronIcon(Down)
+				</button>
+			</div>
+		</form>
+	</div>
 }
 
 templ weekNav(props WeekPickerProps) {
