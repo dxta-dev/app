@@ -314,18 +314,36 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		</svg>
 	`;
 
-	stackListItems.forEach(button => {
+	function mapValue(input) {
+		const max1 = 100;
+		const min1 = 0;
+		const output1 = min1 + (max1 - min1) * Math.pow(input, 3);
+
+		const max2 = 20;
+		const min2 = 40;
+		const output2 = min2 + (max2 - min2) * (1 - Math.pow(input, 3));
+
+		return [150 - output1, output2];
+	}
+
+	stackListItems.forEach((button, i) => {
 		const mergeRequestId = button.getAttribute("data-merge-request-id");
 		const currentMinimapIndicator = button.getAttribute('data-minimap-indicator');
 		let svgArrow = null;
 
+		const [x, y] = mapValue(i/stackListItems.length + (i % 2) * 0.5);
+
+
+
+		if (currentMinimapIndicator === 'prev') {
+			svgArrow = getSvgArrow(x, y, false);
+
+			console.log(i / stackListItems.length, i, stackListItems.length)
+		} else if (currentMinimapIndicator === 'next') {
+			svgArrow = getSvgArrow(x, y, true);
+		}
 
 		button.addEventListener("mouseover", ()=> {
-			if (currentMinimapIndicator === 'prev') {
-				svgArrow = getSvgArrow(100, 20, false);
-			} else if (currentMinimapIndicator === 'next') {
-				svgArrow = getSvgArrow(90, 50, true);
-			}
 			if (svgArrow) {
 				swarmChart.insertAdjacentHTML('beforeend', svgArrow);
 			}
