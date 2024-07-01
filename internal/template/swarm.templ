@@ -307,39 +307,52 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
 	const swarmChart = document.getElementById('swarm-chart');
-	const svgArrowLeft = `
-		<svg class="hover-svg" width="20" height="20" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 90px; left: 50px;">
-			<polygon points="2,10 12,2 12,6 18,6 18,14 12,14 12,18" stroke="black" stroke-width="3" fill="black" />
+	const getSvgArrow = (top, dir, isRight) => `
+		<svg data-swarm-minimap width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
+			style="position: absolute; top: ${top}px; ${isRight ? "right" : "left"}: ${dir}px;">
+			<polygon points="90,50 10,90 30,50 10,10" fill="#000000" stroke="#000000" stroke-width="2" ${isRight ? '' : 'transform="rotate(180 50 50)"'}/>
 		</svg>
 	`;
 
-	const svgArrowRight = `
-		<svg class="hover-svg" width="20" height="20" xmlns="http://www.w3.org/2000/svg" style="position: absolute; top: 90px; right: 50px;">
-			<polygon points="18,10 8,2 8,6 2,6 2,14 8,14 8,18" stroke="black" stroke-width="3" fill="black" />
-		</svg>
-	`;
+	function mapValue(input) {
+		const max1 = 100;
+		const min1 = 0;
+		const output1 = min1 + (max1 - min1) * Math.pow(input, 3);
 
-	stackListItems.forEach(button => {
+		const max2 = 20;
+		const min2 = 40;
+		const output2 = min2 + (max2 - min2) * (1 - Math.pow(input, 3));
+
+		return [200 - output1, output2];
+	}
+
+	stackListItems.forEach((button, i) => {
 		const mergeRequestId = button.getAttribute("data-merge-request-id");
-		const lastEventWeek = button.getAttribute('last-event-week');
 		const currentMinimapIndicator = button.getAttribute('data-minimap-indicator');
-		button.addEventListener("mouseover", ()=> {
-			if (currentMinimapIndicator === 'prev') {
-            swarmChart.insertAdjacentHTML('beforeend', svgArrowLeft);
-			} else if (currentMinimapIndicator === 'next') {
-			swarmChart.insertAdjacentHTML('beforeend', svgArrowRight);
-			}
+		let svgArrow = null;
 
+		const [x, y] = mapValue(i/stackListItems.length + (i % 2) * 0.5);
+
+
+
+		if (currentMinimapIndicator === 'prev') {
+			svgArrow = getSvgArrow(x, y, false);
+		} else if (currentMinimapIndicator === 'next') {
+			svgArrow = getSvgArrow(x, y, true);
+		}
+
+		button.addEventListener("mouseover", ()=> {
+			if (svgArrow) {
+				swarmChart.insertAdjacentHTML('beforeend', svgArrow);
+			}
 			highlightSwarmChart(mergeRequestId);
 		});
 
 		button.addEventListener("mouseout", () => {
-
-			const svgElement = swarmChart.querySelector('.hover-svg');
-        if (svgElement) {
-            svgElement.remove();
-        }
-
+			const svgElement = swarmChart.querySelector('[data-swarm-minimap]');
+			if (svgElement) {
+				svgElement.remove();
+			}
 			clearSwarmChart(mergeRequestId);
 		});
 	});
