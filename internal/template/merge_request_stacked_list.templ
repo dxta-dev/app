@@ -97,7 +97,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 				@UseMRStatusIcon(mrStatusIconProps)
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
-					<a href={ templ.SafeURL(fmt.Sprintf("https://github.com/%v/%v", repo.Org, repo.Name)) }>{repo.Org}/{repo.Name}</a>
+					<a href={ templ.SafeURL(fmt.Sprintf("https://github.com/%v/%v", repo.Org, repo.Name)) } class="hover:underline">{repo.Org}/{repo.Name}</a>
 				</p>
 				@UseSeparatorIcon(SeparatorIconProps)
 				<p>
