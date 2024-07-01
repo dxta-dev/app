@@ -337,8 +337,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 		if (currentMinimapIndicator === 'prev') {
 			svgArrow = getSvgArrow(x, y, false);
-
-			console.log(i / stackListItems.length, i, stackListItems.length)
 		} else if (currentMinimapIndicator === 'next') {
 			svgArrow = getSvgArrow(x, y, true);
 		}
