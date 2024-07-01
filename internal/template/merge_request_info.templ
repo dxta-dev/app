@@ -56,7 +56,14 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<p class="text-sm text-gray-500">
-					{ props.Events[0][0].Repo.Org }/{ props.Events[0][0].Repo.Name }
+					<a
+						class="flex items-center"
+						href={ templ.SafeURL(fmt.Sprintf("https://github.com/%v/%v", props.Events[0][0].Repo.Org, props.Events[0][0].Repo.Name)) }
+						target="_blank"
+					>
+						{ props.Events[0][0].Repo.Org }/{ props.Events[0][0].Repo.Name }
+						@OpenInNewTabIcon()
+					</a>
 				</p>
 				<h2 class="text-base font-semibold leading-6 text-gray-900" id="slide-over-title">{ fmt.Sprintf("%v", props.Events[0][0].MergeRequestTitle) }</h2>
 				<p class="text-sm text-gray-500">
