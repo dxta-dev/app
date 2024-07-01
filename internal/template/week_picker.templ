@@ -11,7 +11,7 @@ type WeekPickerProps struct {
 
 templ weekPicker(props WeekPickerProps) {
 	<div class="text-center">
-		<form class="m-0">
+		<form class="m-0" hx-boost="true">
 			//https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/week
 			<input
 				class="w-0"
@@ -46,7 +46,7 @@ templ weekPicker(props WeekPickerProps) {
 }
 
 templ weekNav(props WeekPickerProps) {
-	<div class="grid grid-cols-3 items-center justify-items-stretch">
+	<div class="grid grid-cols-3 items-center justify-items-stretch" hx-boost="true">
 		<div>
 			<a
 				class="inline-flex items-center"
