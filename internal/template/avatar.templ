@@ -5,20 +5,20 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 )
 
-templ avatarComponent(actors []data.ListUserInfo) {
+templ avatarComponent(actors []data.ListUserInfo, circleActors string) {
 	<div class="flex -space-x-0.5">
 		<dt class="sr-only">Commenters</dt>
 		for i, actor := range actors {
-			if i <= 4 {
+			if i <= 1 {
 				<dd>
 					<img class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-white" title={ actor.Name } src={ actor.Url } alt={ actor.Name + "'s avatar" }/>
 				</dd>
 			}
 		}
-		if len(actors) > 5 {
+		if len(actors) > 2 {
 			<dd>
 				<div class="h-6 w-6 rounded-full bg-gray-50 ring-2 ring-gray-200 flex items-center justify-center">
-					<span class="text-xs font-medium text-gray-600">{ fmt.Sprintf("+%v", len(actors) - 5) }</span>
+					<span class="text-xs font-medium text-gray-600" title={ circleActors } >{ fmt.Sprintf("+%v", len(actors) - 2) }</span>
 				</div>
 			</dd>
 		}
