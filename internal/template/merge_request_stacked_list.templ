@@ -2,7 +2,7 @@ package template
 
 import (
 	"github.com/dxta-dev/app/internal/data"
-
+	"strings"
 	"fmt"
 )
 
@@ -73,6 +73,16 @@ var SeparatorIconProps = SVGProps{
 	Height: 2,
 }
 
+func generateCircleActors(actors []data.ListUserInfo) string {
+	var circleActors []string
+	for i, actor := range actors {
+		if i >= 5 {
+			circleActors = append(circleActors, actor.Name)
+		}
+	}
+	return strings.Join(circleActors, "\n")
+}
+
 templ mergeRequestStackIcons() {
 	<div class="hidden">
 		@MRStatusIcon(MRWaitingToBeReviewedIconProps)
@@ -85,7 +95,7 @@ templ mergeRequestStackIcons() {
 	</div>
 }
 
-templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventTimestamp int64, minimapState string, repo data.RepositoryInfo) {
+templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, actors []data.ListUserInfo, codeAdditions int64, codeDeletions int64, reviewDepth int64, mrStatusIconProps MRStatusIconProps, lastEventTimestamp int64, minimapState string, repo data.RepositoryInfo, circleActors string) {
 	<li class="flex flex-wrap items-center justify-between gap-x-6 gap-y-4 py-3 m-2 sm:flex-nowrap" data-stack-list-item>
 		<div class="pl-2">
 			<button type="button" popovertarget="mr-info" hx-get={ fmt.Sprintf("/mr-info/%v", id) } hx-target="#mr-info" class="hover:underline" data-merge-request-id={ fmt.Sprintf("%v", id) } data-last-event-timestamp={ fmt.Sprintf("%v", lastEventTimestamp) } data-minimap-indicator={ fmt.Sprintf("%v", minimapState) }>
@@ -116,7 +126,7 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 			</div>
 		</div>
 		<dl class="flex w-full flex-none justify-between gap-x-8 sm:w-auto">
-			@avatarComponent(actors)
+			@avatarComponent(actors, circleActors)
 			<div class="flex w-16 gap-x-2.5">
 				<dt>
 					<span class="sr-only">Review depth</span>
@@ -152,6 +162,7 @@ templ mergeRequestStackedList(props MergeRequestStackedListProps) {
 					mr.LastEventTimestamp,
 					mr.CurrentMinimapIndicator,
 					mr.Repo,
+					generateCircleActors(mr.Actors),
 				)
 			}
 		</ul>
