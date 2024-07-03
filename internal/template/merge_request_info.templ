@@ -17,6 +17,14 @@ type MergeRequestInfoProps struct {
 script ClosePopover() {
 	const popover = document.getElementById("mr-info");
 
+	document.addEventListener("click", (event) => {
+	const mrInfoShow = document.getElementById("mr-info-show")
+		let clickedInside = mrInfoShow && mrInfoShow.contains(event.target);
+		 if (!clickedInside) {
+            popover.hidePopover();
+        }
+	})
+
 	popover.addEventListener("toggle", (event) => {
 		if (event.newState === "closed") {
 			const searchParams = new URLSearchParams(document.location.search);
@@ -26,8 +34,8 @@ script ClosePopover() {
 			popover.innerHTML = "";
 		}
 	});
-
 }
+
 
 script ShowMrInfo() {
 	const popover = document.getElementById("mr-info");
@@ -39,7 +47,7 @@ templ MergeRequestInfo(props MergeRequestInfoProps) {
 		<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 		<div class="fixed top-20 inset-0 z-10 w-screen">
 			<div class="flex h-4/5 items-end justify-center p-4 text-center sm:items-center sm:p-0">
-				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6">
+				<div class="relative transform overflow-auto h-full rounded-lg bg-white pt-0 px-4 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:px-6 sm:pb-6" id="mr-info-show">
 					if props.ShouldOpenMrInfo {
 						@ShowMrInfo()
 					}
