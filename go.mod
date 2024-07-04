@@ -11,7 +11,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	github.com/wcharczuk/go-chart/v2 v2.1.1
-	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.52.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.53.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.53.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.52.0
 	go.opentelemetry.io/otel v1.28.0
