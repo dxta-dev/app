@@ -267,6 +267,22 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	}
 
+	function calculateWeeksAgo(lastEventTimestamp) {
+		const now = new Date();
+		const eventDate = new Date(parseInt(lastEventTimestamp) * 1000);
+		const diffTime = Math.abs(now - eventDate);
+		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+		const diffWeeks = Math.floor(diffDays / 7);
+
+		if (diffWeeks === 0) {
+			return "This week";
+		} else if (diffWeeks === 1) {
+			return "Last week";
+		} else {
+			return `${diffWeeks} weeks ago`;
+		}
+	}
+
 	function clearStackList(mergeRequestId) {
 		if (highlightedButton) {
 			highlightedButton.classList.remove('outline-none', 'outline-2', 'outline-blue-500', 'outline-offset-2');
@@ -307,11 +323,15 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 	const stackListItems = document.querySelectorAll("[data-stack-list-item] [data-merge-request-id]");
 	const swarmChart = document.getElementById('swarm-chart');
-	const getSvgArrow = (top, dir, isRight) => `
-		<svg data-swarm-minimap width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"
-			style="position: absolute; top: ${top}px; ${isRight ? "right" : "left"}: ${dir}px;">
-			<polygon points="90,50 10,90 30,50 10,10" fill="#000000" stroke="#000000" stroke-width="2" ${isRight ? '' : 'transform="rotate(180 50 50)"'}/>
-		</svg>
+	const getSvgArrow = (top, dir, isRight, text) => `
+		<div data-swarm-minimap style="position: absolute; top: ${top}px; ${isRight ? "right" : "left"}: ${dir}px;">
+			<svg width="20" height="20" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+				<polygon points="90,50 10,90 30,50 10,10" fill="#000000" stroke="#000000" stroke-width="2" ${isRight ? '' : 'transform="rotate(180 50 50)"'}/>
+			</svg>
+			<div style="position: relative; top: 10px; text-align: center; width: 100%;">
+				${text}
+			</div>
+		</div>
 	`;
 
 	function mapValue(input) {
@@ -329,16 +349,17 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	stackListItems.forEach((button, i) => {
 		const mergeRequestId = button.getAttribute("data-merge-request-id");
 		const currentMinimapIndicator = button.getAttribute('data-minimap-indicator');
+		const lastEventTimestamp = button.getAttribute('data-last-event-timestamp');
 		let svgArrow = null;
 
 		const [x, y] = mapValue(i/stackListItems.length + (i % 2) * 0.5);
 
-
+		const arrowText = calculateWeeksAgo(lastEventTimestamp);
 
 		if (currentMinimapIndicator === 'prev') {
-			svgArrow = getSvgArrow(x, y, false);
+			svgArrow = getSvgArrow(x, y, false, arrowText);
 		} else if (currentMinimapIndicator === 'next') {
-			svgArrow = getSvgArrow(x, y, true);
+			svgArrow = getSvgArrow(x, y, true, arrowText);
 		}
 
 		button.addEventListener("mouseover", ()=> {
@@ -350,6 +371,7 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 		button.addEventListener("mouseout", () => {
 			const svgElement = swarmChart.querySelector('[data-swarm-minimap]');
+			console.log(svgElement);
 			if (svgElement) {
 				svgElement.remove();
 			}
