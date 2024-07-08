@@ -350,7 +350,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		const max2 = 20;
 		const min2 = 40;
 		const output2 = min2 + (max2 - min2) * (1 - Math.pow(input, 3));
-
 		return [200 - output1, output2];
 	}
 
@@ -360,7 +359,9 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 		const lastEventTimestamp = button.getAttribute('data-last-event-timestamp');
 		let svgArrow = null;
 
-		const [x, y] = mapValue(i/stackListItems.length + (i % 2) * 0.5);
+		const normalizedInput = (i/stackListItems.length + (i % 2) * 0.5) % 1;
+
+		const [x, y] = mapValue(normalizedInput);
 
 		const arrowText = calculateWeeksAgo(lastEventTimestamp);
 
