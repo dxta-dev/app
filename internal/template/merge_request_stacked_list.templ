@@ -141,30 +141,32 @@ templ mergeRequestStack(id int64, title string, mrUrl string, canonId int64, act
 }
 
 templ mergeRequestStackedList(props MergeRequestStackedListProps) {
-	<div id={ props.Id }>
-		<div class="border-b border-gray-200 pb-3 pt-3 bg-white sticky top-[380px]">
-			<div class="flex flex-wrap items-baseline">
-				<div class="text-base font-semibold leading-6 text-gray-900">{ props.Title }</div>
+	if len(props.MergeRequests) != 0 {
+		<div id={ props.Id }>
+			<div class="border-b border-gray-200 pb-3 pt-3 bg-white sticky top-[380px]">
+				<div class="flex flex-wrap items-baseline">
+					<div class="text-base font-semibold leading-6 text-gray-900">{ props.Title }</div>
+				</div>
 			</div>
+			<ul role="list" class="divide-y divide-gray-100">
+				for _, mr := range props.MergeRequests {
+					@mergeRequestStack(
+						mr.Id,
+						mr.Title,
+						mr.WebUrl,
+						mr.CanonId,
+						mr.Actors,
+						mr.CodeAdditions,
+						mr.CodeDeletions,
+						mr.ReviewDepth,
+						props.MRStatusIconProps,
+						mr.LastEventTimestamp,
+						mr.CurrentMinimapIndicator,
+						mr.Repo,
+						generateCircleActors(mr.Actors),
+					)
+				}
+			</ul>
 		</div>
-		<ul role="list" class="divide-y divide-gray-100">
-			for _, mr := range props.MergeRequests {
-				@mergeRequestStack(
-					mr.Id,
-					mr.Title,
-					mr.WebUrl,
-					mr.CanonId,
-					mr.Actors,
-					mr.CodeAdditions,
-					mr.CodeDeletions,
-					mr.ReviewDepth,
-					props.MRStatusIconProps,
-					mr.LastEventTimestamp,
-					mr.CurrentMinimapIndicator,
-					mr.Repo,
-					generateCircleActors(mr.Actors),
-				)
-			}
-		</ul>
-	</div>
+	}
 }
