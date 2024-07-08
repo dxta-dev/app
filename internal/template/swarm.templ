@@ -270,18 +270,26 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 	function calculateWeeksAgo(lastEventTimestamp) {
 		const now = new Date();
 		const eventDate = new Date(parseInt(lastEventTimestamp) * 1000);
-		const diffTime = Math.abs(now - eventDate);
+
+		const adjustToMonday = (date) => {
+			const day = date.getDay();
+			const diff = (day === 0 ? -6 : 1) - day;
+			return new Date(date.setDate(date.getDate() + diff));
+		};
+
+		const nowAdjusted = adjustToMonday(new Date(now));
+		const eventDateAdjusted = adjustToMonday(new Date(eventDate));
+
+		const diffTime = Math.abs(nowAdjusted - eventDateAdjusted);
 		const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 		const diffWeeks = Math.floor(diffDays / 7);
-
-		if (diffWeeks === 0) {
-			return "This week";
-		} else if (diffWeeks === 1) {
+		if (diffWeeks === 1) {
 			return "Last week";
 		} else {
 			return `${diffWeeks} weeks ago`;
 		}
 	}
+
 
 	function clearStackList(mergeRequestId) {
 		if (highlightedButton) {
@@ -371,7 +379,6 @@ script getChart(chartId string, endpoint string, circleIds []int64, circleMergeR
 
 		button.addEventListener("mouseout", () => {
 			const svgElement = swarmChart.querySelector('[data-swarm-minimap]');
-			console.log(svgElement);
 			if (svgElement) {
 				svgElement.remove();
 			}
