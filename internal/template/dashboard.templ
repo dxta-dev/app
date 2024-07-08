@@ -21,13 +21,23 @@ templ DashboardPage(
 		</div>
 		@mergeRequestStackIcons()
 		if isQueryCurrentWeek {
-			@mergeRequestStackedList(mergeRequestsWaitingForReview)
-			@mergeRequestStackedList(mergeRequestsReadyToMerge)
-			@mergeRequestStackedList(mergeRequestsInProgress)
+			if len(mergeRequestsWaitingForReview.MergeRequests) !=  0 {
+				@mergeRequestStackedList(mergeRequestsWaitingForReview)
+			}
+			if len(mergeRequestsReadyToMerge.MergeRequests) != 0 {
+				@mergeRequestStackedList(mergeRequestsReadyToMerge)
+			}
+			if len(mergeRequestsInProgress.MergeRequests) != 0 {
+				@mergeRequestStackedList(mergeRequestsInProgress)
+			}
 		}
-		@mergeRequestStackedList(mergeRequestsMerged)
-		@mergeRequestStackedList(mergeRequestsClosed)
-		if isQueryCurrentWeek {
+		if len(mergeRequestsMerged.MergeRequests) != 0 {
+			@mergeRequestStackedList(mergeRequestsMerged)
+		}
+		if len(mergeRequestsClosed.MergeRequests) != 0 {
+			@mergeRequestStackedList(mergeRequestsClosed)
+		}
+		if isQueryCurrentWeek && len(mergeRequestsStale.MergeRequests) != 0 {
 			@mergeRequestStackedList(mergeRequestsStale)
 		}
 		<div
