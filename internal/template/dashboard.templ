@@ -25,8 +25,9 @@ templ DashboardPage(
 			@mergeRequestStackedList(mergeRequestsReadyToMerge)
 			@mergeRequestStackedList(mergeRequestsInProgress)
 		}
-		@mergeRequestStackedList(mergeRequestsMerged)
-		@mergeRequestStackedList(mergeRequestsClosed)
+			@mergeRequestStackedList(mergeRequestsMerged)
+			@mergeRequestStackedList(mergeRequestsClosed)
+
 		if isQueryCurrentWeek {
 			@mergeRequestStackedList(mergeRequestsStale)
 		}
