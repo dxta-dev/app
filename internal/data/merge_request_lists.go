@@ -525,7 +525,12 @@ AND events.merge_request_event_type = 7
 AND metrics.merged = 0
 AND metrics.closed = 1
 AND author.bot = 0
-AND user.bot = 0`
+AND user.bot = 0
+  AND events.timestamp = (
+      SELECT MAX(e2.timestamp)
+      FROM transform_merge_request_events e2
+      WHERE e2.merge_request = events.merge_request
+  )`
 
 func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""
