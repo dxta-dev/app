@@ -204,7 +204,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 }
 
 const mrListInProgressCondition = `occured_on.week = ?
-	AND events.merge_request_event_type IN (9, 10)
+	AND events.merge_request_event_type IN (9)
 	AND metrics.approved = 0
 	AND metrics.merged = 0
 	AND metrics.closed = 0
@@ -528,6 +528,7 @@ AND events.timestamp = (
   	SELECT MAX(e2.timestamp)
     FROM transform_merge_request_events e2
     WHERE e2.merge_request = events.merge_request
+	AND e2.merge_request_event_type = 7
 )`
 
 func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
