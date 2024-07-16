@@ -205,7 +205,6 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 
 const mrListInProgressCondition = `occured_on.week = ?
 	AND events.merge_request_event_type = 9
-	AND metrics.reviewed = 0
 	AND metrics.approved = 0
 	AND metrics.merged = 0
 	AND metrics.closed = 0
@@ -521,11 +520,15 @@ func (s *Store) GetMergeRequestMergedList(date time.Time, teamMembers []int64, n
 }
 
 const mrListClosedCondition = `occured_on.week = ?
-AND events.merge_request_event_type = 7
 AND metrics.merged = 0
 AND metrics.closed = 1
 AND author.bot = 0
-AND user.bot = 0`
+AND user.bot = 0
+AND events.timestamp = (
+  	SELECT MAX(e2.timestamp)
+    FROM transform_merge_request_events e2
+    WHERE e2.merge_request = events.merge_request
+)`
 
 func (s *Store) GetMergeRequestClosedList(date time.Time, teamMembers []int64, nullUserId int64) ([]MergeRequestListItemData, error) {
 	usersInTeamConditionQuery := ""

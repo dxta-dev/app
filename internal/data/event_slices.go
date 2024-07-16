@@ -223,25 +223,37 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 	week := util.GetFormattedWeek(date)
 
 	query := fmt.Sprintf(`
+		WITH ClosedEvents AS (
+			SELECT
+				ev.id,
+				ev.merge_request,
+				ev.timestamp,
+				ROW_NUMBER() OVER (PARTITION BY ev.merge_request ORDER BY ev.timestamp DESC) AS rn
+			FROM transform_merge_request_events AS ev
+			WHERE ev.merge_request_event_type = 7
+		)
 		SELECT
-		ev.id,
-		user.id,
-		mr.id,
-		mr.title,
-		mr.web_url,
-		ev.timestamp,
-		ev.merge_request_event_type
-	FROM transform_merge_request_events AS ev
-	JOIN transform_dates AS date ON date.id = ev.occured_on
-	JOIN transform_forge_users AS user ON user.id = ev.actor
-	JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
-	JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
-	JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
-	JOIN transform_forge_users AS author ON author.id = u.author
-	WHERE date.week = ?
-	AND ev.merge_request_event_type IN (2, 7, 9, 15)
-	AND author.bot = 0
-	AND user.bot = 0
+			ev.id,
+			user.id AS user_id,
+			mr.id AS mr_id,
+			mr.title,
+			mr.web_url,
+			ev.timestamp,
+			ev.merge_request_event_type
+		FROM transform_merge_request_events AS ev
+		JOIN transform_dates AS date ON date.id = ev.occured_on
+		JOIN transform_forge_users AS user ON user.id = ev.actor
+		JOIN transform_merge_requests AS mr ON mr.id = ev.merge_request
+		JOIN transform_merge_request_metrics AS metrics ON metrics.merge_request = mr.id
+		JOIN transform_merge_request_fact_users_junk AS u ON u.id = metrics.users_junk
+		JOIN transform_forge_users AS author ON author.id = u.author
+		LEFT JOIN ClosedEvents AS ce ON ce.merge_request = ev.merge_request AND ce.id = ev.id
+		WHERE date.week = ?
+		AND ev.merge_request_event_type IN (2, 7, 9, 15)
+		OR (ev.merge_request_event_type = 7 AND ce.rn = 1)
+		AND author.bot = 0
+		AND user.bot = 0;
+
 	%s;
 		`, usersInTeamConditionQuery)
 
