@@ -204,7 +204,7 @@ func scanMergeRequestListItemRow(item *MergeRequestListItemData, userAvatars []L
 }
 
 const mrListInProgressCondition = `occured_on.week = ?
-	AND events.merge_request_event_type = 9
+	AND events.merge_request_event_type IN (9, 10)
 	AND metrics.approved = 0
 	AND metrics.merged = 0
 	AND metrics.closed = 0
@@ -274,6 +274,12 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 
 		mergeRequests = append(mergeRequests, item)
 	}
+
+	for _, mr := range mergeRequests {
+		fmt.Printf("%v ", mr.Id)
+	}
+
+	fmt.Print("MergeRequestInProgressList: ")
 
 	return mergeRequests, nil
 }
