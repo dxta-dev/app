@@ -275,12 +275,6 @@ func (s *Store) GetMergeRequestInProgressList(date time.Time, teamMembers []int6
 		mergeRequests = append(mergeRequests, item)
 	}
 
-	for _, mr := range mergeRequests {
-		fmt.Printf("%v ", mr.Id)
-	}
-
-	fmt.Print("MergeRequestInProgressList: ")
-
 	return mergeRequests, nil
 }
 
