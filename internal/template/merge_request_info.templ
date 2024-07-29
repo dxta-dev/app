@@ -64,6 +64,7 @@ templ MergeRequestHeader(props MergeRequestInfoProps) {
 		<div class="flex items-start justify-between space-x-3">
 			<div class="space-y-1">
 				<p class="text-sm text-gray-500">
+				// this code is problematic
 					<a
 						class="flex items-center"
 						href={ templ.SafeURL(fmt.Sprintf("https://github.com/%v/%v", props.Events[0][0].Repo.Org, props.Events[0][0].Repo.Name)) }
