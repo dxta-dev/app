@@ -40,6 +40,7 @@ type MergeRequestListItemData struct {
 	Actors                  []ListUserInfo
 }
 
+// this is hard to maintain
 const mrListDataSelect = `mr.id,
 	mr.title,
 	mr.web_url,
