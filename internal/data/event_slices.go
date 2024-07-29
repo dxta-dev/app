@@ -249,10 +249,9 @@ func (s *Store) GetEventSlices(date time.Time, teamMembers []int64) (EventSlice,
 		JOIN transform_forge_users AS author ON author.id = u.author
 		LEFT JOIN ClosedEvents AS ce ON ce.merge_request = ev.merge_request AND ce.id = ev.id
 		WHERE date.week = ?
-		AND ev.merge_request_event_type IN (2, 7, 9, 15)		
+		AND (ev.merge_request_event_type IN (2, 9, 15) OR (ev.merge_request_event_type = 7 AND ce.rn = 1))
 		AND author.bot = 0
 		AND user.bot = 0
-		OR (ev.merge_request_event_type = 7 AND ce.rn = 1)
 		%s;
 		`, usersInTeamConditionQuery)
 
