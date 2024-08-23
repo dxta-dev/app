@@ -5,7 +5,7 @@ go 1.22.2
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/XSAM/otelsql v0.32.0
-	github.com/a-h/templ v0.2.747
+	github.com/a-h/templ v0.2.771
 	github.com/donseba/go-htmx v1.9.0
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/labstack/echo/v4 v4.12.0
