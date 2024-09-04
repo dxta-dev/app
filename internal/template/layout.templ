@@ -180,93 +180,92 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			@teamPicker(props)
 		</div>
 	</div>
-	<script>
-	// IDEA: Once.XTriggerAnimation -> could be added in the component but shared accross the entire application
-	// XTriggerAnimation should activate on window.document event emission and components that use this feature should emit these events.
-			function triggerAnimation(animationName, onAnimationEnd) {
-				const animatedElements = [...document.querySelectorAll(`[data-animate-${animationName}]`)];
-				const elementsAnimations = animatedElements.map(element => {
-					const animationData = element.getAttribute(`data-animate-${animationName}`);
-					const [from, to] = animationData.split(" -> ");
+	@mobileSidebarScript()
+}
 
-					return [element, from.split(" "), to.split(" ")];
-				});
+script mobileSidebarScript() {
+function triggerAnimation(animationName, onAnimationEnd) {
+	const animatedElements = [...document.querySelectorAll(`[data-animate-${animationName}]`)];
+	const elementsAnimations = animatedElements.map(element => {
+		const animationData = element.getAttribute(`data-animate-${animationName}`);
+		const [from, to] = animationData.split(" -> ");
 
+		return [element, from.split(" "), to.split(" ")];
+	});
+
+	for (const elementAnimation of elementsAnimations) {
+		const [element, from, to] = elementAnimation;
+		element.classList.add(...from);
+	}
+
+	const promiseTransitionEnd = (element) => {
+		return new Promise((resolve, reject) => {
+			const listener = () => {
+				element.removeEventListener('transitionend', listener);
+				resolve();
+			}
+			element.addEventListener('transitionend', listener);
+		});
+	}
+
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+			const transitionEndPromises = [];
+
+			for (const elementAnimation of elementsAnimations) {
+				const [element, from, to] = elementAnimation;
+				transitionEndPromises.push(promiseTransitionEnd(element));
+				element.classList.remove(...from);
+				element.classList.add(...to);
+			}
+
+			Promise.all(transitionEndPromises).then(() => {
 				for (const elementAnimation of elementsAnimations) {
 					const [element, from, to] = elementAnimation;
-					element.classList.add(...from);
+					element.classList.remove(...to);
 				}
+					if (onAnimationEnd) onAnimationEnd();
+			})
+		});
+	});
 
-				const promiseTransitionEnd = (element) => {
-					return new Promise((resolve, reject) => {
-						const listener = () => {
-							element.removeEventListener('transitionend', listener);
-							resolve();
-						}
-						element.addEventListener('transitionend', listener);
-					});
-				}
+}
 
-				requestAnimationFrame(() => {
-					requestAnimationFrame(() => {
-						const transitionEndPromises = [];
+const sidebarContainer = document.getElementById("sidebar-container");
+const sidebarDrawer = document.getElementById("sidebar-drawer");
+const sidebarShowButton = document.getElementById('sidebar-show-button');
+const sidebarCloseButton = document.getElementById('sidebar-close-button');
 
-						for (const elementAnimation of elementsAnimations) {
-							const [element, from, to] = elementAnimation;
-							transitionEndPromises.push(promiseTransitionEnd(element));
-							element.classList.remove(...from);
-							element.classList.add(...to);
-						}
+sidebarShownState = false;
 
-						Promise.all(transitionEndPromises).then(() => {
-							for (const elementAnimation of elementsAnimations) {
-								const [element, from, to] = elementAnimation;
-								element.classList.remove(...to);
-							}
-								if (onAnimationEnd) onAnimationEnd();
-						})
-					});
-				});
+function showSidebar() {
+	if (sidebarShownState) return;
+	sidebarContainer.style.display = '';				
+	triggerAnimation('show-sidebar', ()=> {
+		document.addEventListener('keydown', sidebarEscapeListener);
+		document.addEventListener('click', sidebarClickAwayListener);
+	});
+	sidebarShownState = true;
+}
 
-			}
+function hideSidebar() {
+	if (!sidebarShownState) return;
+	document.removeEventListener('click', sidebarClickAwayListener);
+	document.removeEventListener('keydown', sidebarEscapeListener);
+	triggerAnimation('hide-sidebar', () => { sidebarContainer.style.display = 'none'; });
+	sidebarShownState = false;
+}
 
-			const sidebarContainer = document.getElementById("sidebar-container");
-			const sidebarDrawer = document.getElementById("sidebar-drawer");
-			const sidebarShowButton = document.getElementById('sidebar-show-button');
-			const sidebarCloseButton = document.getElementById('sidebar-close-button');
+function sidebarClickAwayListener(event) {
+	if (sidebarDrawer.contains(event.target)) return;
+	hideSidebar();
+}
 
-			sidebarShownState = false;
+function sidebarEscapeListener(event) {
+	if (event.key !== 'Escape') return;
+	hideSidebar();
+}
 
-			function showSidebar() {
-				if (sidebarShownState) return;
-				sidebarContainer.style.display = '';				
-				triggerAnimation('show-sidebar', ()=> {
-					document.addEventListener('keydown', sidebarEscapeListener);
-					document.addEventListener('click', sidebarClickAwayListener);
-				});
-				sidebarShownState = true;
-			}
-
-			function hideSidebar() {
-				if (!sidebarShownState) return;
-				document.removeEventListener('click', sidebarClickAwayListener);
-				document.removeEventListener('keydown', sidebarEscapeListener);
-				triggerAnimation('hide-sidebar', () => { sidebarContainer.style.display = 'none'; });
-				sidebarShownState = false;
-			}
-
-			function sidebarClickAwayListener(event) {
-				if (sidebarDrawer.contains(event.target)) return;
-				hideSidebar();
-			}
-
-			function sidebarEscapeListener(event) {
-				if (event.key !== 'Escape') return;
-				hideSidebar();
-			}
-
-			sidebarShowButton.addEventListener('click', showSidebar);
-			sidebarCloseButton.addEventListener('click', hideSidebar);
-
-		</script>
+sidebarShowButton.addEventListener('click', showSidebar);
+sidebarCloseButton.addEventListener('click', hideSidebar);
 }
