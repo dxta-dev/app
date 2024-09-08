@@ -10,7 +10,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
-	github.com/wcharczuk/go-chart/v2 v2.1.1
+	github.com/wcharczuk/go-chart/v2 v2.1.2
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.53.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.54.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.53.0
@@ -25,7 +25,6 @@ require (
 
 require (
 	github.com/antlr/antlr4/runtime/Go/antlr/v4 v4.0.0-20230512164433-5d1fd1a340c9 // indirect
-	github.com/blend/go-sdk v1.20220411.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
