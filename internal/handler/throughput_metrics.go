@@ -188,6 +188,10 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks, teamMembers)
 
+	if err != nil {
+		return err
+	}
+
 	totalCodeChangesXValues := make([]float64, len(weeks))
 	totalCodeChangesYValues := make([]float64, len(weeks))
 
@@ -214,8 +218,39 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		FormattedYValues: formattedTotalCodeChangesYValues,
 		InfoText:         fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
 	}
+
+	deployFrequency, averageDeployFrequencyByNWeeks, err := store.GetDeployFrequency(weeks, teamMembers)
+
 	if err != nil {
 		return err
+	}
+
+	deployFrequencyXValues := make([]float64, len(weeks))
+	deployFrequencyYValues := make([]float64, len(weeks))
+
+	for i, week := range weeks {
+		deployFrequencyXValues[i] = float64(i)
+		deployFrequencyYValues[i] = float64(deployFrequency[week].Amount)
+	}
+
+	formattedDeployFrequencyYValues := make([]string, len(deployFrequencyYValues))
+
+	for i, value := range deployFrequencyYValues {
+		formattedDeployFrequencyYValues[i] = util.FormatYAxisValues(value)
+	}
+
+	averageDeployFrequencySeries := template.TimeSeries{
+		Title:   "Deploy Frequency",
+		XValues: deployFrequencyXValues,
+		YValues: deployFrequencyYValues,
+		Weeks:   weeks,
+	}
+
+	averageDeployFrequencySeriesProps := template.TimeSeriesProps{
+		Series:           averageDeployFrequencySeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedDeployFrequencyYValues,
+		InfoText:         fmt.Sprintf("AVG Deploy Frequency per week: %v", util.FormatYAxisValues(averageDeployFrequencyByNWeeks)),
 	}
 
 	props := template.ThroughputMetricsProps{
@@ -224,6 +259,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		MergeFrequencySeriesProps:   averageMergeFrequencySeriesProps,
 		TotalReviewsSeriesProps:     averageReviewsSeriesProps,
 		TotalCodeChangesSeriesProps: averageTotalCodeChangesProps,
+		DeployFrequencySeriesProps:  averageDeployFrequencySeriesProps,
 	}
 
 	var templTeams []template.Team

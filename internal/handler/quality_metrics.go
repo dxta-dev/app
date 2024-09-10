@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -41,25 +42,68 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks, teamMembers)
+	var wg sync.WaitGroup
 
-	if err != nil {
-		return err
+	errCh := make(chan error, 4)
+
+	var (
+		averageMrSize                    map[string]data.AverageMRSizeByWeek
+		averageMrSizeByNWeeks            float64
+		averageReviewDepth               map[string]data.AverageMrReviewDepthByWeek
+		averageReviewDepthByNWeeks       float64
+		mergeRequestWithoutReview        map[string]data.MrCountByWeek
+		averageMrWithoutReviewByNWeeks   float64
+		mergeRequestHandover             map[string]data.AverageHandoverPerMR
+		averageMrHandoverMetricsByNWeeks float64
+	)
+
+	wg.Add(4)
+
+	go func() {
+		defer wg.Done()
+		averageMrSize, averageMrSizeByNWeeks, err = store.GetAverageMRSize(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		averageReviewDepth, averageReviewDepthByNWeeks, err = store.GetAverageReviewDepth(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err = store.GetMRsMergedWithoutReview(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err = store.GetAverageHandoverPerMR(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	wg.Wait()
+
+	close(errCh)
+	for e := range errCh {
+		if e != nil {
+			err = e
+			break
+		}
 	}
-
-	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks, teamMembers)
-
-	if err != nil {
-		return err
-	}
-
-	mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
-
-	if err != nil {
-		return err
-	}
-
-	mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err := store.GetAverageHandoverPerMR(weeks, teamMembers)
 
 	if err != nil {
 		return err

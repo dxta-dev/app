@@ -437,6 +437,89 @@ func (s *Store) GetMergeFrequency(weeks []string, teamMembers []int64) (map[stri
 	return mergeFrequencyByWeek, averageMergeFrequencyByXWeeks, nil
 }
 
-func (s *Store) GetDeployFrequency(weeks []string) (interface{}, error) {
-	return nil, nil
+type DeployFrequencyByWeek struct {
+	Week   string
+	Amount float32
+}
+
+func (s *Store) GetDeployFrequency(weeks []string, teamMembers []int64) (map[string]DeployFrequencyByWeek, float64, error) {
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	query := fmt.Sprintf(`
+		SELECT
+			CAST(COUNT (*) AS REAL) / 7,
+			deploy_dates.week
+		FROM transform_merge_request_metrics AS metrics
+		JOIN transform_merge_request_fact_dates_junk AS dates_junk
+		ON metrics.dates_junk = dates_junk.id
+		JOIN transform_dates AS deploy_dates
+		ON dates_junk.deployed_at = deploy_dates.id
+		JOIN transform_merge_request_fact_users_junk AS uj
+		ON metrics.users_junk = uj.id
+		JOIN transform_forge_users AS author
+		ON uj.author = author.id
+		WHERE deploy_dates.week IN (%s)
+		AND author.bot = 0
+		%s
+		GROUP BY deploy_dates.week`,
+		placeholders,
+		usersInTeamConditionQuery)
+
+	db, err := sql.Open(s.DriverName, s.DbUrl)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
+	for i, v := range weeks {
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
+	}
+
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer rows.Close()
+
+	deployFrequencyByWeek := make(map[string]DeployFrequencyByWeek)
+
+	for rows.Next() {
+		var deployFreq DeployFrequencyByWeek
+
+		if err := rows.Scan(&deployFreq.Amount, &deployFreq.Week); err != nil {
+			return nil, 0, err
+		}
+		deployFrequencyByWeek[deployFreq.Week] = deployFreq
+	}
+
+	totalDeployFrequencyCount := 0.0
+	numOfWeeksWithDeployFrequency := len(deployFrequencyByWeek)
+
+	for _, week := range weeks {
+		totalDeployFrequencyCount += float64(deployFrequencyByWeek[week].Amount)
+		if _, ok := deployFrequencyByWeek[week]; !ok {
+			deployFrequencyByWeek[week] = DeployFrequencyByWeek{
+				Week:   week,
+				Amount: 0,
+			}
+		}
+	}
+
+	averageDeployFrequencyByXWeeks := totalDeployFrequencyCount / float64(numOfWeeksWithDeployFrequency)
+
+	return deployFrequencyByWeek, averageDeployFrequencyByXWeeks, nil
 }
