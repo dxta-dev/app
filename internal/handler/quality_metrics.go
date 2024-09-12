@@ -109,6 +109,12 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		return err
 	}
 
+	averageLifecycle, averageLifecycleByNWeeks, err := store.GetAverageLifecycleDuration(weeks, teamMembers)
+
+	if err != nil {
+		return err
+	}
+
 	averageMrSizeXValues := make([]float64, len(weeks))
 	averageMrSizeYValues := make([]float64, len(weeks))
 	startEndWeek := make([]template.StartEndWeek, len(weeks))
@@ -230,11 +236,50 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		InfoText:         fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
 	}
 
+	averageLifecycleXValues := make([]float64, len(weeks))
+	averageLifecycleYValues := make([]float64, len(weeks))
+	normalizedAverageLifecycleYValues := make([]float64, len(weeks))
+	maxAverageLifecycleYValue := 0.0
+
+	for i, week := range weeks {
+		averageLifecycleXValues[i] = float64(i)
+		averageLifecycleYValues[i] = float64(averageLifecycle[week].Lifecycle)
+		if maxAverageLifecycleYValue < averageLifecycle[week].Lifecycle {
+			maxAverageLifecycleYValue = averageLifecycle[week].Lifecycle
+		}
+	}
+
+	averageLifecycleYValueNormalFactor := util.GetTimeAxisNormalizationFactor(maxAverageLifecycleYValue)
+	for i, _ := range averageLifecycleYValues {
+		normalizedAverageLifecycleYValues[i] = averageLifecycleYValues[i] * averageLifecycleYValueNormalFactor
+	}
+
+	formattedAverageLifecycleYValues := make([]string, len(averageLifecycleYValues))
+
+	for i, value := range averageLifecycleYValues {
+		formattedAverageLifecycleYValues[i] = util.FormatTimeAxisValue(value)
+	}
+
+	averageLifecycleSeries := template.TimeSeries{
+		Title:   "Average Lifecyle Duration",
+		XValues: averageLifecycleXValues,
+		YValues: normalizedAverageLifecycleYValues,
+		Weeks:   weeks,
+	}
+
+	averageLifecycleSeriesProps := template.TimeSeriesProps{
+		Series:           averageLifecycleSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedAverageLifecycleYValues,
+		InfoText:         fmt.Sprintf("AVG Lifecycle per week: %v", util.FormatTimeAxisValue(averageLifecycleByNWeeks)),
+	}
+
 	props := template.QualityMetricsProps{
 		AverageMrSizeSeriesProps:          averageMrSizeSeriesProps,
 		AverageReviewDepthSeriesProps:     averageReviewDepthSeriesProps,
 		MrsMergedWithoutReviewSeriesProps: mrsMergedWithoutReviewSeriesProps,
 		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
+		AverageLifecycleSeriesProps:       averageLifecycleSeriesProps,
 	}
 
 	var templTeams []template.Team
