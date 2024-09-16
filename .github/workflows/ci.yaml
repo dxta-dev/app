@@ -123,6 +123,10 @@ jobs:
         run: |
           go build -o ./tmp/admin ./cmd/admin/main.go
 
+      - name: Dry Build API
+        run: |
+          go build -o ./tmp/api ./cmd/api/main.go
+
   docker:
     needs: [test, setup, build]
     runs-on: ubuntu-latest
@@ -151,4 +155,12 @@ jobs:
           context: .
           load: true
           file: ./admin.dockerfile
+          tags: ${{ env.TEST_TAG }}
+
+      - name: Dry Build API
+        uses: docker/build-push-action@16ebe778df0e7752d2cfcbd924afdbbd89c1a755 # v6.6.1
+        with:
+          context: .
+          load: true
+          file: ./api.dockerfile
           tags: ${{ env.TEST_TAG }}
