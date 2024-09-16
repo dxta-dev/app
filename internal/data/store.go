@@ -3,7 +3,7 @@ package data
 import "context"
 
 type Store struct {
-	DbUrl string
+	DbUrl      string
 	DriverName string
-	Context context.Context
+	Context    context.Context
 }

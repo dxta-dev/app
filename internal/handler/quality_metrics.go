@@ -18,6 +18,7 @@ import (
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
+	fmt.Print("----------------------------------", r)
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 

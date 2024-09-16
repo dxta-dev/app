@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/dxta-dev/app/cmd/web/api"
 	"github.com/dxta-dev/app/internal/handler"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/util"
@@ -102,7 +103,15 @@ func main() {
 		DebugMode:      DEBUG == "true",
 	}
 
+	api := &api.Api{
+		HTMX:           htmx.New(),
+		BuildTimestamp: strconv.FormatInt(t.Unix(), 10),
+		DebugMode:      DEBUG == "true",
+	}
+
 	app.GenerateNonce()
+
+	api.GenerateNonce()
 
 	e := echo.New()
 	if isEndpointProvided {
@@ -140,7 +149,7 @@ func main() {
 
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
-
+	e.GET("/api/mrs-merged-without-review", api.GetMRsMergedWithoutReviewHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"

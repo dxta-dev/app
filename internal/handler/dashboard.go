@@ -118,6 +118,7 @@ func getNextDashboardUrl(app *App, currentUrl string, state DashboardState, para
 
 func (a *App) DashboardPage(c echo.Context) error {
 	r := c.Request()
+	fmt.Print("----------------------------------", r.Context())
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
 	var err error
 
