@@ -14,8 +14,6 @@ func main() {
 		return c.String(http.StatusOK, "Hell")
 	})
 
-	e.GET("/mr-size/:org/:repo", api.MRSizeHandler)
-
 	e.GET("/code-chage/:org/:repo", api.CodeChangeHandler)
 	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
 	e.GET("/commits/:org/:repo", api.CommitsHandler)
