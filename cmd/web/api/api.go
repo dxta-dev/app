@@ -43,7 +43,7 @@ func (api *Api) GetMRsMergedWithoutReviewHandler(c echo.Context) error {
 	fmt.Print("----------------------------------", r.Context())
 
 	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
-	team := c.Request().Context().Value("team").(*int64)
+	team := api.State.Team
 
 	teamMembers, err := store.GetTeamMembers(team)
 

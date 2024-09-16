@@ -149,7 +149,7 @@ func main() {
 
 	g.GET("/metrics/quality", app.QualityMetricsPage)
 	g.GET("/metrics/throughput", app.ThroughputMetricsPage)
-	e.GET("/api/mrs-merged-without-review", api.GetMRsMergedWithoutReviewHandler)
+	g.GET("/api/mrs-merged-without-review", api.GetMRsMergedWithoutReviewHandler)
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"
