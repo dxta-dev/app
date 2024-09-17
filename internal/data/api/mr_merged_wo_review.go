@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -35,7 +36,7 @@ type MRsMergedWithoutReview struct {
 	GROUP BY mergedAt.week;
 */
 
-func GetMRsMergedWithoutReview(db *sql.DB, namespace string, repository string, weeks []string, team *int64) (map[string]MRSize, error) {
+func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRsMergedWithoutReview, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks) + 1 /* repository name */ + 1 /* repository namespace */
@@ -59,7 +60,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, namespace string, repository string, 
 		queryParams = append(queryParams, team)
 	}
 
-	_ = fmt.Sprintf(`
+	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week,
 		COUNT(*)
@@ -86,5 +87,28 @@ func GetMRsMergedWithoutReview(db *sql.DB, namespace string, repository string, 
 		teamQuery,
 	)
 
-	return nil, nil
+	rows, err := db.QueryContext(ctx, query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	mrsMergedWithoutReviewByWeek := make(map[string]MRsMergedWithoutReview)
+
+	for rows.Next() {
+		var mrsMergedWithoutReview MRsMergedWithoutReview
+
+		if err := rows.Scan(
+			&mrsMergedWithoutReview.Week,
+			&mrsMergedWithoutReview.Count,
+		); err != nil {
+			return nil, err
+		}
+
+		mrsMergedWithoutReviewByWeek[mrsMergedWithoutReview.Week] = mrsMergedWithoutReview
+	}
+
+	return mrsMergedWithoutReviewByWeek, nil
 }

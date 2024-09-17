@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
@@ -42,7 +43,7 @@ type MRSize struct {
 	GROUP BY mergedAt.week;
 */
 
-func GetMRSize(db *sql.DB, namespace string, repository string, weeks []string, team *int64) (map[string]MRSize, error) {
+func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRSize, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks) + 1 /* repository name */ + 1 /* repository namespace */
@@ -66,7 +67,7 @@ func GetMRSize(db *sql.DB, namespace string, repository string, weeks []string, 
 		queryParams = append(queryParams, team)
 	}
 
-	_ = fmt.Sprintf(`
+	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
 		FLOOR(AVG(metrics.mr_size)) as AVG,
@@ -96,5 +97,32 @@ func GetMRSize(db *sql.DB, namespace string, repository string, weeks []string, 
 		teamQuery,
 	)
 
-	return nil, nil
+	rows, err := db.QueryContext(ctx, query, queryParams...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	mrSizeByWeek := make(map[string]MRSize)
+
+	for rows.Next() {
+		var mrsize MRSize
+
+		if err := rows.Scan(
+			&mrsize.Week,
+			&mrsize.Average,
+			&mrsize.Median,
+			&mrsize.Percentile75,
+			&mrsize.Percentile95,
+			&mrsize.Count,
+		); err != nil {
+			return nil, err
+		}
+
+		mrSizeByWeek[mrsize.Week] = mrsize
+	}
+
+	return mrSizeByWeek, nil
 }
