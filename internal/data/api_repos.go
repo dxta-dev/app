@@ -9,6 +9,22 @@ type Repo struct {
 	DBURL        string
 }
 
+func GetReposDbUrl(db *sql.DB, org string, repo string) (string, error) {
+	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
+
+	row := db.QueryRow(query, org, repo)
+
+	var dbUrl string
+
+	err := row.Scan(&dbUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	return dbUrl, nil
+}
+
 func GetRepos(db *sql.DB) ([]Repo, error) {
 	query := `SELECT id, organization, repository, db_url FROM repos`
 	rows, err := db.Query(query)

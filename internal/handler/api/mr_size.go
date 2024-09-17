@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/data/api"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/labstack/echo/v4"
@@ -20,22 +21,14 @@ func MRSizeHandler(c echo.Context) error {
 
 	org := c.Param("org")
 	repo := c.Param("repo")
-	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
 
 	reposDB, err := sql.Open("libsql", os.Getenv("METRICS_DXTA_DEV_DB_URL"))
-
 	if err != nil {
 		return err
 	}
-
 	defer reposDB.Close()
 
-	row := reposDB.QueryRow(query, org, repo)
-
-	var dbUrl string
-
-	err = row.Scan(&dbUrl)
-
+	dbUrl, err := data.GetReposDbUrl(reposDB, org, repo)
 	if err != nil {
 		return err
 	}
