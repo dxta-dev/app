@@ -5,10 +5,13 @@ import (
 
 	"github.com/dxta-dev/app/internal/handler/api"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func main() {
 	e := echo.New()
+
+	e.Use(middleware.Logger())
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hell")

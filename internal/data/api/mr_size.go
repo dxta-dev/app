@@ -120,8 +120,13 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 		); err != nil {
 			return nil, err
 		}
+		fmt.Print("MRSIZE", mrsize)
 
 		mrSizeByWeek[mrsize.Week] = mrsize
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return mrSizeByWeek, nil
