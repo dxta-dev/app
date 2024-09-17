@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
 	"strconv"
 	"strings"
@@ -63,20 +62,22 @@ func MRSizeHandler(c echo.Context) error {
 		teamInt = &t
 	}
 
-	if err != nil {
-		return err
-	}
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	mrSize, err := api.GetMRSize(db, context.Background(), org, repo, weeks, teamInt)
 
-	response := fmt.Sprintf("Organization: %s\nRepository: %s\nTeam: %s\nWeeks: %s",
+	if err != nil {
+		return err
+	}
+
+	response := fmt.Sprintf("Organization: %s\nRepository: %s\nTeam: %s\nWeeks: %s\n",
 		org, repo, team, strings.Join(weeks, ", "))
 
 	for week, value := range mrSize {
 		response += fmt.Sprintf("%s, %v\n", week, value)
 	}
 
-	return c.String(http.StatusOK, response)
+	fmt.Println(response)
+
+	return nil
 }

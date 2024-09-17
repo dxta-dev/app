@@ -46,7 +46,7 @@ type MRSize struct {
 func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRSize, error) {
 
 	teamQuery := ""
-	queryParamLength := len(weeks) + 1 /* repository name */ + 1 /* repository namespace */
+	queryParamLength := len(weeks)
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
@@ -89,7 +89,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	%s
+    %s
 	AND author.bot = 0
 	GROUP BY mergedAt.week;
 	`,
@@ -120,7 +120,6 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 		); err != nil {
 			return nil, err
 		}
-		fmt.Print("MRSIZE", mrsize)
 
 		mrSizeByWeek[mrsize.Week] = mrsize
 	}

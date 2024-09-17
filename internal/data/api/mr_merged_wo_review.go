@@ -39,7 +39,7 @@ type MRsMergedWithoutReview struct {
 func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRsMergedWithoutReview, error) {
 
 	teamQuery := ""
-	queryParamLength := len(weeks) + 1 /* repository name */ + 1 /* repository namespace */
+	queryParamLength := len(weeks)
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
