@@ -52,13 +52,7 @@ func MRSizeHandler(c echo.Context) error {
 
 	var teamInt *int64
 
-	if team == "" {
-		teamInt = nil
-	} else {
-		t, err := strconv.ParseInt(team, 10, 64)
-		if err != nil {
-			return err
-		}
+	if t, err := strconv.ParseInt(team, 10, 64); err == nil && t > 0 {
 		teamInt = &t
 	}
 
