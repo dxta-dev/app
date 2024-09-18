@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func CodeChageHandler(c echo.Context) error {
+func CodeChangeHandler(c echo.Context) error {
 
 	org := c.Param("org")
 	repo := c.Param("repo")
