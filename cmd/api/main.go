@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/dxta-dev/app/internal/handler/api"
 	"github.com/labstack/echo/v4"
@@ -34,5 +36,9 @@ func main() {
 	e.GET("/review-time/:org/:repo", api.ReviewTimeHandler)
 	e.GET("/time-to-merge/:org/:repo", api.TimeToMergeHandler)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1323"
+	}
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
