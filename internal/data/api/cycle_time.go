@@ -8,11 +8,11 @@ import (
 )
 
 type CycleTime struct {
-	Week         string
-	Average      int
-	Median       int
-	Percentile75 int
-	Percentile95 int
+	Week         string `json:"week"`
+	Average      int    `json:"average"`
+	Median       int    `json:"median"`
+	Percentile75 int    `json:"percentile75"`
+	Percentile95 int    `json:"percentile95"`
 }
 
 /*
@@ -38,10 +38,11 @@ type CycleTime struct {
 	AND repo.namespace_name = "calcom"
 	AND author.external_id IN (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
-	GROUP BY deployedAt.week;
+	GROUP BY deployedAt.week
+	ORDER BY deployedAt.week ASC;
 */
 
-func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]CycleTime, error) {
+func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]CycleTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -89,7 +90,8 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		AND repo.name = ?
 		%s
 		AND author.bot = 0
-		GROUP BY deployedAt.week;
+		GROUP BY deployedAt.week
+		ORDER BY deployedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
@@ -103,7 +105,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	cycleTimeByWeek := make(map[string]CycleTime)
+	var cycleTimes []CycleTime
 
 	for rows.Next() {
 		var cycleTime CycleTime
@@ -117,12 +119,12 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		); err != nil {
 			return nil, err
 		}
-		cycleTimeByWeek[cycleTime.Week] = cycleTime
+		cycleTimes = append(cycleTimes, cycleTime)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return cycleTimeByWeek, nil
+	return cycleTimes, nil
 }

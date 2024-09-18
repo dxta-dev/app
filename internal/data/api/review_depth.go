@@ -8,8 +8,8 @@ import (
 )
 
 type MRReviewDepth struct {
-	Week  string
-	Value float64
+	Week  string  `json:"week"`
+	Value float64 `json:"value"`
 }
 
 /*
@@ -32,10 +32,11 @@ type MRReviewDepth struct {
 	AND repo.namespace_name = "calcom"
 	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 */
 
-func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRReviewDepth, error) {
+func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRReviewDepth, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -79,7 +80,8 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	AND repo.namespace_name = ?
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
@@ -93,7 +95,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	mrReviewDepthByWeek := make(map[string]MRReviewDepth)
+	var mrReviewDepths []MRReviewDepth
 
 	for rows.Next() {
 		var mrReviewDepth MRReviewDepth
@@ -105,8 +107,12 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 			return nil, err
 		}
 
-		mrReviewDepthByWeek[mrReviewDepth.Week] = mrReviewDepth
+		mrReviewDepths = append(mrReviewDepths, mrReviewDepth)
 	}
 
-	return mrReviewDepthByWeek, nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return mrReviewDepths, nil
 }
