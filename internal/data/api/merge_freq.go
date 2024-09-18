@@ -8,8 +8,8 @@ import (
 )
 
 type MergeFrequency struct {
-	Week   string  `json:"week"`
-	Amount float32 `json:"amount"`
+	Week  string  `json:"week"`
+	Value float32 `json:"value"`
 }
 
 /*
@@ -104,7 +104,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 
 		if err := rows.Scan(
 			&mergeFrequency.Week,
-			&mergeFrequency.Amount,
+			&mergeFrequency.Value,
 		); err != nil {
 			return nil, err
 		}
