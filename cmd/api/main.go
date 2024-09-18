@@ -19,7 +19,7 @@ func main() {
 		return c.String(http.StatusOK, "Hell")
 	})
 
-	e.GET("/code-chage/:org/:repo", api.CodeChangeHandler)
+	e.GET("/code-change/:org/:repo", api.CodeChageHandler)
 	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
 	e.GET("/commits/:org/:repo", api.CommitsHandler)
 	e.GET("/cycle-time/:org/:repo", api.CycleTimeHandler)
