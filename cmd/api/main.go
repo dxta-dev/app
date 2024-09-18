@@ -14,6 +14,9 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.Logger())
+	e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+		return key == os.Getenv("API_SECRET"), nil
+	}))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hell")
