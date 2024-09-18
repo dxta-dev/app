@@ -8,8 +8,8 @@ import (
 )
 
 type Commits struct {
-	Week  string
-	Count int
+	Week  string `json:"week"`
+	Count int    `json:"count"`
 }
 
 /*
@@ -29,11 +29,12 @@ type Commits struct {
 	AND repo.name = "cal.com"
 	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
-	GROUP BY commitedAt.week;
+	GROUP BY commitedAt.week
+	ORDER BY commitedAt.week ASC;
 
 */
 
-func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]Commits, error) {
+func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]Commits, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -74,7 +75,8 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 	AND repo.name = ?
 	%s
 	AND author.bot = 0
-	GROUP BY commitedAt.week;
+	GROUP BY commitedAt.week
+	ORDER BY commitedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
@@ -88,18 +90,23 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	defer rows.Close()
 
-	commitsByWeek := make(map[string]Commits)
+	var commits []Commits
 
 	for rows.Next() {
 		var commit Commits
+
 		if err := rows.Scan(
 			&commit.Week,
 			&commit.Count,
 		); err != nil {
 			return nil, err
 		}
-		commitsByWeek[commit.Week] = commit
+		commits = append(commits, commit)
 	}
 
-	return commitsByWeek, nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return commits, nil
 }
