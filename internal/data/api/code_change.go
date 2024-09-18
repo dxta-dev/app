@@ -105,7 +105,10 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 		}
 
 		codeChanges = append(codeChanges, codeChange)
+	}
 
+	if err = rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return codeChanges, nil
