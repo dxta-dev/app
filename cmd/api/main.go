@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/dxta-dev/app/internal/handler/api"
 	"github.com/labstack/echo/v4"
@@ -12,12 +14,15 @@ func main() {
 	e := echo.New()
 
 	e.Use(middleware.Logger())
+	e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+		return key == os.Getenv("API_SECRET"), nil
+	}))
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hell")
 	})
 
-	e.GET("/code-chage/:org/:repo", api.CodeChangeHandler)
+	e.GET("/code-change/:org/:repo", api.CodeChangeHandler)
 	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
 	e.GET("/commits/:org/:repo", api.CommitsHandler)
 	e.GET("/cycle-time/:org/:repo", api.CycleTimeHandler)
@@ -34,5 +39,9 @@ func main() {
 	e.GET("/review-time/:org/:repo", api.ReviewTimeHandler)
 	e.GET("/time-to-merge/:org/:repo", api.TimeToMergeHandler)
 
-	e.Logger.Fatal(e.Start(":1323"))
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "1323"
+	}
+	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
 }
