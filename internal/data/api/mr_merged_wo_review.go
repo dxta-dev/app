@@ -8,8 +8,8 @@ import (
 )
 
 type MRsMergedWithoutReview struct {
-	Week  string
-	Count int
+	Week  string `json:"week"`
+	Count int    `json:"count"`
 }
 
 /*
@@ -33,10 +33,11 @@ type MRsMergedWithoutReview struct {
 	AND repo.namespace_name = "calcom"
 	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 */
 
-func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]MRsMergedWithoutReview, error) {
+func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRsMergedWithoutReview, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -81,7 +82,8 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	AND repo.namespace_name = ?
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
@@ -95,20 +97,24 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 
 	defer rows.Close()
 
-	mrsMergedWithoutReviewByWeek := make(map[string]MRsMergedWithoutReview)
+	var mrsMergedWithoutReview []MRsMergedWithoutReview
 
 	for rows.Next() {
-		var mrsMergedWithoutReview MRsMergedWithoutReview
+		var mrMergedWithoutReview MRsMergedWithoutReview
 
 		if err := rows.Scan(
-			&mrsMergedWithoutReview.Week,
-			&mrsMergedWithoutReview.Count,
+			&mrMergedWithoutReview.Week,
+			&mrMergedWithoutReview.Count,
 		); err != nil {
 			return nil, err
 		}
 
-		mrsMergedWithoutReviewByWeek[mrsMergedWithoutReview.Week] = mrsMergedWithoutReview
+		mrsMergedWithoutReview = append(mrsMergedWithoutReview, mrMergedWithoutReview)
 	}
 
-	return mrsMergedWithoutReviewByWeek, nil
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return mrsMergedWithoutReview, nil
 }

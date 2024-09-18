@@ -8,11 +8,11 @@ import (
 )
 
 type Handover struct {
-	Week         string
-	Average      int
-	Median       int
-	Percentile75 int
-	Percentile95 int
+	Week         string `json:"week"`
+	Average      int    `json:"average"`
+	Median       int    `json:"median"`
+	Percentile75 int    `json:"percentile75"`
+	Percentile95 int    `json:"percentile95"`
 }
 
 /*
@@ -21,7 +21,7 @@ type Handover struct {
 		FLOOR(AVG(metrics.handover)) as AVG,
 		FLOOR(MEDIAN(metrics.handover)) as P50,
 		FLOOR(PERCENTILE_75(metrics.handover)) as P75,
-		FLOOR(PERCENTILE_95(metrics.handover)) as P95,
+		FLOOR(PERCENTILE_95(metrics.handover)) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -38,10 +38,11 @@ type Handover struct {
 	AND repo.namespace_name = "calcom"
 	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 */
 
-func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (map[string]Handover, error) {
+func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]Handover, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -87,7 +88,8 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	AND repo.name = ?
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week;
+	GROUP BY mergedAt.week
+	ORDER BY mergedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
@@ -101,7 +103,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handoverByWeek := make(map[string]Handover)
+	var handovers []Handover
 
 	for rows.Next() {
 		var handover Handover
@@ -115,12 +117,12 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 		); err != nil {
 			return nil, err
 		}
-		handoverByWeek[handover.Week] = handover
+		handovers = append(handovers, handover)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return handoverByWeek, nil
+	return handovers, nil
 }

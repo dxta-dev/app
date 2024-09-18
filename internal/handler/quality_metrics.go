@@ -44,7 +44,7 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	var wg sync.WaitGroup
 
-	errCh := make(chan error, 4)
+	errCh := make(chan error, 5)
 
 	var (
 		averageMrSize                    map[string]data.AverageMRSizeByWeek
@@ -55,9 +55,11 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		averageMrWithoutReviewByNWeeks   float64
 		mergeRequestHandover             map[string]data.AverageHandoverPerMR
 		averageMrHandoverMetricsByNWeeks float64
+		averageLifecycle                 map[string]data.AverageLifecycleByWeek
+		averageLifecycleByNWeeks         float64
 	)
 
-	wg.Add(4)
+	wg.Add(5)
 
 	go func() {
 		defer wg.Done()
@@ -95,6 +97,15 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		}
 	}()
 
+	go func() {
+		defer wg.Done()
+		averageLifecycle, averageLifecycleByNWeeks, err = store.GetAverageLifecycleDuration(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
 	wg.Wait()
 
 	close(errCh)
@@ -108,8 +119,6 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-
-	averageLifecycle, averageLifecycleByNWeeks, err := store.GetAverageLifecycleDuration(weeks, teamMembers)
 
 	if err != nil {
 		return err
