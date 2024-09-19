@@ -78,8 +78,8 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
 	AND metrics.review_depth = 0
-	AND repo.name = ?
 	AND repo.namespace_name = ?
+	AND repo.name = ?
 	%s
 	AND author.bot = 0
 	GROUP BY mergedAt.week
