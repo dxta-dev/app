@@ -76,8 +76,8 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	JOIN transform_forge_users AS author
 	ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
-	AND repo.name = ?
 	AND repo.namespace_name = ?
+	AND repo.name = ?
 	%s
 	AND author.bot = 0
 	GROUP BY mergedAt.week
