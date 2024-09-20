@@ -19,6 +19,8 @@ type APIState struct {
 
 func NewAPIState(c echo.Context) (APIState, error) {
 
+	ctx := c.Request().Context()
+
 	org := c.Param("org")
 	repo := c.Param("repo")
 
@@ -32,7 +34,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 	}
 	defer reposDB.Close()
 
-	dbUrl, err := data.GetReposDbUrl(reposDB, org, repo)
+	dbUrl, err := data.GetReposDbUrl(ctx, reposDB, org, repo)
 	if err != nil {
 		return APIState{}, err
 	}

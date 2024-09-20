@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 
 func DeployFrequencyHandler(c echo.Context) error {
 
+	ctx := c.Request().Context()
 	apiState, err := NewAPIState(c)
 
 	if err != nil {
@@ -22,7 +22,7 @@ func DeployFrequencyHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	deployFrequencies, err := api.GetDeployFrequency(apiState.DB, context.Background(), apiState.org, apiState.repo, weeks, apiState.teamId)
+	deployFrequencies, err := api.GetDeployFrequency(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
 
 	if err != nil {
 		return err
