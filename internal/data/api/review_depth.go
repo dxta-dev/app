@@ -8,14 +8,20 @@ import (
 )
 
 type MRReviewDepth struct {
-	Week  string  `json:"week"`
-	Value float64 `json:"value"`
+	Week         string  `json:"week"`
+	Average      float64 `json:"average"`
+	Median       float64 `json:"median"`
+	Percentile75 float64 `json:"percentile75"`
+	Percentile95 float64 `json:"percentile95"`
 }
 
 /*
 	SELECT
 		mergedAt.week as WEEK,
-		AVG(metrics.review_depth) as AVG
+		FLOOR(AVG(metrics.review_depth)) as AVG,
+		FLOOR(MEDIAN(metrics.review_depth)) as P50,
+		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
+		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -63,8 +69,10 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
-		AVG(metrics.review_depth) as AVG
-	FROM transform_merge_request_metrics AS metrics
+		FLOOR(AVG(metrics.review_depth)) as AVG,
+		FLOOR(MEDIAN(metrics.review_depth)) as P50,
+		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
+		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -102,7 +110,10 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 		if err := rows.Scan(
 			&mrReviewDepth.Week,
-			&mrReviewDepth.Value,
+			&mrReviewDepth.Average,
+			&mrReviewDepth.Median,
+			&mrReviewDepth.Percentile75,
+			&mrReviewDepth.Percentile95,
 		); err != nil {
 			return nil, err
 		}
