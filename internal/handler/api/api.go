@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/otel"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,7 +29,9 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
 	}
 
-	reposDB, err := sql.Open("libsql", os.Getenv("METRICS_DXTA_DEV_DB_URL"))
+	driverName := otel.GetDriverName()
+
+	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
 	if err != nil {
 		return APIState{}, err
 	}
@@ -39,7 +42,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, err
 	}
 
-	db, err := sql.Open("libsql", dbUrl+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
+	db, err := sql.Open(driverName, dbUrl+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
 
 	if err != nil {
 		return APIState{}, err
