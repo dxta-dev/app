@@ -1,6 +1,9 @@
 package data
 
-import "database/sql"
+import (
+	"context"
+	"database/sql"
+)
 
 type Repo struct {
 	ID           int
@@ -9,10 +12,10 @@ type Repo struct {
 	DBURL        string
 }
 
-func GetReposDbUrl(db *sql.DB, org string, repo string) (string, error) {
+func GetReposDbUrl(ctx context.Context, db *sql.DB, org string, repo string) (string, error) {
 	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
 
-	row := db.QueryRow(query, org, repo)
+	row := db.QueryRowContext(ctx, query, org, repo)
 
 	var dbUrl string
 
@@ -25,9 +28,9 @@ func GetReposDbUrl(db *sql.DB, org string, repo string) (string, error) {
 	return dbUrl, nil
 }
 
-func GetRepos(db *sql.DB) ([]Repo, error) {
+func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
 	query := `SELECT id, organization, repository, db_url FROM repos`
-	rows, err := db.Query(query)
+	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
 	}

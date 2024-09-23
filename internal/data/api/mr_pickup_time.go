@@ -7,42 +7,43 @@ import (
 	"strings"
 )
 
-type MRReviewDepth struct {
-	Week         string `json:"week"`
-	Average      int    `json:"average"`
-	Median       int    `json:"median"`
-	Percentile75 int    `json:"percentile75"`
-	Percentile95 int    `json:"percentile95"`
+type MRPickupTime struct {
+	Week         string  `json:"week"`
+	Average      float64 `json:"average"`
+	Median       float64 `json:"median"`
+	Percentile75 float64 `json:"percentile75"`
+	Percentile95 float64 `json:"percentile95"`
 }
 
 /*
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_depth)) as AVG,
-		FLOOR(MEDIAN(metrics.review_depth)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95
-	FROM transform_merge_request_metrics AS metrics
+		FLOOR(AVG(metrics.review_start_delay)) AS AVG,
+		FLOOR(MEDIAN(metrics.review_start_delay)) as P50,
+		FLOOR(PERCENTILE_75(metrics.review_start_delay)) as P75,
+		FLOOR(PERCENTILE_95(metrics.review_start_delay)) as P95
+		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
+		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
-	ON metrics.dates_junk = dj.id
+		ON metrics.dates_junk = dj.id
 	JOIN transform_dates AS mergedAt
-	ON dj.merged_at = mergedAt.id
+		ON dj.merged_at = mergedAt.id
 	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
+		ON metrics.users_junk = uj.id
 	JOIN transform_forge_users AS author
-	ON uj.author = author.id
+		ON uj.author = author.id
 	WHERE mergedAt.week IN ("2024-W26", "2024-W27", "2024-W28", "2024-W29", "2024-W30", "2024-W31", "2024-W32", "2024-W33", "2024-W34", "2024-W35", "2024-W36", "2024-W37")
 	AND repo.name = "cal.com"
 	AND repo.namespace_name = "calcom"
-	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
+	AND author.external_id IN (SELECT member FROM tenant_team_members WHERE team = 1)
 	AND author.bot = 0
 	GROUP BY mergedAt.week
 	ORDER BY mergedAt.week ASC;
+
 */
 
-func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRReviewDepth, error) {
+func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRPickupTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -69,20 +70,21 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_depth)) as AVG,
-		FLOOR(MEDIAN(metrics.review_depth)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95	FROM transform_merge_request_metrics AS metrics
+		FLOOR(AVG(metrics.review_start_delay)) AS AVG,
+		FLOOR(MEDIAN(metrics.review_start_delay)) as P50,
+		FLOOR(PERCENTILE_75(metrics.review_start_delay)) as P75,
+		FLOOR(PERCENTILE_95(metrics.review_start_delay)) as P95
+		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
+		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
-	ON metrics.dates_junk = dj.id
+		ON metrics.dates_junk = dj.id
 	JOIN transform_dates AS mergedAt
-	ON dj.merged_at = mergedAt.id
+		ON dj.merged_at = mergedAt.id
 	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
+		ON metrics.users_junk = uj.id
 	JOIN transform_forge_users AS author
-	ON uj.author = author.id
+		ON uj.author = author.id
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
@@ -103,27 +105,27 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	var mrReviewDepths []MRReviewDepth
+	var mrsPickupTime []MRPickupTime
 
 	for rows.Next() {
-		var mrReviewDepth MRReviewDepth
+		var mrPickupTime MRPickupTime
 
 		if err := rows.Scan(
-			&mrReviewDepth.Week,
-			&mrReviewDepth.Average,
-			&mrReviewDepth.Median,
-			&mrReviewDepth.Percentile75,
-			&mrReviewDepth.Percentile95,
+			&mrPickupTime.Week,
+			&mrPickupTime.Average,
+			&mrPickupTime.Median,
+			&mrPickupTime.Percentile75,
+			&mrPickupTime.Percentile95,
 		); err != nil {
 			return nil, err
 		}
 
-		mrReviewDepths = append(mrReviewDepths, mrReviewDepth)
+		mrsPickupTime = append(mrsPickupTime, mrPickupTime)
 	}
 
 	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	return mrReviewDepths, nil
+	return mrsPickupTime, nil
 }
