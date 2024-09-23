@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -12,7 +13,8 @@ import (
 	"time"
 
 	"github.com/donseba/go-htmx"
-	"github.com/labstack/echo/v4")
+	"github.com/labstack/echo/v4"
+)
 
 func (a *App) QualityMetricsPage(c echo.Context) error {
 	r := c.Request()
@@ -40,25 +42,83 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	averageMrSize, averageMrSizeByNWeeks, err := store.GetAverageMRSize(weeks, teamMembers)
+	var wg sync.WaitGroup
+
+	errCh := make(chan error, 5)
+
+	var (
+		averageMrSize                    map[string]data.AverageMRSizeByWeek
+		averageMrSizeByNWeeks            float64
+		averageReviewDepth               map[string]data.AverageMrReviewDepthByWeek
+		averageReviewDepthByNWeeks       float64
+		mergeRequestWithoutReview        map[string]data.MrCountByWeek
+		averageMrWithoutReviewByNWeeks   float64
+		mergeRequestHandover             map[string]data.AverageHandoverPerMR
+		averageMrHandoverMetricsByNWeeks float64
+		averageLifecycle                 map[string]data.AverageLifecycleByWeek
+		averageLifecycleByNWeeks         float64
+	)
+
+	wg.Add(5)
+
+	go func() {
+		defer wg.Done()
+		averageMrSize, averageMrSizeByNWeeks, err = store.GetAverageMRSize(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		averageReviewDepth, averageReviewDepthByNWeeks, err = store.GetAverageReviewDepth(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err = store.GetMRsMergedWithoutReview(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err = store.GetAverageHandoverPerMR(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		averageLifecycle, averageLifecycleByNWeeks, err = store.GetAverageLifecycleDuration(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	wg.Wait()
+
+	close(errCh)
+	for e := range errCh {
+		if e != nil {
+			err = e
+			break
+		}
+	}
 
 	if err != nil {
 		return err
 	}
-
-	averageReviewDepth, averageReviewDepthByNWeeks, err := store.GetAverageReviewDepth(weeks, teamMembers)
-
-	if err != nil {
-		return err
-	}
-
-	mergeRequestWithoutReview, averageMrWithoutReviewByNWeeks, err := store.GetMRsMergedWithoutReview(weeks, teamMembers)
-
-	if err != nil {
-		return err
-	}
-
-	mergeRequestHandover, averageMrHandoverMetricsByNWeeks, err := store.GetAverageHandoverPerMR(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -185,11 +245,50 @@ func (a *App) QualityMetricsPage(c echo.Context) error {
 		InfoText:         fmt.Sprintf("Total Merged without Review: %v", util.FormatYAxisValues(averageMrWithoutReviewByNWeeks)),
 	}
 
+	averageLifecycleXValues := make([]float64, len(weeks))
+	averageLifecycleYValues := make([]float64, len(weeks))
+	normalizedAverageLifecycleYValues := make([]float64, len(weeks))
+	maxAverageLifecycleYValue := 0.0
+
+	for i, week := range weeks {
+		averageLifecycleXValues[i] = float64(i)
+		averageLifecycleYValues[i] = float64(averageLifecycle[week].Lifecycle)
+		if maxAverageLifecycleYValue < averageLifecycle[week].Lifecycle {
+			maxAverageLifecycleYValue = averageLifecycle[week].Lifecycle
+		}
+	}
+
+	averageLifecycleYValueNormalFactor := util.GetTimeAxisNormalizationFactor(maxAverageLifecycleYValue)
+	for i, _ := range averageLifecycleYValues {
+		normalizedAverageLifecycleYValues[i] = averageLifecycleYValues[i] * averageLifecycleYValueNormalFactor
+	}
+
+	formattedAverageLifecycleYValues := make([]string, len(averageLifecycleYValues))
+
+	for i, value := range averageLifecycleYValues {
+		formattedAverageLifecycleYValues[i] = util.FormatTimeAxisValue(value)
+	}
+
+	averageLifecycleSeries := template.TimeSeries{
+		Title:   "Average Lifecyle Duration",
+		XValues: averageLifecycleXValues,
+		YValues: normalizedAverageLifecycleYValues,
+		Weeks:   weeks,
+	}
+
+	averageLifecycleSeriesProps := template.TimeSeriesProps{
+		Series:           averageLifecycleSeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedAverageLifecycleYValues,
+		InfoText:         fmt.Sprintf("AVG Lifecycle per week: %v", util.FormatTimeAxisValue(averageLifecycleByNWeeks)),
+	}
+
 	props := template.QualityMetricsProps{
 		AverageMrSizeSeriesProps:          averageMrSizeSeriesProps,
 		AverageReviewDepthSeriesProps:     averageReviewDepthSeriesProps,
 		MrsMergedWithoutReviewSeriesProps: mrsMergedWithoutReviewSeriesProps,
 		AverageHandoverTimeSeriesProps:    averageHandoverSeriesProps,
+		AverageLifecycleSeriesProps:       averageLifecycleSeriesProps,
 	}
 
 	var templTeams []template.Team

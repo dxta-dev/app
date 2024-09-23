@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/url"
+	"sync"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -18,12 +19,12 @@ import (
 func (a *App) ThroughputMetricsPage(c echo.Context) error {
 	r := c.Request()
 	h := r.Context().Value(htmx.ContextRequestHeader).(htmx.HxRequestHeader)
+	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	a.GenerateNonce()
 	a.LoadState(r)
 
 	ctx := r.Context()
-	store := r.Context().Value(middleware.StoreContextKey).(*data.Store)
 
 	teams, err := store.GetTeams()
 
@@ -41,7 +42,90 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	totalCommits, averageTotalCommitsByNWeeks, err := store.GetTotalCommits(weeks, teamMembers)
+	var wg sync.WaitGroup
+
+	errCh := make(chan error, 6)
+
+	var (
+		totalCommits                    map[string]data.CommitCountByWeek
+		averageTotalCommitsByNWeeks     float64
+		totalMrsOpened                  map[string]data.MrCountByWeek
+		averageMrsOpenedByNWeeks        float64
+		mergeFrequency                  map[string]data.MergeFrequencyByWeek
+		averageMergeFrequencyByNWeeks   float64
+		totalReviews                    map[string]data.TotalReviewsByWeek
+		averageReviewsByNWeeks          float64
+		totalCodeChanges                map[string]data.CodeChangesCount
+		averageTotalCodeChangesByNWeeks float64
+		deployFrequency                 map[string]data.DeployFrequencyByWeek
+		averageDeployFrequencyByNWeeks  float64
+	)
+
+	wg.Add(6)
+
+	go func() {
+		defer wg.Done()
+		totalCommits, averageTotalCommitsByNWeeks, err = store.GetTotalCommits(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		totalMrsOpened, averageMrsOpenedByNWeeks, err = store.GetTotalMrsOpened(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		mergeFrequency, averageMergeFrequencyByNWeeks, err = store.GetMergeFrequency(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		totalReviews, averageReviewsByNWeeks, err = store.GetTotalReviews(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		totalCodeChanges, averageTotalCodeChangesByNWeeks, err = store.GetTotalCodeChanges(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		deployFrequency, averageDeployFrequencyByNWeeks, err = store.GetDeployFrequency(weeks, teamMembers)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
+	wg.Wait()
+
+	close(errCh)
+	for e := range errCh {
+		if e != nil {
+			err = e
+			break
+		}
+	}
 
 	if err != nil {
 		return err
@@ -84,8 +168,6 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText:         fmt.Sprintf("AVG Commits per week: %v", util.FormatYAxisValues(averageTotalCommitsByNWeeks)),
 	}
 
-	totalMrsOpened, averageMrsOpenedByNWeeks, err := store.GetTotalMrsOpened(weeks, teamMembers)
-
 	if err != nil {
 		return err
 	}
@@ -117,8 +199,6 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		FormattedYValues: formattedTotalMrsOpenedYValues,
 		InfoText:         fmt.Sprintf("AVG MRs Opened per week: %v", util.FormatYAxisValues(averageMrsOpenedByNWeeks)),
 	}
-
-	mergeFrequency, averageMergeFrequencyByNWeeks, err := store.GetMergeFrequency(weeks, teamMembers)
 
 	if err != nil {
 		return err
@@ -152,8 +232,6 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText:         fmt.Sprintf("AVG Merge Frequency per week: %v", util.FormatYAxisValues(averageMergeFrequencyByNWeeks)),
 	}
 
-	totalReviews, averageReviewsByNWeeks, err := store.GetTotalReviews(weeks, teamMembers)
-
 	if err != nil {
 		return err
 	}
@@ -186,7 +264,9 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		InfoText:         fmt.Sprintf("AVG Total Reviews per week: %v", util.FormatYAxisValues(averageReviewsByNWeeks)),
 	}
 
-	totalCodeChanges, averageTotalCodeChangesByNWeeks, err := store.GetTotalCodeChanges(weeks, teamMembers)
+	if err != nil {
+		return err
+	}
 
 	totalCodeChangesXValues := make([]float64, len(weeks))
 	totalCodeChangesYValues := make([]float64, len(weeks))
@@ -214,8 +294,37 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		FormattedYValues: formattedTotalCodeChangesYValues,
 		InfoText:         fmt.Sprintf("AVG Total Code Changes per week: %v", util.FormatYAxisValues(averageTotalCodeChangesByNWeeks)),
 	}
+
 	if err != nil {
 		return err
+	}
+
+	deployFrequencyXValues := make([]float64, len(weeks))
+	deployFrequencyYValues := make([]float64, len(weeks))
+
+	for i, week := range weeks {
+		deployFrequencyXValues[i] = float64(i)
+		deployFrequencyYValues[i] = float64(deployFrequency[week].Amount)
+	}
+
+	formattedDeployFrequencyYValues := make([]string, len(deployFrequencyYValues))
+
+	for i, value := range deployFrequencyYValues {
+		formattedDeployFrequencyYValues[i] = util.FormatYAxisValues(value)
+	}
+
+	averageDeployFrequencySeries := template.TimeSeries{
+		Title:   "Deploy Frequency",
+		XValues: deployFrequencyXValues,
+		YValues: deployFrequencyYValues,
+		Weeks:   weeks,
+	}
+
+	averageDeployFrequencySeriesProps := template.TimeSeriesProps{
+		Series:           averageDeployFrequencySeries,
+		StartEndWeeks:    startEndWeek,
+		FormattedYValues: formattedDeployFrequencyYValues,
+		InfoText:         fmt.Sprintf("AVG Deploy Frequency per week: %v", util.FormatYAxisValues(averageDeployFrequencyByNWeeks)),
 	}
 
 	props := template.ThroughputMetricsProps{
@@ -224,6 +333,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 		MergeFrequencySeriesProps:   averageMergeFrequencySeriesProps,
 		TotalReviewsSeriesProps:     averageReviewsSeriesProps,
 		TotalCodeChangesSeriesProps: averageTotalCodeChangesProps,
+		DeployFrequencySeriesProps:  averageDeployFrequencySeriesProps,
 	}
 
 	var templTeams []template.Team

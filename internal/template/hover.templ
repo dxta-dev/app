@@ -28,10 +28,11 @@ script tooltip() {
     svgContainers.forEach(svgContainer => {
 
 		const svg = svgContainer.querySelector("svg");
-		const svgOverlay = svgContainer.querySelector("[data-svg-overlay]");	
+		const svgOverlay = svgContainer.querySelector("[data-svg-overlay]");
 
-		const svgWidth = Number(svg.getAttribute('width'));
-		const svgHeight = Number(svg.getAttribute('height'));
+
+		const svgWidth = Number(svg.getBoundingClientRect().width);
+		const svgHeight = Number(svg.getBoundingClientRect().height);
 
         const circles = svg.querySelectorAll('circle');
 
@@ -46,20 +47,17 @@ script tooltip() {
 
 		let tooltipElement;
 
-        circles.forEach(c => {						
+        circles.forEach(c => {
             const circleX = c.getAttribute('cx');
             const circleY = c.getAttribute('cy');
 
 			const rectGroup = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-
             const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
             rect.setAttribute('width', rectWidth);
-            //rect.setAttribute('height', rectHeight);
-			rect.setAttribute('height', svgHeight-20);
+			rect.setAttribute('height', svgHeight - 20);
             rect.setAttribute('fill', 'red');
             rect.setAttribute('x', circleX - rectWidth / 2);
-            //rect.setAttribute('y', circleY - rectHeight / 2);
 			rect.setAttribute('y', 20);
             rect.style.opacity = '0';
 
@@ -71,7 +69,7 @@ script tooltip() {
 			const clearTooltip = () => {
 				if (tooltipElement) {
 					hoverCircle.remove();
-					tooltipElement.remove();					
+					tooltipElement.remove();
 					tooltipElement = undefined;
 				}
 			}
@@ -89,7 +87,7 @@ script tooltip() {
 				tooltipElement = createTooltip(`${startDay} - ${endDay}`, valueName, dataYValue);
 				c.parentNode.insertBefore(hoverCircle, c.previousSibling);
 				hoverCircle.setAttribute("cx", circleX);
-				hoverCircle.setAttribute("cy", circleY);				
+				hoverCircle.setAttribute("cy", circleY);
 				svgOverlay.appendChild(tooltipElement);
 				const tooltipElementRect = tooltipElement.getBoundingClientRect();
 				const svgRect = svg.getBoundingClientRect();

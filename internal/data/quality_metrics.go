@@ -377,3 +377,92 @@ func (s *Store) GetRefactorPercentage(weeks []string) (interface{}, error) {
 func (s *Store) GetReworkPercentage(weeks []string) (interface{}, error) {
 	return nil, nil
 }
+
+type AverageLifecycleByWeek struct {
+	Week      string
+	Lifecycle float64
+}
+
+func (s *Store) GetAverageLifecycleDuration(weeks []string, teamMembers []int64) (map[string]AverageLifecycleByWeek, float64, error) {
+	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
+
+	usersInTeamConditionQuery := ""
+	if len(teamMembers) > 0 {
+		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
+		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
+	}
+
+	query := fmt.Sprintf(`
+	SELECT
+		AVG(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) AS lifecycle,
+		deployedAt.week
+	FROM transform_merge_request_metrics AS metrics
+	JOIN transform_merge_request_fact_dates_junk AS dj
+	ON metrics.dates_junk = dj.id
+	JOIN transform_dates AS deployedAt
+	ON dj.deployed_at = deployedAt.id
+	JOIN transform_merge_request_fact_users_junk AS uj
+	ON metrics.users_junk = uj.id
+	JOIN transform_forge_users AS author
+	ON uj.author = author.id
+	WHERE deployedAt.week IN (%s)
+	AND author.bot = 0
+	%s
+	GROUP BY deployedAt.week;`,
+		placeholders,
+		usersInTeamConditionQuery)
+
+	db, err := sql.Open(s.DriverName, s.DbUrl)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer db.Close()
+
+	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
+	for i, v := range weeks {
+		queryParams[i] = v
+	}
+	for i, v := range teamMembers {
+		queryParams[i+len(weeks)] = v
+	}
+
+	rows, err := db.QueryContext(s.Context, query, queryParams...)
+
+	if err != nil {
+		return nil, 0, err
+	}
+
+	defer rows.Close()
+
+	averageLifecycleByWeeks := make(map[string]AverageLifecycleByWeek)
+
+	for rows.Next() {
+		var lifecycleweek AverageLifecycleByWeek
+
+		if err := rows.Scan(&lifecycleweek.Lifecycle, &lifecycleweek.Week); err != nil {
+			return nil, 0, err
+		}
+
+		averageLifecycleByWeeks[lifecycleweek.Week] = lifecycleweek
+	}
+
+	totalLifecycleDuration := 0.0
+	numOfWeeksWithData := len(averageLifecycleByWeeks)
+
+	for _, week := range weeks {
+		totalLifecycleDuration += averageLifecycleByWeeks[week].Lifecycle
+		if _, ok := averageLifecycleByWeeks[week]; !ok {
+			averageLifecycleByWeeks[week] = AverageLifecycleByWeek{
+				Week:      week,
+				Lifecycle: 0,
+			}
+		}
+	}
+
+	averageLifecycleByXWeeks := float64(totalLifecycleDuration) / float64(numOfWeeksWithData)
+
+	return averageLifecycleByWeeks, averageLifecycleByXWeeks, nil
+
+}

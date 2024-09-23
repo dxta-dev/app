@@ -90,7 +90,59 @@ templ NewNavigationSidebarLink(page *Page, routeId string, routeURL string, rout
 	</li>
 }
 
+templ NewNavigationMobileSidebarLink(page *Page, routeId string, routeURL string, routeName string, content templ.Component) {
+	<li>
+		<a
+			href={ templ.SafeURL(routeURL) }
+			class={ fmt.Sprintf("%s group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold", GetClassStateOfNewNavigationSidebarLink(page, routeId)) }
+		>
+			@content
+			{ routeName }
+		</a>
+	</li>
+}
+
+
 templ NewNavigation(page *Page, props TeamPickerProps) {
+ <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+  <div id="sidebar-container" style="display: none;" class="relative z-50 lg:hidden" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-gray-900/80" aria-hidden="true" 
+			data-animate-show-sidebar="opacity-0 transition-opacity ease-linear duration-300 -> transition-opacity ease-linear duration-300 opacity-100"
+			data-animate-hide-sidebar="opacity-100 transition-opacity ease-linear duration-300 -> transition-opacity ease-linear duration-300 opacity-0"></div>
+
+    <div class="fixed inset-0 flex">
+      <div id="sidebar-drawer" class="relative mr-16 flex w-full max-w-xs flex-1"
+			data-animate-show-sidebar="-translate-x-full transition ease-in-out duration-300 transform -> transition ease-in-out duration-300 transform translate-x-0"
+			data-animate-hide-sidebar="translate-x-0 transition ease-in-out duration-300 transform -> transition ease-in-out duration-300 transform -translate-x-full"
+			>
+        <div class="absolute left-full top-0 flex w-16 justify-center pt-5"
+				data-animate-show-sidebar="opacity-0 ease-in-out duration-300 -> ease-in-out duration-300 opacity-100"
+				data-animate-hide-sidebar="opacity-100 ease-in-out duration-300 -> ease-in-out duration-300 opacity-0"
+				>
+          <button id="sidebar-close-button" type="button" class="-m-2.5 p-2.5">
+            <span class="sr-only">Close sidebar</span>
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
+          <div class="flex h-16 shrink-0 items-center">
+						<!-- logo goes here -->
+          </div>
+          <nav class="flex flex-1 flex-col">
+            <ul role="list" class="-mx-2 flex-1 space-y-1">
+							@NewNavigationMobileSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(SVGProps{Width: 24, Height: 24}))
+							@NewNavigationMobileSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality, "Quality Metrics", templ.Raw("<span class=\"h-6 w-6 shrink-0 text-center\">Q</span>"))
+							@NewNavigationMobileSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughput Metrics", templ.Raw("<span class=\"h-6 w-6 shrink-0 text-center\">T</span>"))              
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </div>
+
 	<!-- Static sidebar for desktop -->
 	<div class="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:block lg:w-20 lg:overflow-y-auto lg:bg-gray-900 lg:pb-4">
 		<div class="flex h-16 shrink-0 items-center justify-center">
@@ -105,16 +157,115 @@ templ NewNavigation(page *Page, props TeamPickerProps) {
 			<ul role="list" class="flex flex-col items-center space-y-1">
 				@NewNavigationSidebarLink(page, "/", page.NavState.Root, "Dashboard", DashboardIcon(SVGProps{Width: 32, Height: 32}))
 				@NewNavigationSidebarLink(page, "/metrics/quality", page.NavState.Metrics.Quality, "Quality Metrics", templ.Raw("Q"))
-				@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughpu Metrics", templ.Raw("T"))
+				@NewNavigationSidebarLink(page, "/metrics/throughput", page.NavState.Metrics.Throughput, "Throughput Metrics", templ.Raw("T"))
 			</ul>
 		</nav>
 	</div>
+	
 	<div class="lg:pl-20 sticky top-0 z-10">
-		<div class="sticky top-0 right-0 z-40 flex justify-end h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+		<div class="sticky top-0 right-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+			<button id="sidebar-show-button" type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
+        <span class="sr-only">Open sidebar</span>
+        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+        </svg>
+      </button>
+			<!-- Separator -->
+      <div class="h-6 w-px bg-gray-900/10 lg:hidden" aria-hidden="true"></div>
 			if page.DebugMode {
 				@DebugInfo(page)
 			}
+			<!-- Floater -->
+			<div class="flex-1 text-sm font-semibold leading-6 text-white"></div>
 			@teamPicker(props)
 		</div>
 	</div>
+	@mobileSidebarScript()
+}
+
+script mobileSidebarScript() {
+function triggerAnimation(animationName, onAnimationEnd) {
+	const animatedElements = [...document.querySelectorAll(`[data-animate-${animationName}]`)];
+	const elementsAnimations = animatedElements.map(element => {
+		const animationData = element.getAttribute(`data-animate-${animationName}`);
+		const [from, to] = animationData.split(" -> ");
+
+		return [element, from.split(" "), to.split(" ")];
+	});
+
+	for (const elementAnimation of elementsAnimations) {
+		const [element, from, to] = elementAnimation;
+		element.classList.add(...from);
+	}
+
+	const promiseTransitionEnd = (element) => {
+		return new Promise((resolve, reject) => {
+			const listener = () => {
+				element.removeEventListener('transitionend', listener);
+				resolve();
+			}
+			element.addEventListener('transitionend', listener);
+		});
+	}
+
+	requestAnimationFrame(() => {
+		requestAnimationFrame(() => {
+			const transitionEndPromises = [];
+
+			for (const elementAnimation of elementsAnimations) {
+				const [element, from, to] = elementAnimation;
+				transitionEndPromises.push(promiseTransitionEnd(element));
+				element.classList.remove(...from);
+				element.classList.add(...to);
+			}
+
+			Promise.all(transitionEndPromises).then(() => {
+				for (const elementAnimation of elementsAnimations) {
+					const [element, from, to] = elementAnimation;
+					element.classList.remove(...to);
+				}
+					if (onAnimationEnd) onAnimationEnd();
+			})
+		});
+	});
+
+}
+
+const sidebarContainer = document.getElementById("sidebar-container");
+const sidebarDrawer = document.getElementById("sidebar-drawer");
+const sidebarShowButton = document.getElementById('sidebar-show-button');
+const sidebarCloseButton = document.getElementById('sidebar-close-button');
+
+sidebarShownState = false;
+
+function showSidebar() {
+	if (sidebarShownState) return;
+	sidebarContainer.style.display = '';				
+	triggerAnimation('show-sidebar', ()=> {
+		document.addEventListener('keydown', sidebarEscapeListener);
+		document.addEventListener('click', sidebarClickAwayListener);
+	});
+	sidebarShownState = true;
+}
+
+function hideSidebar() {
+	if (!sidebarShownState) return;
+	document.removeEventListener('click', sidebarClickAwayListener);
+	document.removeEventListener('keydown', sidebarEscapeListener);
+	triggerAnimation('hide-sidebar', () => { sidebarContainer.style.display = 'none'; });
+	sidebarShownState = false;
+}
+
+function sidebarClickAwayListener(event) {
+	if (sidebarDrawer.contains(event.target)) return;
+	hideSidebar();
+}
+
+function sidebarEscapeListener(event) {
+	if (event.key !== 'Escape') return;
+	hideSidebar();
+}
+
+sidebarShowButton.addEventListener('click', showSidebar);
+sidebarCloseButton.addEventListener('click', hideSidebar);
 }

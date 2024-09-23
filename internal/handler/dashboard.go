@@ -1,6 +1,8 @@
 package handler
 
 import (
+	"sync"
+
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/graph"
 	"github.com/dxta-dev/app/internal/middleware"
@@ -329,38 +331,59 @@ func (a *App) DashboardPage(c echo.Context) error {
 		return err
 	}
 
-	var mergeRequestsWaitingForReview template.MergeRequestStackedListProps
-	var mergeRequestsReadyToMerge template.MergeRequestStackedListProps
-	var mergeRequestsInProgress template.MergeRequestStackedListProps
-	var mergeRequestsMerged template.MergeRequestStackedListProps
-	var mergeRequestsClosed template.MergeRequestStackedListProps
-	var mergeRequestsStale template.MergeRequestStackedListProps
+	var wg sync.WaitGroup
+
+	errCh := make(chan error, 5)
+
+	var (
+		mergeRequestsWaitingForReview template.MergeRequestStackedListProps
+		mergeRequestsReadyToMerge     template.MergeRequestStackedListProps
+		mergeRequestsInProgress       template.MergeRequestStackedListProps
+		mergeRequestsMerged           template.MergeRequestStackedListProps
+		mergeRequestsClosed           template.MergeRequestStackedListProps
+		mergeRequestsStale            template.MergeRequestStackedListProps
+		mrsInReview                   []data.MergeRequestListItemData
+	)
+
+	wg.Add(2)
 
 	isQueryCurrentWeek := queriedWeek == util.GetFormattedWeek(timeNow)
 	if isQueryCurrentWeek {
+		wg.Add(3)
+		go func() {
+			defer wg.Done()
+			mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(timeNow, teamMembers, nullRows.UserId)
+			if err != nil {
+				errCh <- err
+				return
+			}
+		}()
+
 		mergeRequestsInProgress.Id = "mrs-in-progress"
 		mergeRequestsInProgress.Title = "In progress"
-		mergeRequestsInProgress.MergeRequests, err = store.GetMergeRequestInProgressList(timeNow, teamMembers, nullRows.UserId)
 		mergeRequestsInProgress.MRStatusIconProps = template.MRInProgressIconProps
 
-		if err != nil {
-			return err
-		}
+		go func() {
+			defer wg.Done()
+			mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId, queriedWeek)
+			if err != nil {
+				errCh <- err
+				return
+			}
+		}()
 
 		mergeRequestsReadyToMerge.Id = "mrs-ready-to-merge"
 		mergeRequestsReadyToMerge.Title = "Ready to merge"
-		mergeRequestsReadyToMerge.MergeRequests, err = store.GetMergeRequestReadyToMergeList(teamMembers, nullRows.UserId, queriedWeek)
 		mergeRequestsReadyToMerge.MRStatusIconProps = template.MRReadyToBeMergedIconProps
 
-		if err != nil {
-			return err
-		}
-
-		mrsInReview, err := store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
-
-		if err != nil {
-			return err
-		}
+		go func() {
+			defer wg.Done()
+			mrsInReview, err = store.GetMergeRequestWaitingForReviewList(teamMembers, timeNow, nullRows.UserId)
+			if err != nil {
+				errCh <- err
+				return
+			}
+		}()
 
 		var recentMrsWaitingForReview []data.MergeRequestListItemData
 		var staleMrsWaitingForReview []data.MergeRequestListItemData
@@ -385,22 +408,40 @@ func (a *App) DashboardPage(c echo.Context) error {
 
 	}
 
+	go func() {
+		defer wg.Done()
+		mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(date, teamMembers, nullRows.UserId)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
+
 	mergeRequestsMerged.Id = "mrs-merged"
 	mergeRequestsMerged.Title = "Merged"
-	mergeRequestsMerged.MergeRequests, err = store.GetMergeRequestMergedList(date, teamMembers, nullRows.UserId)
 	mergeRequestsMerged.MRStatusIconProps = template.MRMergedIconProps
 
-	if err != nil {
-		return err
-	}
+	go func() {
+		defer wg.Done()
+		mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(date, teamMembers, nullRows.UserId)
+		if err != nil {
+			errCh <- err
+			return
+		}
+	}()
 
 	mergeRequestsClosed.Id = "mrs-closed"
 	mergeRequestsClosed.Title = "Closed"
-	mergeRequestsClosed.MergeRequests, err = store.GetMergeRequestClosedList(date, teamMembers, nullRows.UserId)
 	mergeRequestsClosed.MRStatusIconProps = template.MRClosedIconProps
 
-	if err != nil {
-		return err
+	wg.Wait()
+
+	close(errCh)
+	for e := range errCh {
+		if e != nil {
+			err = e
+			break
+		}
 	}
 
 	page := &template.Page{

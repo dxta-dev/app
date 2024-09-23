@@ -5,6 +5,7 @@ type QualityMetricsProps struct {
 	AverageReviewDepthSeriesProps     TimeSeriesProps
 	MrsMergedWithoutReviewSeriesProps TimeSeriesProps
 	AverageHandoverTimeSeriesProps    TimeSeriesProps
+	AverageLifecycleSeriesProps   		TimeSeriesProps
 }
 
 templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps TeamPickerProps) {
@@ -26,6 +27,10 @@ templ QualityMetricsPage(page *Page, props QualityMetricsProps, teamPickerProps 
 			<div class="inline-block px-9 py-4" id="average-handover-chart">
 				<h2 class="text-2xl font-bold">Average Handover per MR</h2>
 				@timeSeries(props.AverageHandoverTimeSeriesProps, "Average Handover per MR")
+			</div>
+			<div class="inline-block px-9 py-4" id="average-handover-chart">
+				<h2 class="text-2xl font-bold">Average Lifecycle Duration</h2>
+				@timeSeries(props.AverageLifecycleSeriesProps, "Average lifecycle duration")
 			</div>
 		</div>
 		@tooltipTemplate()
