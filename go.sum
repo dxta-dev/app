@@ -11,8 +11,8 @@ github.com/cenkalti/backoff/v4 v4.3.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyY
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/donseba/go-htmx v1.9.0 h1:8EegtV7Nr8R6RvD6gZc7rqqzVD3r82XTa+VMUOqQzDo=
-github.com/donseba/go-htmx v1.9.0/go.mod h1:8PTAYvNKf8+QYis+DpAsggKz+sa2qljtMgvdAeNBh5s=
+github.com/donseba/go-htmx v1.10.0 h1:ByeQd8frMPSX38vkjvsprSQ7+xTkHMDrkzBV0ljfYvA=
+github.com/donseba/go-htmx v1.10.0/go.mod h1:8PTAYvNKf8+QYis+DpAsggKz+sa2qljtMgvdAeNBh5s=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/gin-contrib/sse v0.1.0 h1:Y/yl/+YNO8GZSjAhjMsSuLt29uWRFHdHYUb5lYOV9qE=
