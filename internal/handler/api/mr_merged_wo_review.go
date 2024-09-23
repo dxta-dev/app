@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -11,6 +10,8 @@ import (
 )
 
 func MRsMergedWithoutReviewHandler(c echo.Context) error {
+
+	ctx := c.Request().Context()
 
 	apiState, err := NewAPIState(c)
 
@@ -22,7 +23,7 @@ func MRsMergedWithoutReviewHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	mrsMergedWithoutReview, err := api.GetMRsMergedWithoutReview(apiState.DB, context.Background(), apiState.org, apiState.repo, weeks, apiState.teamId)
+	mrsMergedWithoutReview, err := api.GetMRsMergedWithoutReview(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
 
 	if err != nil {
 		return err

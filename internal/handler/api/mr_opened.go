@@ -1,7 +1,6 @@
 package api
 
 import (
-	"context"
 	"net/http"
 	"time"
 
@@ -11,6 +10,8 @@ import (
 )
 
 func MRSOpenedHandler(c echo.Context) error {
+
+	ctx := c.Request().Context()
 
 	apiState, err := NewAPIState(c)
 
@@ -22,7 +23,7 @@ func MRSOpenedHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	mrsOpened, err := api.GetMRsOpened(apiState.DB, context.Background(), apiState.org, apiState.repo, weeks, apiState.teamId)
+	mrsOpened, err := api.GetMRsOpened(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
 
 	if err != nil {
 		return err
