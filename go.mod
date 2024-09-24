@@ -11,7 +11,7 @@ require (
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	github.com/wcharczuk/go-chart/v2 v2.1.2
-	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.53.0
+	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.55.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.55.0
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.55.0
 	go.opentelemetry.io/otel v1.30.0
@@ -59,7 +59,7 @@ require (
 	golang.org/x/image v0.18.0 // indirect
 	golang.org/x/sys v0.25.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
 	google.golang.org/grpc v1.66.1 // indirect
