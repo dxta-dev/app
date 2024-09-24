@@ -1,5 +1,0 @@
-
-port = 3000
-
-[tenants.default]
-  database_url = "libsql://calcom-dev-dxta.turso.io?authToken=eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJnaWQiOiI2YTlmNWM1NC1hZWRjLTExZWUtOWRmNi1iYTI5NmFmYWRkNDQiLCJpYXQiOiIyMDI0LTAxLTIyVDE3OjMyOjAzLjg5NDQ2NTczM1oifQ.OVOEgJnGtToVrVqFZJAkgbGw9rVvgCtqQOFwIsdTCHlfdrYSCYi8vBXn7aixrejpYaMZI2xzLRns_pzLruebAQ"
