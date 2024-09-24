@@ -38,15 +38,9 @@ type DeployFrequency struct {
 
 */
 
-func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]DeployFrequency, error) {
+func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string) ([]DeployFrequency, error) {
 
-	teamQuery := ""
 	queryParamLength := len(weeks)
-
-	if team != nil {
-		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
-		queryParamLength += 1
-	}
 
 	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
 
@@ -58,35 +52,21 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 	queryParams = append(queryParams, namespace)
 	queryParams = append(queryParams, repository)
 
-	if team != nil {
-		queryParams = append(queryParams, team)
-	}
-
 	query := fmt.Sprintf(`
 	SELECT
 		deploy_dates.week,
 		CAST(COUNT (*) AS REAL) / 7
-	FROM transform_merge_request_metrics AS metrics
-	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
-	JOIN transform_merge_request_fact_dates_junk AS dates_junk
-	ON metrics.dates_junk = dates_junk.id
+	FROM transform_deployments AS deploy
 	JOIN transform_dates AS deploy_dates
-	ON dates_junk.deployed_at = deploy_dates.id
-	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users AS author
-	ON uj.author = author.id
+	ON deploy.deployed_at = deploy_dates.id
+	JOIN transform_repositories AS repo
+	ON deploy.repository_id = repo.id
 	WHERE deploy_dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	%s
-	AND author.bot = 0
 	GROUP BY deploy_dates.week
-	ORDER BY deploy_dates.week ASC;
-	`,
+	ORDER BY deploy_dates.week ASC;`,
 		weeksPlaceholder,
-		teamQuery,
 	)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)

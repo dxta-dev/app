@@ -22,7 +22,7 @@ func DeployFrequencyHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	deployFrequencies, err := api.GetDeployFrequency(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
+	deployFrequencies, err := api.GetDeployFrequency(apiState.DB, ctx, apiState.org, apiState.repo, weeks)
 
 	if err != nil {
 		return err
