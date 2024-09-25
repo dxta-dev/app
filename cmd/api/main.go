@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"time"
@@ -91,9 +92,11 @@ func main() {
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Gzip())
-	e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-		return key == os.Getenv("API_SECRET"), nil
-	}))
+	if os.Getenv("API_SECRET") != "" {
+		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+			return key == os.Getenv("API_SECRET"), nil
+		}))
+	}
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hell")
@@ -122,8 +125,12 @@ func main() {
 	}
 
 	go func() {
+		http.ListenAndServe("localhost:6060", nil)
+	}()
+
+	go func() {
 		if err := e.Start(fmt.Sprintf(":%s", port)); err != nil && err != http.ErrServerClosed {
-			e.Logger.Fatal("shutting down the server")
+			e.Logger.Fatal(err)
 		}
 	}()
 
