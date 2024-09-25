@@ -19,8 +19,6 @@ func MRPickupTimeHandler(c echo.Context) error {
 		return err
 	}
 
-	defer apiState.DB.Close()
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	mrsPickupTime, err := api.GetMRPickupTime(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)

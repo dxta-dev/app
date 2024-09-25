@@ -22,6 +22,38 @@ type APIState struct {
 
 var reposDBCache sync.Map
 
+var dbPool sync.Map
+
+func getDB(ctx context.Context, org, repo string) (*sql.DB, error) {
+	cacheKey := org + "/" + repo
+
+	if dbInterface, ok := dbPool.Load(cacheKey); ok {
+		return dbInterface.(*sql.DB), nil
+	}
+
+	dbUrl, err := getCachedDbUrl(ctx, org, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	driverName := otel.GetDriverName()
+
+	fullDbUrl := dbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
+
+	db, err := sql.Open(driverName, fullDbUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.PingContext(ctx); err != nil {
+		return nil, err
+	}
+
+	dbPool.Store(cacheKey, db)
+
+	return db, nil
+}
+
 func getCachedDbUrl(ctx context.Context, org, repo string) (string, error) {
 	cacheKey := org + "/" + repo
 
@@ -57,14 +89,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
 	}
 
-	dbUrl, err := getCachedDbUrl(ctx, org, repo)
-	if err != nil {
-		return APIState{}, err
-	}
-
-	driverName := otel.GetDriverName()
-
-	db, err := sql.Open(driverName, dbUrl+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
+	db, err := getDB(ctx, org, repo)
 
 	if err != nil {
 		return APIState{}, err
