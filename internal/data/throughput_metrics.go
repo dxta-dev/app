@@ -442,34 +442,22 @@ type DeployFrequencyByWeek struct {
 	Amount float32
 }
 
-func (s *Store) GetDeployFrequency(weeks []string, teamMembers []int64) (map[string]DeployFrequencyByWeek, float64, error) {
+func (s *Store) GetDeployFrequency(weeks []string) (map[string]DeployFrequencyByWeek, float64, error) {
 	placeholders := strings.Repeat("?,", len(weeks)-1) + "?"
 
-	usersInTeamConditionQuery := ""
-	if len(teamMembers) > 0 {
-		teamMembersPlaceholders := strings.Repeat("?,", len(teamMembers)-1) + "?"
-		usersInTeamConditionQuery = fmt.Sprintf("AND author.external_id IN (%s)", teamMembersPlaceholders)
-	}
-
 	query := fmt.Sprintf(`
-		SELECT
-			CAST(COUNT (*) AS REAL) / 7,
-			deploy_dates.week
-		FROM transform_merge_request_metrics AS metrics
-		JOIN transform_merge_request_fact_dates_junk AS dates_junk
-		ON metrics.dates_junk = dates_junk.id
-		JOIN transform_dates AS deploy_dates
-		ON dates_junk.deployed_at = deploy_dates.id
-		JOIN transform_merge_request_fact_users_junk AS uj
-		ON metrics.users_junk = uj.id
-		JOIN transform_forge_users AS author
-		ON uj.author = author.id
-		WHERE deploy_dates.week IN (%s)
-		AND author.bot = 0
-		%s
-		GROUP BY deploy_dates.week`,
+	SELECT
+		deploy_dates.week,
+		CAST(COUNT (*) AS REAL) / 7
+	FROM transform_deployments AS deploy
+	JOIN transform_dates AS deploy_dates
+	ON deploy.deployed_at = deploy_dates.id
+	JOIN transform_repositories AS repo
+	ON deploy.repository_id = repo.id
+	WHERE deploy_dates.week IN (%s)
+	GROUP BY deploy_dates.week;`,
 		placeholders,
-		usersInTeamConditionQuery)
+	)
 
 	db, err := sql.Open(s.DriverName, s.DbUrl)
 
@@ -479,12 +467,9 @@ func (s *Store) GetDeployFrequency(weeks []string, teamMembers []int64) (map[str
 
 	defer db.Close()
 
-	queryParams := make([]interface{}, len(weeks)+len(teamMembers))
+	queryParams := make([]interface{}, len(weeks))
 	for i, v := range weeks {
 		queryParams[i] = v
-	}
-	for i, v := range teamMembers {
-		queryParams[i+len(weeks)] = v
 	}
 
 	rows, err := db.QueryContext(s.Context, query, queryParams...)
@@ -500,7 +485,7 @@ func (s *Store) GetDeployFrequency(weeks []string, teamMembers []int64) (map[str
 	for rows.Next() {
 		var deployFreq DeployFrequencyByWeek
 
-		if err := rows.Scan(&deployFreq.Amount, &deployFreq.Week); err != nil {
+		if err := rows.Scan(&deployFreq.Week, &deployFreq.Amount); err != nil {
 			return nil, 0, err
 		}
 		deployFrequencyByWeek[deployFreq.Week] = deployFreq

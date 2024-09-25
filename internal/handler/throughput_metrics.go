@@ -110,7 +110,7 @@ func (a *App) ThroughputMetricsPage(c echo.Context) error {
 
 	go func() {
 		defer wg.Done()
-		deployFrequency, averageDeployFrequencyByNWeeks, err = store.GetDeployFrequency(weeks, teamMembers)
+		deployFrequency, averageDeployFrequencyByNWeeks, err = store.GetDeployFrequency(weeks)
 		if err != nil {
 			errCh <- err
 			return
