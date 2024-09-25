@@ -1,10 +1,12 @@
 package api
 
 import (
+	"context"
 	"database/sql"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/otel"
@@ -16,6 +18,25 @@ type APIState struct {
 	org    string
 	repo   string
 	teamId *int64
+}
+
+var reposDBCache sync.Map
+
+func getCachedDbUrl(ctx context.Context, reposDB *sql.DB, org, repo string) (string, error) {
+	cacheKey := org + "/" + repo
+
+	if cachedUrl, ok := reposDBCache.Load(cacheKey); ok {
+		return cachedUrl.(string), nil
+	}
+
+	dbUrl, err := data.GetReposDbUrl(ctx, reposDB, org, repo)
+	if err != nil {
+		return "", err
+	}
+
+	reposDBCache.Store(cacheKey, dbUrl)
+
+	return dbUrl, nil
 }
 
 func NewAPIState(c echo.Context) (APIState, error) {
@@ -37,7 +58,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 	}
 	defer reposDB.Close()
 
-	dbUrl, err := data.GetReposDbUrl(ctx, reposDB, org, repo)
+	dbUrl, err := getCachedDbUrl(ctx, reposDB, org, repo)
 	if err != nil {
 		return APIState{}, err
 	}
