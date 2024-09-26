@@ -15,8 +15,10 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
 	sdkresource "go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.20.0"
@@ -40,6 +42,17 @@ func initTracer(ctx context.Context, res *sdkresource.Resource) (*sdktrace.Trace
 	return tp, nil
 }
 
+func initMeter(ctx context.Context, res *sdkresource.Resource) (*sdkmetric.MeterProvider, error) {
+	exporter, err := otlpmetricgrpc.New(ctx)
+	if err != nil {
+		return nil, err
+	}
+	read := sdkmetric.NewPeriodicReader(exporter, sdkmetric.WithInterval(60*time.Second))
+	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(read), sdkmetric.WithResource(res))
+	otel.SetMeterProvider(provider)
+	return provider, nil
+}
+
 func main() {
 
 	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
@@ -58,9 +71,16 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+		mp, err := initMeter(context.Background(), res)
+		if err != nil {
+			log.Fatal(err)
+		}
 		defer func() {
 			if err := tp.Shutdown(context.Background()); err != nil {
 				log.Printf("Error shutting down tracer provider: %v", err)
+			}
+			if err := mp.Shutdown(context.Background()); err != nil {
+				log.Printf("Error shutting down meter provider: %v", err)
 			}
 		}()
 
