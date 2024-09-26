@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/dxta-dev/app/internal/handler/api"
@@ -94,14 +95,27 @@ func main() {
 
 	e := echo.New()
 
+	isProd := os.Getenv("ENV") == "production"
+
+	if isProd {
+		e.Debug = false
+
+		e.Server.ReadTimeout = 10 * time.Second
+		e.Server.WriteTimeout = 10 * time.Second
+		e.Server.IdleTimeout = 30 * time.Second
+	}
+
 	if isEndpointProvided {
 		e.Use(otelecho.Middleware("dxta-app"))
 	}
 
 	e.Use(middleware.Logger())
-	e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
-		return key == os.Getenv("API_SECRET"), nil
-	}))
+	e.Use(middleware.Gzip())
+	if os.Getenv("API_SECRET") != "" {
+		e.Use(middleware.KeyAuth(func(key string, c echo.Context) (bool, error) {
+			return key == os.Getenv("API_SECRET"), nil
+		}))
+	}
 
 	e.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hell")
@@ -128,5 +142,20 @@ func main() {
 	if port == "" {
 		port = "1323"
 	}
-	e.Logger.Fatal(e.Start(fmt.Sprintf(":%s", port)))
+
+	go func() {
+		if err := e.Start(fmt.Sprintf(":%s", port)); err != nil && err != http.ErrServerClosed {
+			e.Logger.Fatal(err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+	<-quit
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	if err := e.Shutdown(ctx); err != nil {
+		e.Logger.Fatal(err)
+	}
+
 }

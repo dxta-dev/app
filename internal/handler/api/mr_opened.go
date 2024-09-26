@@ -19,8 +19,6 @@ func MRSOpenedHandler(c echo.Context) error {
 		return err
 	}
 
-	defer apiState.DB.Close()
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	mrsOpened, err := api.GetMRsOpened(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
