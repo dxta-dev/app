@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"time"
@@ -123,10 +122,6 @@ func main() {
 	if port == "" {
 		port = "1323"
 	}
-
-	go func() {
-		http.ListenAndServe("localhost:6060", nil)
-	}()
 
 	go func() {
 		if err := e.Start(fmt.Sprintf(":%s", port)); err != nil && err != http.ErrServerClosed {
