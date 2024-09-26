@@ -18,8 +18,6 @@ func DeployFrequencyHandler(c echo.Context) error {
 		return err
 	}
 
-	defer apiState.DB.Close()
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	deployFrequencies, err := api.GetDeployFrequency(apiState.DB, ctx, apiState.org, apiState.repo, weeks)

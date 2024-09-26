@@ -18,8 +18,6 @@ func ReviewTimeHandler(c echo.Context) error {
 		return err
 	}
 
-	defer apiState.DB.Close()
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	reviewTimes, err := api.GetReviewTime(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)

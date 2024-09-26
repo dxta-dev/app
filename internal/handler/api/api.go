@@ -22,12 +22,51 @@ type APIState struct {
 
 var reposDBCache sync.Map
 
-func getCachedDbUrl(ctx context.Context, reposDB *sql.DB, org, repo string) (string, error) {
+var dbPool sync.Map
+
+func getDB(ctx context.Context, org, repo string) (*sql.DB, error) {
+	cacheKey := org + "/" + repo
+
+	if dbInterface, ok := dbPool.Load(cacheKey); ok {
+		return dbInterface.(*sql.DB), nil
+	}
+
+	dbUrl, err := getCachedDbUrl(ctx, org, repo)
+	if err != nil {
+		return nil, err
+	}
+
+	driverName := otel.GetDriverName()
+
+	fullDbUrl := dbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
+
+	db, err := sql.Open(driverName, fullDbUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := db.PingContext(ctx); err != nil {
+		return nil, err
+	}
+
+	dbPool.Store(cacheKey, db)
+
+	return db, nil
+}
+
+func getCachedDbUrl(ctx context.Context, org, repo string) (string, error) {
 	cacheKey := org + "/" + repo
 
 	if cachedUrl, ok := reposDBCache.Load(cacheKey); ok {
 		return cachedUrl.(string), nil
 	}
+	driverName := otel.GetDriverName()
+
+	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
+	if err != nil {
+		return "", err
+	}
+	defer reposDB.Close()
 
 	dbUrl, err := data.GetReposDbUrl(ctx, reposDB, org, repo)
 	if err != nil {
@@ -50,20 +89,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
 	}
 
-	driverName := otel.GetDriverName()
-
-	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
-	if err != nil {
-		return APIState{}, err
-	}
-	defer reposDB.Close()
-
-	dbUrl, err := getCachedDbUrl(ctx, reposDB, org, repo)
-	if err != nil {
-		return APIState{}, err
-	}
-
-	db, err := sql.Open(driverName, dbUrl+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
+	db, err := getDB(ctx, org, repo)
 
 	if err != nil {
 		return APIState{}, err

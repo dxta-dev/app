@@ -19,8 +19,6 @@ func CycleTimeHandler(c echo.Context) error {
 		return err
 	}
 
-	defer apiState.DB.Close()
-
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
 	cycleTimes, err := api.GetCycleTime(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
