@@ -27,6 +27,8 @@ COPY --from=bun /app/public/style.css /app/public/style.css
 
 RUN go install github.com/a-h/templ/cmd/templ@v0.2.680
 
+ENV CGO_ENABLED=1
+
 RUN templ generate
 
 RUN go build \
