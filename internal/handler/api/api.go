@@ -3,14 +3,19 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/otel"
 	"github.com/labstack/echo/v4"
+
+	"github.com/tursodatabase/go-libsql"
 )
 
 type APIState struct {
@@ -24,6 +29,39 @@ var reposDBCache sync.Map
 
 var dbPool sync.Map
 
+func getDirPath() (string, error) {
+	dir := filepath.Join(os.TempDir(), "libsql-dir")
+	err := os.MkdirAll(dir, os.ModePerm)
+
+	if err != nil {
+		return "", err
+	}
+
+	return dir, nil
+
+}
+
+func getEmbeddedDB(dbUrl, org, repo string) (*libsql.Connector, error) {
+	dirPath, err := getDirPath()
+
+	if err != nil {
+		return nil, err
+	}
+
+	connector, err := libsql.NewEmbeddedReplicaConnector(
+		filepath.Join(dirPath, org+"_"+repo),
+		dbUrl,
+		libsql.WithAuthToken(os.Getenv("DXTA_DEV_GROUP_TOKEN")),
+		libsql.WithSyncInterval(time.Minute*5),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return connector, nil
+
+}
+
 func getDB(ctx context.Context, org, repo string) (*sql.DB, error) {
 	cacheKey := org + "/" + repo
 
@@ -36,13 +74,23 @@ func getDB(ctx context.Context, org, repo string) (*sql.DB, error) {
 		return nil, err
 	}
 
-	driverName := otel.GetDriverName()
+	connector, err := getEmbeddedDB(dbUrl, org, repo)
 
-	fullDbUrl := dbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
+	var db *sql.DB
 
-	db, err := sql.Open(driverName, fullDbUrl)
 	if err != nil {
-		return nil, err
+		fmt.Println("Using normal db")
+		driverName := otel.GetDriverName()
+
+		fullDbUrl := dbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
+
+		db, err = sql.Open(driverName, fullDbUrl)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		fmt.Println("Using embedded db")
+		db = sql.OpenDB(connector)
 	}
 
 	if err := db.PingContext(ctx); err != nil {

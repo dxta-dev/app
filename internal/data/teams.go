@@ -6,7 +6,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	_ "github.com/libsql/libsql-client-go/libsql"
+	_ "github.com/tursodatabase/go-libsql"
 )
 
 type Team struct {
@@ -15,7 +15,6 @@ type Team struct {
 }
 
 type TeamSlice []Team
-
 
 func (s *Store) GetTeams() (TeamSlice, error) {
 	db, err := sql.Open(s.DriverName, s.DbUrl)

@@ -13,7 +13,7 @@ import (
 
 	_ "modernc.org/sqlite"
 
-	_ "github.com/libsql/libsql-client-go/libsql"
+	_ "github.com/tursodatabase/go-libsql"
 )
 
 const (

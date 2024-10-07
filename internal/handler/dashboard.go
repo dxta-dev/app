@@ -18,7 +18,7 @@ import (
 
 	"github.com/donseba/go-htmx"
 	"github.com/labstack/echo/v4"
-	_ "github.com/libsql/libsql-client-go/libsql"
+	_ "github.com/tursodatabase/go-libsql"
 	"github.com/wcharczuk/go-chart/v2/drawing"
 )
 
