@@ -8,6 +8,8 @@ RUN go mod download
 
 COPY . .
 
+ENV CGO_ENABLED=1
+
 RUN go build \
   -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
   -o api \
