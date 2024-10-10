@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MergeFrequency = ValueRealDataset
+type MergeFrequency = CountIntegerDataset
 
 /*
 
@@ -62,7 +62,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 	query := fmt.Sprintf(`
 	SELECT
 		merged_dates.week,
-		CAST(COUNT (*) AS REAL) / 7
+		COUNT(*) as merges_count
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -94,21 +94,9 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 
 	defer rows.Close()
 
-	var mergeFrequencies []MergeFrequency
+	mergeFrequencies, err := ScanCountIntegerDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mergeFrequency MergeFrequency
-
-		if err := rows.Scan(
-			&mergeFrequency.Week,
-			&mergeFrequency.Value,
-		); err != nil {
-			return nil, err
-		}
-		mergeFrequencies = append(mergeFrequencies, mergeFrequency)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
