@@ -1,8 +1,10 @@
 package api
 
+import "database/sql"
+
 type ValueIntegerDataset struct {
 	Week  string `json:"week"`
-	Value int    `json:"value"`
+	Value *int   `json:"value"`
 }
 type ValueRealDataset struct {
 	Week  string  `json:"week"`
@@ -31,4 +33,42 @@ type CountIntegerDataset struct {
 type CountRealDataset struct {
 	Week  string  `json:"week"`
 	Count float64 `json:"value"`
+}
+
+func ScanValueIntegerDatasetRows(rows *sql.Rows, weeks []string) ([]ValueIntegerDataset, error) {
+	datasetByWeek := make(map[string]ValueIntegerDataset)
+
+	for rows.Next() {
+		var dataPoint ValueIntegerDataset
+		if err := rows.Scan(
+			&dataPoint.Week,
+			&dataPoint.Value,
+		); err != nil {
+			return nil, err
+		}
+
+		datasetByWeek[dataPoint.Week] = dataPoint
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var dataset []ValueIntegerDataset
+	for _, week := range weeks {
+		dataPoint, ok := datasetByWeek[week]
+		if !ok {
+			dataPoint = ValueIntegerDataset{
+				Week:  week,
+				Value: nil,
+			}
+		}
+		dataset = append(dataset, dataPoint)
+	}
+	dataset[0] = ValueIntegerDataset{
+		Week:  dataset[0].Week,
+		Value: nil,
+	}
+
+	return dataset, nil
 }

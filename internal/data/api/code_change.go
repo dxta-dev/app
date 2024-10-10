@@ -89,22 +89,9 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	}
 
 	defer rows.Close()
+	codeChanges, err := ScanValueIntegerDatasetRows(rows, weeks)
 
-	var codeChanges []CodeChange
-
-	for rows.Next() {
-		var codeChange CodeChange
-		if err := rows.Scan(
-			&codeChange.Week,
-			&codeChange.Value,
-		); err != nil {
-			return nil, err
-		}
-
-		codeChanges = append(codeChanges, codeChange)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
