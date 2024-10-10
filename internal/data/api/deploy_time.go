@@ -99,25 +99,9 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	var deployTimes []DeployTime
+	deployTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var deployTime DeployTime
-
-		if err := rows.Scan(
-			&deployTime.Week,
-			&deployTime.Average,
-			&deployTime.Median,
-			&deployTime.Percentile75,
-			&deployTime.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		deployTimes = append(deployTimes, deployTime)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
