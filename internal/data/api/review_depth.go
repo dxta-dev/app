@@ -97,25 +97,9 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	var mrReviewDepths []MRReviewDepth
+	mrReviewDepths, err := ScanStatisticIntegerDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mrReviewDepth MRReviewDepth
-
-		if err := rows.Scan(
-			&mrReviewDepth.Week,
-			&mrReviewDepth.Average,
-			&mrReviewDepth.Median,
-			&mrReviewDepth.Percentile75,
-			&mrReviewDepth.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		mrReviewDepths = append(mrReviewDepths, mrReviewDepth)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
