@@ -99,26 +99,9 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 	}
 
 	defer rows.Close()
+	codingTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	var codingTimes []CodingTime
-
-	for rows.Next() {
-		var codingTime CodingTime
-
-		if err := rows.Scan(
-			&codingTime.Week,
-			&codingTime.Average,
-			&codingTime.Median,
-			&codingTime.Percentile75,
-			&codingTime.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		codingTimes = append(codingTimes, codingTime)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
