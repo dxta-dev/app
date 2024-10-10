@@ -99,25 +99,9 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	var reviewTimes []ReviewTime
+	reviewTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var reviewTime ReviewTime
-
-		if err := rows.Scan(
-			&reviewTime.Week,
-			&reviewTime.Average,
-			&reviewTime.Median,
-			&reviewTime.Percentile75,
-			&reviewTime.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		reviewTimes = append(reviewTimes, reviewTime)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
