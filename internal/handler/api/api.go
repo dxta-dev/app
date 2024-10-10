@@ -110,3 +110,14 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		teamId: teamInt,
 	}, nil
 }
+
+func GetReposDB() (*sql.DB, error) {
+	driverName := otel.GetDriverName()
+
+	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
+	if err != nil {
+		return nil, err
+	}
+
+	return reposDB, nil
+}
