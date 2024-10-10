@@ -19,11 +19,11 @@ type StatisticIntegerDataset struct {
 	Percentile95 int    `json:"percentile95"`
 }
 type StatisticRealDataset struct {
-	Week         string  `json:"week"`
-	Average      float64 `json:"average"`
-	Median       float64 `json:"median"`
-	Percentile75 float64 `json:"percentile75"`
-	Percentile95 float64 `json:"percentile95"`
+	Week         string   `json:"week"`
+	Average      *float64 `json:"average"`
+	Median       *float64 `json:"median"`
+	Percentile75 *float64 `json:"percentile75"`
+	Percentile95 *float64 `json:"percentile95"`
 }
 
 type CountIntegerDataset struct {
@@ -61,6 +61,45 @@ func ScanValueIntegerDatasetRows(rows *sql.Rows, weeks []string) ([]ValueInteger
 			dataPoint = ValueIntegerDataset{
 				Week:  week,
 				Value: nil,
+			}
+		}
+		dataset = append(dataset, dataPoint)
+	}
+
+	return dataset, nil
+}
+
+func ScanStatisticRealDatasetRows(rows *sql.Rows, weeks []string) ([]StatisticRealDataset, error) {
+	datasetByWeek := make(map[string]StatisticRealDataset)
+
+	for rows.Next() {
+		var dataPoint StatisticRealDataset
+		if err := rows.Scan(
+			&dataPoint.Average,
+			&dataPoint.Median,
+			&dataPoint.Percentile75,
+			&dataPoint.Percentile95,
+		); err != nil {
+			return nil, err
+		}
+
+		datasetByWeek[dataPoint.Week] = dataPoint
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var dataset []StatisticRealDataset
+	for _, week := range weeks {
+		dataPoint, ok := datasetByWeek[week]
+		if !ok {
+			dataPoint = StatisticRealDataset{
+				Week:         week,
+				Average:      nil,
+				Median:       nil,
+				Percentile75: nil,
+				Percentile95: nil,
 			}
 		}
 		dataset = append(dataset, dataPoint)
