@@ -99,25 +99,9 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	var mrsPickupTime []MRPickupTime
+	mrsPickupTime, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mrPickupTime MRPickupTime
-
-		if err := rows.Scan(
-			&mrPickupTime.Week,
-			&mrPickupTime.Average,
-			&mrPickupTime.Median,
-			&mrPickupTime.Percentile75,
-			&mrPickupTime.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		mrsPickupTime = append(mrsPickupTime, mrPickupTime)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
