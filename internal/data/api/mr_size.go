@@ -97,25 +97,9 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	defer rows.Close()
 
-	var mrSizes []MRSize
+	mrSizes, err := ScanStatisticIntegerDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mrsize MRSize
-
-		if err := rows.Scan(
-			&mrsize.Week,
-			&mrsize.Average,
-			&mrsize.Median,
-			&mrsize.Percentile75,
-			&mrsize.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		mrSizes = append(mrSizes, mrsize)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
