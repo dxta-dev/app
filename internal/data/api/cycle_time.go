@@ -99,24 +99,9 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	var cycleTimes []CycleTime
+	cycleTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var cycleTime CycleTime
-
-		if err := rows.Scan(
-			&cycleTime.Week,
-			&cycleTime.Average,
-			&cycleTime.Median,
-			&cycleTime.Percentile75,
-			&cycleTime.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-		cycleTimes = append(cycleTimes, cycleTime)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
