@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type MRsMergedWithoutReview = CountIntegerDataset
 
 /*
 	SELECT

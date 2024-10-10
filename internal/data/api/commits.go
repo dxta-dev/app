@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type Commits struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type Commits = CountIntegerDataset
 
 /*
 	SELECT

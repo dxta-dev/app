@@ -7,13 +7,7 @@ import (
 	"strings"
 )
 
-type Handover struct {
-	Week         string `json:"week"`
-	Average      int    `json:"average"`
-	Median       int    `json:"median"`
-	Percentile75 int    `json:"percentile75"`
-	Percentile95 int    `json:"percentile95"`
-}
+type Handover = StatisticIntegerDataset
 
 /*
 	SELECT

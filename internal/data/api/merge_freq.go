@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type MergeFrequency struct {
-	Week  string  `json:"week"`
-	Value float32 `json:"value"`
-}
+type MergeFrequency = ValueRealDataset
 
 /*
 

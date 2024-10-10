@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type DeployFrequency struct {
-	Week  string  `json:"week"`
-	Value float32 `json:"value"`
-}
+type DeployFrequency = ValueRealDataset
 
 /*
 

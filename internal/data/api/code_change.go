@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type CodeChange struct {
-	Week  string `json:"week"`
-	Value int    `json:"value"`
-}
+type CodeChange = ValueIntegerDataset
 
 /*
 	SELECT

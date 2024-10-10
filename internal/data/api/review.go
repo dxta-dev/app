@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type TotalReview = CountIntegerDataset
 
 /*
 

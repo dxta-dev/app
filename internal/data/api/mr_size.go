@@ -7,14 +7,7 @@ import (
 	"strings"
 )
 
-type MRSize struct {
-	Week         string `json:"week"`
-	Average      int    `json:"average"`
-	Median       int    `json:"median"`
-	Percentile75 int    `json:"percentile75"`
-	Percentile95 int    `json:"percentile95"`
-	Count        int    `json:"count"`
-}
+type MRSize = StatisticIntegerDataset
 
 /*
 	SELECT
@@ -23,7 +16,6 @@ type MRSize struct {
 		FLOOR(MEDIAN(metrics.mr_size)) AS P50,
 		FLOOR(PERCENTILE_75(metrics.mr_size)) AS P75,
 		FLOOR(PERCENTILE_95(metrics.mr_size)) as P95,
-		COUNT(*) AS C
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -73,8 +65,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 		FLOOR(AVG(metrics.mr_size)) as AVG,
 		FLOOR(MEDIAN(metrics.mr_size)) AS P50,
 		FLOOR(PERCENTILE_75(metrics.mr_size)) AS P75,
-		FLOOR(PERCENTILE_95(metrics.mr_size)) as P95,
-		COUNT(*) AS C
+		FLOOR(PERCENTILE_95(metrics.mr_size)) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -117,7 +108,6 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 			&mrsize.Median,
 			&mrsize.Percentile75,
 			&mrsize.Percentile95,
-			&mrsize.Count,
 		); err != nil {
 			return nil, err
 		}
