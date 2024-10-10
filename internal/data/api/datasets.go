@@ -75,6 +75,7 @@ func ScanStatisticRealDatasetRows(rows *sql.Rows, weeks []string) ([]StatisticRe
 	for rows.Next() {
 		var dataPoint StatisticRealDataset
 		if err := rows.Scan(
+			&dataPoint.Week,
 			&dataPoint.Average,
 			&dataPoint.Median,
 			&dataPoint.Percentile75,
