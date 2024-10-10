@@ -6,10 +6,6 @@ type ValueIntegerDataset struct {
 	Week  string `json:"week"`
 	Value *int   `json:"value"`
 }
-type ValueRealDataset struct {
-	Week  string  `json:"week"`
-	Value float64 `json:"value"`
-}
 
 type StatisticIntegerDataset struct {
 	Week         string `json:"week"`
@@ -29,10 +25,6 @@ type StatisticRealDataset struct {
 type CountIntegerDataset struct {
 	Week  string `json:"week"`
 	Count *int   `json:"count"`
-}
-type CountRealDataset struct {
-	Week  string  `json:"week"`
-	Count float64 `json:"count"`
 }
 
 func ScanValueIntegerDatasetRows(rows *sql.Rows, weeks []string) ([]ValueIntegerDataset, error) {
