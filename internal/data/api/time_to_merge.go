@@ -98,25 +98,9 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	var timesToMerge []TimeToMerge
+	timesToMerge, err := ScanStatisticRealDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var timeToMerge TimeToMerge
-
-		if err := rows.Scan(
-			&timeToMerge.Week,
-			&timeToMerge.Average,
-			&timeToMerge.Median,
-			&timeToMerge.Percentile75,
-			&timeToMerge.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		timesToMerge = append(timesToMerge, timeToMerge)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
