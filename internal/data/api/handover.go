@@ -97,24 +97,9 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	var handovers []Handover
+	handovers, err := ScanStatisticIntegerDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var handover Handover
-
-		if err := rows.Scan(
-			&handover.Week,
-			&handover.Average,
-			&handover.Median,
-			&handover.Percentile75,
-			&handover.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-		handovers = append(handovers, handover)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
