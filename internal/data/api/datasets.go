@@ -65,10 +65,6 @@ func ScanValueIntegerDatasetRows(rows *sql.Rows, weeks []string) ([]ValueInteger
 		}
 		dataset = append(dataset, dataPoint)
 	}
-	dataset[0] = ValueIntegerDataset{
-		Week:  dataset[0].Week,
-		Value: nil,
-	}
 
 	return dataset, nil
 }
