@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CycleTime = StatisticRealDataset
+type CycleTime = StatisticDataset[float64]
 
 /*
 	SELECT
@@ -99,7 +99,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	cycleTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
+	cycleTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

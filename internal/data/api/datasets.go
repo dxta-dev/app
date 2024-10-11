@@ -1,6 +1,58 @@
 package api
 
-import "database/sql"
+import (
+	"database/sql"
+
+	"golang.org/x/exp/constraints"
+)
+
+type StatisticDataset[T constraints.Ordered] struct {
+	Week         string `json:"week"`
+	Average      *T     `json:"average"`
+	Median       *T     `json:"median"`
+	Percentile75 *T     `json:"percentile75"`
+	Percentile95 *T     `json:"percentile95"`
+}
+
+func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []string) ([]StatisticDataset[T], error) {
+	datasetByWeek := make(map[string]StatisticDataset[T])
+
+	for rows.Next() {
+		var dataPoint StatisticDataset[T]
+		if err := rows.Scan(
+			&dataPoint.Week,
+			&dataPoint.Average,
+			&dataPoint.Median,
+			&dataPoint.Percentile75,
+			&dataPoint.Percentile95,
+		); err != nil {
+			return nil, err
+		}
+
+		datasetByWeek[dataPoint.Week] = dataPoint
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var dataset []StatisticDataset[T]
+	for _, week := range weeks {
+		dataPoint, ok := datasetByWeek[week]
+		if !ok {
+			dataPoint = StatisticDataset[T]{
+				Week:         week,
+				Average:      nil,
+				Median:       nil,
+				Percentile75: nil,
+				Percentile95: nil,
+			}
+		}
+		dataset = append(dataset, dataPoint)
+	}
+
+	return dataset, nil
+}
 
 type ValueIntegerDataset struct {
 	Week  string `json:"week"`
