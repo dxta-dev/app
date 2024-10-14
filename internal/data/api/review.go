@@ -69,10 +69,15 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 	ON occuredAt.id = ev.occured_on
 	JOIN transform_forge_users AS author
 	ON ev.actor = author.id
+	JOIN transform_merge_requests AS mrs
+	ON ev.merge_request = mrs.id
+	JOIN transform_branches AS branch
+	ON mrs.target_branch = branch.id	
 	WHERE ev.merge_request_event_type = 15
 	AND occuredAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
+	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
 	GROUP BY occuredAt.week
