@@ -6,7 +6,7 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-type StatisticDataset[T constraints.Ordered] struct {
+type StatisticData[T constraints.Ordered] struct {
 	Week         string `json:"week"`
 	Average      *T     `json:"average"`
 	Median       *T     `json:"median"`
@@ -14,11 +14,11 @@ type StatisticDataset[T constraints.Ordered] struct {
 	Percentile95 *T     `json:"percentile95"`
 }
 
-func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []string) ([]StatisticDataset[T], error) {
-	datasetByWeek := make(map[string]StatisticDataset[T])
+func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []string) ([]StatisticData[T], error) {
+	datasetByWeek := make(map[string]StatisticData[T])
 
 	for rows.Next() {
-		var dataPoint StatisticDataset[T]
+		var dataPoint StatisticData[T]
 		if err := rows.Scan(
 			&dataPoint.Week,
 			&dataPoint.Average,
@@ -36,16 +36,55 @@ func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 		return nil, err
 	}
 
-	var dataset []StatisticDataset[T]
+	var dataset []StatisticData[T]
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = StatisticDataset[T]{
+			dataPoint = StatisticData[T]{
 				Week:         week,
 				Average:      nil,
 				Median:       nil,
 				Percentile75: nil,
 				Percentile95: nil,
+			}
+		}
+		dataset = append(dataset, dataPoint)
+	}
+
+	return dataset, nil
+}
+
+type ValueData struct {
+	Week  string `json:"week"`
+	Value *int   `json:"value"`
+}
+
+func ScanValueDatasetRows(rows *sql.Rows, weeks []string) ([]ValueData, error) {
+	datasetByWeek := make(map[string]ValueData)
+
+	for rows.Next() {
+		var dataPoint ValueData
+		if err := rows.Scan(
+			&dataPoint.Week,
+			&dataPoint.Value,
+		); err != nil {
+			return nil, err
+		}
+
+		datasetByWeek[dataPoint.Week] = dataPoint
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var dataset []ValueData
+	for _, week := range weeks {
+		dataPoint, ok := datasetByWeek[week]
+		if !ok {
+			dataPoint = ValueData{
+				Week:  week,
+				Value: nil,
 			}
 		}
 		dataset = append(dataset, dataPoint)
