@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CodingTime = StatisticRealDataset
+type CodingTime = StatisticData[float64]
 
 /*
 
@@ -99,7 +99,7 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 	}
 
 	defer rows.Close()
-	codingTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
+	codingTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

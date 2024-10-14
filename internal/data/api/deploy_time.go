@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type DeployTime = StatisticRealDataset
+type DeployTime = StatisticData[float64]
 
 /*
 	SELECT
@@ -99,7 +99,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	deployTimes, err := ScanStatisticRealDatasetRows(rows, weeks)
+	deployTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

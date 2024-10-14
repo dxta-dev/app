@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview = CountIntegerDataset
+type MRsMergedWithoutReview = ValueData
 
 /*
 	SELECT
@@ -94,7 +94,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 
 	defer rows.Close()
 
-	mrsMergedWithoutReview, err := ScanCountIntegerDatasetRows(rows, weeks)
+	mrsMergedWithoutReview, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TimeToMerge = StatisticRealDataset
+type TimeToMerge = StatisticData[float64]
 
 /*
 	SELECT
@@ -98,7 +98,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	timesToMerge, err := ScanStatisticRealDatasetRows(rows, weeks)
+	timesToMerge, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

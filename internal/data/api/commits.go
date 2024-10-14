@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Commits = CountIntegerDataset
+type Commits = ValueData
 
 /*
 	SELECT
@@ -87,7 +87,7 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	defer rows.Close()
 
-	commits, err := ScanCountIntegerDatasetRows(rows, weeks)
+	commits, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

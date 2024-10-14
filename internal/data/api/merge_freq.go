@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MergeFrequency = CountIntegerDataset
+type MergeFrequency = ValueData
 
 /*
 
@@ -94,7 +94,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 
 	defer rows.Close()
 
-	mergeFrequencies, err := ScanCountIntegerDatasetRows(rows, weeks)
+	mergeFrequencies, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

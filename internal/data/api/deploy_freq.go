@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type DeployFrequency = CountIntegerDataset
+type DeployFrequency = ValueData
 
 /*
 
@@ -74,7 +74,7 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 
 	defer rows.Close()
 
-	deployFrequencies, err := ScanCountIntegerDatasetRows(rows, weeks)
+	deployFrequencies, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

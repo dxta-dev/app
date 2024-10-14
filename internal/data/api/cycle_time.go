@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CycleTime = StatisticDataset[float64]
+type CycleTime = StatisticData[float64]
 
 /*
 	SELECT

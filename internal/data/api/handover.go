@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Handover = StatisticIntegerDataset
+type Handover = StatisticData[int]
 
 /*
 	SELECT
@@ -97,7 +97,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handovers, err := ScanStatisticIntegerDatasetRows(rows, weeks)
+	handovers, err := ScanStatisticDatasetRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

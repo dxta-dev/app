@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview = CountIntegerDataset
+type TotalReview = ValueData
 
 /*
 
@@ -90,7 +90,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	totalReviews, err := ScanCountIntegerDatasetRows(rows, weeks)
+	totalReviews, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

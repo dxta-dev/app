@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsOpened = CountIntegerDataset
+type MRsOpened = ValueData
 
 /*
 	SELECT
@@ -93,7 +93,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	mrsOpened, err := ScanCountIntegerDatasetRows(rows, weeks)
+	mrsOpened, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

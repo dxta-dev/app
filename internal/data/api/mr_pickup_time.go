@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRPickupTime = StatisticRealDataset
+type MRPickupTime = StatisticData[float64]
 
 /*
 	SELECT
@@ -99,7 +99,7 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	mrsPickupTime, err := ScanStatisticRealDatasetRows(rows, weeks)
+	mrsPickupTime, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CodeChange = ValueIntegerDataset
+type CodeChange = ValueData
 
 /*
 	SELECT
@@ -89,7 +89,7 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	}
 
 	defer rows.Close()
-	codeChanges, err := ScanValueIntegerDatasetRows(rows, weeks)
+	codeChanges, err := ScanValueDatasetRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

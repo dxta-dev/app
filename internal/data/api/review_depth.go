@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRReviewDepth = StatisticIntegerDataset
+type MRReviewDepth = StatisticData[int]
 
 /*
 	SELECT
@@ -97,7 +97,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	mrReviewDepths, err := ScanStatisticIntegerDatasetRows(rows, weeks)
+	mrReviewDepths, err := ScanStatisticDatasetRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err
