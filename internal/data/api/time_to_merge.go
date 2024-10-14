@@ -7,13 +7,7 @@ import (
 	"strings"
 )
 
-type TimeToMerge struct {
-	Week         string  `json:"week"`
-	Average      float64 `json:"average"`
-	Median       float64 `json:"median"`
-	Percentile75 float64 `json:"percentile75"`
-	Percentile95 float64 `json:"percentile95"`
-}
+type TimeToMerge = StatisticData[float64]
 
 /*
 	SELECT
@@ -104,25 +98,9 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	var timesToMerge []TimeToMerge
+	timesToMerge, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
-	for rows.Next() {
-		var timeToMerge TimeToMerge
-
-		if err := rows.Scan(
-			&timeToMerge.Week,
-			&timeToMerge.Average,
-			&timeToMerge.Median,
-			&timeToMerge.Percentile75,
-			&timeToMerge.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		timesToMerge = append(timesToMerge, timeToMerge)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

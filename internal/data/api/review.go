@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type TotalReview = ValueData
 
 /*
 
@@ -93,22 +90,9 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	var totalReviews []TotalReview
+	totalReviews, err := ScanValueDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var totalReview TotalReview
-
-		if err := rows.Scan(
-			&totalReview.Week,
-			&totalReview.Count,
-		); err != nil {
-			return nil, err
-		}
-
-		totalReviews = append(totalReviews, totalReview)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

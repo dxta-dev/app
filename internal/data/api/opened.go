@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type MRsOpened struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type MRsOpened = ValueData
 
 /*
 	SELECT
@@ -96,21 +93,9 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	var mrsOpened []MRsOpened
+	mrsOpened, err := ScanValueDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mrOpened MRsOpened
-
-		if err := rows.Scan(
-			&mrOpened.Week,
-			&mrOpened.Count,
-		); err != nil {
-			return nil, err
-		}
-
-		mrsOpened = append(mrsOpened, mrOpened)
-	}
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

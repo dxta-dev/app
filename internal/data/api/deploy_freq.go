@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type DeployFrequency struct {
-	Week  string  `json:"week"`
-	Value float32 `json:"value"`
-}
+type DeployFrequency = ValueData
 
 /*
 
@@ -55,7 +52,7 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 	query := fmt.Sprintf(`
 	SELECT
 		deploy_dates.week,
-		CAST(COUNT (*) AS REAL) / 7
+		COUNT(*) AS deploy_count
 	FROM transform_deployments AS deploy
 	JOIN transform_dates AS deploy_dates
 	ON deploy.deployed_at = deploy_dates.id
@@ -77,21 +74,9 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 
 	defer rows.Close()
 
-	var deployFrequencies []DeployFrequency
+	deployFrequencies, err := ScanValueDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var deployFrequency DeployFrequency
-
-		if err := rows.Scan(
-			&deployFrequency.Week,
-			&deployFrequency.Value,
-		); err != nil {
-			return nil, err
-		}
-		deployFrequencies = append(deployFrequencies, deployFrequency)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

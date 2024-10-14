@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type Commits struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type Commits = ValueData
 
 /*
 	SELECT
@@ -90,21 +87,9 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	defer rows.Close()
 
-	var commits []Commits
+	commits, err := ScanValueDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var commit Commits
-
-		if err := rows.Scan(
-			&commit.Week,
-			&commit.Count,
-		); err != nil {
-			return nil, err
-		}
-		commits = append(commits, commit)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

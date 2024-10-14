@@ -7,13 +7,7 @@ import (
 	"strings"
 )
 
-type Handover struct {
-	Week         string `json:"week"`
-	Average      int    `json:"average"`
-	Median       int    `json:"median"`
-	Percentile75 int    `json:"percentile75"`
-	Percentile95 int    `json:"percentile95"`
-}
+type Handover = StatisticData[int]
 
 /*
 	SELECT
@@ -103,24 +97,9 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	var handovers []Handover
+	handovers, err := ScanStatisticDatasetRows[int](rows, weeks)
 
-	for rows.Next() {
-		var handover Handover
-
-		if err := rows.Scan(
-			&handover.Week,
-			&handover.Average,
-			&handover.Median,
-			&handover.Percentile75,
-			&handover.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-		handovers = append(handovers, handover)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

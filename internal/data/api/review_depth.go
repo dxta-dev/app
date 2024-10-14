@@ -7,13 +7,7 @@ import (
 	"strings"
 )
 
-type MRReviewDepth struct {
-	Week         string `json:"week"`
-	Average      int    `json:"average"`
-	Median       int    `json:"median"`
-	Percentile75 int    `json:"percentile75"`
-	Percentile95 int    `json:"percentile95"`
-}
+type MRReviewDepth = StatisticData[int]
 
 /*
 	SELECT
@@ -103,25 +97,9 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	var mrReviewDepths []MRReviewDepth
+	mrReviewDepths, err := ScanStatisticDatasetRows[int](rows, weeks)
 
-	for rows.Next() {
-		var mrReviewDepth MRReviewDepth
-
-		if err := rows.Scan(
-			&mrReviewDepth.Week,
-			&mrReviewDepth.Average,
-			&mrReviewDepth.Median,
-			&mrReviewDepth.Percentile75,
-			&mrReviewDepth.Percentile95,
-		); err != nil {
-			return nil, err
-		}
-
-		mrReviewDepths = append(mrReviewDepths, mrReviewDepth)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 

@@ -7,10 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview struct {
-	Week  string `json:"week"`
-	Count int    `json:"count"`
-}
+type MRsMergedWithoutReview = ValueData
 
 /*
 	SELECT
@@ -97,22 +94,9 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 
 	defer rows.Close()
 
-	var mrsMergedWithoutReview []MRsMergedWithoutReview
+	mrsMergedWithoutReview, err := ScanValueDatasetRows(rows, weeks)
 
-	for rows.Next() {
-		var mrMergedWithoutReview MRsMergedWithoutReview
-
-		if err := rows.Scan(
-			&mrMergedWithoutReview.Week,
-			&mrMergedWithoutReview.Count,
-		); err != nil {
-			return nil, err
-		}
-
-		mrsMergedWithoutReview = append(mrsMergedWithoutReview, mrMergedWithoutReview)
-	}
-
-	if err = rows.Err(); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
