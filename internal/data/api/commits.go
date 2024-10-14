@@ -66,10 +66,15 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 	ON repo.id = ev.repository
 	JOIN transform_forge_users AS author
 	ON ev.actor = author.id
+	JOIN transform_merge_requests AS mrs
+	ON ev.merge_request = mrs.id
+	JOIN transform_branches AS branch
+	ON mrs.target_branch = branch.id	
 	WHERE commitedAt.week IN (%s)
 	AND ev.merge_request_event_type = 9
 	AND repo.namespace_name = ?
 	AND repo.name = ?
+	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
 	GROUP BY commitedAt.week
