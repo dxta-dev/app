@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRSize = StatisticData[int]
+type MRSize = StatisticData[float64]
 
 /*
 	SELECT
@@ -102,7 +102,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	defer rows.Close()
 
-	mrSizes, err := ScanStatisticDatasetRows[int](rows, weeks)
+	mrSizes, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err
