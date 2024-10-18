@@ -12,10 +12,10 @@ type DeployTime = StatisticData[float64]
 /*
 	SELECT
 		deploy_dates.week as WEEK,
-		FLOOR(AVG(metrics.deploy_duration)) AS AVG,
-		FLOOR(MEDIAN(metrics.deploy_duration)) as P50,
-		FLOOR(PERCENTILE_75(metrics.deploy_duration)) as P75,
-		FLOOR(PERCENTILE_95(metrics.deploy_duration)) as P95
+		AVG(metrics.deploy_duration) AS AVG,
+		MEDIAN(metrics.deploy_duration) as P50,
+		PERCENTILE_75(metrics.deploy_duration) as P75,
+		PERCENTILE_95(metrics.deploy_duration) as P95
 		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -64,10 +64,10 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	query := fmt.Sprintf(`
 	SELECT
 		deploy_dates.week as WEEK,
-		FLOOR(AVG(metrics.deploy_duration)) AS AVG,
-		FLOOR(MEDIAN(metrics.deploy_duration)) as P50,
-		FLOOR(PERCENTILE_75(metrics.deploy_duration)) as P75,
-		FLOOR(PERCENTILE_95(metrics.deploy_duration)) as P95
+		AVG(metrics.deploy_duration) AS AVG,
+		MEDIAN(metrics.deploy_duration) as P50,
+		PERCENTILE_75(metrics.deploy_duration) as P75,
+		PERCENTILE_95(metrics.deploy_duration) as P95
 		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -82,7 +82,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	JOIN transform_merge_requests AS mrs
 		ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-		ON mrs.target_branch = branch.id	
+		ON mrs.target_branch = branch.id
 	WHERE deploy_dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?

@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type MRReviewDepth = StatisticData[int]
+type MRReviewDepth = StatisticData[float64]
 
 /*
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_depth)) as AVG,
-		FLOOR(MEDIAN(metrics.review_depth)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95
+		AVG(metrics.review_depth) as AVG,
+		MEDIAN(metrics.review_depth) as P50,
+		PERCENTILE_75(metrics.review_depth) as P75,
+		PERCENTILE_95(metrics.review_depth) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -63,10 +63,10 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_depth)) as AVG,
-		FLOOR(MEDIAN(metrics.review_depth)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_depth)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_depth)) as P95	FROM transform_merge_request_metrics AS metrics
+		AVG(metrics.review_depth) as AVG,
+		MEDIAN(metrics.review_depth) as P50,
+		PERCENTILE_75(metrics.review_depth) as P75,
+		PERCENTILE_95(metrics.review_depth) as P95	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -80,7 +80,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	JOIN transform_merge_requests AS mrs
 	ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-	ON mrs.target_branch = branch.id	
+	ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
@@ -102,7 +102,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	mrReviewDepths, err := ScanStatisticDatasetRows[int](rows, weeks)
+	mrReviewDepths, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err
