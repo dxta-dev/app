@@ -8,6 +8,8 @@ import (
 const (
 	GITHUB int = iota
 	GITLAB
+	JIRA
+	LINEAR
 )
 
 type Host interface {
