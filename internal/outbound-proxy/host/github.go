@@ -70,8 +70,8 @@ func unwrapLink(resp *http.Response) map[LinkKey]Link {
 		}
 
 		links[linkKey] = Link{
-			url:   url,
-			value: page,
+			Url:   url,
+			Value: page,
 		}
 	}
 
@@ -80,15 +80,17 @@ func unwrapLink(resp *http.Response) map[LinkKey]Link {
 
 func (g GitHub) UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error) {
 	links := unwrapLink(resp)
-	totalPages := links[Last].value
+	totalPages := links[Last].Value
 	if totalPages == 0 {
 		totalPages = 1
 	}
+	rateLimit := unwrapRatelimit(resp)
 	return &UnwrappedResponse{
 		Links: links,
 		Pagination: Pagination{
 			TotalPages: totalPages,
 		},
+		RateLimit: rateLimit,
 	}, nil
 }
 

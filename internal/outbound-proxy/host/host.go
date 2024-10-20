@@ -20,18 +20,14 @@ type Host interface {
 type LinkKey string
 
 func stringToLinkKey(rel string) (LinkKey, bool) {
-	switch rel {
-	case "prev":
-		return Previous, true
-	case "next":
-		return Next, true
-	case "first":
-		return First, true
-	case "last":
-		return Last, true
-	default:
-		return "", false
+	links := map[string]LinkKey{
+		"prev":  Previous,
+		"next":  Next,
+		"first": First,
+		"last":  Last,
 	}
+	key, ok := links[rel]
+	return key, ok
 }
 
 const (
@@ -48,11 +44,12 @@ type Pagination struct {
 type UnwrappedResponse struct {
 	Links map[LinkKey]Link
 	Pagination
+	RateLimit
 }
 
 type Link struct {
-	url   string
-	value int
+	Url   string
+	Value int
 }
 
 type RateLimit struct {
