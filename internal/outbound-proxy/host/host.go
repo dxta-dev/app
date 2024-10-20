@@ -55,6 +55,14 @@ type Link struct {
 	value int
 }
 
+type RateLimit struct {
+	Limit     int
+	Remaining int
+	RetryBy   int64
+	Resource  string
+	Used      int
+}
+
 type UnwrappedRequest struct {
 	TenantId string
 }
