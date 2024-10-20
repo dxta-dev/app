@@ -16,7 +16,26 @@ func NewGitHubHost() *GitHub {
 	}
 }
 
-func unwrapLink(linkHeader string) map[LinkKey]Link {
+func unwrapRatelimit(resp *http.Response) RateLimit {
+	resource := resp.Header.Get("X-Ratelimit-Resource")
+	limit, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Limit"))
+	remaining, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
+	used, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Used"))
+	reset, _ := strconv.ParseInt(resp.Header.Get("X-Ratelimit-Reset"), 10, 64)
+
+	rateLimit := RateLimit{
+		Resource:  resource,
+		Limit:     limit,
+		Remaining: remaining,
+		RetryBy:   reset,
+		Used:      used,
+	}
+
+	return rateLimit
+}
+
+func unwrapLink(resp *http.Response) map[LinkKey]Link {
+	linkHeader := resp.Header.Get("link")
 	links := make(map[LinkKey]Link)
 
 	parts := strings.Split(linkHeader, ",")
@@ -60,7 +79,7 @@ func unwrapLink(linkHeader string) map[LinkKey]Link {
 }
 
 func (g GitHub) UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error) {
-	links := unwrapLink(resp.Header.Get("link"))
+	links := unwrapLink(resp)
 	totalPages := links[Last].value
 	if totalPages == 0 {
 		totalPages = 1
