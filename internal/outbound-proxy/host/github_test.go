@@ -19,12 +19,12 @@ func TestUnwrapLink(t *testing.T) {
 			linkHeader: `<https://api.github.com/repositories/1300192/issues?page=4>; rel="next", <https://api.github.com/repositories/1300192/issues?page=597>; rel="last"`,
 			expected: map[LinkKey]Link{
 				Next: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=4",
-					value: 4,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=4",
+					Value: 4,
 				},
 				Last: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=597",
-					value: 597,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=597",
+					Value: 597,
 				},
 			},
 		},
@@ -33,20 +33,20 @@ func TestUnwrapLink(t *testing.T) {
 			linkHeader: `<https://api.github.com/repositories/1300192/issues?page=2>; rel="prev", <https://api.github.com/repositories/1300192/issues?page=4>; rel="next", <https://api.github.com/repositories/1300192/issues?page=597>; rel="last", <https://api.github.com/repositories/1300192/issues?page=1>; rel="first"`,
 			expected: map[LinkKey]Link{
 				Previous: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=2",
-					value: 2,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=2",
+					Value: 2,
 				},
 				Next: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=4",
-					value: 4,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=4",
+					Value: 4,
 				},
 				Last: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=597",
-					value: 597,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=597",
+					Value: 597,
 				},
 				First: {
-					url:   "https://api.github.com/repositories/1300192/issues?page=1",
-					value: 1,
+					Url:   "https://api.github.com/repositories/1300192/issues?page=1",
+					Value: 1,
 				},
 			},
 		},
@@ -59,6 +59,20 @@ func TestUnwrapLink(t *testing.T) {
 			name:       "Gibberish link header",
 			linkHeader: `<>; something="weird", <invalid-url?page=>; rel="next", random-text, <>; rel=invalid`,
 			expected:   map[LinkKey]Link{},
+		},
+		{
+			name:       "Mixed valid and invalid links",
+			linkHeader: `<https://api.github.com/repositories/1300192/issues?page=4>; rel="next", <invalid-url>; rel="last", <https://api.github.com/repositories/1300192/issues?page=1>; rel="first"`,
+			expected: map[LinkKey]Link{
+				Next: {
+					Url:   "https://api.github.com/repositories/1300192/issues?page=4",
+					Value: 4,
+				},
+				First: {
+					Url:   "https://api.github.com/repositories/1300192/issues?page=1",
+					Value: 1,
+				},
+			},
 		},
 	}
 
