@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CodeChange = ValueData
+type CodeChange = *AggregatedValueData[int]
 
 /*
 	SELECT
@@ -32,7 +32,7 @@ type CodeChange = ValueData
 	ORDER BY dates.week ASC;
 */
 
-func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]CodeChange, error) {
+func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (CodeChange, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -56,10 +56,11 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
 		dates.week AS WEEK,
-		SUM(metrics.mr_size) AS VALUE
+		SUM(metrics.mr_size) AS TOTAL,
+		COUNT(metrics.mr_size) AS COUNT
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -81,11 +82,10 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	AND branch.name = 'main'
 	%s
 	GROUP BY dates.week
-	ORDER BY dates.week ASC;
-	`,
+	ORDER BY dates.week ASC`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -94,7 +94,7 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	}
 
 	defer rows.Close()
-	codeChanges, err := ScanValueDatasetRows(rows, weeks)
+	codeChanges, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

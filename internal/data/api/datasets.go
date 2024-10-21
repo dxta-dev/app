@@ -121,6 +121,86 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 	}, nil
 }
 
+func buildQueryAggregatedValueData(baseQuery string) string {
+	return fmt.Sprintf(`WITH dataset AS (%s)
+SELECT NULL as WEEK, SUM(TOTAL) AS TOTAL, SUM(COUNT) AS COUNT FROM dataset
+UNION ALL
+SELECT WEEK, TOTAL, COUNT FROM dataset;`,
+		baseQuery,
+	)
+}
+
+type AggregatedValueData[T constraints.Ordered] struct {
+	Aggregated ValueDataPoint[T]         `json:"aggregated"`
+	Weeks      []WeeklyValueDataPoint[T] `json:"weeks"`
+}
+
+type WeeklyValueDataPoint[T constraints.Ordered] struct {
+	ValueDataPoint[T]
+	Week string `json:"week"`
+}
+
+type ValueDataPoint[T constraints.Ordered] struct {
+	Total *T `json:"total"`
+	Count *T `json:"count"`
+}
+
+func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedValueData[T], error) {
+	datasetByWeek := make(map[string]WeeklyValueDataPoint[T])
+	var aggregated ValueDataPoint[T]
+
+	nullWeeksCount := 0
+	for rows.Next() {
+		var nullableWeek sql.NullString
+		var data ValueDataPoint[T]
+		if err := rows.Scan(
+			&nullableWeek,
+			&data.Total,
+			&data.Count,
+		); err != nil {
+			return nil, err
+		}
+
+		if nullableWeek.Valid {
+			datasetByWeek[nullableWeek.String] = WeeklyValueDataPoint[T]{
+				Week:           nullableWeek.String,
+				ValueDataPoint: data,
+			}
+		} else {
+			aggregated = data
+			nullWeeksCount++
+		}
+
+		if nullWeeksCount > 1 {
+			return nil, fmt.Errorf("ScanAggregatedValueDataRows found more than one aggregate rows")
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	var weeklies []WeeklyValueDataPoint[T]
+	for _, week := range weeks {
+		dataPoint, ok := datasetByWeek[week]
+		if !ok {
+			dataPoint = WeeklyValueDataPoint[T]{
+				Week: week,
+				ValueDataPoint: ValueDataPoint[T]{
+					Total: nil,
+					Count: nil,
+				},
+			}
+		}
+		weeklies = append(weeklies, dataPoint)
+	}
+
+	return &AggregatedValueData[T]{
+		Aggregated: aggregated,
+		Weeks:      weeklies,
+	}, nil
+}
+
 type ValueData struct {
 	Week  string `json:"week"`
 	Value *int   `json:"value"`

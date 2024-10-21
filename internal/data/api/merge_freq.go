@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MergeFrequency = ValueData
+type MergeFrequency = *AggregatedValueData[int]
 
 /*
 
@@ -35,7 +35,7 @@ type MergeFrequency = ValueData
 
 */
 
-func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MergeFrequency, error) {
+func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MergeFrequency, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -59,10 +59,11 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		merged_dates.week,
-		COUNT(*) as merges_count
+		merged_dates.week AS WEEK,
+		COUNT(*) AS TOTAL,
+		COUNT(*) AS COUNT
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -85,11 +86,10 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 	%s
 	AND author.bot = 0
 	GROUP BY merged_dates.week
-	ORDER BY merged_dates.week ASC;
-	`,
+	ORDER BY merged_dates.week ASC`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -99,7 +99,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 
 	defer rows.Close()
 
-	mergeFrequencies, err := ScanValueDatasetRows(rows, weeks)
+	mergeFrequencies, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

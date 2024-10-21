@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Commits = ValueData
+type Commits = *AggregatedValueData[int]
 
 /*
 	SELECT
@@ -31,7 +31,7 @@ type Commits = ValueData
 
 */
 
-func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]Commits, error) {
+func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (Commits, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -55,10 +55,11 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		commitedAt.week,
-		COUNT (*)
+		commitedAt.week AS WEEK,
+		COUNT(*) AS TOTAL,
+		COUNT(*) AS COUNT
 	FROM transform_merge_request_events AS ev
 	JOIN transform_dates AS commitedAt
 	ON commitedAt.id = ev.commited_at
@@ -78,11 +79,11 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 	%s
 	AND author.bot = 0
 	GROUP BY commitedAt.week
-	ORDER BY commitedAt.week ASC;
+	ORDER BY commitedAt.week ASC
 	`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -92,7 +93,7 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	defer rows.Close()
 
-	commits, err := ScanValueDatasetRows(rows, weeks)
+	commits, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

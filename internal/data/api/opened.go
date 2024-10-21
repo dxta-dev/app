@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsOpened = ValueData
+type MRsOpened = *AggregatedValueData[int]
 
 /*
 	SELECT
@@ -34,7 +34,7 @@ type MRsOpened = ValueData
 
 */
 
-func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRsOpened, error) {
+func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MRsOpened, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -58,10 +58,11 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		opened_dates.week,
-		COUNT (*)
+		opened_dates.week AS WEEK,
+		COUNT(*) AS TOTAL,
+		COUNT(*) AS COUNT
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -84,11 +85,10 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 	%s
 	AND author.bot = 0
 	GROUP BY opened_dates.week
-	ORDER BY opened_dates.week ASC;
-	`,
+	ORDER BY opened_dates.week ASC`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -98,7 +98,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	mrsOpened, err := ScanValueDatasetRows(rows, weeks)
+	mrsOpened, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview = ValueData
+type TotalReview = *AggregatedValueData[int]
 
 /*
 
@@ -34,7 +34,7 @@ type TotalReview = ValueData
 
 */
 
-func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]TotalReview, error) {
+func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (TotalReview, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -58,10 +58,11 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		occuredAt.week,
-		COUNT (*)
+		occuredAt.week AS WEEK,
+		COUNT(*) AS TOTAL,
+		COUNT(*) AS COUNT
 	FROM transform_merge_request_events AS ev
 	JOIN transform_repositories AS repo
 	ON repo.id = ev.repository
@@ -81,11 +82,10 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 	%s
 	AND author.bot = 0
 	GROUP BY occuredAt.week
-	ORDER BY occuredAt.week ASC;
-	`,
+	ORDER BY occuredAt.week ASC`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -95,7 +95,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	totalReviews, err := ScanValueDatasetRows(rows, weeks)
+	totalReviews, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

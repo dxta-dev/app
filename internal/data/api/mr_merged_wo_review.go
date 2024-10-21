@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview = ValueData
+type MRsMergedWithoutReview = *AggregatedValueData[int]
 
 /*
 	SELECT
@@ -34,7 +34,7 @@ type MRsMergedWithoutReview = ValueData
 	ORDER BY mergedAt.week ASC;
 */
 
-func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRsMergedWithoutReview, error) {
+func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MRsMergedWithoutReview, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -58,10 +58,11 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week,
-		COUNT(*)
+		mergedAt.week AS WEEK,
+		COUNT(*) AS TOTAL,
+		COUNT(*) AS COUNT
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
@@ -85,11 +86,10 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	%s
 	AND author.bot = 0
 	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-	`,
+	ORDER BY mergedAt.week ASC`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -99,7 +99,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 
 	defer rows.Close()
 
-	mrsMergedWithoutReview, err := ScanValueDatasetRows(rows, weeks)
+	mrsMergedWithoutReview, err := ScanAggregatedValueDataRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err
