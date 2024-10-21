@@ -12,6 +12,8 @@ type StatisticData[T constraints.Ordered] struct {
 	Median       *T     `json:"median"`
 	Percentile75 *T     `json:"percentile75"`
 	Percentile95 *T     `json:"percentile95"`
+	Total        *T     `json:"total"`
+	Count        *T     `json:"count"`
 }
 
 func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []string) ([]StatisticData[T], error) {
@@ -25,6 +27,8 @@ func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 			&dataPoint.Median,
 			&dataPoint.Percentile75,
 			&dataPoint.Percentile95,
+			&dataPoint.Total,
+			&dataPoint.Count,
 		); err != nil {
 			return nil, err
 		}
@@ -46,6 +50,8 @@ func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 				Median:       nil,
 				Percentile75: nil,
 				Percentile95: nil,
+				Total:        nil,
+				Count:        nil,
 			}
 		}
 		dataset = append(dataset, dataPoint)

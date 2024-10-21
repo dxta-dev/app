@@ -36,14 +36,21 @@ type Handover = StatisticData[float64]
 	ORDER BY mergedAt.week ASC;
 */
 
-func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]Handover, error) {
+func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64, groupByWeeks bool) ([]Handover, error) {
 
 	teamQuery := ""
+	selectWeek := ""
+	groupByWeek := ""
 	queryParamLength := len(weeks)
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
 		queryParamLength += 1
+	}
+
+	if groupByWeeks {
+		selectWeek = "mergedAt.week,"
+		groupByWeek = "GROUP BY mergedAt.week ORDER BY mergedAt.week ASC"
 	}
 
 	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
@@ -61,11 +68,13 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	query := fmt.Sprintf(`
 	SELECT
-		mergedAt.week,
+		%s
 		AVG(metrics.handover) as AVG,
 		MEDIAN(metrics.handover) as P50,
 		PERCENTILE_75(metrics.handover) as P75,
-		PERCENTILE_95(metrics.handover) as P95
+		PERCENTILE_95(metrics.handover) as P95,
+		SUM(metrics.handover) as TOTAL,
+		COUNT(metrics.handover) as COUNT
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -87,11 +96,13 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
+	%s
+	;
 	`,
+		selectWeek,
 		weeksPlaceholder,
 		teamQuery,
+		groupByWeek,
 	)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
