@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type Handover = StatisticData[int]
+type Handover = StatisticData[float64]
 
 /*
 	SELECT
 		mergedAt.week,
-		FLOOR(AVG(metrics.handover)) as AVG,
-		FLOOR(MEDIAN(metrics.handover)) as P50,
-		FLOOR(PERCENTILE_75(metrics.handover)) as P75,
-		FLOOR(PERCENTILE_95(metrics.handover)) as P95
+		AVG(metrics.handover) as AVG,
+		MEDIAN(metrics.handover) as P50,
+		PERCENTILE_75(metrics.handover) as P75,
+		PERCENTILE_95(metrics.handover) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -62,10 +62,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week,
-		FLOOR(AVG(metrics.handover)) as AVG,
-		FLOOR(MEDIAN(metrics.handover)) as P50,
-		FLOOR(PERCENTILE_75(metrics.handover)) as P75,
-		FLOOR(PERCENTILE_95(metrics.handover)) as P95
+		AVG(metrics.handover) as AVG,
+		MEDIAN(metrics.handover) as P50,
+		PERCENTILE_75(metrics.handover) as P75,
+		PERCENTILE_95(metrics.handover) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -80,7 +80,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	JOIN transform_merge_requests AS mrs
 		ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-		ON mrs.target_branch = branch.id	
+		ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
@@ -102,7 +102,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handovers, err := ScanStatisticDatasetRows[int](rows, weeks)
+	handovers, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

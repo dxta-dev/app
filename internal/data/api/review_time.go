@@ -12,10 +12,10 @@ type ReviewTime = StatisticData[float64]
 /*
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_duration)) AS AVG,
-		FLOOR(MEDIAN(metrics.review_duration)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_duration)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_duration)) as P95
+		AVG(metrics.review_duration) AS AVG,
+		MEDIAN(metrics.review_duration) as P50,
+		PERCENTILE_75(metrics.review_duration) as P75,
+		PERCENTILE_95(metrics.review_duration) as P95
 		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -64,10 +64,10 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.review_duration)) AS AVG,
-		FLOOR(MEDIAN(metrics.review_duration)) as P50,
-		FLOOR(PERCENTILE_75(metrics.review_duration)) as P75,
-		FLOOR(PERCENTILE_95(metrics.review_duration)) as P95
+		AVG(metrics.review_duration) AS AVG,
+		MEDIAN(metrics.review_duration) as P50,
+		PERCENTILE_75(metrics.review_duration) as P75,
+		PERCENTILE_95(metrics.review_duration) as P95
 		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -82,7 +82,7 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 	JOIN transform_merge_requests AS mrs
 		ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-		ON mrs.target_branch = branch.id	
+		ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?

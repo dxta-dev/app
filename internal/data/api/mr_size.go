@@ -7,15 +7,15 @@ import (
 	"strings"
 )
 
-type MRSize = StatisticData[int]
+type MRSize = StatisticData[float64]
 
 /*
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.mr_size)) as AVG,
-		FLOOR(MEDIAN(metrics.mr_size)) AS P50,
-		FLOOR(PERCENTILE_75(metrics.mr_size)) AS P75,
-		FLOOR(PERCENTILE_95(metrics.mr_size)) as P95,
+		AVG(metrics.mr_size) as AVG,
+		MEDIAN(metrics.mr_size) AS P50,
+		PERCENTILE_75(metrics.mr_size) AS P75,
+		PERCENTILE_95(metrics.mr_size) as P95,
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -62,10 +62,10 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 	query := fmt.Sprintf(`
 	SELECT
 		mergedAt.week as WEEK,
-		FLOOR(AVG(metrics.mr_size)) as AVG,
-		FLOOR(MEDIAN(metrics.mr_size)) AS P50,
-		FLOOR(PERCENTILE_75(metrics.mr_size)) AS P75,
-		FLOOR(PERCENTILE_95(metrics.mr_size)) as P95
+		AVG(metrics.mr_size) as AVG,
+		MEDIAN(metrics.mr_size) AS P50,
+		PERCENTILE_75(metrics.mr_size) AS P75,
+		PERCENTILE_95(metrics.mr_size) as P95
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -80,7 +80,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 	JOIN transform_merge_requests AS mrs
 		ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-		ON mrs.target_branch = branch.id	
+		ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
@@ -102,7 +102,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	defer rows.Close()
 
-	mrSizes, err := ScanStatisticDatasetRows[int](rows, weeks)
+	mrSizes, err := ScanStatisticDatasetRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err
