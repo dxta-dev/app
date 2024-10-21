@@ -59,14 +59,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		AVG(metrics.handover) as AVG,
-		MEDIAN(metrics.handover) as P50,
-		PERCENTILE_75(metrics.handover) as P75,
-		PERCENTILE_95(metrics.handover) as P95,
-		SUM(metrics.handover) as TOTAL,
-		COUNT(metrics.handover) as COUNT
+		mergedAt.week AS x,
+		metrics.handover AS y
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -87,13 +83,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	%s
-	;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 

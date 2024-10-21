@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CycleTime = StatisticData[float64]
+type CycleTime = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -36,7 +36,7 @@ type CycleTime = StatisticData[float64]
 	ORDER BY deployedAt.week ASC;
 */
 
-func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]CycleTime, error) {
+func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (CycleTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -61,14 +61,11 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 		SELECT
-			deployedAt.week as WEEK,
-			AVG(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) AS AVG,
-			MEDIAN(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P50,
-			PERCENTILE_75(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P75,
-			PERCENTILE_95(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P95
-			FROM transform_merge_request_metrics AS metrics
+			deployedAt.week AS x,
+			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS y
+		FROM transform_merge_request_metrics AS metrics
 		JOIN transform_repositories AS repo
 			ON repo.id = metrics.repository
 		JOIN transform_merge_request_fact_dates_junk AS dj
@@ -88,13 +85,10 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		AND repo.name = ?
 		AND branch.name = 'main'
 		%s
-		AND author.bot = 0
-		GROUP BY deployedAt.week
-		ORDER BY deployedAt.week ASC;
-	`,
+		AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -104,7 +98,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	cycleTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	cycleTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

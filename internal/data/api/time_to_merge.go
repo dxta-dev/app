@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TimeToMerge = StatisticData[float64]
+type TimeToMerge = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -37,7 +37,7 @@ type TimeToMerge = StatisticData[float64]
 
 */
 
-func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]TimeToMerge, error) {
+func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (TimeToMerge, error) {
 	teamQuery := ""
 	queryParamLength := len(weeks)
 
@@ -60,14 +60,11 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week as WEEK,
-		AVG(metrics.time_to_merge) AS AVG,
-		MEDIAN(metrics.time_to_merge) as P50,
-		PERCENTILE_75(metrics.time_to_merge) as P75,
-		PERCENTILE_95(metrics.time_to_merge) as P95
-		FROM transform_merge_request_metrics AS metrics
+		mergedAt.week AS x,
+		metrics.time_to_merge AS y
+	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -87,13 +84,10 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -103,7 +97,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	timesToMerge, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	timesToMerge, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err
