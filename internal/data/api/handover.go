@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Handover = StatisticData[float64]
+type Handover = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -36,7 +36,7 @@ type Handover = StatisticData[float64]
 	ORDER BY mergedAt.week ASC;
 */
 
-func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]Handover, error) {
+func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (Handover, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -59,13 +59,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week,
-		AVG(metrics.handover) as AVG,
-		MEDIAN(metrics.handover) as P50,
-		PERCENTILE_75(metrics.handover) as P75,
-		PERCENTILE_95(metrics.handover) as P95
+		mergedAt.week AS x,
+		metrics.handover AS y
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -86,13 +83,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -102,7 +96,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handovers, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	handovers, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

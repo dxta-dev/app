@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type DeployTime = StatisticData[float64]
+type DeployTime = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -37,7 +37,7 @@ type DeployTime = StatisticData[float64]
 
 */
 
-func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]DeployTime, error) {
+func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (DeployTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -61,14 +61,11 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		deploy_dates.week as WEEK,
-		AVG(metrics.deploy_duration) AS AVG,
-		MEDIAN(metrics.deploy_duration) as P50,
-		PERCENTILE_75(metrics.deploy_duration) as P75,
-		PERCENTILE_95(metrics.deploy_duration) as P95
-		FROM transform_merge_request_metrics AS metrics
+		deploy_dates.week AS x,
+		metrics.deploy_duration AS y
+	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -88,13 +85,10 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	GROUP BY deploy_dates.week
-	ORDER BY deploy_dates.week ASC;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -104,7 +98,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	deployTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	deployTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -2,56 +2,123 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 
 	"golang.org/x/exp/constraints"
 )
 
-type StatisticData[T constraints.Ordered] struct {
-	Week         string `json:"week"`
-	Average      *T     `json:"average"`
-	Median       *T     `json:"median"`
-	Percentile75 *T     `json:"percentile75"`
-	Percentile95 *T     `json:"percentile95"`
+func buildQueryAggregatedStatisticData(baseQuery string) string {
+	return fmt.Sprintf(`WITH dataset AS (%s),
+data_by_week AS (
+	SELECT
+		x AS WEEK,
+		AVG(y) AS AVG,
+		MEDIAN(y) AS P50,
+		PERCENTILE_75(y) AS P75,
+		PERCENTILE_95(y) AS P95,
+		SUM(y) as TOTAL,
+  	COUNT(y) as COUNT
+	FROM dataset
+	GROUP BY WEEK
+	ORDER BY WEEK ASC
+),
+data_total AS (
+  SELECT AVG(y) as AVG,
+  MEDIAN(y) as P50,
+  PERCENTILE_75(y) as P75,
+  PERCENTILE_95(y) as P95,
+  SUM(y) as TOTAL,
+  COUNT(y) as COUNT
+	FROM dataset
+)
+SELECT NULL as WEEK, AVG, P50, P75, P95, TOTAL, COUNT FROM data_total
+UNION ALL
+SELECT WEEK, AVG, P50, P75, P95, TOTAL, COUNT FROM data_by_week;`,
+		baseQuery,
+	)
 }
 
-func ScanStatisticDatasetRows[T constraints.Ordered](rows *sql.Rows, weeks []string) ([]StatisticData[T], error) {
-	datasetByWeek := make(map[string]StatisticData[T])
+type AggregatedStatisticData[T constraints.Ordered] struct {
+	Aggregated StatisticDataPoint[T]         `json:"aggregated"`
+	Weeks      []WeeklyStatisticDataPoint[T] `json:"weeks"`
+}
 
+type WeeklyStatisticDataPoint[T constraints.Ordered] struct {
+	StatisticDataPoint[T]
+	Week string `json:"week"`
+}
+
+type StatisticDataPoint[T constraints.Ordered] struct {
+	Average      *T `json:"average"`
+	Median       *T `json:"median"`
+	Percentile75 *T `json:"percentile75"`
+	Percentile95 *T `json:"percentile95"`
+	Total        *T `json:"total"`
+	Count        *T `json:"count"`
+}
+
+func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedStatisticData[T], error) {
+	datasetByWeek := make(map[string]WeeklyStatisticDataPoint[T])
+	var aggregated StatisticDataPoint[T]
+
+	nullWeeksCount := 0
 	for rows.Next() {
-		var dataPoint StatisticData[T]
+		var nullableWeek sql.NullString
+		var data StatisticDataPoint[T]
 		if err := rows.Scan(
-			&dataPoint.Week,
-			&dataPoint.Average,
-			&dataPoint.Median,
-			&dataPoint.Percentile75,
-			&dataPoint.Percentile95,
+			&nullableWeek,
+			&data.Average,
+			&data.Median,
+			&data.Percentile75,
+			&data.Percentile95,
+			&data.Total,
+			&data.Count,
 		); err != nil {
 			return nil, err
 		}
 
-		datasetByWeek[dataPoint.Week] = dataPoint
+		if nullableWeek.Valid {
+			datasetByWeek[nullableWeek.String] = WeeklyStatisticDataPoint[T]{
+				Week:               nullableWeek.String,
+				StatisticDataPoint: data,
+			}
+		} else {
+			aggregated = data
+			nullWeeksCount++
+		}
+
+		if nullWeeksCount > 1 {
+			return nil, fmt.Errorf("ScanAggregatedStatisticDataRows found more than one aggregate rows")
+		}
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 
-	var dataset []StatisticData[T]
+	var weeklies []WeeklyStatisticDataPoint[T]
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = StatisticData[T]{
-				Week:         week,
-				Average:      nil,
-				Median:       nil,
-				Percentile75: nil,
-				Percentile95: nil,
+			dataPoint = WeeklyStatisticDataPoint[T]{
+				Week: week,
+				StatisticDataPoint: StatisticDataPoint[T]{
+					Average:      nil,
+					Median:       nil,
+					Percentile75: nil,
+					Percentile95: nil,
+					Total:        nil,
+					Count:        nil,
+				},
 			}
 		}
-		dataset = append(dataset, dataPoint)
+		weeklies = append(weeklies, dataPoint)
 	}
 
-	return dataset, nil
+	return &AggregatedStatisticData[T]{
+		Aggregated: aggregated,
+		Weeks:      weeklies,
+	}, nil
 }
 
 type ValueData struct {

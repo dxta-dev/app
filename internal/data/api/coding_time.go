@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CodingTime = StatisticData[float64]
+type CodingTime = *AggregatedStatisticData[float64]
 
 /*
 
@@ -38,7 +38,7 @@ type CodingTime = StatisticData[float64]
 	ORDER BY mergedAt.week ASC;
 */
 
-func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]CodingTime, error) {
+func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (CodingTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -62,14 +62,11 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week as WEEK,
-		AVG(metrics.coding_duration) AS AVG,
-		MEDIAN(metrics.coding_duration) as P50,
-		PERCENTILE_75(metrics.coding_duration) as P75,
-		PERCENTILE_95(metrics.coding_duration) as P95
-		FROM transform_merge_request_metrics AS metrics
+		mergedAt.week AS x,
+		metrics.coding_duration AS y
+	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -89,13 +86,10 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -104,7 +98,7 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 	}
 
 	defer rows.Close()
-	codingTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	codingTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

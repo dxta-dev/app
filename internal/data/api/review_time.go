@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type ReviewTime = StatisticData[float64]
+type ReviewTime = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -37,7 +37,7 @@ type ReviewTime = StatisticData[float64]
 
 */
 
-func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]ReviewTime, error) {
+func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (ReviewTime, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -61,14 +61,11 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week as WEEK,
-		AVG(metrics.review_duration) AS AVG,
-		MEDIAN(metrics.review_duration) as P50,
-		PERCENTILE_75(metrics.review_duration) as P75,
-		PERCENTILE_95(metrics.review_duration) as P95
-		FROM transform_merge_request_metrics AS metrics
+		mergedAt.week AS x,
+		metrics.review_duration AS y
+	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -88,13 +85,10 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
-	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-	`,
+	AND author.bot = 0`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -104,7 +98,7 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	reviewTimes, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	reviewTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

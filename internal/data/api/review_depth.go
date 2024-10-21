@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRReviewDepth = StatisticData[float64]
+type MRReviewDepth = *AggregatedStatisticData[float64]
 
 /*
 	SELECT
@@ -36,7 +36,7 @@ type MRReviewDepth = StatisticData[float64]
 	ORDER BY mergedAt.week ASC;
 */
 
-func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) ([]MRReviewDepth, error) {
+func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MRReviewDepth, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -60,13 +60,11 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 		queryParams = append(queryParams, team)
 	}
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week as WEEK,
-		AVG(metrics.review_depth) as AVG,
-		MEDIAN(metrics.review_depth) as P50,
-		PERCENTILE_75(metrics.review_depth) as P75,
-		PERCENTILE_95(metrics.review_depth) as P95	FROM transform_merge_request_metrics AS metrics
+		mergedAt.week as x,
+		metrics.review_depth as y
+	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
 	JOIN transform_merge_request_fact_dates_junk AS dj
@@ -87,12 +85,10 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
 	`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -102,7 +98,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	mrReviewDepths, err := ScanStatisticDatasetRows[float64](rows, weeks)
+	mrReviewDepths, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err
