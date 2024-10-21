@@ -21,7 +21,7 @@ func HandoverHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	handovers, err := api.GetHandover(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId, true)
+	handovers, err := api.GetHandover(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
 
 	if err != nil {
 		return err
