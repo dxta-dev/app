@@ -59,38 +59,37 @@ type StatisticDataPoint[T constraints.Ordered] struct {
 
 func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedStatisticData[T], error) {
 	datasetByWeek := make(map[string]WeeklyStatisticDataPoint[T])
-	var IGNORED sql.Null[any]
-
 	var aggregated StatisticDataPoint[T]
-	if rows.Next() {
-		if err := rows.Scan(
-			&IGNORED,
-			&aggregated.Average,
-			&aggregated.Median,
-			&aggregated.Percentile75,
-			&aggregated.Percentile95,
-			&aggregated.Total,
-			&aggregated.Count,
-		); err != nil {
-			return nil, err
-		}
-	}
 
+	nullWeeksCount := 0
 	for rows.Next() {
-		var weekly WeeklyStatisticDataPoint[T]
+		var nullableWeek sql.NullString
+		var data StatisticDataPoint[T]
 		if err := rows.Scan(
-			&weekly.Week,
-			&weekly.Average,
-			&weekly.Median,
-			&weekly.Percentile75,
-			&weekly.Percentile95,
-			&weekly.Total,
-			&weekly.Count,
+			&nullableWeek,
+			&data.Average,
+			&data.Median,
+			&data.Percentile75,
+			&data.Percentile95,
+			&data.Total,
+			&data.Count,
 		); err != nil {
 			return nil, err
 		}
 
-		datasetByWeek[weekly.Week] = weekly
+		if nullableWeek.Valid {
+			datasetByWeek[nullableWeek.String] = WeeklyStatisticDataPoint[T]{
+				Week:               nullableWeek.String,
+				StatisticDataPoint: data,
+			}
+		} else {
+			aggregated = data
+			nullWeeksCount++
+		}
+
+		if nullWeeksCount > 1 {
+			return nil, fmt.Errorf("ScanAggregatedStatisticDataRows found more than one aggregate rows")
+		}
 	}
 
 	if err := rows.Err(); err != nil {
