@@ -31,7 +31,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
+	query := buildQueryAggregatedStats(fmt.Sprintf(`
 	SELECT
 		mergedAt.week as week,
 		metrics.review_depth as value

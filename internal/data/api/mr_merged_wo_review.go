@@ -31,7 +31,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedValueData(fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		COUNT(*) AS value

@@ -31,7 +31,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedValueData(fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		opened_dates.week AS week,
 		COUNT(*) AS value

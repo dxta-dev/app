@@ -31,7 +31,7 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedValueData(fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		committedAt.week AS week,
 		COUNT(*) AS value

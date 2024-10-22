@@ -31,7 +31,7 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedValueData(fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		dates.week AS week,
 		SUM(metrics.mr_size) AS value

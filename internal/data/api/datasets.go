@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func buildQueryAggregatedStatsData(baseQuery string) string {
+func buildQueryAggregatedStats(baseQuery string) string {
 	return fmt.Sprintf(`
 		WITH dataset AS (%s),
 		data_by_week AS (
@@ -135,7 +135,7 @@ func ScanAggregatedStatsRows(rows *sql.Rows, weeks []string) (*AggregatedStats, 
 	}, nil
 }
 
-func buildQueryAggregatedValueData(baseQuery string) string {
+func buildQueryAggregatedValues(baseQuery string) string {
 	return fmt.Sprintf(`
 		WITH dataset AS (%s)
 		SELECT NULL as week, SUM(value) AS value FROM dataset

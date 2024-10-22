@@ -30,7 +30,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
+	query := buildQueryAggregatedStats(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.handover AS value

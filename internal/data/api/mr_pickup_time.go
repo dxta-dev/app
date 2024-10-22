@@ -31,7 +31,7 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
+	query := buildQueryAggregatedStats(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.review_start_delay AS value

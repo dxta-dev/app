@@ -32,7 +32,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
+	query := buildQueryAggregatedStats(fmt.Sprintf(`
 		SELECT
 			deployedAt.week AS week,
 			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS value

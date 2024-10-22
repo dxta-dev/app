@@ -30,7 +30,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedValueData(fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		occuredAt.week AS week,
 		COUNT(*) AS value
