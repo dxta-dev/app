@@ -20,7 +20,6 @@ data_by_week AS (
   	COUNT(y) as COUNT
 	FROM dataset
 	GROUP BY WEEK
-	ORDER BY WEEK ASC
 ),
 data_total AS (
   SELECT AVG(y) as AVG,
