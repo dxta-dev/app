@@ -123,9 +123,9 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 
 func buildQueryAggregatedValueData(baseQuery string) string {
 	return fmt.Sprintf(`WITH dataset AS (%s)
-SELECT NULL as WEEK, SUM(TOTAL) AS TOTAL, SUM(COUNT) AS COUNT FROM dataset
+SELECT NULL as WEEK, SUM(VALUE) AS VALUE FROM dataset
 UNION ALL
-SELECT WEEK, TOTAL, COUNT FROM dataset;`,
+SELECT WEEK, VALUE FROM dataset;`,
 		baseQuery,
 	)
 }
@@ -141,8 +141,7 @@ type WeeklyValueDataPoint[T constraints.Ordered] struct {
 }
 
 type ValueDataPoint[T constraints.Ordered] struct {
-	Total *T `json:"total"`
-	Count *T `json:"count"`
+	Value *T `json:"value"`
 }
 
 func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedValueData[T], error) {
@@ -155,8 +154,7 @@ func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []
 		var data ValueDataPoint[T]
 		if err := rows.Scan(
 			&nullableWeek,
-			&data.Total,
-			&data.Count,
+			&data.Value,
 		); err != nil {
 			return nil, err
 		}
@@ -187,8 +185,7 @@ func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []
 			dataPoint = WeeklyValueDataPoint[T]{
 				Week: week,
 				ValueDataPoint: ValueDataPoint[T]{
-					Total: nil,
-					Count: nil,
+					Value: nil,
 				},
 			}
 		}
