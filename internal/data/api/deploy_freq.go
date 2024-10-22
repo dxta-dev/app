@@ -7,35 +7,7 @@ import (
 	"strings"
 )
 
-type DeployFrequency = ValueData
-
-/*
-
-	SELECT
-		deploy_dates.week,
-		CAST(COUNT (*) AS REAL) / 7
-	FROM transform_merge_request_metrics AS metrics
-	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
-	JOIN transform_merge_request_fact_dates_junk AS dates_junk
-	ON metrics.dates_junk = dates_junk.id
-	JOIN transform_dates AS deploy_dates
-	ON dates_junk.deployed_at = deploy_dates.id
-	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users AS author
-	ON uj.author = author.id
-	WHERE deploy_dates.week IN ("2024-W26", "2024-W27", "2024-W28", "2024-W29", "2024-W30", "2024-W31", "2024-W32", "2024-W33", "2024-W34", "2024-W35", "2024-W36", "2024-W37")
-	AND repo.namespace_name = "calcom"
-	AND repo.name = "cal.com"
-	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
-	AND author.bot = 0
-	GROUP BY deploy_dates.week
-	ORDER BY deploy_dates.week ASC;
-
-*/
-
-func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string) ([]DeployFrequency, error) {
+func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string) (*AggregatedValues, error) {
 
 	queryParamLength := len(weeks)
 
@@ -49,10 +21,10 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 	queryParams = append(queryParams, namespace)
 	queryParams = append(queryParams, repository)
 
-	query := fmt.Sprintf(`
+	query := buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
-		deploy_dates.week,
-		COUNT(*) AS deploy_count
+		deploy_dates.week AS week,
+		COUNT(*) AS value
 	FROM transform_deployments AS deploy
 	JOIN transform_dates AS deploy_dates
 	ON deploy.deployed_at = deploy_dates.id
@@ -61,10 +33,9 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 	WHERE deploy_dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	GROUP BY deploy_dates.week
-	ORDER BY deploy_dates.week ASC;`,
+	GROUP BY deploy_dates.week`,
 		weeksPlaceholder,
-	)
+	))
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
@@ -74,7 +45,7 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 
 	defer rows.Close()
 
-	deployFrequencies, err := ScanValueDatasetRows(rows, weeks)
+	deployFrequencies, err := ScanAggregatedValuesRows(rows, weeks)
 
 	if err != nil {
 		return nil, err
