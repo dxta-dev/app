@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRPickupTime = *AggregatedStatisticData[float64]
+type MRPickupTime = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -98,7 +98,7 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	mrsPickupTime, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	mrsPickupTime, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

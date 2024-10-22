@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type DeployTime = *AggregatedStatisticData[float64]
+type DeployTime = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -98,7 +98,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	deployTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	deployTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

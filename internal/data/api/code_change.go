@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CodeChange = *AggregatedValueData[int]
+type CodeChange = *AggregatedValues[int]
 
 /*
 	SELECT
@@ -93,7 +93,7 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	}
 
 	defer rows.Close()
-	codeChanges, err := ScanAggregatedValueDataRows[int](rows, weeks)
+	codeChanges, err := ScanAggregatedValuesRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

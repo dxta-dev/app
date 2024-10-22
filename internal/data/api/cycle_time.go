@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type CycleTime = *AggregatedStatisticData[float64]
+type CycleTime = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -98,7 +98,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	cycleTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	cycleTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type DeployFrequency = *AggregatedValueData[int]
+type DeployFrequency = *AggregatedValues[int]
 
 /*
 
@@ -73,7 +73,7 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 
 	defer rows.Close()
 
-	deployFrequencies, err := ScanAggregatedValueDataRows[int](rows, weeks)
+	deployFrequencies, err := ScanAggregatedValuesRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

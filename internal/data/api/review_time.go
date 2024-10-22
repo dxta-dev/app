@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type ReviewTime = *AggregatedStatisticData[float64]
+type ReviewTime = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -98,7 +98,7 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	reviewTimes, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	reviewTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

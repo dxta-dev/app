@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Handover = *AggregatedStatisticData[float64]
+type Handover = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -96,7 +96,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handovers, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	handovers, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

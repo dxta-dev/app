@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview = *AggregatedValueData[int]
+type TotalReview = *AggregatedValues[int]
 
 /*
 
@@ -95,7 +95,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	totalReviews, err := ScanAggregatedValueDataRows[int](rows, weeks)
+	totalReviews, err := ScanAggregatedValuesRows[int](rows, weeks)
 
 	if err != nil {
 		return nil, err

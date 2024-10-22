@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TimeToMerge = *AggregatedStatisticData[float64]
+type TimeToMerge = *AggregatedStats[float64]
 
 /*
 	SELECT
@@ -97,7 +97,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	timesToMerge, err := ScanAggregatedStatisticDataRows[float64](rows, weeks)
+	timesToMerge, err := ScanAggregatedStatsRows[float64](rows, weeks)
 
 	if err != nil {
 		return nil, err

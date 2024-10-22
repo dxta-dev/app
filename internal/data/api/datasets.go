@@ -37,17 +37,17 @@ SELECT WEEK, AVG, P50, P75, P95, TOTAL, COUNT FROM data_by_week;`,
 	)
 }
 
-type AggregatedStatisticData[T constraints.Ordered] struct {
-	Aggregated StatisticDataPoint[T]         `json:"aggregated"`
-	Weeks      []WeeklyStatisticDataPoint[T] `json:"weeks"`
+type AggregatedStats[T constraints.Ordered] struct {
+	Overall StatsData[T]         `json:"overall"`
+	Weekly  []WeeklyStatsData[T] `json:"weekly"`
 }
 
-type WeeklyStatisticDataPoint[T constraints.Ordered] struct {
-	StatisticDataPoint[T]
+type WeeklyStatsData[T constraints.Ordered] struct {
 	Week string `json:"week"`
+	StatsData[T]
 }
 
-type StatisticDataPoint[T constraints.Ordered] struct {
+type StatsData[T constraints.Ordered] struct {
 	Average      *T `json:"average"`
 	Median       *T `json:"median"`
 	Percentile75 *T `json:"percentile75"`
@@ -56,14 +56,14 @@ type StatisticDataPoint[T constraints.Ordered] struct {
 	Count        *T `json:"count"`
 }
 
-func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedStatisticData[T], error) {
-	datasetByWeek := make(map[string]WeeklyStatisticDataPoint[T])
-	var aggregated StatisticDataPoint[T]
+func ScanAggregatedStatsRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedStats[T], error) {
+	datasetByWeek := make(map[string]WeeklyStatsData[T])
+	var aggregated StatsData[T]
 
 	nullWeeksCount := 0
 	for rows.Next() {
 		var nullableWeek sql.NullString
-		var data StatisticDataPoint[T]
+		var data StatsData[T]
 		if err := rows.Scan(
 			&nullableWeek,
 			&data.Average,
@@ -77,9 +77,9 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 		}
 
 		if nullableWeek.Valid {
-			datasetByWeek[nullableWeek.String] = WeeklyStatisticDataPoint[T]{
-				Week:               nullableWeek.String,
-				StatisticDataPoint: data,
+			datasetByWeek[nullableWeek.String] = WeeklyStatsData[T]{
+				Week:      nullableWeek.String,
+				StatsData: data,
 			}
 		} else {
 			aggregated = data
@@ -87,7 +87,7 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 		}
 
 		if nullWeeksCount > 1 {
-			return nil, fmt.Errorf("ScanAggregatedStatisticDataRows found more than one aggregate rows")
+			return nil, fmt.Errorf("ScanAggregatedStatsRows found more than one aggregate rows")
 		}
 	}
 
@@ -95,13 +95,13 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 		return nil, err
 	}
 
-	var weeklies []WeeklyStatisticDataPoint[T]
+	var weeklies []WeeklyStatsData[T]
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = WeeklyStatisticDataPoint[T]{
+			dataPoint = WeeklyStatsData[T]{
 				Week: week,
-				StatisticDataPoint: StatisticDataPoint[T]{
+				StatsData: StatsData[T]{
 					Average:      nil,
 					Median:       nil,
 					Percentile75: nil,
@@ -114,9 +114,9 @@ func ScanAggregatedStatisticDataRows[T constraints.Ordered](rows *sql.Rows, week
 		weeklies = append(weeklies, dataPoint)
 	}
 
-	return &AggregatedStatisticData[T]{
-		Aggregated: aggregated,
-		Weeks:      weeklies,
+	return &AggregatedStats[T]{
+		Overall: aggregated,
+		Weekly:  weeklies,
 	}, nil
 }
 
@@ -129,28 +129,28 @@ SELECT WEEK, VALUE FROM dataset;`,
 	)
 }
 
-type AggregatedValueData[T constraints.Ordered] struct {
-	Aggregated ValueDataPoint[T]         `json:"aggregated"`
-	Weeks      []WeeklyValueDataPoint[T] `json:"weeks"`
+type AggregatedValues[T constraints.Ordered] struct {
+	Overall ValueData[T]         `json:"overall"`
+	Weekly  []WeeklyValueData[T] `json:"weekly"`
 }
 
-type WeeklyValueDataPoint[T constraints.Ordered] struct {
-	ValueDataPoint[T]
+type WeeklyValueData[T constraints.Ordered] struct {
 	Week string `json:"week"`
+	ValueData[T]
 }
 
-type ValueDataPoint[T constraints.Ordered] struct {
+type ValueData[T constraints.Ordered] struct {
 	Value *T `json:"value"`
 }
 
-func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedValueData[T], error) {
-	datasetByWeek := make(map[string]WeeklyValueDataPoint[T])
-	var aggregated ValueDataPoint[T]
+func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedValues[T], error) {
+	datasetByWeek := make(map[string]WeeklyValueData[T])
+	var aggregated ValueData[T]
 
 	nullWeeksCount := 0
 	for rows.Next() {
 		var nullableWeek sql.NullString
-		var data ValueDataPoint[T]
+		var data ValueData[T]
 		if err := rows.Scan(
 			&nullableWeek,
 			&data.Value,
@@ -159,9 +159,9 @@ func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []
 		}
 
 		if nullableWeek.Valid {
-			datasetByWeek[nullableWeek.String] = WeeklyValueDataPoint[T]{
-				Week:           nullableWeek.String,
-				ValueDataPoint: data,
+			datasetByWeek[nullableWeek.String] = WeeklyValueData[T]{
+				Week:      nullableWeek.String,
+				ValueData: data,
 			}
 		} else {
 			aggregated = data
@@ -177,13 +177,13 @@ func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []
 		return nil, err
 	}
 
-	var weeklies []WeeklyValueDataPoint[T]
+	var weeklies []WeeklyValueData[T]
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = WeeklyValueDataPoint[T]{
+			dataPoint = WeeklyValueData[T]{
 				Week: week,
-				ValueDataPoint: ValueDataPoint[T]{
+				ValueData: ValueData[T]{
 					Value: nil,
 				},
 			}
@@ -191,8 +191,8 @@ func ScanAggregatedValueDataRows[T constraints.Ordered](rows *sql.Rows, weeks []
 		weeklies = append(weeklies, dataPoint)
 	}
 
-	return &AggregatedValueData[T]{
-		Aggregated: aggregated,
-		Weeks:      weeklies,
+	return &AggregatedValues[T]{
+		Overall: aggregated,
+		Weekly:  weeklies,
 	}, nil
 }
