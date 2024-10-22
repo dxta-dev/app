@@ -31,7 +31,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
 		deploy_dates.week AS week,
 		metrics.deploy_duration AS value

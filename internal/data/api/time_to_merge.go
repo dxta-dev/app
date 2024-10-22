@@ -30,7 +30,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.time_to_merge AS value

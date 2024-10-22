@@ -31,7 +31,7 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.review_duration AS value

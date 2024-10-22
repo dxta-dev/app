@@ -33,11 +33,11 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		commitedAt.week AS week,
+		committedAt.week AS week,
 		COUNT(*) AS value
 	FROM transform_merge_request_events AS ev
-	JOIN transform_dates AS commitedAt
-	ON commitedAt.id = ev.commited_at
+	JOIN transform_dates AS committedAt
+	ON committedAt.id = ev.commited_at
 	JOIN transform_repositories AS repo
 	ON repo.id = ev.repository
 	JOIN transform_forge_users AS author
@@ -46,14 +46,14 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 	ON ev.merge_request = mrs.id
 	JOIN transform_branches AS branch
 	ON mrs.target_branch = branch.id
-	WHERE commitedAt.week IN (%s)
+	WHERE committedAt.week IN (%s)
 	AND ev.merge_request_event_type = 9
 	AND repo.namespace_name = ?
 	AND repo.name = ?
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY commitedAt.week`,
+	GROUP BY committedAt.week`,
 		weeksPlaceholder,
 		teamQuery,
 	))

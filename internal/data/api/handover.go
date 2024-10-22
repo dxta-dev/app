@@ -30,10 +30,10 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week AS x,
-		metrics.handover AS y
+		mergedAt.week AS week,
+		metrics.handover AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository

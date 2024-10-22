@@ -31,7 +31,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.mr_size AS value

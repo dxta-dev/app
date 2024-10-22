@@ -31,7 +31,7 @@ func GetCodingTime(db *sql.DB, ctx context.Context, namespace string, repository
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
+	query := buildQueryAggregatedStatsData(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.coding_duration AS value
