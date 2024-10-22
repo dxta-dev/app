@@ -129,28 +129,28 @@ SELECT WEEK, VALUE FROM dataset;`,
 	)
 }
 
-type AggregatedValues[T constraints.Ordered] struct {
-	Overall ValueData[T]         `json:"overall"`
-	Weekly  []WeeklyValueData[T] `json:"weekly"`
+type AggregatedValues struct {
+	Overall ValueData         `json:"overall"`
+	Weekly  []WeeklyValueData `json:"weekly"`
 }
 
-type WeeklyValueData[T constraints.Ordered] struct {
+type WeeklyValueData struct {
 	Week string `json:"week"`
-	ValueData[T]
+	ValueData
 }
 
-type ValueData[T constraints.Ordered] struct {
-	Value *T `json:"value"`
+type ValueData struct {
+	Value *int `json:"value"`
 }
 
-func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedValues[T], error) {
-	datasetByWeek := make(map[string]WeeklyValueData[T])
-	var aggregated ValueData[T]
+func ScanAggregatedValuesRows(rows *sql.Rows, weeks []string) (*AggregatedValues, error) {
+	datasetByWeek := make(map[string]WeeklyValueData)
+	var aggregated ValueData
 
 	nullWeeksCount := 0
 	for rows.Next() {
 		var nullableWeek sql.NullString
-		var data ValueData[T]
+		var data ValueData
 		if err := rows.Scan(
 			&nullableWeek,
 			&data.Value,
@@ -159,7 +159,7 @@ func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 		}
 
 		if nullableWeek.Valid {
-			datasetByWeek[nullableWeek.String] = WeeklyValueData[T]{
+			datasetByWeek[nullableWeek.String] = WeeklyValueData{
 				Week:      nullableWeek.String,
 				ValueData: data,
 			}
@@ -169,7 +169,7 @@ func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 		}
 
 		if nullWeeksCount > 1 {
-			return nil, fmt.Errorf("ScanAggregatedValueDataRows found more than one aggregate rows")
+			return nil, fmt.Errorf("ScanAggregatedValuesRows found more than one aggregate rows")
 		}
 	}
 
@@ -177,13 +177,13 @@ func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 		return nil, err
 	}
 
-	var weeklies []WeeklyValueData[T]
+	var weeklies []WeeklyValueData
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = WeeklyValueData[T]{
+			dataPoint = WeeklyValueData{
 				Week: week,
-				ValueData: ValueData[T]{
+				ValueData: ValueData{
 					Value: nil,
 				},
 			}
@@ -191,7 +191,7 @@ func ScanAggregatedValuesRows[T constraints.Ordered](rows *sql.Rows, weeks []str
 		weeklies = append(weeklies, dataPoint)
 	}
 
-	return &AggregatedValues[T]{
+	return &AggregatedValues{
 		Overall: aggregated,
 		Weekly:  weeklies,
 	}, nil

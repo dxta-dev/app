@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsOpened = *AggregatedValues[int]
+type MRsOpened = *AggregatedValues
 
 /*
 	SELECT
@@ -96,7 +96,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	mrsOpened, err := ScanAggregatedValuesRows[int](rows, weeks)
+	mrsOpened, err := ScanAggregatedValuesRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

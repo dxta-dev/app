@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type TotalReview = *AggregatedValues[int]
+type TotalReview = *AggregatedValues
 
 /*
 
@@ -61,8 +61,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
 		occuredAt.week AS WEEK,
-		COUNT(*) AS TOTAL,
-		COUNT(*) AS COUNT
+		COUNT(*) AS VALUE
 	FROM transform_merge_request_events AS ev
 	JOIN transform_repositories AS repo
 	ON repo.id = ev.repository
@@ -81,8 +80,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY occuredAt.week
-	ORDER BY occuredAt.week ASC`,
+	GROUP BY occuredAt.week`,
 		weeksPlaceholder,
 		teamQuery,
 	))
@@ -95,7 +93,7 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	totalReviews, err := ScanAggregatedValuesRows[int](rows, weeks)
+	totalReviews, err := ScanAggregatedValuesRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

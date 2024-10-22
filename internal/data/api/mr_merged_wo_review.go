@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview = *AggregatedValues[int]
+type MRsMergedWithoutReview = *AggregatedValues
 
 /*
 	SELECT
@@ -97,7 +97,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 
 	defer rows.Close()
 
-	mrsMergedWithoutReview, err := ScanAggregatedValuesRows[int](rows, weeks)
+	mrsMergedWithoutReview, err := ScanAggregatedValuesRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

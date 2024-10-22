@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-type Commits = *AggregatedValues[int]
+type Commits = *AggregatedValues
 
 /*
 	SELECT
@@ -90,7 +90,7 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	defer rows.Close()
 
-	commits, err := ScanAggregatedValuesRows[int](rows, weeks)
+	commits, err := ScanAggregatedValuesRows(rows, weeks)
 
 	if err != nil {
 		return nil, err
