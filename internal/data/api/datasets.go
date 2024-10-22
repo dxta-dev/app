@@ -102,7 +102,7 @@ func ScanAggregatedStatsRows(rows *sql.Rows, weeks []string) (*AggregatedStats, 
 		}
 
 		if nullWeeksCount > 1 {
-			return nil, fmt.Errorf("ScanAggregatedStatsRows found more than one aggregate rows")
+			return nil, fmt.Errorf("ScanAggregatedStatsRows found more than one aggregate row")
 		}
 	}
 
@@ -185,7 +185,7 @@ func ScanAggregatedValuesRows(rows *sql.Rows, weeks []string) (*AggregatedValues
 		}
 
 		if nullWeeksCount > 1 {
-			return nil, fmt.Errorf("ScanAggregatedValuesRows found more than one aggregate rows")
+			return nil, fmt.Errorf("ScanAggregatedValuesRows found more than one aggregate row")
 		}
 	}
 
