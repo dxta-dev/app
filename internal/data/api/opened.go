@@ -61,8 +61,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
 		opened_dates.week AS WEEK,
-		COUNT(*) AS TOTAL,
-		COUNT(*) AS COUNT
+		COUNT(*) AS VALUE
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository
@@ -84,8 +83,7 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY opened_dates.week
-	ORDER BY opened_dates.week ASC`,
+	GROUP BY opened_dates.week`,
 		weeksPlaceholder,
 		teamQuery,
 	))

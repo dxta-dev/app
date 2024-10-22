@@ -61,8 +61,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS WEEK,
-		COUNT(*) AS TOTAL,
-		COUNT(*) AS COUNT
+		COUNT(*) AS VALUE
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_merge_request_fact_dates_junk AS dj
 	ON metrics.dates_junk = dj.id
@@ -85,8 +84,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	AND branch.name = 'main'
 	%s
 	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC`,
+	GROUP BY mergedAt.week`,
 		weeksPlaceholder,
 		teamQuery,
 	))
