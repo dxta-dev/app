@@ -7,35 +7,7 @@ import (
 	"strings"
 )
 
-type MergeFrequency = *AggregatedValues
-
-/*
-
-	SELECT
-		merged_dates.week,
-		CAST(COUNT (*) AS REAL) / 7
-	FROM transform_merge_request_metrics AS metrics
-	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
-	JOIN transform_merge_request_fact_dates_junk AS dates_junk
-	ON metrics.dates_junk = dates_junk.id
-	JOIN transform_dates AS merged_dates
-	ON dates_junk.merged_at = merged_dates.id
-	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users AS author
-	ON uj.author = author.id
-	WHERE merged_dates.week IN ("2024-W26", "2024-W27", "2024-W28", "2024-W29", "2024-W30", "2024-W31", "2024-W32", "2024-W33", "2024-W34", "2024-W35", "2024-W36", "2024-W37")
-	AND repo.namespace_name = "calcom"
-	AND repo.name = "cal.com"
-	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
-	AND author.bot = 0
-	GROUP BY merged_dates.week
-	ORDER BY merged_dates.week ASC;
-
-*/
-
-func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MergeFrequency, error) {
+func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -77,7 +49,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 	JOIN transform_merge_requests AS mrs
 	ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-	ON mrs.target_branch = branch.id	
+	ON mrs.target_branch = branch.id
 	WHERE merged_dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?

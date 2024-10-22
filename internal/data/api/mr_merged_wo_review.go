@@ -7,34 +7,7 @@ import (
 	"strings"
 )
 
-type MRsMergedWithoutReview = *AggregatedValues
-
-/*
-	SELECT
-		mergedAt.week,
-		COUNT(*)
-	FROM transform_merge_request_metrics AS metrics
-	JOIN transform_merge_request_fact_dates_junk AS dj
-	ON metrics.dates_junk = dj.id
-	JOIN transform_repositories AS repo
-	ON repo.id = metrics.repository
-	JOIN transform_dates AS mergedAt
-	ON dj.merged_at = mergedAt.id
-	JOIN transform_merge_request_fact_users_junk AS uj
-	ON metrics.users_junk = uj.id
-	JOIN transform_forge_users AS author
-	ON uj.author = author.id
-	WHERE mergedAt.week IN ("2024-W26", "2024-W27", "2024-W28", "2024-W29", "2024-W30", "2024-W31", "2024-W32", "2024-W33", "2024-W34", "2024-W35", "2024-W36", "2024-W37")
-	AND metrics.review_depth = 0
-	AND repo.name = "cal.com"
-	AND repo.namespace_name = "calcom"
-	AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = 1)
-	AND author.bot = 0
-	GROUP BY mergedAt.week
-	ORDER BY mergedAt.week ASC;
-*/
-
-func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (MRsMergedWithoutReview, error) {
+func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -76,7 +49,7 @@ func GetMRsMergedWithoutReview(db *sql.DB, ctx context.Context, namespace string
 	JOIN transform_merge_requests AS mrs
 	ON metrics.merge_request = mrs.id
 	JOIN transform_branches AS branch
-	ON mrs.target_branch = branch.id	
+	ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
 	AND metrics.review_depth = 0
 	AND repo.namespace_name = ?

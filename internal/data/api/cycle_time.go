@@ -7,36 +7,7 @@ import (
 	"strings"
 )
 
-type CycleTime = *AggregatedStats[float64]
-
-/*
-	SELECT
-		deployedAt.week as WEEK,
-		AVG(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) AS AVG,
-		MEDIAN(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P50,
-		PERCENTILE_75(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P75,
-		PERCENTILE_95(metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration) as P95
-		FROM transform_merge_request_metrics AS metrics
-	JOIN transform_repositories AS repo
-		ON repo.id = metrics.repository
-	JOIN transform_merge_request_fact_dates_junk AS dj
-		ON metrics.dates_junk = dj.id
-	JOIN transform_dates AS deployedAt
-		ON dj.deployed_at = deployedAt.id
-	JOIN transform_merge_request_fact_users_junk AS uj
-		ON metrics.users_junk = uj.id
-	JOIN transform_forge_users AS author
-		ON uj.author = author.id
-	WHERE deployedAt.week IN ("2024-W26", "2024-W27", "2024-W28", "2024-W29", "2024-W30", "2024-W31", "2024-W32", "2024-W33", "2024-W34", "2024-W35", "2024-W36", "2024-W37")
-	AND repo.name = "cal.com"
-	AND repo.namespace_name = "calcom"
-	AND author.external_id IN (SELECT member FROM tenant_team_members WHERE team = 1)
-	AND author.bot = 0
-	GROUP BY deployedAt.week
-	ORDER BY deployedAt.week ASC;
-*/
-
-func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (CycleTime, error) {
+func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
