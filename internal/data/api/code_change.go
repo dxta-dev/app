@@ -33,8 +33,8 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		dates.week AS WEEK,
-		SUM(metrics.mr_size) AS VALUE
+		dates.week AS week,
+		SUM(metrics.mr_size) AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository

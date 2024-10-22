@@ -23,8 +23,8 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		deploy_dates.week AS WEEK,
-		COUNT(*) AS VALUE
+		deploy_dates.week AS week,
+		COUNT(*) AS value
 	FROM transform_deployments AS deploy
 	JOIN transform_dates AS deploy_dates
 	ON deploy.deployed_at = deploy_dates.id

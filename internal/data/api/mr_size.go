@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -33,8 +33,8 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week AS x,
-		metrics.mr_size AS y
+		mergedAt.week AS week,
+		metrics.mr_size AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -68,7 +68,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	defer rows.Close()
 
-	mrSizes, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	mrSizes, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -67,7 +67,7 @@ func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository s
 
 	defer rows.Close()
 
-	handovers, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	handovers, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

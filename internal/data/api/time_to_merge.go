@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 	teamQuery := ""
 	queryParamLength := len(weeks)
 
@@ -32,8 +32,8 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week AS x,
-		metrics.time_to_merge AS y
+		mergedAt.week AS week,
+		metrics.time_to_merge AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -67,7 +67,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 
 	defer rows.Close()
 
-	timesToMerge, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	timesToMerge, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -34,8 +34,8 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 		SELECT
-			deployedAt.week AS x,
-			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS y
+			deployedAt.week AS week,
+			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS value
 		FROM transform_merge_request_metrics AS metrics
 		JOIN transform_repositories AS repo
 			ON repo.id = metrics.repository
@@ -69,7 +69,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	defer rows.Close()
 
-	cycleTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	cycleTimes, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

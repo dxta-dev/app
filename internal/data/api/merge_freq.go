@@ -33,8 +33,8 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		merged_dates.week AS WEEK,
-		COUNT(*) AS VALUE
+		merged_dates.week AS week,
+		COUNT(*) AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository

@@ -33,8 +33,8 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		commitedAt.week AS WEEK,
-		COUNT(*) AS VALUE
+		commitedAt.week AS week,
+		COUNT(*) AS value
 	FROM transform_merge_request_events AS ev
 	JOIN transform_dates AS commitedAt
 	ON commitedAt.id = ev.commited_at

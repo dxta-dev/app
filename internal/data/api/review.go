@@ -32,8 +32,8 @@ func GetTotalReviews(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		occuredAt.week AS WEEK,
-		COUNT(*) AS VALUE
+		occuredAt.week AS week,
+		COUNT(*) AS value
 	FROM transform_merge_request_events AS ev
 	JOIN transform_repositories AS repo
 	ON repo.id = ev.repository

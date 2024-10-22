@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -33,8 +33,8 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week AS x,
-		metrics.review_duration AS y
+		mergedAt.week AS week,
+		metrics.review_duration AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -68,7 +68,7 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	reviewTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	reviewTimes, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

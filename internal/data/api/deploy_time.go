@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -33,8 +33,8 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		deploy_dates.week AS x,
-		metrics.deploy_duration AS y
+		deploy_dates.week AS week,
+		metrics.deploy_duration AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -68,7 +68,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 
 	defer rows.Close()
 
-	deployTimes, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	deployTimes, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

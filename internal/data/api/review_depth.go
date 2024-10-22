@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -69,7 +69,7 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	defer rows.Close()
 
-	mrReviewDepths, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	mrReviewDepths, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err

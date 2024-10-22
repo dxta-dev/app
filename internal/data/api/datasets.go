@@ -3,67 +3,82 @@ package api
 import (
 	"database/sql"
 	"fmt"
-
-	"golang.org/x/exp/constraints"
 )
 
-func buildQueryAggregatedStatisticData(baseQuery string) string {
-	return fmt.Sprintf(`WITH dataset AS (%s),
-data_by_week AS (
-	SELECT
-		x AS WEEK,
-		AVG(y) AS AVG,
-		MEDIAN(y) AS P50,
-		PERCENTILE_75(y) AS P75,
-		PERCENTILE_95(y) AS P95,
-		SUM(y) as TOTAL,
-  	COUNT(y) as COUNT
-	FROM dataset
-	GROUP BY WEEK
-),
-data_total AS (
-  SELECT AVG(y) as AVG,
-  MEDIAN(y) as P50,
-  PERCENTILE_75(y) as P75,
-  PERCENTILE_95(y) as P95,
-  SUM(y) as TOTAL,
-  COUNT(y) as COUNT
-	FROM dataset
-)
-SELECT NULL as WEEK, AVG, P50, P75, P95, TOTAL, COUNT FROM data_total
-UNION ALL
-SELECT WEEK, AVG, P50, P75, P95, TOTAL, COUNT FROM data_by_week;`,
+func buildQueryAggregatedStatsData(baseQuery string) string {
+	return fmt.Sprintf(`
+		WITH dataset AS (%s),
+		data_by_week AS (
+			SELECT
+				week AS week,
+				AVG(value) AS avg,
+				MEDIAN(value) AS p50,
+				PERCENTILE_75(value) AS p75,
+				PERCENTILE_95(value) AS p95,
+				SUM(value) as total,
+				COUNT(*) as count
+			FROM dataset
+			GROUP BY week
+		),
+		data_total AS (
+			SELECT AVG(value) as avg,
+				MEDIAN(value) as p50,
+				PERCENTILE_75(value) as p75,
+				PERCENTILE_95(value) as p95,
+				SUM(value) as total,
+				COUNT(*) as count
+			FROM dataset
+		)
+		SELECT
+			NULL as week,
+			avg,
+			p50,
+			p75,
+			p95,
+			total,
+			count
+		FROM data_total
+		UNION ALL
+		SELECT
+			week,
+			avg,
+			p50,
+			p75,
+			p95,
+			total,
+			count
+		FROM data_by_week;`,
 		baseQuery,
 	)
 }
 
-type AggregatedStats[T constraints.Ordered] struct {
-	Overall StatsData[T]         `json:"overall"`
-	Weekly  []WeeklyStatsData[T] `json:"weekly"`
+type AggregatedStats struct {
+	Overall StatsData         `json:"overall"`
+	Weekly  []WeeklyStatsData `json:"weekly"`
 }
 
-type WeeklyStatsData[T constraints.Ordered] struct {
+type WeeklyStatsData struct {
 	Week string `json:"week"`
-	StatsData[T]
+	StatsData
 }
 
-type StatsData[T constraints.Ordered] struct {
-	Average      *T `json:"average"`
-	Median       *T `json:"median"`
-	Percentile75 *T `json:"percentile75"`
-	Percentile95 *T `json:"percentile95"`
-	Total        *T `json:"total"`
-	Count        *T `json:"count"`
+type StatsData struct {
+	Average      *float64 `json:"average"`
+	Median       *float64 `json:"median"`
+	Percentile75 *float64 `json:"percentile75"`
+	Percentile95 *float64 `json:"percentile95"`
+	Total        *float64 `json:"total"`
+	Count        *float64 `json:"count"`
 }
 
-func ScanAggregatedStatsRows[T constraints.Ordered](rows *sql.Rows, weeks []string) (*AggregatedStats[T], error) {
-	datasetByWeek := make(map[string]WeeklyStatsData[T])
-	var aggregated StatsData[T]
+func ScanAggregatedStatsRows(rows *sql.Rows, weeks []string) (*AggregatedStats, error) {
+	datasetByWeek := make(map[string]WeeklyStatsData)
+	var aggregated StatsData
 
 	nullWeeksCount := 0
 	for rows.Next() {
 		var nullableWeek sql.NullString
-		var data StatsData[T]
+		var data StatsData
 		if err := rows.Scan(
 			&nullableWeek,
 			&data.Average,
@@ -77,7 +92,7 @@ func ScanAggregatedStatsRows[T constraints.Ordered](rows *sql.Rows, weeks []stri
 		}
 
 		if nullableWeek.Valid {
-			datasetByWeek[nullableWeek.String] = WeeklyStatsData[T]{
+			datasetByWeek[nullableWeek.String] = WeeklyStatsData{
 				Week:      nullableWeek.String,
 				StatsData: data,
 			}
@@ -95,13 +110,13 @@ func ScanAggregatedStatsRows[T constraints.Ordered](rows *sql.Rows, weeks []stri
 		return nil, err
 	}
 
-	var weeklies []WeeklyStatsData[T]
+	var weeklies []WeeklyStatsData
 	for _, week := range weeks {
 		dataPoint, ok := datasetByWeek[week]
 		if !ok {
-			dataPoint = WeeklyStatsData[T]{
+			dataPoint = WeeklyStatsData{
 				Week: week,
-				StatsData: StatsData[T]{
+				StatsData: StatsData{
 					Average:      nil,
 					Median:       nil,
 					Percentile75: nil,
@@ -114,17 +129,18 @@ func ScanAggregatedStatsRows[T constraints.Ordered](rows *sql.Rows, weeks []stri
 		weeklies = append(weeklies, dataPoint)
 	}
 
-	return &AggregatedStats[T]{
+	return &AggregatedStats{
 		Overall: aggregated,
 		Weekly:  weeklies,
 	}, nil
 }
 
 func buildQueryAggregatedValueData(baseQuery string) string {
-	return fmt.Sprintf(`WITH dataset AS (%s)
-SELECT NULL as WEEK, SUM(VALUE) AS VALUE FROM dataset
-UNION ALL
-SELECT WEEK, VALUE FROM dataset;`,
+	return fmt.Sprintf(`
+		WITH dataset AS (%s)
+		SELECT NULL as week, SUM(value) AS value FROM dataset
+		UNION ALL
+		SELECT week, value FROM dataset;`,
 		baseQuery,
 	)
 }

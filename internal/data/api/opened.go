@@ -33,8 +33,8 @@ func GetMRsOpened(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	query := buildQueryAggregatedValueData(fmt.Sprintf(`
 	SELECT
-		opened_dates.week AS WEEK,
-		COUNT(*) AS VALUE
+		opened_dates.week AS week,
+		COUNT(*) AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 	ON repo.id = metrics.repository

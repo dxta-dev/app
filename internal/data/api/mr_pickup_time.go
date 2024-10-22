@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats[float64], error) {
+func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
@@ -33,8 +33,8 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	query := buildQueryAggregatedStatisticData(fmt.Sprintf(`
 	SELECT
-		mergedAt.week AS x,
-		metrics.review_start_delay AS y
+		mergedAt.week AS week,
+		metrics.review_start_delay AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -68,7 +68,7 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 
 	defer rows.Close()
 
-	mrsPickupTime, err := ScanAggregatedStatsRows[float64](rows, weeks)
+	mrsPickupTime, err := ScanAggregatedStatsRows(rows, weeks)
 
 	if err != nil {
 		return nil, err
