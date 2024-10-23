@@ -106,6 +106,7 @@ func main() {
 	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
 	e.GET("/commits/:org/:repo", api.CommitsHandler)
 	e.GET("/cycle-time/:org/:repo", api.CycleTimeHandler)
+	e.GET("/detailed-cycle-time/:org/:repo", api.DetailedCycleTimeHandler)
 	e.GET("/deploy-freq/:org/:repo", api.DeployFrequencyHandler)
 	e.GET("/deploy-time/:org/:repo", api.DeployTimeHandler)
 	e.GET("/handover/:org/:repo", api.HandoverHandler)
