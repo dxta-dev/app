@@ -211,8 +211,6 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 			return nil, err
 		}
 
-		fmt.Println(week)
-
 		if week.Valid {
 			wcts = append(wcts,
 				WeeklyCycleTimeStatistics{
@@ -230,7 +228,10 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 		acts.PickupTime = pickup_time
 		acts.ReviewTime = review_time
 		acts.DeployTime = deploy_time
+	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	acts.Weekly = wcts
