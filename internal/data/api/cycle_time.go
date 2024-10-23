@@ -34,15 +34,15 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	query := buildQueryAggregatedStats(fmt.Sprintf(`
 		SELECT
-			deployedAt.week AS week,
+			mergedAt.week AS week,
 			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS value
 		FROM transform_merge_request_metrics AS metrics
 		JOIN transform_repositories AS repo
 			ON repo.id = metrics.repository
 		JOIN transform_merge_request_fact_dates_junk AS dj
 			ON metrics.dates_junk = dj.id
-		JOIN transform_dates AS deployedAt
-			ON dj.deployed_at = deployedAt.id
+		JOIN transform_dates AS mergedAt
+			ON dj.merged_at = mergedAt.id
 		JOIN transform_merge_request_fact_users_junk AS uj
 			ON metrics.users_junk = uj.id
 		JOIN transform_forge_users AS author
@@ -51,7 +51,8 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		ON metrics.merge_request = mrs.id
 		JOIN transform_branches AS branch
 		ON mrs.target_branch = branch.id
-		WHERE deployedAt.week IN (%s)
+		WHERE mergedAt.week IN (%s)
+		AND metrics.deployed = 1
 		AND repo.namespace_name = ?
 		AND repo.name = ?
 		AND branch.name = 'main'
