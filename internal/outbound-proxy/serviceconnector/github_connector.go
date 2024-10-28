@@ -1,17 +1,18 @@
 package host
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
 )
 
-type GitHub struct {
+type GitHubConnector struct {
 	endpoint string
 }
 
-func NewGitHubHost() *GitHub {
-	return &GitHub{
+func NewGitHubConnector() *GitHubConnector {
+	return &GitHubConnector{
 		endpoint: "https://api.github.com",
 	}
 }
@@ -78,7 +79,7 @@ func unwrapLink(resp *http.Response) map[LinkKey]Link {
 	return links
 }
 
-func (g GitHub) UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error) {
+func (g GitHubConnector) UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error) {
 	links := unwrapLink(resp)
 	totalPages := links[Last].Value
 	if totalPages == 0 {
@@ -94,7 +95,7 @@ func (g GitHub) UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error) 
 	}, nil
 }
 
-func (g GitHub) UnwrapRequest(req *http.Request) (*UnwrappedRequest, error) {
+func (g GitHubConnector) UnwrapRequest(req *http.Request) (*UnwrappedRequest, error) {
 	tenantId, err := unwrapTenantId(req)
 	if err != nil {
 		return nil, err
@@ -102,4 +103,8 @@ func (g GitHub) UnwrapRequest(req *http.Request) (*UnwrappedRequest, error) {
 	return &UnwrappedRequest{
 		TenantId: tenantId,
 	}, nil
+}
+
+func (g GitHubConnector) MakeRequest(ctx context.Context, endpoint string, method string, headers http.Header, body []byte) (*http.Response, error) {
+	return nil, nil
 }

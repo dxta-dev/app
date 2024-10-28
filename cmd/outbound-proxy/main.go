@@ -9,8 +9,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/dxta-dev/app/internal/outbound-proxy/host"
 )
 
 type ApiKeyDetails struct {
@@ -25,48 +23,15 @@ type RateLimitInfo struct {
 var rateLimitMap sync.Map
 var client = &http.Client{}
 
-func proxyHandler(hostId int) http.HandlerFunc {
-
-	var h host.Host
-
-	switch hostId {
-	case host.GITHUB:
-		h = host.NewGitHubHost()
-	default:
-		panic("")
-	}
-
-	return func(w http.ResponseWriter, req *http.Request) {
-		_, err := h.UnwrapRequest(req)
-		if err != nil {
-		}
-
-		var resp *http.Response
-
-		resp, err = client.Do(req)
-		if err != nil {
-		}
-
-		_, err = h.UnwrapResponse(resp)
-		if err != nil {
-		}
-
-		if resp.StatusCode == http.StatusTooManyRequests {
-		}
-
-	}
-}
-
 func main() {
+
+	ctx := context.Background()
 
 	port := os.Getenv("PORT")
 
 	if port == "" {
 		port = "1337"
 	}
-
-	http.HandleFunc("/github", proxyHandler(host.GITHUB))
-	http.HandleFunc("/gitlab", proxyHandler(host.GITLAB))
 
 	server := &http.Server{
 		Addr:         ":" + port,
@@ -77,7 +42,7 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Could not listen on port 1337 %v\n", err)
+			log.Fatalf("Could not listen on port %v %v\n", port, err)
 		}
 	}()
 
