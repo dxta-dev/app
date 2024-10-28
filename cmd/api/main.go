@@ -16,7 +16,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/contrib/propagators/autoprop"
-	"go.opentelemetry.io/contrib/propagators/ot"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
 	"go.opentelemetry.io/otel/propagation"
@@ -48,9 +47,6 @@ func initTracer(ctx context.Context, res *sdkresource.Resource) (*sdktrace.Trace
 func main() {
 
 	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" || os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
-
-	otPropagator := ot.OT{}
-	otel.SetTextMapPropagator(otPropagator)
 
 	if isEndpointProvided {
 		res, err := sdkresource.New(
