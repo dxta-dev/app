@@ -105,6 +105,7 @@ func main() {
 	})
 
 	e.GET("/repos", api.ReposHandler)
+	e.GET("/teams/:org/:repo", api.TeamsHandler)
 	e.GET("/code-change/:org/:repo", api.CodeChangeHandler)
 	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
 	e.GET("/commits/:org/:repo", api.CommitsHandler)
