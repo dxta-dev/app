@@ -56,7 +56,8 @@ func GetSmallMRs(db *sql.DB, ctx context.Context, namespace string, repository s
 	AND repo.name = ?
 	AND branch.name = 'main'
     %s
-	AND author.bot = 0`,
+	AND author.bot = 0
+	GROUP BY mergedAt.week`,
 		weeksPlaceholder,
 		teamQuery,
 	))
