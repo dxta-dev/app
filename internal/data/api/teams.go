@@ -6,8 +6,8 @@ import (
 )
 
 type Team struct {
-	Id   int64
-	Name string
+	Id   int64  `json:"id"`
+	Name string `json:"name"`
 }
 
 func GetTeams(db *sql.DB, ctx context.Context) ([]Team, error) {
