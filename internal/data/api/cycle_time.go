@@ -37,7 +37,6 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
-		queryParamLength += 1
 	}
 
 	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
@@ -246,7 +245,6 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
-		queryParamLength += 1
 	}
 
 	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"

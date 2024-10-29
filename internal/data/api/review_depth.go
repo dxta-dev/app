@@ -14,7 +14,6 @@ func GetMRReviewDepth(db *sql.DB, ctx context.Context, namespace string, reposit
 
 	if team != nil {
 		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
-		queryParamLength += 1
 	}
 
 	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
