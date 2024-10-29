@@ -123,6 +123,7 @@ func main() {
 	e.GET("/review-depth/:org/:repo", api.ReviewDepthHandler)
 	e.GET("/review-time/:org/:repo", api.ReviewTimeHandler)
 	e.GET("/time-to-merge/:org/:repo", api.TimeToMergeHandler)
+	e.GET("/small-mrs/:org/:repo", api.SmallMRsHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
