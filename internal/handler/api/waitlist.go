@@ -1,9 +1,7 @@
 package api
 
 import (
-	"database/sql"
 	"net/http"
-	"os"
 
 	"github.com/dxta-dev/app/internal/data/api"
 	"github.com/labstack/echo/v4"
@@ -17,7 +15,7 @@ type RequestBody struct {
 func WaitlistHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	metricsDB, err := sql.Open("libsql", os.Getenv("METRICS_DXTA_DEV_DB_URL"))
+	metricsDB, err := GetMetricsDB()
 	if err != nil {
 		return err
 	}
@@ -33,8 +31,7 @@ func WaitlistHandler(c echo.Context) error {
 
 	err = api.InsertWaitlistData(metricsDB, ctx, reqBody.UserEmail, reqBody.RepoUrl)
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to insert waitlist data"})
+		return err
 	}
-
-	return c.JSON(http.StatusOK, map[string]string{"message": "User added to waitlist"})
+	return c.NoContent(http.StatusOK)
 }
