@@ -11,7 +11,7 @@ func ReposHandler(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	reposDB, err := GetReposDB()
+	reposDB, err := GetMetricsDB()
 	if err != nil {
 		return err
 	}

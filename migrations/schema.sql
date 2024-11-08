@@ -4,9 +4,17 @@
 --
 
 CREATE TABLE schema_migrations (id VARCHAR(255) NOT NULL PRIMARY KEY)
-CREATE TABLE repos (id INTEGER PRIMARY KEY AUTOINCREMENT, organization TEXT NOT NULL, repository TEXT NOT NULL, db_url TEXT NOT NULL, __created_at INTEGER DEFAULT ((strftime ('%s', 'now') || substr (printf ('%.3f', julianday ('now') - julianday ('1970-01-01')), 4, 3)) * 1), __updated_at INTEGER DEFAULT ((strftime ('%s', 'now') || substr (printf ('%.3f', julianday ('now') - julianday ('1970-01-01')), 4, 3)) * 1), UNIQUE (organization, repository))
+CREATE TABLE repos (id INTEGER PRIMARY KEY AUTOINCREMENT, organization TEXT NOT NULL, repository TEXT NOT NULL, db_url TEXT NOT NULL, __created_at INTEGER DEFAULT ((strftime ('%s', 'now') || substr (printf ('%.3f', julianday ('now') - julianday ('1970-01-01')), 4, 3)) * 1), __updated_at INTEGER DEFAULT ((strftime ('%s', 'now') || substr (printf ('%.3f', julianday ('now') - julianday ('1970-01-01')), 4, 3)) * 1), project_name TEXT, project_description TEXT, UNIQUE (organization, repository))
 CREATE TABLE sqlite_sequence(name,seq)
 CREATE INDEX idx_org_repo_repos ON repos (organization, repository)
 CREATE TRIGGER repos_update_updated_at AFTER UPDATE ON repos BEGIN
 UPDATE repos SET __updated_at = ((strftime ('%s', 'now') || substr (printf ('%.3f', julianday ('now') - julianday ('1970-01-01')), 4, 3)) * 1) WHERE id = old.id;
 END
+CREATE TABLE users_waitlist (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_email TEXT NOT NULL,
+  repository_url TEXT NOT NULL,
+  __created_at INTEGER DEFAULT ((strftime('%s', 'now') || substr(printf('%.3f', julianday('now') - julianday('1970-01-01')), 4, 3)) * 1),
+  __updated_at INTEGER DEFAULT ((strftime('%s', 'now') || substr(printf('%.3f', julianday('now') - julianday('1970-01-01')), 4, 3)) * 1),
+  UNIQUE (user_email, repository_url)
+)
