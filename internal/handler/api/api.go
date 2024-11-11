@@ -111,7 +111,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 	}, nil
 }
 
-func GetMetricsDB() (*sql.DB, error) {
+func GetReposDB() (*sql.DB, error) {
 	driverName := otel.GetDriverName()
 
 	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
