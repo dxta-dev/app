@@ -81,7 +81,7 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 			AND metrics.deployed = 1
 			AND repo.namespace_name = ?
 			AND repo.name = ?
-			AND branch.name = 'main'
+			AND branch.id = repo.default_branch
 			%s
 			AND author.bot = 0
 		),
@@ -285,7 +285,7 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		AND metrics.deployed = 1
 		AND repo.namespace_name = ?
 		AND repo.name = ?
-		AND branch.name = 'main'
+		AND branch.id = repo.default_branch
 		%s
 		AND author.bot = 0`,
 		weeksPlaceholder,

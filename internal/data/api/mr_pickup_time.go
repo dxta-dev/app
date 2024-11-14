@@ -52,7 +52,7 @@ func GetMRPickupTime(db *sql.DB, ctx context.Context, namespace string, reposito
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = 'main'
+	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0`,
 		weeksPlaceholder,

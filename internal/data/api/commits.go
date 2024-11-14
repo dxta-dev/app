@@ -49,7 +49,7 @@ func GetCommits(db *sql.DB, ctx context.Context, namespace string, repository st
 	AND ev.merge_request_event_type = 9
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = 'main'
+	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0
 	GROUP BY committedAt.week`,

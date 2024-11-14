@@ -52,7 +52,7 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 	WHERE dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = 'main'
+	AND branch.id = repo.default_branch
 		%s
 	AND author.bot = 0
 	GROUP BY dates.week`,
