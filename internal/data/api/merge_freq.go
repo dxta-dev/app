@@ -52,7 +52,7 @@ func GetMRMergeFrequency(db *sql.DB, ctx context.Context, namespace string, repo
 	WHERE merged_dates.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = 'main'
+	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0
 	GROUP BY merged_dates.week`,

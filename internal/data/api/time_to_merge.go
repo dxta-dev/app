@@ -51,7 +51,7 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = 'main'
+	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0`,
 		weeksPlaceholder,

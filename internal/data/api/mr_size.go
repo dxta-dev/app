@@ -25,8 +25,6 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 
 	queryParams = append(queryParams, namespace)
 	queryParams = append(queryParams, repository)
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
 
 	if team != nil {
 		queryParams = append(queryParams, team)
@@ -54,12 +52,7 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 	WHERE mergedAt.week IN (%s)
 	AND repo.namespace_name = ?
 	AND repo.name = ?
-	AND branch.name = (SELECT r.default_branch FROM extract_repositories r
-				JOIN extract_namespaces n
-				ON n.id = r.namespace_id
-				WHERE n.name = ?
-				AND r.name = ?
-			)
+	AND branch.id = repo.default_branch
     %s
 	AND author.bot = 0`,
 		weeksPlaceholder,
