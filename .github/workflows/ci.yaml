@@ -85,7 +85,7 @@ jobs:
           path: |
             ./public/style.css
             ./internal/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/web/template/**/*.templ') }}
 
       - name: Test
         run: |
