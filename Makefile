@@ -3,10 +3,6 @@ watch-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c api.air.toml
 
-.PHONY: watch-admin
-watch-admin: CONFIG := admin.air.toml
-watch-admin: _watch
-
 .PHONY: watch-web
 watch-web: CONFIG := web.air.toml
 watch-web: _watch
