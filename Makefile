@@ -18,7 +18,7 @@ _watch:
 
 .PHONY: templ
 templ:
-	@./bin/templ generate ./internal/templates/*.templ
+	@./bin/templ generate ./internal/**/*.templ
 
 .PHONY: tailwind-watch
 tailwind-watch:
