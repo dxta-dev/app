@@ -52,8 +52,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
+            ./internal/web/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/web/template/**/*.templ') }}
 
       - name: Generate
         if: steps.generate-cache.outputs.cache-hit != 'true'
