@@ -3,6 +3,7 @@ package assert
 import (
 	"github.com/rs/zerolog/log"
 	"reflect"
+	"runtime"
 	"runtime/debug"
 )
 
@@ -39,6 +40,14 @@ func NoError(err error, message string, fields ...map[string]interface{}) {
 
 func write(message string, fields ...map[string]interface{}) {
 	event := log.Fatal()
+	pc, file, line, _ := runtime.Caller(1)
+
+	callerFields := map[string]interface{}{
+		"caller_file":     file,
+		"caller_line":     line,
+		"caller_function": runtime.FuncForPC(pc).Name(),
+	}
+	fields = append(fields, callerFields)
 	for _, field := range fields {
 		for key, value := range field {
 			event = event.Interface(key, value)
