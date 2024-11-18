@@ -58,6 +58,4 @@ func write(message string, fields ...map[string]interface{}) {
 	event = event.Str("stack_trace", stackTrace)
 
 	event.Msg(message)
-
-	panic(message)
 }
