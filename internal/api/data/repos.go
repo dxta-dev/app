@@ -12,6 +12,22 @@ type Repo struct {
 	ProjectDescription string `json:"projectDescription"`
 }
 
+func GetReposDbUrl(ctx context.Context, db *sql.DB, org string, repo string) (string, error) {
+	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
+
+	row := db.QueryRowContext(ctx, query, org, repo)
+
+	var dbUrl string
+
+	err := row.Scan(&dbUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	return dbUrl, nil
+}
+
 func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
 	query := `SELECT organization, repository, project_name, project_description FROM repos`
 	rows, err := db.QueryContext(ctx, query)
