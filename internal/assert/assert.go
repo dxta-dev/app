@@ -1,9 +1,9 @@
 package assert
 
 import (
-	"reflect"
-
 	"github.com/rs/zerolog/log"
+	"reflect"
+	"runtime/debug"
 )
 
 func Never(message string, fields ...map[string]interface{}) {
@@ -12,6 +12,10 @@ func Never(message string, fields ...map[string]interface{}) {
 
 func NotNil(item interface{}, message string, fields ...map[string]interface{}) {
 	if item == nil || reflect.ValueOf(item).Kind() == reflect.Ptr && reflect.ValueOf(item).IsNil() {
+		typeFields := map[string]interface{}{
+			"expected_type": reflect.TypeOf(item),
+		}
+		fields = append(fields, typeFields)
 		write(message, fields...)
 	}
 }
@@ -25,7 +29,8 @@ func Assert(condition bool, message string, fields ...map[string]interface{}) {
 func NoError(err error, message string, fields ...map[string]interface{}) {
 	if err != nil {
 		errorFields := map[string]interface{}{
-			err.Error(): err,
+			"error":         err,
+			"error_message": err.Error(),
 		}
 		fields = append(fields, errorFields)
 		write(message, fields...)
@@ -34,13 +39,16 @@ func NoError(err error, message string, fields ...map[string]interface{}) {
 
 func write(message string, fields ...map[string]interface{}) {
 	event := log.Fatal()
-	event.Msg(message)
 	for _, field := range fields {
 		for key, value := range field {
 			event = event.Interface(key, value)
 		}
 	}
-	event.Send()
+
+	stackTrace := string(debug.Stack())
+	event = event.Str("stack_trace", stackTrace)
+
+	event.Msg(message)
 
 	panic(message)
 }
