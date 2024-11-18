@@ -5,10 +5,10 @@ import (
 	"net/url"
 	"sync"
 
-	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/middleware"
-	"github.com/dxta-dev/app/internal/template"
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/dxta-dev/app/internal/web/data"
+	"github.com/dxta-dev/app/internal/web/template"
 
 	"time"
 

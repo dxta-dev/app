@@ -1,9 +1,9 @@
 package main
 
 import (
-	"github.com/dxta-dev/app/internal/handler"
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/dxta-dev/app/internal/web/handler"
 
 	"context"
 	"fmt"

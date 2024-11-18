@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/otel"
+	"github.com/dxta-dev/app/internal/web/data"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/context"
 )
