@@ -3,10 +3,6 @@ watch-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c api.air.toml
 
-.PHONY: watch-admin
-watch-admin: CONFIG := admin.air.toml
-watch-admin: _watch
-
 .PHONY: watch-web
 watch-web: CONFIG := web.air.toml
 watch-web: _watch
@@ -18,7 +14,7 @@ _watch:
 
 .PHONY: templ
 templ:
-	@./bin/templ generate ./internal/templates/*.templ
+	@./bin/templ generate
 
 .PHONY: tailwind-watch
 tailwind-watch:

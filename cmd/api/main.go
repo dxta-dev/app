@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/dxta-dev/app/internal/handler/api"
+	"github.com/dxta-dev/app/internal/api/handler"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
@@ -104,26 +104,26 @@ func main() {
 		return c.String(http.StatusOK, "Hell")
 	})
 
-	e.GET("/repos", api.ReposHandler)
-	e.GET("/teams/:org/:repo", api.TeamsHandler)
-	e.GET("/code-change/:org/:repo", api.CodeChangeHandler)
-	e.GET("/coding-time/:org/:repo", api.CodingTimeHandler)
-	e.GET("/commits/:org/:repo", api.CommitsHandler)
-	e.GET("/cycle-time/:org/:repo", api.CycleTimeHandler)
-	e.GET("/detailed-cycle-time/:org/:repo", api.DetailedCycleTimeHandler)
-	e.GET("/deploy-freq/:org/:repo", api.DeployFrequencyHandler)
-	e.GET("/deploy-time/:org/:repo", api.DeployTimeHandler)
-	e.GET("/handover/:org/:repo", api.HandoverHandler)
-	e.GET("/merge-freq/:org/:repo", api.MergeFrequencyHandler)
-	e.GET("/mr-merged-wo-review/:org/:repo", api.MRsMergedWithoutReviewHandler)
-	e.GET("/mr-opened/:org/:repo", api.MRSOpenedHandler)
-	e.GET("/mr-pickup-time/:org/:repo", api.MRPickupTimeHandler)
-	e.GET("/mr-size/:org/:repo", api.MRSizeHandler)
-	e.GET("/review/:org/:repo", api.ReviewHandler)
-	e.GET("/review-depth/:org/:repo", api.ReviewDepthHandler)
-	e.GET("/review-time/:org/:repo", api.ReviewTimeHandler)
-	e.GET("/time-to-merge/:org/:repo", api.TimeToMergeHandler)
-	e.GET("/small-mrs/:org/:repo", api.SmallMRsHandler)
+	e.GET("/repos", handler.ReposHandler)
+	e.GET("/teams/:org/:repo", handler.TeamsHandler)
+	e.GET("/code-change/:org/:repo", handler.CodeChangeHandler)
+	e.GET("/coding-time/:org/:repo", handler.CodingTimeHandler)
+	e.GET("/commits/:org/:repo", handler.CommitsHandler)
+	e.GET("/cycle-time/:org/:repo", handler.CycleTimeHandler)
+	e.GET("/detailed-cycle-time/:org/:repo", handler.DetailedCycleTimeHandler)
+	e.GET("/deploy-freq/:org/:repo", handler.DeployFrequencyHandler)
+	e.GET("/deploy-time/:org/:repo", handler.DeployTimeHandler)
+	e.GET("/handover/:org/:repo", handler.HandoverHandler)
+	e.GET("/merge-freq/:org/:repo", handler.MergeFrequencyHandler)
+	e.GET("/mr-merged-wo-review/:org/:repo", handler.MRsMergedWithoutReviewHandler)
+	e.GET("/mr-opened/:org/:repo", handler.MRSOpenedHandler)
+	e.GET("/mr-pickup-time/:org/:repo", handler.MRPickupTimeHandler)
+	e.GET("/mr-size/:org/:repo", handler.MRSizeHandler)
+	e.GET("/review/:org/:repo", handler.ReviewHandler)
+	e.GET("/review-depth/:org/:repo", handler.ReviewDepthHandler)
+	e.GET("/review-time/:org/:repo", handler.ReviewTimeHandler)
+	e.GET("/time-to-merge/:org/:repo", handler.TimeToMergeHandler)
+	e.GET("/small-mrs/:org/:repo", handler.SmallMRsHandler)
 
 	port := os.Getenv("PORT")
 	if port == "" {
