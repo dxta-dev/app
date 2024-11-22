@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/otel"
 	"github.com/dxta-dev/app/internal/web/data"
 	"github.com/labstack/echo/v4"
@@ -14,7 +15,7 @@ func StoreMiddleware() func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			r := c.Request()
 			ctx := r.Context()
-			tenantDatabaseURL := ctx.Value(TenantDatabaseURLContext).(string)
+			tenantDatabaseURL := ctx.Value(middleware.TenantDatabaseURLContext).(string)
 
 			driverName := otel.GetDriverName()
 

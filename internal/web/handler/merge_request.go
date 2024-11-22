@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/web/data"
+	"github.com/dxta-dev/app/internal/web/middleware"
 	"github.com/dxta-dev/app/internal/web/template"
 
 	"fmt"
