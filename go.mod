@@ -10,6 +10,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
 	github.com/labstack/echo/v4 v4.12.0
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
+	github.com/rs/zerolog v1.33.0
 	github.com/wcharczuk/go-chart/v2 v2.1.2
 	go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho v0.55.0
 	go.opentelemetry.io/contrib/instrumentation/host v0.55.0
@@ -60,7 +61,7 @@ require (
 	golang.org/x/crypto v0.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240325151524-a685a6edb6d8 // indirect
 	golang.org/x/image v0.18.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.27.0 // indirect
 	golang.org/x/text v0.18.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240903143218-8af14fe29dc1 // indirect
