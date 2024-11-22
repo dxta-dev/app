@@ -11,6 +11,8 @@ import (
 	"github.com/dxta-dev/app/internal/api/data"
 	"github.com/dxta-dev/app/internal/otel"
 	"github.com/labstack/echo/v4"
+
+	_ "github.com/libsql/libsql-client-go/libsql"
 )
 
 type APIState struct {
