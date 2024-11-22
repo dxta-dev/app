@@ -4,6 +4,7 @@ import (
 	"github.com/dxta-dev/app/internal/middleware"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/dxta-dev/app/internal/web/handler"
+	webMiddleware "github.com/dxta-dev/app/internal/web/middleware"
 
 	"context"
 	"fmt"
@@ -131,7 +132,7 @@ func main() {
 
 	g.Use(middleware.ConfigMiddleware(config))
 	g.Use(middleware.TenantMiddleware)
-	g.Use(middleware.StoreMiddleware())
+	g.Use(webMiddleware.StoreMiddleware())
 
 	g.GET("/", app.DashboardPage)
 
