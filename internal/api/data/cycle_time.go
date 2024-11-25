@@ -56,117 +56,117 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 	}
 
 	query := fmt.Sprintf(`
-	WITH dataset AS (
+		WITH dataset AS (
+			SELECT
+				mergedAt.week AS week,
+				metrics.coding_duration AS coding_time,
+				metrics.review_start_delay AS pickup_time,
+				metrics.review_duration AS review_time,
+				metrics.deploy_duration AS deploy_time
+			FROM transform_merge_request_metrics AS metrics
+			JOIN transform_repositories AS repo
+				ON repo.id = metrics.repository
+			JOIN transform_merge_request_fact_dates_junk AS dj
+				ON metrics.dates_junk = dj.id
+			JOIN transform_dates AS mergedAt
+				ON dj.merged_at = mergedAt.id
+			JOIN transform_merge_request_fact_users_junk AS uj
+				ON metrics.users_junk = uj.id
+			JOIN transform_forge_users AS author
+				ON uj.author = author.id
+			JOIN transform_merge_requests AS mrs
+				ON metrics.merge_request = mrs.id
+			JOIN transform_branches AS branch
+				ON mrs.target_branch = branch.id
+			WHERE mergedAt.week IN (%s)
+			AND metrics.deployed = 1
+			AND repo.namespace_name = ?
+			AND repo.name = ?
+			AND branch.id = repo.default_branch
+			%s
+			AND author.bot = 0
+		),
+		data_by_week AS (
+			SELECT
+				week AS week,
+				AVG(coding_time) AS avg_coding_time,
+				AVG(pickup_time) AS avg_pickup_time,
+				AVG(review_time) AS avg_review_time,
+				AVG(deploy_time) AS avg_deploy_time,
+				MEDIAN(coding_time) AS p50_coding_time,
+				MEDIAN(pickup_time) AS p50_pickup_time,
+				MEDIAN(review_time) AS p50_review_time,
+				MEDIAN(deploy_time) AS p50_deploy_time,
+				PERCENTILE_75(coding_time) AS p75_coding_time,
+				PERCENTILE_75(pickup_time) AS p75_pickup_time,
+				PERCENTILE_75(review_time) AS p75_review_time,
+				PERCENTILE_75(deploy_time) AS p75_deploy_time,
+				PERCENTILE_95(coding_time) AS p95_coding_time,
+				PERCENTILE_95(pickup_time) AS p95_pickup_time,
+				PERCENTILE_95(review_time) AS p95_review_time,
+				PERCENTILE_95(deploy_time) AS p95_deploy_time
+			FROM dataset
+			GROUP BY week
+		),
+		data_total AS (
+			SELECT
+				AVG(coding_time) AS avg_coding_time,
+				AVG(pickup_time) AS avg_pickup_time,
+				AVG(review_time) AS avg_review_time,
+				AVG(deploy_time) AS avg_deploy_time,
+				MEDIAN(coding_time) AS p50_coding_time,
+				MEDIAN(pickup_time) AS p50_pickup_time,
+				MEDIAN(review_time) AS p50_review_time,
+				MEDIAN(deploy_time) AS p50_deploy_time,
+				PERCENTILE_75(coding_time) AS p75_coding_time,
+				PERCENTILE_75(pickup_time) AS p75_pickup_time,
+				PERCENTILE_75(review_time) AS p75_review_time,
+				PERCENTILE_75(deploy_time) AS p75_deploy_time,
+				PERCENTILE_95(coding_time) AS p95_coding_time,
+				PERCENTILE_95(pickup_time) AS p95_pickup_time,
+				PERCENTILE_95(review_time) AS p95_review_time,
+				PERCENTILE_95(deploy_time) AS p95_deploy_time
+			FROM dataset
+		)
 		SELECT
-			mergedAt.week AS week,
-			metrics.coding_duration AS coding_time,
-			metrics.review_start_delay AS pickup_time,
-			metrics.review_duration AS review_time,
-			metrics.deploy_duration AS deploy_time
-		FROM transform_merge_request_metrics AS metrics
-		JOIN transform_repositories AS repo
-			ON repo.id = metrics.repository
-		JOIN transform_merge_request_fact_dates_junk AS dj
-			ON metrics.dates_junk = dj.id
-		JOIN transform_dates AS mergedAt
-			ON dj.merged_at = mergedAt.id
-		JOIN transform_merge_request_fact_users_junk AS uj
-			ON metrics.users_junk = uj.id
-		JOIN transform_forge_users AS author
-			ON uj.author = author.id
-		JOIN transform_merge_requests AS mrs
-			ON metrics.merge_request = mrs.id
-		JOIN transform_branches AS branch
-			ON mrs.target_branch = branch.id
-		WHERE mergedAt.week IN (%s)
-		AND metrics.deployed = 1
-		AND repo.namespace_name = ?
-		AND repo.name = ?
-		AND branch.id = repo.default_branch
-		%s
-		AND author.bot = 0
-	),
-	data_by_week AS (
+			NULL AS week,
+			avg_coding_time,
+			avg_pickup_time,
+			avg_review_time,
+			avg_deploy_time,
+			p50_coding_time,
+			p50_pickup_time,
+			p50_review_time,
+			p50_deploy_time,
+			p75_coding_time,
+			p75_pickup_time,
+			p75_review_time,
+			p75_deploy_time,
+			p95_coding_time,
+			p95_pickup_time,
+			p95_review_time,
+			p95_deploy_time
+		FROM data_total
+		UNION ALL
 		SELECT
-			week AS week,
-			AVG(coding_time) AS avg_coding_time,
-			MEDIAN(coding_time) AS p50_coding_time,
-			PERCENTILE_75(coding_time) AS p75_coding_time,
-			PERCENTILE_95(coding_time) AS p95_coding_time,
-			AVG(pickup_time) AS avg_pickup_time,
-			MEDIAN(pickup_time) AS p50_pickup_time,
-			PERCENTILE_75(pickup_time) AS p75_pickup_time,
-			PERCENTILE_95(pickup_time) AS p95_pickup_time,
-			AVG(review_time) AS avg_review_time,
-			MEDIAN(review_time) AS p50_review_time,
-			PERCENTILE_75(review_time) AS p75_review_time,
-			PERCENTILE_95(review_time) AS p95_review_time,
-			AVG(deploy_time) AS avg_deploy_time,
-			MEDIAN(deploy_time) AS p50_deploy_time,
-			PERCENTILE_75(deploy_time) AS p75_deploy_time,
-			PERCENTILE_95(deploy_time) AS p95_deploy_time
-		FROM dataset
-		GROUP BY week
-	),
-	data_total AS (
-		SELECT
-			AVG(coding_time) AS avg_coding_time,
-			MEDIAN(coding_time) AS p50_coding_time,
-			PERCENTILE_75(coding_time) AS p75_coding_time,
-			PERCENTILE_95(coding_time) AS p95_coding_time,
-			AVG(pickup_time) AS avg_pickup_time,
-			MEDIAN(pickup_time) AS p50_pickup_time,
-			PERCENTILE_75(pickup_time) AS p75_pickup_time,
-			PERCENTILE_95(pickup_time) AS p95_pickup_time,
-			AVG(review_time) AS avg_review_time,
-			MEDIAN(review_time) AS p50_review_time,
-			PERCENTILE_75(review_time) AS p75_review_time,
-			PERCENTILE_95(review_time) AS p95_review_time,
-			AVG(deploy_time) AS avg_deploy_time,
-			MEDIAN(deploy_time) AS p50_deploy_time,
-			PERCENTILE_75(deploy_time) AS p75_deploy_time,
-			PERCENTILE_95(deploy_time) AS p95_deploy_time
-		FROM dataset
-	)
-	SELECT
-		NULL AS week,
-		avg_coding_time,
-		p50_coding_time,
-		p75_coding_time,
-		p95_coding_time,
-		avg_pickup_time,
-		p50_pickup_time,
-		p75_pickup_time,
-		p95_pickup_time,
-		avg_review_time,
-		p50_review_time,
-		p75_review_time,
-		p95_review_time,
-		avg_deploy_time,
-		p50_deploy_time,
-		p75_deploy_time,
-		p95_deploy_time
-	FROM data_total
-	UNION ALL
-	SELECT
-		week,
-		avg_coding_time,
-		p50_coding_time,
-		p75_coding_time,
-		p95_coding_time,
-		avg_pickup_time,
-		p50_pickup_time,
-		p75_pickup_time,
-		p95_pickup_time,
-		avg_review_time,
-		p50_review_time,
-		p75_review_time,
-		p95_review_time,
-		avg_deploy_time,
-		p50_deploy_time,
-		p75_deploy_time,
-		p95_deploy_time
-	FROM data_by_week;
+			week,
+			avg_coding_time,
+			avg_pickup_time,
+			avg_review_time,
+			avg_deploy_time,
+			p50_coding_time,
+			p50_pickup_time,
+			p50_review_time,
+			p50_deploy_time,
+			p75_coding_time,
+			p75_pickup_time,
+			p75_review_time,
+			p75_deploy_time,
+			p95_coding_time,
+			p95_pickup_time,
+			p95_review_time,
+			p95_deploy_time
+		FROM data_by_week;
 	`,
 		weeksPlaceholder,
 		teamQuery,
