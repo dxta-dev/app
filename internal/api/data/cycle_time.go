@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -172,66 +173,77 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 	)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
-
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	wcts := make([]WeeklyCycleTimeStatistics, 0)
 	acts := &AggregatedCycleTimeStatistics{}
+	weekSet := make(map[string]bool)
 
 	for rows.Next() {
 		var week sql.NullString
-		var coding_time Statistics
-		var pickup_time Statistics
-		var review_time Statistics
-		var deploy_time Statistics
+		var codingTime, pickupTime, reviewTime, deployTime Statistics
+
 		if err := rows.Scan(
 			&week,
-			&coding_time.Average,
-			&coding_time.Median,
-			&coding_time.Percentile75,
-			&coding_time.Percentile95,
-			&pickup_time.Average,
-			&pickup_time.Median,
-			&pickup_time.Percentile75,
-			&pickup_time.Percentile95,
-			&review_time.Average,
-			&review_time.Median,
-			&review_time.Percentile75,
-			&review_time.Percentile95,
-			&deploy_time.Average,
-			&deploy_time.Median,
-			&deploy_time.Percentile75,
-			&deploy_time.Percentile95,
+			&codingTime.Average,
+			&codingTime.Median,
+			&codingTime.Percentile75,
+			&codingTime.Percentile95,
+			&pickupTime.Average,
+			&pickupTime.Median,
+			&pickupTime.Percentile75,
+			&pickupTime.Percentile95,
+			&reviewTime.Average,
+			&reviewTime.Median,
+			&reviewTime.Percentile75,
+			&reviewTime.Percentile95,
+			&deployTime.Average,
+			&deployTime.Median,
+			&deployTime.Percentile75,
+			&deployTime.Percentile95,
 		); err != nil {
 			return nil, err
 		}
 
 		if week.Valid {
-			wcts = append(wcts,
-				WeeklyCycleTimeStatistics{
-					CodingTime: coding_time,
-					PickupTime: pickup_time,
-					ReviewTime: review_time,
-					DeployTime: deploy_time,
-					Week:       week.String,
-				},
-			)
-			continue
+			weekSet[week.String] = true
+			wcts = append(wcts, WeeklyCycleTimeStatistics{
+				Week:       week.String,
+				CodingTime: codingTime,
+				PickupTime: pickupTime,
+				ReviewTime: reviewTime,
+				DeployTime: deployTime,
+			})
+		} else {
+			acts.CodingTime = codingTime
+			acts.PickupTime = pickupTime
+			acts.ReviewTime = reviewTime
+			acts.DeployTime = deployTime
 		}
-
-		acts.CodingTime = coding_time
-		acts.PickupTime = pickup_time
-		acts.ReviewTime = review_time
-		acts.DeployTime = deploy_time
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
+	for _, inputWeek := range weeks {
+		if !weekSet[inputWeek] {
+			wcts = append(wcts, WeeklyCycleTimeStatistics{
+				Week:       inputWeek,
+				CodingTime: Statistics{},
+				PickupTime: Statistics{},
+				ReviewTime: Statistics{},
+				DeployTime: Statistics{},
+			})
+		}
+	}
+
+	sort.Slice(wcts, func(i, j int) bool {
+		return wcts[i].Week < wcts[j].Week
+	})
 
 	acts.Weekly = wcts
 	return acts, nil
