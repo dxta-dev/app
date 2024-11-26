@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
+	"time"
 )
 
 func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
@@ -29,11 +30,21 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	if team != nil {
 		queryParams = append(queryParams, team)
 	}
+	year, month, day := time.Now().Date()
+
+	currentDate := fmt.Sprintf("%04d-%02d-%02d", year, int(month), day)
+
+	fmt.Println(currentDate)
 
 	query := buildQueryAggregatedStats(fmt.Sprintf(`
 	SELECT
 		merged_at.week AS week,
-		metrics.deploy_duration AS value
+		CASE
+			WHEN metrics.deploy_duration = 0 THEN
+                strftime('%s', 'now') - dj.merged_at
+			ELSE
+				metrics.deploy_duration
+		END AS value
 	FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
@@ -50,12 +61,12 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	JOIN transform_branches AS branch
 		ON mrs.target_branch = branch.id
 	WHERE merged_at.week IN (%s)
-	AND metrics.deployed = 1
 	AND repo.namespace_name = ?
 	AND repo.name = ?
 	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0`,
+		currentDate,
 		weeksPlaceholder,
 		teamQuery,
 	))
