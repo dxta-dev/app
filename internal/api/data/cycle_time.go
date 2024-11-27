@@ -62,38 +62,41 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 
 	query := fmt.Sprintf(`
 		WITH dataset AS (
-			SELECT
-				mergedAt.week AS week,
-				metrics.coding_duration AS coding_time,
-				metrics.review_start_delay AS pickup_time,
-				metrics.review_duration AS review_time,
-				CASE
-			WHEN metrics.deploy_duration = 0 THEN
-                strftime('%s', 'now') - dj.merged_at
-			ELSE
-				metrics.deploy_duration
-		END AS deploy_time
-				FROM transform_merge_request_metrics AS metrics
-			JOIN transform_repositories AS repo
-				ON repo.id = metrics.repository
-			JOIN transform_merge_request_fact_dates_junk AS dj
-				ON metrics.dates_junk = dj.id
-			JOIN transform_dates AS mergedAt
-				ON dj.merged_at = mergedAt.id
-			JOIN transform_merge_request_fact_users_junk AS uj
-				ON metrics.users_junk = uj.id
-			JOIN transform_forge_users AS author
-				ON uj.author = author.id
-			JOIN transform_merge_requests AS mrs
-				ON metrics.merge_request = mrs.id
-			JOIN transform_branches AS branch
-				ON mrs.target_branch = branch.id
-			WHERE mergedAt.week IN (%s)
-			AND repo.namespace_name = ?
-			AND repo.name = ?
-			AND branch.id = repo.default_branch
-			%s
-			AND author.bot = 0
+    SELECT
+        mergedAt.week AS week,
+        metrics.coding_duration AS coding_time,
+        metrics.review_start_delay AS pickup_time,
+        metrics.review_duration AS review_time,
+        CASE
+            WHEN metrics.deploy_duration = 0
+		 THEN (julianday('%s') - julianday(
+      CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
+    )) * 86400000
+            ELSE metrics.deploy_duration
+        END AS deploy_time
+    FROM transform_merge_request_metrics AS metrics
+    JOIN transform_repositories AS repo
+        ON repo.id = metrics.repository
+    JOIN transform_merge_request_fact_dates_junk AS dj
+        ON metrics.dates_junk = dj.id
+    JOIN transform_dates AS mergedAt
+        ON dj.merged_at = mergedAt.id
+    JOIN transform_dates AS dates
+        ON dj.merged_at = dates.id  -- Join the dates table to get the actual day, month, and year
+    JOIN transform_merge_request_fact_users_junk AS uj
+        ON metrics.users_junk = uj.id
+    JOIN transform_forge_users AS author
+        ON uj.author = author.id
+    JOIN transform_merge_requests AS mrs
+        ON metrics.merge_request = mrs.id
+    JOIN transform_branches AS branch
+        ON mrs.target_branch = branch.id
+    WHERE mergedAt.week IN (%s)
+    AND repo.namespace_name = ?
+    AND repo.name = ?
+    AND branch.id = repo.default_branch
+    %s
+    AND author.bot = 0
 		),
 		data_by_week AS (
 			SELECT
@@ -199,20 +202,20 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 		if err := rows.Scan(
 			&week,
 			&codingTime.Average,
-			&codingTime.Median,
-			&codingTime.Percentile75,
-			&codingTime.Percentile95,
 			&pickupTime.Average,
-			&pickupTime.Median,
-			&pickupTime.Percentile75,
-			&pickupTime.Percentile95,
 			&reviewTime.Average,
-			&reviewTime.Median,
-			&reviewTime.Percentile75,
-			&reviewTime.Percentile95,
 			&deployTime.Average,
+			&codingTime.Median,
+			&pickupTime.Median,
+			&reviewTime.Median,
 			&deployTime.Median,
+			&codingTime.Percentile75,
+			&pickupTime.Percentile75,
+			&reviewTime.Percentile75,
 			&deployTime.Percentile75,
+			&codingTime.Percentile95,
+			&pickupTime.Percentile95,
+			&reviewTime.Percentile95,
 			&deployTime.Percentile95,
 		); err != nil {
 			return nil, err
@@ -304,7 +307,6 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		JOIN transform_branches AS branch
 		ON mrs.target_branch = branch.id
 		WHERE mergedAt.week IN (%s)
-		AND metrics.deployed = 1
 		AND repo.namespace_name = ?
 		AND repo.name = ?
 		AND branch.id = repo.default_branch

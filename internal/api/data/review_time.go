@@ -50,7 +50,6 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 	JOIN transform_branches AS branch
 		ON mrs.target_branch = branch.id
 	WHERE mergedAt.week IN (%s)
-	AND metrics.deployed = 1
 	AND repo.namespace_name = ?
 	AND repo.name = ?
 	AND branch.id = repo.default_branch
