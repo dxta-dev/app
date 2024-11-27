@@ -52,8 +52,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
+            ./internal/web/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
 
       - name: Generate
         if: steps.generate-cache.outputs.cache-hit != 'true'
@@ -84,8 +84,8 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
+            ./internal/web/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
 
       - name: Test
         run: |
@@ -112,16 +112,12 @@ jobs:
         with:
           path: |
             ./public/style.css
-            ./internal/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/template/**/*.templ') }}
+            ./internal/web/template/**/*_templ.go
+          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
 
       - name: Dry Build Web
         run: |
           go build -o ./tmp/main ./cmd/web/main.go
-
-      - name: Dry Build Admin
-        run: |
-          go build -o ./tmp/admin ./cmd/admin/main.go
 
       - name: Dry Build API
         run: |
@@ -147,14 +143,6 @@ jobs:
           context: .
           load: true
           file: ./Dockerfile
-          tags: ${{ env.TEST_TAG }}
-
-      - name: Dry Build Admin
-        uses: docker/build-push-action@5cd11c3a4ced054e52742c5fd54dca954e0edd85 # v6.7.0
-        with:
-          context: .
-          load: true
-          file: ./admin.dockerfile
           tags: ${{ env.TEST_TAG }}
 
       - name: Dry Build API
