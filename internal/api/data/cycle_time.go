@@ -58,8 +58,6 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 
 	year, month, day := time.Now().Date()
 
-	currentDate := fmt.Sprintf("%04d-%02d-%02d", year, int(month), day)
-
 	query := fmt.Sprintf(`
 		WITH dataset AS (
     SELECT
@@ -69,7 +67,7 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
         metrics.review_duration AS review_time,
         CASE
             WHEN metrics.deploy_duration = 0
-		 THEN (julianday('%s') - julianday(
++                THEN (julianday(?) - julianday(
       CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
     )) * 86400000
             ELSE metrics.deploy_duration
@@ -180,10 +178,12 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 			p95_deploy_time
 		FROM data_by_week;
 	`,
-		currentDate,
 		weeksPlaceholder,
 		teamQuery,
 	)
+
+	currentDate := fmt.Sprintf("%04d-%02d-%02d", year, int(month), day)
+	queryParams = append([]interface{}{currentDate}, queryParams...)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 	if err != nil {

@@ -39,7 +39,7 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 		merged_at.week AS week,
 		CASE
 		WHEN metrics.deploy_duration = 0
-		 THEN (julianday('%s') - julianday(
++		 THEN (julianday(?) - julianday(
       CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
     )) * 86400000
 		ELSE metrics.deploy_duration END AS value
@@ -66,10 +66,11 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 	AND branch.id = repo.default_branch
 	%s
 	AND author.bot = 0`,
-		currentDate,
 		weeksPlaceholder,
 		teamQuery,
 	))
+
+	queryParams = append(queryParams, currentDate)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 
