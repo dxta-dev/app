@@ -35,9 +35,9 @@ func GetDeployTime(db *sql.DB, ctx context.Context, namespace string, repository
 		merged_at.week AS week,
 		CASE
     	WHEN metrics.deploy_duration = 0 THEN
-        	unixepoch(date('now')) - unixepoch(
+        	(unixepoch(date('now')) - unixepoch(
             CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
-        	)
+        	)) * 1000
     	ELSE metrics.deploy_duration
 		END AS value
 		FROM transform_merge_request_metrics AS metrics

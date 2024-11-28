@@ -64,9 +64,9 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
         metrics.review_duration AS review_time,
         CASE
     	WHEN metrics.deploy_duration = 0 THEN
-        	unixepoch(date('now')) - unixepoch(
+        	(unixepoch(date('now')) - unixepoch(
             CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
-        	)
+        	)) * 1000
     	ELSE metrics.deploy_duration
 		END AS deploy_time
     FROM transform_merge_request_metrics AS metrics
