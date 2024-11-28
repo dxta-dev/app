@@ -28,7 +28,7 @@ func (s *Store) GetAverageMRSize(weeks []string, teamMembers []int64) (map[strin
 
 	query := fmt.Sprintf(`
 	SELECT
-		AVG(metrics.mr_size),
+		FLOOR(AVG(metrics.mr_size)),
 		mergedAt.week,
 		COUNT(*)
 	FROM transform_merge_request_metrics AS metrics

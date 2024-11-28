@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"sort"
 	"strings"
 )
 
@@ -56,34 +57,41 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 
 	query := fmt.Sprintf(`
 		WITH dataset AS (
-			SELECT
-				mergedAt.week AS week,
-				metrics.coding_duration AS coding_time,
-				metrics.review_start_delay AS pickup_time,
-				metrics.review_duration AS review_time,
-				metrics.deploy_duration AS deploy_time
-			FROM transform_merge_request_metrics AS metrics
-			JOIN transform_repositories AS repo
-				ON repo.id = metrics.repository
-			JOIN transform_merge_request_fact_dates_junk AS dj
-				ON metrics.dates_junk = dj.id
-			JOIN transform_dates AS mergedAt
-				ON dj.merged_at = mergedAt.id
-			JOIN transform_merge_request_fact_users_junk AS uj
-				ON metrics.users_junk = uj.id
-			JOIN transform_forge_users AS author
-				ON uj.author = author.id
-			JOIN transform_merge_requests AS mrs
-				ON metrics.merge_request = mrs.id
-			JOIN transform_branches AS branch
-				ON mrs.target_branch = branch.id
-			WHERE mergedAt.week IN (%s)
-			AND metrics.deployed = 1
-			AND repo.namespace_name = ?
-			AND repo.name = ?
-			AND branch.id = repo.default_branch
-			%s
-			AND author.bot = 0
+    SELECT
+        mergedAt.week AS week,
+        metrics.coding_duration AS coding_time,
+        metrics.review_start_delay AS pickup_time,
+        metrics.review_duration AS review_time,
+        CASE
+    	WHEN metrics.deploy_duration = 0 THEN
+        	(unixepoch(date('now')) - unixepoch(
+            CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
+        	)) * 1000
+    	ELSE metrics.deploy_duration
+		END AS deploy_time
+    FROM transform_merge_request_metrics AS metrics
+    JOIN transform_repositories AS repo
+        ON repo.id = metrics.repository
+    JOIN transform_merge_request_fact_dates_junk AS dj
+        ON metrics.dates_junk = dj.id
+    JOIN transform_dates AS mergedAt
+        ON dj.merged_at = mergedAt.id
+    JOIN transform_dates AS dates
+        ON dj.merged_at = dates.id  -- Join the dates table to get the actual day, month, and year
+    JOIN transform_merge_request_fact_users_junk AS uj
+        ON metrics.users_junk = uj.id
+    JOIN transform_forge_users AS author
+        ON uj.author = author.id
+    JOIN transform_merge_requests AS mrs
+        ON metrics.merge_request = mrs.id
+    JOIN transform_branches AS branch
+        ON mrs.target_branch = branch.id
+    WHERE mergedAt.week IN (%s)
+    AND repo.namespace_name = ?
+    AND repo.name = ?
+    AND branch.id = repo.default_branch
+    %s
+    AND author.bot = 0
 		),
 		data_by_week AS (
 			SELECT
@@ -172,66 +180,77 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 	)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
-
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
 	wcts := make([]WeeklyCycleTimeStatistics, 0)
 	acts := &AggregatedCycleTimeStatistics{}
+	weekSet := make(map[string]bool)
 
 	for rows.Next() {
 		var week sql.NullString
-		var coding_time Statistics
-		var pickup_time Statistics
-		var review_time Statistics
-		var deploy_time Statistics
+		var codingTime, pickupTime, reviewTime, deployTime Statistics
+
 		if err := rows.Scan(
 			&week,
-			&coding_time.Average,
-			&coding_time.Median,
-			&coding_time.Percentile75,
-			&coding_time.Percentile95,
-			&pickup_time.Average,
-			&pickup_time.Median,
-			&pickup_time.Percentile75,
-			&pickup_time.Percentile95,
-			&review_time.Average,
-			&review_time.Median,
-			&review_time.Percentile75,
-			&review_time.Percentile95,
-			&deploy_time.Average,
-			&deploy_time.Median,
-			&deploy_time.Percentile75,
-			&deploy_time.Percentile95,
+			&codingTime.Average,
+			&pickupTime.Average,
+			&reviewTime.Average,
+			&deployTime.Average,
+			&codingTime.Median,
+			&pickupTime.Median,
+			&reviewTime.Median,
+			&deployTime.Median,
+			&codingTime.Percentile75,
+			&pickupTime.Percentile75,
+			&reviewTime.Percentile75,
+			&deployTime.Percentile75,
+			&codingTime.Percentile95,
+			&pickupTime.Percentile95,
+			&reviewTime.Percentile95,
+			&deployTime.Percentile95,
 		); err != nil {
 			return nil, err
 		}
 
 		if week.Valid {
-			wcts = append(wcts,
-				WeeklyCycleTimeStatistics{
-					CodingTime: coding_time,
-					PickupTime: pickup_time,
-					ReviewTime: review_time,
-					DeployTime: deploy_time,
-					Week:       week.String,
-				},
-			)
-			continue
+			weekSet[week.String] = true
+			wcts = append(wcts, WeeklyCycleTimeStatistics{
+				Week:       week.String,
+				CodingTime: codingTime,
+				PickupTime: pickupTime,
+				ReviewTime: reviewTime,
+				DeployTime: deployTime,
+			})
+		} else {
+			acts.CodingTime = codingTime
+			acts.PickupTime = pickupTime
+			acts.ReviewTime = reviewTime
+			acts.DeployTime = deployTime
 		}
-
-		acts.CodingTime = coding_time
-		acts.PickupTime = pickup_time
-		acts.ReviewTime = review_time
-		acts.DeployTime = deploy_time
 	}
 
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+
+	for _, inputWeek := range weeks {
+		if !weekSet[inputWeek] {
+			wcts = append(wcts, WeeklyCycleTimeStatistics{
+				Week:       inputWeek,
+				CodingTime: Statistics{},
+				PickupTime: Statistics{},
+				ReviewTime: Statistics{},
+				DeployTime: Statistics{},
+			})
+		}
+	}
+
+	sort.Slice(wcts, func(i, j int) bool {
+		return wcts[i].Week < wcts[j].Week
+	})
 
 	acts.Weekly = wcts
 	return acts, nil
@@ -282,7 +301,6 @@ func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository 
 		JOIN transform_branches AS branch
 		ON mrs.target_branch = branch.id
 		WHERE mergedAt.week IN (%s)
-		AND metrics.deployed = 1
 		AND repo.namespace_name = ?
 		AND repo.name = ?
 		AND branch.id = repo.default_branch
