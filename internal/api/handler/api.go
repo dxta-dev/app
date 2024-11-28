@@ -64,7 +64,7 @@ func getCachedDbUrl(ctx context.Context, org, repo string) (string, error) {
 	}
 	driverName := otel.GetDriverName()
 
-	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL"))
+	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +116,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 func GetReposDB() (*sql.DB, error) {
 	driverName := otel.GetDriverName()
 
-	reposDB, err := sql.Open(driverName, os.Getenv("METRICS_DXTA_DEV_DB_URL"))
+	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
 	if err != nil {
 		return nil, err
 	}
