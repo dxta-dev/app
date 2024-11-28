@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"sort"
 	"strings"
-	"time"
 )
 
 type AggregatedCycleTimeStatistics struct {
@@ -56,8 +55,6 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 		queryParams = append(queryParams, team)
 	}
 
-	year, month, day := time.Now().Date()
-
 	query := fmt.Sprintf(`
 		WITH dataset AS (
     SELECT
@@ -66,12 +63,12 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
         metrics.review_start_delay AS pickup_time,
         metrics.review_duration AS review_time,
         CASE
-            WHEN metrics.deploy_duration = 0
-+                THEN (julianday(?) - julianday(
-      CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
-    )) * 86400000
-            ELSE metrics.deploy_duration
-        END AS deploy_time
+    	WHEN metrics.deploy_duration = 0 THEN
+        	(unixepoch(date('now')) - unixepoch(
+            CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
+        	)) * 1000
+    	ELSE metrics.deploy_duration
+		END AS deploy_time
     FROM transform_merge_request_metrics AS metrics
     JOIN transform_repositories AS repo
         ON repo.id = metrics.repository
@@ -181,9 +178,6 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 		weeksPlaceholder,
 		teamQuery,
 	)
-
-	currentDate := fmt.Sprintf("%04d-%02d-%02d", year, int(month), day)
-	queryParams = append([]interface{}{currentDate}, queryParams...)
 
 	rows, err := db.QueryContext(ctx, query, queryParams...)
 	if err != nil {
