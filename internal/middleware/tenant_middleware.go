@@ -29,7 +29,7 @@ const TenantDatabasesGlobalContext string = "tenant_db_map"
 func getTenantToDatabaseURLMap(ctx context.Context, superDatabaseUrl string) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
-db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
+	db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
 
 	if err != nil {
 		return nil, err

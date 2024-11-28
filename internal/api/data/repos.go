@@ -13,7 +13,14 @@ type Repo struct {
 }
 
 func GetReposDbUrl(ctx context.Context, db *sql.DB, org string, repo string) (string, error) {
-	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
+	query := `
+		SELECT t.db_url
+		FROM repos AS r
+		JOIN tenants AS t
+		ON t.id = r.tenant_id
+		WHERE r.organization = ?
+		AND r.repository = ?;
+	`
 
 	row := db.QueryRowContext(ctx, query, org, repo)
 
@@ -29,7 +36,18 @@ func GetReposDbUrl(ctx context.Context, db *sql.DB, org string, repo string) (st
 }
 
 func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
-	query := `SELECT organization, repository, project_name, project_description FROM repos`
+	query := `
+		SELECT
+			r.organization,
+			r.repository,
+			r.project_name,
+			COALESCE(ci.description, '') AS project_description
+		FROM repos AS r
+		JOIN tenants AS t
+		ON t.id = r.tenant_id
+		LEFT JOIN company_info AS ci
+		ON t.id = ci.tenant_id;
+	`
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
