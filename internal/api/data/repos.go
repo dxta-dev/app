@@ -17,7 +17,7 @@ type TenantRepo struct {
 	Repository   string
 }
 
-func GetTenantRepo(ctx context.Context, db *sql.DB, org string, repo string) (*TenantRepo, error) {
+func GetTenantRepo(ctx context.Context, db *sql.DB, org string, repo string) (TenantRepo, error) {
 	query := `
 		SELECT t.db_url, r.organization, r.repository
 		FROM repos AS r
@@ -33,10 +33,10 @@ func GetTenantRepo(ctx context.Context, db *sql.DB, org string, repo string) (*T
 	err := row.Scan(&tenantRepo.DbUrl, &tenantRepo.Organization, &tenantRepo.Repository)
 
 	if err != nil {
-		return nil, err
+		return TenantRepo{}, err
 	}
 
-	return &tenantRepo, nil
+	return tenantRepo, nil
 }
 
 func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {

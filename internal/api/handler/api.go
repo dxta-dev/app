@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/dxta-dev/app/internal/api/data"
@@ -26,17 +27,11 @@ var tenantRepoCache sync.Map
 
 var dbPool sync.Map
 
-func getDB(ctx context.Context, org, repo string) (*sql.DB, *data.TenantRepo, error) {
-	cacheKey := org + "/" + repo
-
-	tenantRepo, err := getCachedTenantRepo(ctx, org, repo)
-
-	if err != nil {
-		return nil, nil, err
-	}
+func getDB(ctx context.Context, tenantRepo data.TenantRepo) (*sql.DB, error) {
+	cacheKey := strings.ToLower(tenantRepo.Organization + "/" + tenantRepo.Repository)
 
 	if dbInterface, ok := dbPool.Load(cacheKey); ok {
-		return dbInterface.(*sql.DB), tenantRepo, nil
+		return dbInterface.(*sql.DB), nil
 	}
 
 	driverName := otel.GetDriverName()
@@ -45,35 +40,35 @@ func getDB(ctx context.Context, org, repo string) (*sql.DB, *data.TenantRepo, er
 
 	db, err := sql.Open(driverName, fullDbUrl)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	dbPool.Store(cacheKey, db)
 
-	return db, tenantRepo, nil
+	return db, nil
 }
 
-func getCachedTenantRepo(ctx context.Context, org, repo string) (*data.TenantRepo, error) {
-	cacheKey := org + "/" + repo
+func getCachedTenantRepo(ctx context.Context, org, repo string) (data.TenantRepo, error) {
+	cacheKey := strings.ToLower(org + "/" + repo)
 
 	if cachedUrl, ok := tenantRepoCache.Load(cacheKey); ok {
-		return cachedUrl.(*data.TenantRepo), nil
+		return cachedUrl.(data.TenantRepo), nil
 	}
 	driverName := otel.GetDriverName()
 
 	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
 	if err != nil {
-		return nil, err
+		return data.TenantRepo{}, err
 	}
 	defer reposDB.Close()
 
 	tenantRepo, err := data.GetTenantRepo(ctx, reposDB, org, repo)
 	if err != nil {
-		return nil, err
+		return data.TenantRepo{}, err
 	}
 
 	tenantRepoCache.Store(cacheKey, tenantRepo)
@@ -92,7 +87,12 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
 	}
 
-	db, tenantRepo, err := getDB(ctx, org, repo) // TODO: split DB instance from tenant info ??
+	tenantRepo, err := getCachedTenantRepo(ctx, org, repo)
+	if err != nil {
+		return APIState{}, err
+	}
+
+	db, err := getDB(ctx, tenantRepo)
 
 	if err != nil {
 		return APIState{}, err
