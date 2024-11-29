@@ -22,62 +22,63 @@ type APIState struct {
 	teamId *int64
 }
 
-var reposDBCache sync.Map
+var tenantRepoCache sync.Map
 
 var dbPool sync.Map
 
-func getDB(ctx context.Context, org, repo string) (*sql.DB, error) {
+func getDB(ctx context.Context, org, repo string) (*sql.DB, *data.TenantRepo, error) {
 	cacheKey := org + "/" + repo
 
-	if dbInterface, ok := dbPool.Load(cacheKey); ok {
-		return dbInterface.(*sql.DB), nil
+	tenantRepo, err := getCachedTenantRepo(ctx, org, repo)
+
+	if err != nil {
+		return nil, nil, err
 	}
 
-	dbUrl, err := getCachedDbUrl(ctx, org, repo)
-	if err != nil {
-		return nil, err
+	if dbInterface, ok := dbPool.Load(cacheKey); ok {
+		return dbInterface.(*sql.DB), tenantRepo, nil
 	}
 
 	driverName := otel.GetDriverName()
 
-	fullDbUrl := dbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
+	fullDbUrl := tenantRepo.DbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
 
 	db, err := sql.Open(driverName, fullDbUrl)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	dbPool.Store(cacheKey, db)
 
-	return db, nil
+	return db, tenantRepo, nil
 }
 
-func getCachedDbUrl(ctx context.Context, org, repo string) (string, error) {
+func getCachedTenantRepo(ctx context.Context, org, repo string) (*data.TenantRepo, error) {
 	cacheKey := org + "/" + repo
 
-	if cachedUrl, ok := reposDBCache.Load(cacheKey); ok {
-		return cachedUrl.(string), nil
+	if cachedUrl, ok := tenantRepoCache.Load(cacheKey); ok {
+		return cachedUrl.(*data.TenantRepo), nil
 	}
 	driverName := otel.GetDriverName()
 
 	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	defer reposDB.Close()
 
-	dbUrl, err := data.GetReposDbUrl(ctx, reposDB, org, repo)
+	tenantRepo, err := data.GetTenantRepo(ctx, reposDB, org, repo)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	reposDBCache.Store(cacheKey, dbUrl)
+	tenantRepoCache.Store(cacheKey, tenantRepo)
 
-	return dbUrl, nil
+	return tenantRepo, nil
 }
 
 func NewAPIState(c echo.Context) (APIState, error) {
@@ -91,7 +92,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
 	}
 
-	db, err := getDB(ctx, org, repo)
+	db, tenantRepo, err := getDB(ctx, org, repo) // TODO: split DB instance from tenant info ??
 
 	if err != nil {
 		return APIState{}, err
@@ -107,8 +108,8 @@ func NewAPIState(c echo.Context) (APIState, error) {
 
 	return APIState{
 		DB:     db,
-		org:    org,
-		repo:   repo,
+		org:    tenantRepo.Organization,
+		repo:   tenantRepo.Repository,
 		teamId: teamInt,
 	}, nil
 }
