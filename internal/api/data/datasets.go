@@ -1,10 +1,16 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"strings"
 )
+
+type Fetcher[T any] interface {
+	GetData(ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*OverallWeeklyData[T], error)
+	BuildQuery(weeks []string, team *int64) string
+}
 
 type AggregatedStatistics = OverallWeeklyData[Statistics]
 

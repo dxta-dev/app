@@ -6,7 +6,11 @@ import (
 	"fmt"
 )
 
-func buildCodeChangeQuery(weeks []string, team *int64) string {
+type CodeChanges struct {
+	db *sql.DB
+}
+
+func (c CodeChanges) BuildQuery(weeks []string, team *int64) string {
 	teamQuery := ""
 
 	if team != nil {
@@ -45,8 +49,7 @@ func buildCodeChangeQuery(weeks []string, team *int64) string {
 	return buildQueryAggregatedValues(fmt.Sprintf(query, weeksPlaceholder, teamQuery))
 }
 
-func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
-
+func (c CodeChanges) GetData(ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
 	queryParamLength := len(weeks)
 
 	queryParams := make([]interface{}, queryParamLength)
@@ -61,9 +64,9 @@ func GetCodeChanges(db *sql.DB, ctx context.Context, namespace string, repositor
 		queryParams = append(queryParams, team)
 	}
 
-	query := buildCodeChangeQuery(weeks, team)
+	query := c.BuildQuery(weeks, team)
 
-	rows, err := db.QueryContext(ctx, query, queryParams...)
+	rows, err := c.db.QueryContext(ctx, query, queryParams...)
 
 	if err != nil {
 		return nil, err
