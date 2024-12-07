@@ -7,7 +7,7 @@ import (
 )
 
 type CodeChanges struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func (c CodeChanges) BuildQuery(weeks []string, team *int64) string {
@@ -66,7 +66,7 @@ func (c CodeChanges) GetData(ctx context.Context, namespace string, repository s
 
 	query := c.BuildQuery(weeks, team)
 
-	rows, err := c.db.QueryContext(ctx, query, queryParams...)
+	rows, err := c.DB.QueryContext(ctx, query, queryParams...)
 
 	if err != nil {
 		return nil, err

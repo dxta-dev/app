@@ -23,7 +23,9 @@ func CodeChangeHandler(c echo.Context) error {
 
 	cc := data.CodeChanges{}
 
-	codeChanges, err := cc.GetData(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
+	cc.DB = apiState.DB
+
+	codeChanges, err := cc.GetData(ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
 
 	if err != nil {
 		return err
