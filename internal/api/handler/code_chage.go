@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dxta-dev/app/internal/api"
 	"github.com/dxta-dev/app/internal/api/data"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/labstack/echo/v4"
@@ -13,7 +14,7 @@ func CodeChangeHandler(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	apiState, err := NewAPIState(c)
+	apiState, err := api.NewAPIState(c)
 
 	if err != nil {
 		return err

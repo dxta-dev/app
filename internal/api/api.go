@@ -1,4 +1,4 @@
-package handler
+package api
 
 import (
 	"context"
@@ -17,40 +17,13 @@ import (
 )
 
 type APIState struct {
-	DB     *sql.DB
+	DB     data.DB
 	org    string
 	repo   string
 	teamId *int64
 }
 
 var tenantRepoCache sync.Map
-
-var dbPool sync.Map
-
-func getDB(ctx context.Context, tenantRepo data.TenantRepo) (*sql.DB, error) {
-	cacheKey := strings.ToLower(tenantRepo.Organization + "/" + tenantRepo.Repository)
-
-	if dbInterface, ok := dbPool.Load(cacheKey); ok {
-		return dbInterface.(*sql.DB), nil
-	}
-
-	driverName := otel.GetDriverName()
-
-	fullDbUrl := tenantRepo.DbUrl + "?authToken=" + os.Getenv("DXTA_DEV_GROUP_TOKEN")
-
-	db, err := sql.Open(driverName, fullDbUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := db.PingContext(ctx); err != nil {
-		return nil, err
-	}
-
-	dbPool.Store(cacheKey, db)
-
-	return db, nil
-}
 
 func getCachedTenantRepo(ctx context.Context, org, repo string) (data.TenantRepo, error) {
 	cacheKey := strings.ToLower(org + "/" + repo)
@@ -92,11 +65,7 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, err
 	}
 
-	db, err := getDB(ctx, tenantRepo)
-
-	if err != nil {
-		return APIState{}, err
-	}
+	db := data.DB{}
 
 	team := c.QueryParam("team")
 

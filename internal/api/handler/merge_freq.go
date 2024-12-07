@@ -13,7 +13,7 @@ func MergeFrequencyHandler(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	apiState, err := NewAPIState(c)
+	apiState, err := NewAPIInstance(c)
 
 	if err != nil {
 		return err

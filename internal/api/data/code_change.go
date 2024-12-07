@@ -2,15 +2,10 @@ package data
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 )
 
-type CodeChanges struct {
-	DB *sql.DB
-}
-
-func (c CodeChanges) BuildQuery(weeks []string, team *int64) string {
+func (d DB) BuildQuery(weeks []string, team *int64) string {
 	teamQuery := ""
 
 	if team != nil {
