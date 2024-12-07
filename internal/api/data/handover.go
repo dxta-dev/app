@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
+func GetHandover(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStatistics, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)

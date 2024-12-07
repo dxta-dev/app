@@ -8,29 +8,6 @@ import (
 	"strings"
 )
 
-type AggregatedCycleTimeStatistics struct {
-	CodingTime Statistics                  `json:"coding_time"`
-	PickupTime Statistics                  `json:"pickup_time"`
-	ReviewTime Statistics                  `json:"review_time"`
-	DeployTime Statistics                  `json:"deploy_time"`
-	Weekly     []WeeklyCycleTimeStatistics `json:"weekly"`
-}
-
-type WeeklyCycleTimeStatistics struct {
-	Week       string     `json:"week"`
-	CodingTime Statistics `json:"coding_time"`
-	PickupTime Statistics `json:"pickup_time"`
-	ReviewTime Statistics `json:"review_time"`
-	DeployTime Statistics `json:"deploy_time"`
-}
-
-type Statistics struct {
-	Average      *float64 `json:"average"`
-	Median       *float64 `json:"median"`
-	Percentile75 *float64 `json:"percentile75"`
-	Percentile95 *float64 `json:"percentile95"`
-}
-
 func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedCycleTimeStatistics, error) {
 
 	teamQuery := ""
@@ -218,17 +195,19 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 		if week.Valid {
 			weekSet[week.String] = true
 			wcts = append(wcts, WeeklyCycleTimeStatistics{
-				Week:       week.String,
-				CodingTime: codingTime,
-				PickupTime: pickupTime,
-				ReviewTime: reviewTime,
-				DeployTime: deployTime,
+				Week: week.String,
+				Data: CycleTimeStatistics{
+					CodingTime: codingTime,
+					PickupTime: pickupTime,
+					ReviewTime: reviewTime,
+					DeployTime: deployTime,
+				},
 			})
 		} else {
-			acts.CodingTime = codingTime
-			acts.PickupTime = pickupTime
-			acts.ReviewTime = reviewTime
-			acts.DeployTime = deployTime
+			acts.Overall.CodingTime = codingTime
+			acts.Overall.PickupTime = pickupTime
+			acts.Overall.ReviewTime = reviewTime
+			acts.Overall.DeployTime = deployTime
 		}
 	}
 
@@ -239,11 +218,13 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 	for _, inputWeek := range weeks {
 		if !weekSet[inputWeek] {
 			wcts = append(wcts, WeeklyCycleTimeStatistics{
-				Week:       inputWeek,
-				CodingTime: Statistics{},
-				PickupTime: Statistics{},
-				ReviewTime: Statistics{},
-				DeployTime: Statistics{},
+				Week: inputWeek,
+				Data: CycleTimeStatistics{
+					CodingTime: Statistics{},
+					PickupTime: Statistics{},
+					ReviewTime: Statistics{},
+					DeployTime: Statistics{},
+				},
 			})
 		}
 	}
@@ -257,7 +238,7 @@ func DetailedCycleTime(db *sql.DB, ctx context.Context, namespace string, reposi
 
 }
 
-func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
+func GetCycleTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStatistics, error) {
 
 	teamQuery := ""
 	queryParamLength := len(weeks)
