@@ -77,9 +77,9 @@ func NewAPIState(c echo.Context) (APIState, error) {
 
 	return APIState{
 		DB:     db,
-		org:    tenantRepo.Organization,
-		repo:   tenantRepo.Repository,
-		teamId: teamInt,
+		Org:    tenantRepo.Organization,
+		Repo:   tenantRepo.Repository,
+		TeamId: teamInt,
 	}, nil
 }
 
