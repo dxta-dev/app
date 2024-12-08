@@ -1,27 +1,14 @@
 package data
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"strings"
 )
 
-func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string) (*AggregatedValues, error) {
+func BuildDeployFrequencyQuery(weeks []string) AggregatedValuesQuery {
 
-	queryParamLength := len(weeks)
+	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
-	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
-
-	queryParams := make([]interface{}, queryParamLength)
-	for i, v := range weeks {
-		queryParams[i] = v
-	}
-
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
-
-	query := buildQueryAggregatedValues(fmt.Sprintf(`
+	return buildQueryAggregatedValues(fmt.Sprintf(`
 	SELECT
 		deploy_dates.week AS week,
 		COUNT(*) AS value
@@ -36,20 +23,4 @@ func GetDeployFrequency(db *sql.DB, ctx context.Context, namespace string, repos
 	GROUP BY deploy_dates.week`,
 		weeksPlaceholder,
 	))
-
-	rows, err := db.QueryContext(ctx, query, queryParams...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	deployFrequencies, err := ScanAggregatedValuesRows(rows, weeks)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return deployFrequencies, nil
 }

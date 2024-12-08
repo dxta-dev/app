@@ -11,7 +11,6 @@ import (
 )
 
 func CodeChangeHandler(c echo.Context) error {
-
 	ctx := c.Request().Context()
 
 	apiState, err := api.NewAPIState(c)
@@ -22,15 +21,13 @@ func CodeChangeHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	cc := data.CodeChanges{}
+	query := data.BuildCodeChangeQuery(weeks, apiState.TeamId)
 
-	cc.DB = apiState.DB
-
-	codeChanges, err := cc.GetData(ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
+	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, codeChanges)
+	return c.JSON(http.StatusOK, result)
 }

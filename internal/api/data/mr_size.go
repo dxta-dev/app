@@ -1,36 +1,18 @@
 package data
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"strings"
 )
 
-func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStatistics, error) {
-
+func BuildMRSizeQuery(weeks []string, team *int64) AggregatedStatisticsQuery {
 	teamQuery := ""
-	queryParamLength := len(weeks)
 
 	if team != nil {
-		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
+		teamQuery = getTeamSubquery()
 	}
 
-	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
-
-	queryParams := make([]interface{}, queryParamLength)
-	for i, v := range weeks {
-		queryParams[i] = v
-	}
-
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
-
-	if team != nil {
-		queryParams = append(queryParams, team)
-	}
-
-	query := buildQueryAggregatedStats(fmt.Sprintf(`
+	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
+	return buildQueryAggregatedStatistics(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.mr_size AS value
@@ -58,20 +40,4 @@ func GetMRSize(db *sql.DB, ctx context.Context, namespace string, repository str
 		weeksPlaceholder,
 		teamQuery,
 	))
-
-	rows, err := db.QueryContext(ctx, query, queryParams...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	mrSizes, err := ScanAggregatedStatsRows(rows, weeks)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return mrSizes, nil
 }

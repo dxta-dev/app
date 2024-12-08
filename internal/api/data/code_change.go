@@ -1,11 +1,10 @@
 package data
 
 import (
-	"context"
 	"fmt"
 )
 
-func (d DB) BuildQuery(weeks []string, team *int64) string {
+func BuildCodeChangeQuery(weeks []string, team *int64) AggregatedValuesQuery {
 	teamQuery := ""
 
 	if team != nil {
@@ -42,37 +41,4 @@ func (d DB) BuildQuery(weeks []string, team *int64) string {
 	GROUP BY dates.week`
 
 	return buildQueryAggregatedValues(fmt.Sprintf(query, weeksPlaceholder, teamQuery))
-}
-
-func (c CodeChanges) GetData(ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
-	queryParamLength := len(weeks)
-
-	queryParams := make([]interface{}, queryParamLength)
-	for i, v := range weeks {
-		queryParams[i] = v
-	}
-
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
-
-	if team != nil {
-		queryParams = append(queryParams, team)
-	}
-
-	query := c.BuildQuery(weeks, team)
-
-	rows, err := c.DB.QueryContext(ctx, query, queryParams...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-	codeChanges, err := ScanAggregatedValuesRows(rows, weeks)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return codeChanges, nil
 }

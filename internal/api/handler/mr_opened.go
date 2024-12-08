@@ -4,16 +4,16 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/dxta-dev/app/internal/api"
 	"github.com/dxta-dev/app/internal/api/data"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/labstack/echo/v4"
 )
 
-func MRSOpenedHandler(c echo.Context) error {
-
+func MRsOpenedHandler(c echo.Context) error {
 	ctx := c.Request().Context()
 
-	apiState, err := NewAPIState(c)
+	apiState, err := api.NewAPIState(c)
 
 	if err != nil {
 		return err
@@ -21,11 +21,13 @@ func MRSOpenedHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	mrsOpened, err := data.GetMRsOpened(apiState.DB, ctx, apiState.org, apiState.repo, weeks, apiState.teamId)
+	query := data.BuildMRsOpenedQuery(weeks, apiState.TeamId)
+
+	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, mrsOpened)
+	return c.JSON(http.StatusOK, result)
 }

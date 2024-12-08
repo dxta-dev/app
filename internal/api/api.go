@@ -18,9 +18,9 @@ import (
 
 type APIState struct {
 	DB     data.DB
-	org    string
-	repo   string
-	teamId *int64
+	Org    string
+	Repo   string
+	TeamId *int64
 }
 
 var tenantRepoCache sync.Map

@@ -1,36 +1,19 @@
 package data
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"strings"
 )
 
-func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStatistics, error) {
-
+func BuildReviewTimeQuery(weeks []string, team *int64) AggregatedValuesQuery {
 	teamQuery := ""
-	queryParamLength := len(weeks)
 
 	if team != nil {
-		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
+		teamQuery = getTeamSubquery()
 	}
 
-	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
+	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
-	queryParams := make([]interface{}, queryParamLength)
-	for i, v := range weeks {
-		queryParams[i] = v
-	}
-
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
-
-	if team != nil {
-		queryParams = append(queryParams, team)
-	}
-
-	query := buildQueryAggregatedStats(fmt.Sprintf(`
+	return buildQueryAggregatedStatistics(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.review_duration AS value
@@ -58,21 +41,4 @@ func GetReviewTime(db *sql.DB, ctx context.Context, namespace string, repository
 		weeksPlaceholder,
 		teamQuery,
 	))
-
-	rows, err := db.QueryContext(ctx, query, queryParams...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	reviewTimes, err := ScanAggregatedStatsRows(rows, weeks)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return reviewTimes, nil
-
 }
