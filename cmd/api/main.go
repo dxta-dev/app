@@ -116,7 +116,7 @@ func main() {
 	e.GET("/handover/:org/:repo", handler.HandoverHandler)
 	e.GET("/merge-freq/:org/:repo", handler.MergeFrequencyHandler)
 	e.GET("/mr-merged-wo-review/:org/:repo", handler.MRsMergedWithoutReviewHandler)
-	e.GET("/mr-opened/:org/:repo", handler.MRSOpenedHandler)
+	e.GET("/mr-opened/:org/:repo", handler.MRsOpenedHandler)
 	e.GET("/mr-pickup-time/:org/:repo", handler.MRPickupTimeHandler)
 	e.GET("/mr-size/:org/:repo", handler.MRSizeHandler)
 	e.GET("/review/:org/:repo", handler.ReviewHandler)

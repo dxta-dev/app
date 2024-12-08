@@ -1,35 +1,18 @@
 package data
 
 import (
-	"context"
-	"database/sql"
 	"fmt"
-	"strings"
 )
 
-func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repository string, weeks []string, team *int64) (*AggregatedStats, error) {
+func BuildTimeToMergeQuery(weeks []string, team *int64) AggregatedStatisticsQuery {
 	teamQuery := ""
-	queryParamLength := len(weeks)
 
 	if team != nil {
-		teamQuery = "AND author.external_id in (SELECT member FROM tenant_team_members WHERE team = ?)"
+		teamQuery = getTeamSubquery()
 	}
 
-	weeksPlaceholder := strings.Repeat("?,", len(weeks)-1) + "?"
-
-	queryParams := make([]interface{}, queryParamLength)
-	for i, v := range weeks {
-		queryParams[i] = v
-	}
-
-	queryParams = append(queryParams, namespace)
-	queryParams = append(queryParams, repository)
-
-	if team != nil {
-		queryParams = append(queryParams, team)
-	}
-
-	query := buildQueryAggregatedStats(fmt.Sprintf(`
+	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
+	return buildQueryAggregatedStatistics(fmt.Sprintf(`
 	SELECT
 		mergedAt.week AS week,
 		metrics.time_to_merge AS value
@@ -57,20 +40,4 @@ func GetTimeToMerge(db *sql.DB, ctx context.Context, namespace string, repositor
 		weeksPlaceholder,
 		teamQuery,
 	))
-
-	rows, err := db.QueryContext(ctx, query, queryParams...)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer rows.Close()
-
-	timesToMerge, err := ScanAggregatedStatsRows(rows, weeks)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return timesToMerge, nil
 }
