@@ -65,7 +65,11 @@ func NewAPIState(c echo.Context) (APIState, error) {
 		return APIState{}, err
 	}
 
-	db := data.DB{}
+	db, err := data.NewDB(ctx, tenantRepo)
+
+	if err != nil {
+		return APIState{}, err
+	}
 
 	team := c.QueryParam("team")
 

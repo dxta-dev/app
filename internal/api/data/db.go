@@ -15,11 +15,13 @@ type DB struct {
 
 var dbPool sync.Map
 
-func (database DB) get(ctx context.Context, tenantRepo TenantRepo) (*sql.DB, error) {
+func NewDB(ctx context.Context, tenantRepo TenantRepo) (DB, error) {
 	cacheKey := strings.ToLower(tenantRepo.Organization + "/" + tenantRepo.Repository)
 
 	if dbInterface, ok := dbPool.Load(cacheKey); ok {
-		return dbInterface.(*sql.DB), nil
+		return DB{
+			db: dbInterface.(*sql.DB),
+		}, nil
 	}
 
 	driverName := otel.GetDriverName()
@@ -28,14 +30,16 @@ func (database DB) get(ctx context.Context, tenantRepo TenantRepo) (*sql.DB, err
 
 	db, err := sql.Open(driverName, fullDbUrl)
 	if err != nil {
-		return nil, err
+		return DB{}, err
 	}
 
 	if err := db.PingContext(ctx); err != nil {
-		return nil, err
+		return DB{}, err
 	}
 
 	dbPool.Store(cacheKey, db)
 
-	return db, nil
+	return DB{
+		db: db,
+	}, nil
 }
