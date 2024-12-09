@@ -2,7 +2,6 @@ package data
 
 import (
 	"context"
-	"database/sql"
 )
 
 type Team struct {
@@ -10,10 +9,10 @@ type Team struct {
 	Name string `json:"name"`
 }
 
-func GetTeams(db *sql.DB, ctx context.Context) ([]Team, error) {
+func (d DB) GetTeams(ctx context.Context) ([]Team, error) {
 	query := "SELECT id, name FROM tenant_teams;"
 
-	rows, err := db.QueryContext(ctx, query)
+	rows, err := d.db.QueryContext(ctx, query)
 
 	if err != nil {
 		return nil, err

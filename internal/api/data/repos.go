@@ -11,25 +11,47 @@ type Repo struct {
 	ProjectName        string `json:"projectName"`
 	ProjectDescription string `json:"projectDescription"`
 }
+type TenantRepo struct {
+	DbUrl        string
+	Organization string
+	Repository   string
+}
 
-func GetReposDbUrl(ctx context.Context, db *sql.DB, org string, repo string) (string, error) {
-	query := "SELECT db_url FROM repos WHERE organization = ? AND repository = ?"
-
+func GetTenantRepo(ctx context.Context, db *sql.DB, org string, repo string) (TenantRepo, error) {
+	query := `
+		SELECT t.db_url, r.organization, r.repository
+		FROM repos AS r
+		JOIN tenants AS t
+		ON t.id = r.tenant_id
+		WHERE LOWER(r.organization) = LOWER(?)
+		AND LOWER(r.repository) = LOWER(?);
+	`
 	row := db.QueryRowContext(ctx, query, org, repo)
 
-	var dbUrl string
+	var tenantRepo TenantRepo
 
-	err := row.Scan(&dbUrl)
+	err := row.Scan(&tenantRepo.DbUrl, &tenantRepo.Organization, &tenantRepo.Repository)
 
 	if err != nil {
-		return "", err
+		return TenantRepo{}, err
 	}
 
-	return dbUrl, nil
+	return tenantRepo, nil
 }
 
 func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
-	query := `SELECT organization, repository, project_name, project_description FROM repos`
+	query := `
+		SELECT
+			r.organization,
+			r.repository,
+			r.project_name,
+			COALESCE(ci.description, '') AS project_description
+		FROM repos AS r
+		JOIN tenants AS t
+		ON t.id = r.tenant_id
+		LEFT JOIN company_info AS ci
+		ON t.id = ci.tenant_id;
+	`
 	rows, err := db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, err
