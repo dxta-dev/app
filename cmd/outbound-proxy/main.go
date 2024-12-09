@@ -2,28 +2,24 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
-	"sync"
 	"syscall"
 	"time"
+
+	"github.com/dxta-dev/app/internal/assert"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-type ApiKeyDetails struct {
-	Host   int
-	ApiKey string
-}
-
-type RateLimitInfo struct {
-	RetryAfter int64
-}
-
-var rateLimitMap sync.Map
-var client = &http.Client{}
-
 func main() {
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	zerolog.TimeFieldFormat = time.RFC3339
+
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	ctx := context.Background()
 
@@ -42,7 +38,7 @@ func main() {
 
 	go func() {
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Could not listen on port %v %v\n", port, err)
+			assert.Never(fmt.Sprintf("Could not listen on port %v %v", port, err))
 		}
 	}()
 
@@ -55,6 +51,6 @@ func main() {
 	defer cancel()
 
 	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		assert.Never(fmt.Sprintf("Server forced to shutdown: %v", err))
 	}
 }
