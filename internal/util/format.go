@@ -17,8 +17,11 @@ func FormatYAxisValues(num float64) string {
 		} else {
 			formatted = fmt.Sprintf("%.1f", num)
 		}
-	case absNum >= 1000 && absNum < 1000000:
+	case absNum >= 1000 && absNum < 100000:
 		formatted = fmt.Sprintf("%.1fK", num/1000)
+	case absNum >= 100000 && absNum < 1000000:
+		rounded := math.Round(num / 1000)
+		formatted = fmt.Sprintf("%.0fK", rounded)
 	case absNum >= 1000000:
 		formatted = fmt.Sprintf("%.1fM", num/1000000)
 	default:

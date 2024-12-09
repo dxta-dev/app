@@ -1,8 +1,8 @@
 package util
 
 import (
-	"testing"
 	"strings"
+	"testing"
 )
 
 func TestFormatYAxisValues(t *testing.T) {
@@ -22,6 +22,9 @@ func TestFormatYAxisValues(t *testing.T) {
 		{"Less than 100000 with no decimals", 50000, "50.0K"},
 		{"Exactly 1 Million", 1000000, "1.0M" + nbsp},
 		{"MIllions with no decimals", 2000000, "2.0M" + nbsp},
+		{"999950 test case", 999951, "1000K"},
+		{"999949 test case", 999100, "999K" + nbsp},
+		{"999999 test case", 999999, "1000K"},
 	}
 
 	for _, tc := range testCases {
