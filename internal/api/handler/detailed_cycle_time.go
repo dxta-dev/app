@@ -22,7 +22,7 @@ func DetailedCycleTimeHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	query := data.BuildCycleTimeQuery(weeks, apiState.TeamId)
+	query := data.BuildDetailedCycleTimeQuery(weeks, apiState.TeamId)
 
 	cycleTimes, err := apiState.DB.GetDetailedCycleTime(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 
