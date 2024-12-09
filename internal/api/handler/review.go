@@ -23,7 +23,7 @@ func ReviewHandler(c echo.Context) error {
 
 	query := data.BuildReviewQuery(weeks, apiState.TeamId)
 
-	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 
 	if err != nil {
 		return err

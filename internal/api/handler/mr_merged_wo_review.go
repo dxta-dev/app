@@ -21,7 +21,7 @@ func MRsMergedWithoutReviewHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	query := data.BuildCodeChangeQuery(weeks, apiState.TeamId)
+	query := data.BuildMRsMergedWithoutReviewQuery(weeks, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 

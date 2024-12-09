@@ -21,7 +21,7 @@ func MRPickupTimeHandler(c echo.Context) error {
 
 	weeks := util.GetLastNWeeks(time.Now(), 3*4)
 
-	query := data.BuildCodingTimeQuery(weeks, apiState.TeamId)
+	query := data.BuildPickupTimeQuery(weeks, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
 
