@@ -2,9 +2,10 @@ package host
 
 import (
 	"context"
-	"errors"
 	"net/http"
 	"strconv"
+
+	"github.com/dxta-dev/app/internal/assert"
 )
 
 const (
@@ -15,8 +16,8 @@ const (
 )
 
 type ServiceConnector interface {
-	UnwrapResponse(resp *http.Response) (*UnwrappedResponse, error)
-	UnwrapRequest(req *http.Request) (*UnwrappedRequest, error)
+	UnwrapResponse(resp *http.Response) (*UnwrappedProxiedResponse, error)
+	UnwrapRequest(req *http.Request) (*UnwrappedProxiedRequest, error)
 	MakeRequest(ctx context.Context, endpoint string, method string, headers http.Header, body []byte) (*http.Response, error)
 }
 
@@ -44,7 +45,7 @@ type Pagination struct {
 	TotalPages int
 }
 
-type UnwrappedResponse struct {
+type UnwrappedProxiedResponse struct {
 	Links map[LinkKey]Link
 	Pagination
 	RateLimit
@@ -63,46 +64,40 @@ type RateLimit struct {
 	Used      int
 }
 
-type UnwrappedRequest struct {
+type UnwrappedProxiedRequest struct {
 	TenantId string
 }
 
-func unwrapTenantId(req *http.Request) (string, error) {
+func unwrapTenantId(req *http.Request) string {
+	assert.NotNil(req, "Request must not be nil")
+
 	tenantId := req.Header.Get("X-Tenant-Id")
-	if tenantId == "" {
-		return "", errors.New("")
-	}
-	return tenantId, nil
+	assert.Assert(tenantId != "", "Tenant ID must not be empty")
+
+	return tenantId
 }
 
-func CreateResponse(host ServiceConnector, resp *http.Response) (any, error) {
-	_, err := CreateResponseHeaders(host, resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+func CreateResponse(unwrappedProxiedResponse *UnwrappedProxiedResponse, resp *http.Response) {
+	_ = createResponseHeaders(unwrappedProxiedResponse)
 }
 
-func CreateResponseHeaders(serviceConnector ServiceConnector, resp *http.Response) (http.Header, error) {
-	unwrappedResponse, err := serviceConnector.UnwrapResponse(resp)
-	if err != nil {
-		return nil, err
-	}
+func createResponseHeaders(unwrappedProxiedResponse *UnwrappedProxiedResponse) http.Header {
+	assert.NotNil(unwrappedProxiedResponse, "Unwrapped proxied response must not be nil")
+
 	headers := http.Header{}
 
-	headers.Set("X-Pagination-Total", strconv.Itoa(unwrappedResponse.TotalPages))
+	headers.Set("X-Pagination-Total", strconv.Itoa(unwrappedProxiedResponse.TotalPages))
 
-	headers.Set("X-RateLimit-Limit", strconv.Itoa(unwrappedResponse.RateLimit.Limit))
-	headers.Set("X-RateLimit-Remaining", strconv.Itoa(unwrappedResponse.RateLimit.Remaining))
-	headers.Set("X-RateLimit-RetryBy", strconv.FormatInt(unwrappedResponse.RateLimit.RetryBy, 10))
-	headers.Set("X-RateLimit-Resource", unwrappedResponse.RateLimit.Resource)
-	headers.Set("X-RateLimit-Used", strconv.Itoa(unwrappedResponse.RateLimit.Used))
+	headers.Set("X-RateLimit-Limit", strconv.Itoa(unwrappedProxiedResponse.RateLimit.Limit))
+	headers.Set("X-RateLimit-Remaining", strconv.Itoa(unwrappedProxiedResponse.RateLimit.Remaining))
+	headers.Set("X-RateLimit-RetryBy", strconv.FormatInt(unwrappedProxiedResponse.RateLimit.RetryBy, 10))
+	headers.Set("X-RateLimit-Resource", unwrappedProxiedResponse.RateLimit.Resource)
+	headers.Set("X-RateLimit-Used", strconv.Itoa(unwrappedProxiedResponse.RateLimit.Used))
 
-	for key, link := range unwrappedResponse.Links {
+	for key, link := range unwrappedProxiedResponse.Links {
 		headers.Set("X-Link-"+string(key), link.Url)
 		headers.Set("X-Link-"+string(key)+"-Value", strconv.Itoa(link.Value))
 	}
 
-	return headers, nil
+	return headers
 }
