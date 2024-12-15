@@ -1,0 +1,251 @@
+{
+  "log": {
+    "version": "1.2",
+    "creator": {
+      "name": "WebInspector",
+      "version": "537.36"
+    },
+    "pages": [
+      {
+        "startedDateTime": "2024-12-14T20:31:03.605Z",
+        "id": "page_1",
+        "title": "https://api.github.com/repos/calcom/cal.com/branches",
+        "pageTimings": {
+          "onContentLoad": 357.32500000085565,
+          "onLoad": 358.0069999989064
+        }
+      }
+    ],
+    "entries": [
+      {
+        "_initiator": {
+          "type": "other"
+        },
+        "_priority": "VeryHigh",
+        "_resourceType": "document",
+        "cache": {},
+        "connection": "72498",
+        "pageref": "page_1",
+        "request": {
+          "method": "GET",
+          "url": "https://api.github.com/repos/calcom/cal.com/branches",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": ":authority",
+              "value": "api.github.com"
+            },
+            {
+              "name": ":method",
+              "value": "GET"
+            },
+            {
+              "name": ":path",
+              "value": "/repos/calcom/cal.com/branches"
+            },
+            {
+              "name": ":scheme",
+              "value": "https"
+            },
+            {
+              "name": "accept",
+              "value": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8"
+            },
+            {
+              "name": "accept-encoding",
+              "value": "gzip, deflate, br, zstd"
+            },
+            {
+              "name": "accept-language",
+              "value": "en-US,en;q=0.7"
+            },
+            {
+              "name": "priority",
+              "value": "u=0, i"
+            },
+            {
+              "name": "sec-ch-ua",
+              "value": "\"Brave\";v=\"129\", \"Not=A?Brand\";v=\"8\", \"Chromium\";v=\"129\""
+            },
+            {
+              "name": "sec-ch-ua-mobile",
+              "value": "?0"
+            },
+            {
+              "name": "sec-ch-ua-platform",
+              "value": "\"Linux\""
+            },
+            {
+              "name": "sec-fetch-dest",
+              "value": "document"
+            },
+            {
+              "name": "sec-fetch-mode",
+              "value": "navigate"
+            },
+            {
+              "name": "sec-fetch-site",
+              "value": "none"
+            },
+            {
+              "name": "sec-fetch-user",
+              "value": "?1"
+            },
+            {
+              "name": "sec-gpc",
+              "value": "1"
+            },
+            {
+              "name": "upgrade-insecure-requests",
+              "value": "1"
+            },
+            {
+              "name": "user-agent",
+              "value": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36"
+            }
+          ],
+          "queryString": [],
+          "cookies": [],
+          "headersSize": -1,
+          "bodySize": 0
+        },
+        "response": {
+          "status": 200,
+          "statusText": "",
+          "httpVersion": "http/2.0",
+          "headers": [
+            {
+              "name": "accept-ranges",
+              "value": "bytes"
+            },
+            {
+              "name": "access-control-allow-origin",
+              "value": "*"
+            },
+            {
+              "name": "access-control-expose-headers",
+              "value": "ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset"
+            },
+            {
+              "name": "cache-control",
+              "value": "public, max-age=60, s-maxage=60"
+            },
+            {
+              "name": "content-encoding",
+              "value": "gzip"
+            },
+            {
+              "name": "content-security-policy",
+              "value": "default-src 'none'"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json; charset=utf-8"
+            },
+            {
+              "name": "date",
+              "value": "Sat, 14 Dec 2024 20:31:03 GMT"
+            },
+            {
+              "name": "etag",
+              "value": "W/\"b85746a05a4f07184471be98e307208cfd0c16bca1d2d1c1da8376ada0024676\""
+            },
+            {
+              "name": "link",
+              "value": "<https://api.github.com/repositories/350360184/branches?page=2>; rel=\"next\", <https://api.github.com/repositories/350360184/branches?page=34>; rel=\"last\""
+            },
+            {
+              "name": "referrer-policy",
+              "value": "origin-when-cross-origin, strict-origin-when-cross-origin"
+            },
+            {
+              "name": "server",
+              "value": "github.com"
+            },
+            {
+              "name": "strict-transport-security",
+              "value": "max-age=31536000; includeSubdomains; preload"
+            },
+            {
+              "name": "vary",
+              "value": "Accept,Accept-Encoding, Accept, X-Requested-With"
+            },
+            {
+              "name": "x-content-type-options",
+              "value": "nosniff"
+            },
+            {
+              "name": "x-frame-options",
+              "value": "deny"
+            },
+            {
+              "name": "x-github-api-version-selected",
+              "value": "2022-11-28"
+            },
+            {
+              "name": "x-github-media-type",
+              "value": "unknown, github.v3"
+            },
+            {
+              "name": "x-github-request-id",
+              "value": "126C:1BB312:39055C4:3A62472:675DEB07"
+            },
+            {
+              "name": "x-ratelimit-limit",
+              "value": "60"
+            },
+            {
+              "name": "x-ratelimit-remaining",
+              "value": "59"
+            },
+            {
+              "name": "x-ratelimit-reset",
+              "value": "1734211863"
+            },
+            {
+              "name": "x-ratelimit-resource",
+              "value": "core"
+            },
+            {
+              "name": "x-ratelimit-used",
+              "value": "1"
+            },
+            {
+              "name": "x-xss-protection",
+              "value": "0"
+            }
+          ],
+          "cookies": [],
+          "content": {
+            "size": 8433,
+            "mimeType": "application/json",
+            "text": "[\n  {\n    \"name\": \"10-12-chore_upgrades_next_to_13.5.4\",\n    \"commit\": {\n      \"sha\": \"0dbd514a4a909caee0e2cffbb7d88414d10f611e\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/0dbd514a4a909caee0e2cffbb7d88414d10f611e\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"10-17-chore_removes_unused_env_symlink\",\n    \"commit\": {\n      \"sha\": \"c9ad1cca584e6a12f72afdd02da4f042d31b2064\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/c9ad1cca584e6a12f72afdd02da4f042d31b2064\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"10-17-video-call-url\",\n    \"commit\": {\n      \"sha\": \"cecd2ae537d0e601df7a8c9d6deb3b3719792e32\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/cecd2ae537d0e601df7a8c9d6deb3b3719792e32\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"10-23-feat_Hard_limits_for_API_keys\",\n    \"commit\": {\n      \"sha\": \"a61d10bc3dedf6f8f019e796851f7edf66fc04c1\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/a61d10bc3dedf6f8f019e796851f7edf66fc04c1\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"10-24-fix_date-range_test_fixes\",\n    \"commit\": {\n      \"sha\": \"4190b2eb0c63d449afd2da9615e78c6cb569192b\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/4190b2eb0c63d449afd2da9615e78c6cb569192b\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"10-26-chore_Adds_dayjs_as_fixture\",\n    \"commit\": {\n      \"sha\": \"88125851dd87321d975ac2823cb73ca0334a0c5a\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/88125851dd87321d975ac2823cb73ca0334a0c5a\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"11-16-feat_csrf_protection_for_trpc_endpoints\",\n    \"commit\": {\n      \"sha\": \"61109da4feeb73fe452bc4649cc6a4b8a4f3a3c8\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/61109da4feeb73fe452bc4649cc6a4b8a4f3a3c8\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"12-29-fix_Use_org_logo_for_organization_s_teams\",\n    \"commit\": {\n      \"sha\": \"54f9453ff09872d24f7ce91d1f0a2b8479adcb1f\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/54f9453ff09872d24f7ce91d1f0a2b8479adcb1f\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"1182-refactor-app-list-my-settings-conferencing-and-installed-app-conferencing\",\n    \"commit\": {\n      \"sha\": \"ff6390c3443de4b20c365e701525880a31acd4e4\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/ff6390c3443de4b20c365e701525880a31acd4e4\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"2450-weather-app\",\n    \"commit\": {\n      \"sha\": \"7a57a4e5b65381c0bb4f5ed2f04a5187d5e544b5\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/7a57a4e5b65381c0bb4f5ed2f04a5187d5e544b5\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"3600-make-app-signup-page-work-if-calcom-license-is-present-1\",\n    \"commit\": {\n      \"sha\": \"bceeee70e0e93dc74dead86fc8c371c11dc1f121\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/bceeee70e0e93dc74dead86fc8c371c11dc1f121\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"3974-on-eventype-creation-with-api-call-the-default-availability-is-not-being-displayed\",\n    \"commit\": {\n      \"sha\": \"46f2142e5fc5ac20aab33bec06bb18f2850869ef\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/46f2142e5fc5ac20aab33bec06bb18f2850869ef\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4051-replace-loading-box-with-our-animated-calcom-logo\",\n    \"commit\": {\n      \"sha\": \"bb0ff5503a61b53e04e3d14ac25ac65d67f19fce\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/bb0ff5503a61b53e04e3d14ac25ac65d67f19fce\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4079-20-dark-mode-success-page\",\n    \"commit\": {\n      \"sha\": \"719388158b08270a1bb8149298b99ee2b1fcc0dd\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/719388158b08270a1bb8149298b99ee2b1fcc0dd\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4090-more-button-not-a-square-in-tablet-view-on-event-types\",\n    \"commit\": {\n      \"sha\": \"7b0d4f0f7867da9f429fdbc35e942c5e84e54797\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/7b0d4f0f7867da9f429fdbc35e942c5e84e54797\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4097-icons-in-sidebar-tablet-view-should-be-in-the-center\",\n    \"commit\": {\n      \"sha\": \"a7f7d140bc1f349729b05c96813436751541b102\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/a7f7d140bc1f349729b05c96813436751541b102\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4181-routing-form-detail-header-actions-combined-button-component-has-double-border\",\n    \"commit\": {\n      \"sha\": \"7b0d4f0f7867da9f429fdbc35e942c5e84e54797\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/7b0d4f0f7867da9f429fdbc35e942c5e84e54797\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4308-improve-verify-email-screen\",\n    \"commit\": {\n      \"sha\": \"99aebcdc95fabda3092c6a52b8c8fd95a0300ed1\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/99aebcdc95fabda3092c6a52b8c8fd95a0300ed1\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4343-onboardingstep-4-upload-button-looks-weird\",\n    \"commit\": {\n      \"sha\": \"5cd2ce9246219037b6701bc2dcfbd1c14c7af2de\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/5cd2ce9246219037b6701bc2dcfbd1c14c7af2de\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4366-cal-114-better-design-for-public-booking-empty-screen\",\n    \"commit\": {\n      \"sha\": \"f135f7baad75b2f0b1ecb0636e70024626e08fee\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/f135f7baad75b2f0b1ecb0636e70024626e08fee\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4480-new-signup-page\",\n    \"commit\": {\n      \"sha\": \"f09af2d393dd8e595b3513ec916985d3be8ee226\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/f09af2d393dd8e595b3513ec916985d3be8ee226\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4552-move-teams-into-main-nav\",\n    \"commit\": {\n      \"sha\": \"d98b90ae26c9877bc06a7767fff6d6e16208d241\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/d98b90ae26c9877bc06a7767fff6d6e16208d241\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4779-show-ultimate-features-with-badge-in-app\",\n    \"commit\": {\n      \"sha\": \"e7570d515d12e2baab485c3d7b8ac2badeda575f\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/e7570d515d12e2baab485c3d7b8ac2badeda575f\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4793-zoom-causes-a-json-error-after-a-while\",\n    \"commit\": {\n      \"sha\": \"0098591a56bf7897c09d18a85951663a98aa5f52\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/0098591a56bf7897c09d18a85951663a98aa5f52\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4841-new-signup-page\",\n    \"commit\": {\n      \"sha\": \"246fce3ab8c052bceee4b9c22ce849ce6b05cd94\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/246fce3ab8c052bceee4b9c22ce849ce6b05cd94\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4859-auth-tab-index-is-wrong-needs-to-be-email-password\",\n    \"commit\": {\n      \"sha\": \"10ab86b33237f9caf8d033135033b9630145b332\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/10ab86b33237f9caf8d033135033b9630145b332\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4866-booking-cancel-all-remaining-button\",\n    \"commit\": {\n      \"sha\": \"0ebce77a7bc383c3b231e704b3bed255b7a37638\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/0ebce77a7bc383c3b231e704b3bed255b7a37638\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4873-hide-page-title-on-event-types\",\n    \"commit\": {\n      \"sha\": \"0ebce77a7bc383c3b231e704b3bed255b7a37638\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/0ebce77a7bc383c3b231e704b3bed255b7a37638\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"4889-wrong-focus-ring-on-help-dropdown\",\n    \"commit\": {\n      \"sha\": \"58453d0f2f6bc95b937e8ee5066c8b2f66c3bb74\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/58453d0f2f6bc95b937e8ee5066c8b2f66c3bb74\"\n    },\n    \"protected\": false\n  },\n  {\n    \"name\": \"5030-cal-162-remove-all-key_strings-from-title-and-use-english-hardcoded-string\",\n    \"commit\": {\n      \"sha\": \"b7161694a587ef4de5ff45afc49496e7fc215462\",\n      \"url\": \"https://api.github.com/repos/calcom/cal.com/commits/b7161694a587ef4de5ff45afc49496e7fc215462\"\n    },\n    \"protected\": false\n  }\n]\n"
+          },
+          "redirectURL": "",
+          "headersSize": -1,
+          "bodySize": -1,
+          "_transferSize": 3223,
+          "_error": null,
+          "_fetchedViaServiceWorker": false
+        },
+        "serverIPAddress": "140.82.121.6",
+        "startedDateTime": "2024-12-14T20:31:03.604Z",
+        "time": 331.5150000013367,
+        "timings": {
+          "blocked": 1.6310000000779983,
+          "dns": 14.186,
+          "ssl": 41.218,
+          "connect": 91.368,
+          "send": 0.24899999999999523,
+          "wait": 222.26400000095765,
+          "receive": 1.81700000030105,
+          "_blocked_queueing": 1.3650000000779983,
+          "_workerStart": -1,
+          "_workerReady": -1,
+          "_workerFetchStart": -1,
+          "_workerRespondWithSettled": -1
+        }
+      }
+    ]
+  }
+}
