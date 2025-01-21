@@ -63,7 +63,7 @@ func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
 	var repos []Repo
 	for rows.Next() {
 		var repo Repo
-		err := rows.Scan(&repo.Organization, &repo.Repository, &repo.ProjectName, &repo.ProjectDescription)
+		err := rows.Scan(&repo.Organization, &repo.Repository, &repo.ProjectName, &repo.ProjectDescription, &repo.InternalTeam)
 		if err != nil {
 			return nil, err
 		}
