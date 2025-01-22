@@ -14,6 +14,13 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
 	return buildQueryAggregatedStatistics(fmt.Sprintf(`
+	WITH has_deployment AS (
+		SELECT DISTINCT repository_external_id, forge_type
+		FROM tenant_deployment_environments
+		UNION
+		SELECT DISTINCT repository_external_id, forge_type
+		FROM tenant_cicd_deploy_workflows
+	)
 	SELECT
 		merged_at.week AS week,
 		CASE
@@ -26,6 +33,8 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 		FROM transform_merge_request_metrics AS metrics
 	JOIN transform_repositories AS repo
 		ON repo.id = metrics.repository
+	JOIN has_deployment
+		ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type
 	JOIN transform_merge_request_fact_dates_junk AS dj
 		ON metrics.dates_junk = dj.id
 	JOIN transform_dates AS merged_at
