@@ -10,6 +10,7 @@ type Repo struct {
 	Repository         string `json:"repository"`
 	ProjectName        string `json:"projectName"`
 	ProjectDescription string `json:"projectDescription"`
+	InternalTeam       int32  `json:"teamId"`
 }
 type TenantRepo struct {
 	DbUrl        string
@@ -45,7 +46,8 @@ func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
 			r.organization,
 			r.repository,
 			r.project_name,
-			COALESCE(ci.description, '') AS project_description
+			COALESCE(ci.description, '') AS project_description,
+			r.internal_team
 		FROM repos AS r
 		JOIN tenants AS t
 		ON t.id = r.tenant_id
@@ -61,7 +63,7 @@ func GetRepos(ctx context.Context, db *sql.DB) ([]Repo, error) {
 	var repos []Repo
 	for rows.Next() {
 		var repo Repo
-		err := rows.Scan(&repo.Organization, &repo.Repository, &repo.ProjectName, &repo.ProjectDescription)
+		err := rows.Scan(&repo.Organization, &repo.Repository, &repo.ProjectName, &repo.ProjectDescription, &repo.InternalTeam)
 		if err != nil {
 			return nil, err
 		}
