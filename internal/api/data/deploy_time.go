@@ -40,8 +40,8 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 			ON metrics.dates_junk = dj.id
 		JOIN transform_dates AS merged_at
 			ON dj.merged_at = merged_at.id
-			JOIN transform_dates AS dates
-					ON dj.merged_at = dates.id
+		JOIN transform_dates AS dates
+			ON dj.merged_at = dates.id
 		JOIN transform_merge_request_fact_users_junk AS uj
 			ON metrics.users_junk = uj.id
 		JOIN transform_forge_users AS author
