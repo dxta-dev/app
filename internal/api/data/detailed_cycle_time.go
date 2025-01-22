@@ -27,22 +27,32 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
 	return fmt.Sprintf(`
-	WITH dataset AS (
+	WITH has_deployment AS (
+		SELECT DISTINCT repository_external_id, forge_type
+		FROM tenant_deployment_environments
+		UNION
+		SELECT DISTINCT repository_external_id, forge_type
+		FROM tenant_cicd_deploy_workflows
+	),
+	dataset AS (
     SELECT
-        mergedAt.week AS week,
-        metrics.coding_duration AS coding_time,
-        metrics.review_start_delay AS pickup_time,
-        metrics.review_duration AS review_time,
-        CASE
-    	WHEN metrics.deploy_duration = 0 THEN
-        	(unixepoch(date('now')) - unixepoch(
-            CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
-        	)) * 1000
-    	ELSE metrics.deploy_duration
-		END AS deploy_time
+			mergedAt.week AS week,
+			metrics.coding_duration AS coding_time,
+			metrics.review_start_delay AS pickup_time,
+			metrics.review_duration AS review_time,
+			CASE
+				WHEN has_deployment.repository_external_id IS NULL THEN NULL
+				WHEN metrics.deploy_duration = 0 THEN
+					(unixepoch(date('now')) - unixepoch(
+						CONCAT(dates.year, '-', LPAD(dates.month, 2, '0'), '-', LPAD(dates.day, 2, '0'))
+					)) * 1000
+				ELSE metrics.deploy_duration
+			END AS deploy_time
     FROM transform_merge_request_metrics AS metrics
     JOIN transform_repositories AS repo
         ON repo.id = metrics.repository
+		LEFT JOIN has_deployment
+			ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type
     JOIN transform_merge_request_fact_dates_junk AS dj
         ON metrics.dates_junk = dj.id
     JOIN transform_dates AS mergedAt
