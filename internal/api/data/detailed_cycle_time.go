@@ -50,23 +50,23 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
 			END AS deploy_time
     FROM transform_merge_request_metrics AS metrics
     JOIN transform_repositories AS repo
-        ON repo.id = metrics.repository
+			ON repo.id = metrics.repository
 		LEFT JOIN has_deployment
-			ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type
+			ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type - 1
     JOIN transform_merge_request_fact_dates_junk AS dj
-        ON metrics.dates_junk = dj.id
+			ON metrics.dates_junk = dj.id
     JOIN transform_dates AS mergedAt
-        ON dj.merged_at = mergedAt.id
+			ON dj.merged_at = mergedAt.id
     JOIN transform_dates AS dates
-        ON dj.merged_at = dates.id  -- Join the dates table to get the actual day, month, and year
+			ON dj.merged_at = dates.id  -- Join the dates table to get the actual day, month, and year
     JOIN transform_merge_request_fact_users_junk AS uj
-        ON metrics.users_junk = uj.id
+			ON metrics.users_junk = uj.id
     JOIN transform_forge_users AS author
-        ON uj.author = author.id
+			ON uj.author = author.id
     JOIN transform_merge_requests AS mrs
-        ON metrics.merge_request = mrs.id
+			ON metrics.merge_request = mrs.id
     JOIN transform_branches AS branch
-        ON mrs.target_branch = branch.id
+			ON mrs.target_branch = branch.id
     WHERE mergedAt.week IN (%s)
     AND repo.namespace_name = ?
     AND repo.name = ?
