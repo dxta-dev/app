@@ -17,7 +17,13 @@ func BuildCycleTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery 
 	WITH dataset AS (
 		SELECT
 			mergedAt.week AS week,
-			metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration AS value
+			CASE
+				WHEN metrics.deploy_duration = 0 THEN
+					metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + (unixepoch(date('now')) - unixepoch(
+							CONCAT(mergedAt.year, '-', LPAD(mergedAt.month, 2, '0'), '-', LPAD(mergedAt.day, 2, '0'))
+						)) * 1000
+				ELSE metrics.coding_duration + metrics.review_start_delay + metrics.review_duration + metrics.deploy_duration
+			END AS value
 		FROM transform_merge_request_metrics AS metrics
 		JOIN transform_repositories AS repo
 			ON repo.id = metrics.repository
