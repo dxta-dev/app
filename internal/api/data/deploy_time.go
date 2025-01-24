@@ -31,11 +31,11 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 						)) * 1000
 				ELSE metrics.deploy_duration
 			END AS value
-			FROM transform_merge_request_metrics AS metrics
+		FROM transform_merge_request_metrics AS metrics
 		JOIN transform_repositories AS repo
 			ON repo.id = metrics.repository
 		JOIN has_deployment
-			ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type
+			ON has_deployment.repository_external_id = repo.external_id AND has_deployment.forge_type = repo.forge_type - 1
 		JOIN transform_merge_request_fact_dates_junk AS dj
 			ON metrics.dates_junk = dj.id
 		JOIN transform_dates AS merged_at
