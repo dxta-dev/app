@@ -19,9 +19,8 @@ func CodingTimeHandler(c echo.Context) error {
 	}
 
 	startWeek := c.QueryParam("startWeek")
-	endWeek := c.QueryParam("endWeek")
 
-	weeks, err := util.GetWeeksRange(startWeek, endWeek)
+	weeks, err := util.GetWeeksRange(startWeek)
 	if err != nil {
 		return err
 	}

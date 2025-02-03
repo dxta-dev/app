@@ -94,52 +94,32 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
 }
 
-func GetWeeksRange(startWeek, endWeek string) ([]string, error) {
+func GetWeeksRange(startWeek string) ([]string, error) {
 	var weeks []string
 	currentWeek := GetFormattedWeek(time.Now())
 
-	if startWeek == "" && endWeek == "" {
+	if startWeek == "" {
 		weeks = GetLastNWeeks(time.Now(), 3*4)
 		return weeks, nil
 	}
 
+	startDate, _, err := ParseYearWeek(startWeek)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start week: %w", err)
+	}
 	maxWeeks := 12
 
-	if startWeek != "" {
-		startDate, _, err := ParseYearWeek(startWeek)
-		if err != nil {
-			return nil, fmt.Errorf("invalid start week: %w", err)
-		}
+	if GetFormattedWeek(startDate.AddDate(0, 0, maxWeeks*7)) > currentWeek {
+		return nil, fmt.Errorf("data insuficient for provided start week: %s, minimum data is: %d weeks", startWeek, maxWeeks)
+	}
 
-		endDate := time.Now()
-		if endWeek != "" {
-			endDate, _, err = ParseYearWeek(endWeek)
-			if err != nil {
-				return nil, fmt.Errorf("invalid end week: %w", err)
-			}
-		}
+	count := 0
+	currentIterationDate := startDate
 
-		currentDate := startDate
-		count := 0
-		for !currentDate.After(endDate) && count < maxWeeks {
-			weeks = append(weeks, GetFormattedWeek(currentDate))
-			currentDate = currentDate.AddDate(0, 0, 7)
-			count++
-		}
-	} else if endWeek != "" {
-		endDate, _, err := ParseYearWeek(endWeek)
-		if err != nil {
-			return nil, fmt.Errorf("invalid end week: %w", err)
-		}
-
-		startDate := endDate.AddDate(0, 0, (-maxWeeks+1)*7)
-		currentDate := startDate
-		count := 0
-		for !currentDate.After(endDate) && GetFormattedWeek(currentDate) <= currentWeek && count < maxWeeks {
-			weeks = append(weeks, GetFormattedWeek(currentDate))
-			currentDate = currentDate.AddDate(0, 0, 7)
-			count++
-		}
+	for count < maxWeeks && GetFormattedWeek(currentIterationDate) <= currentWeek {
+		weeks = append(weeks, GetFormattedWeek(currentIterationDate))
+		currentIterationDate = currentIterationDate.AddDate(0, 0, 7)
+		count++
 	}
 
 	return weeks, nil
