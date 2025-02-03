@@ -94,6 +94,32 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
 }
 
+func GetWeeksBetween(startWeek, endWeek string) ([]string, error) {
+	startDate, _, err := ParseYearWeek(startWeek)
+	if err != nil {
+		return nil, fmt.Errorf("invalid start week: %w", err)
+	}
+
+	endDate, _, err := ParseYearWeek(endWeek)
+	if err != nil {
+		return nil, fmt.Errorf("invalid end week: %w", err)
+	}
+
+	if startDate.After(endDate) {
+		return nil, fmt.Errorf("start week cannot be after end week")
+	}
+
+	var weeks []string
+	currentDate := startDate
+
+	for !currentDate.After(endDate) {
+		weeks = append(weeks, GetFormattedWeek(currentDate))
+		currentDate = currentDate.AddDate(0, 0, 7) // Move to next week
+	}
+
+	return weeks, nil
+}
+
 func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	parts := strings.Split(yw, "-W")
 	if len(parts) != 2 {

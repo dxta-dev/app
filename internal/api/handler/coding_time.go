@@ -19,7 +19,13 @@ func CodingTimeHandler(c echo.Context) error {
 		return err
 	}
 
-	weeks := util.GetLastNWeeks(time.Now(), 3*4)
+	startWeek := c.QueryParam("startWeek")
+	endWeek := c.QueryParam("endWeek")
+
+	weeks, err := util.GetWeeksBetween(startWeek, endWeek)
+	if err != nil {
+		weeks = util.GetLastNWeeks(time.Now(), 3*4)
+	}
 
 	query := data.BuildCodingTimeQuery(weeks, apiState.TeamId)
 
