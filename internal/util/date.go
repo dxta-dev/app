@@ -94,12 +94,13 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
 }
 
-func GetWeeksBetween(startWeek, endWeek string) ([]string, error) {
+func GetWeeksRange(startWeek, endWeek string) ([]string, error) {
 	var weeks []string
 	currentWeek := GetFormattedWeek(time.Now())
 
 	if startWeek == "" && endWeek == "" {
-		return nil, fmt.Errorf("either startWeek or endWeek must be provided")
+		weeks = GetLastNWeeks(time.Now(), 3*4)
+		return weeks, nil
 	}
 
 	maxWeeks := 12

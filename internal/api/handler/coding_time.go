@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/dxta-dev/app/internal/api"
 	"github.com/dxta-dev/app/internal/api/data"
@@ -22,9 +21,9 @@ func CodingTimeHandler(c echo.Context) error {
 	startWeek := c.QueryParam("startWeek")
 	endWeek := c.QueryParam("endWeek")
 
-	weeks, err := util.GetWeeksBetween(startWeek, endWeek)
+	weeks, err := util.GetWeeksRange(startWeek, endWeek)
 	if err != nil {
-		weeks = util.GetLastNWeeks(time.Now(), 3*4)
+		return err
 	}
 
 	query := data.BuildCodingTimeQuery(weeks, apiState.TeamId)
