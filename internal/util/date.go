@@ -95,26 +95,50 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 }
 
 func GetWeeksBetween(startWeek, endWeek string) ([]string, error) {
-	startDate, _, err := ParseYearWeek(startWeek)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start week: %w", err)
-	}
-
-	endDate, _, err := ParseYearWeek(endWeek)
-	if err != nil {
-		return nil, fmt.Errorf("invalid end week: %w", err)
-	}
-
-	if startDate.After(endDate) {
-		return nil, fmt.Errorf("start week cannot be after end week")
-	}
-
 	var weeks []string
-	currentDate := startDate
+	currentWeek := GetFormattedWeek(time.Now())
 
-	for !currentDate.After(endDate) {
-		weeks = append(weeks, GetFormattedWeek(currentDate))
-		currentDate = currentDate.AddDate(0, 0, 7) // Move to next week
+	if startWeek == "" && endWeek == "" {
+		return nil, fmt.Errorf("either startWeek or endWeek must be provided")
+	}
+
+	maxWeeks := 12
+
+	if startWeek != "" {
+		startDate, _, err := ParseYearWeek(startWeek)
+		if err != nil {
+			return nil, fmt.Errorf("invalid start week: %w", err)
+		}
+
+		endDate := time.Now()
+		if endWeek != "" {
+			endDate, _, err = ParseYearWeek(endWeek)
+			if err != nil {
+				return nil, fmt.Errorf("invalid end week: %w", err)
+			}
+		}
+
+		currentDate := startDate
+		count := 0
+		for !currentDate.After(endDate) && count < maxWeeks {
+			weeks = append(weeks, GetFormattedWeek(currentDate))
+			currentDate = currentDate.AddDate(0, 0, 7)
+			count++
+		}
+	} else if endWeek != "" {
+		endDate, _, err := ParseYearWeek(endWeek)
+		if err != nil {
+			return nil, fmt.Errorf("invalid end week: %w", err)
+		}
+
+		startDate := endDate.AddDate(0, 0, (-maxWeeks+1)*7)
+		currentDate := startDate
+		count := 0
+		for !currentDate.After(endDate) && GetFormattedWeek(currentDate) <= currentWeek && count < maxWeeks {
+			weeks = append(weeks, GetFormattedWeek(currentDate))
+			currentDate = currentDate.AddDate(0, 0, 7)
+			count++
+		}
 	}
 
 	return weeks, nil
