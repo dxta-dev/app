@@ -2,6 +2,7 @@ package util
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -168,4 +169,60 @@ func ParseYearWeek(yw string) (time.Time, time.Time, error) {
 	}
 
 	return startOfWeek, endOfWeek, nil
+}
+
+type ISOWeek struct {
+	Year int
+	Week int
+}
+
+func ParseISOWeek(iso string) (ISOWeek, error) {
+	parts := strings.Split(iso, "-W")
+	if len(parts) != 2 {
+		return ISOWeek{}, fmt.Errorf("")
+	}
+
+	year, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return ISOWeek{}, err
+	}
+
+	week, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return ISOWeek{}, err
+	}
+
+	if week < 1 || week > 53 {
+		return ISOWeek{}, fmt.Errorf("")
+	}
+
+	return ISOWeek{Year: year, Week: week}, nil
+}
+
+func SortISOWeeks(isoWeeks []string) []string {
+	var sortedWeeks []string
+	var parsedWeeks []ISOWeek
+	mapping := make(map[ISOWeek]string)
+
+	for _, iso := range isoWeeks {
+		parsed, err := ParseISOWeek(iso)
+		if err != nil {
+			continue
+		}
+		parsedWeeks = append(parsedWeeks, parsed)
+		mapping[parsed] = iso
+	}
+
+	sort.Slice(parsedWeeks, func(i, j int) bool {
+		if parsedWeeks[i].Year == parsedWeeks[j].Year {
+			return parsedWeeks[i].Week < parsedWeeks[j].Week
+		}
+		return parsedWeeks[i].Year < parsedWeeks[j].Year
+	})
+
+	for _, week := range parsedWeeks {
+		sortedWeeks = append(sortedWeeks, mapping[week])
+	}
+
+	return sortedWeeks
 }
