@@ -1,6 +1,7 @@
 package util
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -218,6 +219,35 @@ func TestParseYearWeek(t *testing.T) {
 	}
 }
 
+func TestGetLastNWeeks(t *testing.T) {
+	t.Run("current date", func(t *testing.T) {
+		n := 4
+		weeks := GetLastNWeeks(time.Now(), n)
+		if len(weeks) != n {
+			t.Errorf("Expected %d weeks, got %d", n, len(weeks))
+		}
+	})
+
+	t.Run("specific date", func(t *testing.T) {
+		date := time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC) // A known date
+		n := 2
+		expectedWeeks := []string{"2022-W52", "2023-W01"}
+		weeks := GetLastNWeeks(date, n)
+		for i, week := range weeks {
+			if week != expectedWeeks[i] {
+				t.Errorf("Expected %s, got %s", expectedWeeks[i], week)
+			}
+		}
+	})
+
+	t.Run("n is zero", func(t *testing.T) {
+		weeks := GetLastNWeeks(time.Now(), 0)
+		if len(weeks) != 0 {
+			t.Errorf("Expected 0 weeks, got %d", len(weeks))
+		}
+	})
+}
+
 func TestParseISOWeek(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -266,31 +296,41 @@ func TestParseISOWeek(t *testing.T) {
 	}
 }
 
-func TestGetLastNWeeks(t *testing.T) {
-	t.Run("current date", func(t *testing.T) {
-		n := 4
-		weeks := GetLastNWeeks(time.Now(), n)
-		if len(weeks) != n {
-			t.Errorf("Expected %d weeks, got %d", n, len(weeks))
-		}
-	})
+func TestSortISOWeeks(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    []string
+		expected []string
+	}{
+		{
+			name:     "sort by years",
+			input:    []string{"2024-W33", "2021-W33", "2025-W33"},
+			expected: []string{"2021-W33", "2024-W33", "2025-W33"},
+		},
+		{
+			name:     "sort by weeks",
+			input:    []string{"2024-W33", "2024-W01", "2024-W20"},
+			expected: []string{"2024-W01", "2024-W20", "2024-W33"},
+		},
+		{
+			name:     "sort by years and weeks",
+			input:    []string{"2024-W33", "2024-W01", "2024-W20", "2024-W33", "2021-W33", "2025-W33"},
+			expected: []string{"2021-W33", "2024-W01", "2024-W20", "2024-W33", "2024-W33", "2025-W33"},
+		},
+		{
+			name:     "invalid input",
+			input:    []string{"2024W33", "2024-W01", "200", "2024-W33", "2021-W33", "2025-W33"},
+			expected: []string{"2021-W33", "2024-W01", "2024-W33", "2025-W33"},
+		},
+	}
 
-	t.Run("specific date", func(t *testing.T) {
-		date := time.Date(2023, 1, 15, 0, 0, 0, 0, time.UTC) // A known date
-		n := 2
-		expectedWeeks := []string{"2022-W52", "2023-W01"}
-		weeks := GetLastNWeeks(date, n)
-		for i, week := range weeks {
-			if week != expectedWeeks[i] {
-				t.Errorf("Expected %s, got %s", expectedWeeks[i], week)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := SortISOWeeks(tt.input)
+			fmt.Println(got)
+			if !reflect.DeepEqual(tt.expected, got) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
 			}
-		}
-	})
-
-	t.Run("n is zero", func(t *testing.T) {
-		weeks := GetLastNWeeks(time.Now(), 0)
-		if len(weeks) != 0 {
-			t.Errorf("Expected 0 weeks, got %d", len(weeks))
-		}
-	})
+		})
+	}
 }
