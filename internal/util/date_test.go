@@ -218,6 +218,54 @@ func TestParseYearWeek(t *testing.T) {
 	}
 }
 
+func TestParseISOWeek(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected ISOWeek
+	}{
+		{
+			name:     "valid ISO week",
+			input:    "2024-W25",
+			expected: ISOWeek{Year: 2024, Week: 25},
+		},
+		{
+			name:     "out of range ISO week",
+			input:    "2024-W54",
+			expected: ISOWeek{},
+		},
+		{
+			name:     "invalid input",
+			input:    "string",
+			expected: ISOWeek{},
+		},
+		{
+			name:     "more than 2 parts parsed",
+			input:    "2024-W01-W01",
+			expected: ISOWeek{},
+		},
+		{
+			name:     "wrong format of input",
+			input:    "-W-2024",
+			expected: ISOWeek{},
+		},
+		{
+			name:     "valid leap week",
+			input:    "2020-W53",
+			expected: ISOWeek{Year: 2020, Week: 53},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, _ := ParseISOWeek(tt.input)
+			if !reflect.DeepEqual(tt.expected, got) {
+				t.Errorf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}
+
 func TestGetLastNWeeks(t *testing.T) {
 	t.Run("current date", func(t *testing.T) {
 		n := 4
