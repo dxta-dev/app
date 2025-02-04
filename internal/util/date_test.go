@@ -1,7 +1,6 @@
 package util
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 	"time"
@@ -327,7 +326,6 @@ func TestSortISOWeeks(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := SortISOWeeks(tt.input)
-			fmt.Println(got)
 			if !reflect.DeepEqual(tt.expected, got) {
 				t.Errorf("expected %v, got %v", tt.expected, got)
 			}
