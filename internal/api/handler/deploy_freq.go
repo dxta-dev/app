@@ -2,7 +2,6 @@ package handler
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/dxta-dev/app/internal/api"
 	"github.com/dxta-dev/app/internal/api/data"
@@ -19,11 +18,15 @@ func DeployFrequencyHandler(c echo.Context) error {
 		return err
 	}
 
-	weeks := util.GetLastNWeeks(time.Now(), 3*4)
+	weekParam := c.QueryParam("weeks")
 
-	query := data.BuildDeployFrequencyQuery(weeks)
+	weeksArray := util.GetWeeksArray(weekParam)
 
-	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeks, nil)
+	weeksSorted := util.SortISOWeeks(weeksArray)
+
+	query := data.BuildDeployFrequencyQuery(weeksSorted)
+
+	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeksSorted, nil)
 
 	if err != nil {
 		return err
