@@ -18,16 +18,15 @@ func CodingTimeHandler(c echo.Context) error {
 		return err
 	}
 
-	startWeek := c.QueryParam("startWeek")
+	weekParam := c.QueryParam("weeks")
 
-	weeks, err := util.GetWeeksRange(startWeek)
-	if err != nil {
-		return err
-	}
+	weeksArray := util.GetWeeksArray(weekParam)
 
-	query := data.BuildCodingTimeQuery(weeks, apiState.TeamId)
+	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeks, apiState.TeamId)
+	query := data.BuildCodingTimeQuery(weeksSorted, apiState.TeamId)
+
+	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
 
 	if err != nil {
 		return err

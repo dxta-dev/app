@@ -95,35 +95,11 @@ func GetStartEndWeekDates(yearWeek string) (string, error) {
 	return fmt.Sprintf("%s - %s", firstDateStr, lastDateStr), nil
 }
 
-func GetWeeksRange(startWeek string) ([]string, error) {
-	var weeks []string
-	currentWeek := GetFormattedWeek(time.Now())
-
-	if startWeek == "" {
-		weeks = GetLastNWeeks(time.Now(), 3*4)
-		return weeks, nil
+func GetWeeksArray(weekStr string) []string {
+	if weekStr == "" {
+		return GetLastNWeeks(time.Now(), 3*4)
 	}
-
-	startDate, _, err := ParseYearWeek(startWeek)
-	if err != nil {
-		return nil, fmt.Errorf("invalid start week: %w", err)
-	}
-	maxWeeks := 12
-
-	if GetFormattedWeek(startDate.AddDate(0, 0, maxWeeks*7)) > currentWeek {
-		return nil, fmt.Errorf("data insuficient for provided start week: %s, minimum data is: %d weeks", startWeek, maxWeeks)
-	}
-
-	count := 0
-	currentIterationDate := startDate
-
-	for count < maxWeeks && GetFormattedWeek(currentIterationDate) <= currentWeek {
-		weeks = append(weeks, GetFormattedWeek(currentIterationDate))
-		currentIterationDate = currentIterationDate.AddDate(0, 0, 7)
-		count++
-	}
-
-	return weeks, nil
+	return strings.Split(weekStr, ",")
 }
 
 func ParseYearWeek(yw string) (time.Time, time.Time, error) {
