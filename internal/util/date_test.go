@@ -283,6 +283,11 @@ func TestParseISOWeek(t *testing.T) {
 			input:    "2020-W53",
 			expected: ISOWeek{Year: 2020, Week: 53},
 		},
+		{
+			name:     "invalid leap week",
+			input:    "2019-W53",
+			expected: ISOWeek{},
+		},
 	}
 
 	for _, tt := range tests {
@@ -320,6 +325,11 @@ func TestSortISOWeeks(t *testing.T) {
 			name:     "invalid input",
 			input:    []string{"2024W33", "2024-W01", "200", "2024-W33", "2021-W33", "2025-W33"},
 			expected: []string{"2021-W33", "2024-W01", "2024-W33", "2025-W33"},
+		},
+		{
+			name:     "valid leap weeks",
+			input:    []string{"2020-W53", "2021-W53", "2022-W53", "2023-W53", "2024-W53", "2025-W53", "2026-W53", "2027-W53", "2028-W53", "2029-W53", "2030-W53", "2031-W53", "2032-W53"},
+			expected: []string{"2020-W53", "2026-W53", "2032-W53"},
 		},
 	}
 
