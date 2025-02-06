@@ -152,6 +152,19 @@ type ISOWeek struct {
 	Week int
 }
 
+func dowDec31OfYear(y int) int {
+	return (y + (y / 4) - (y / 100) + (y / 400)) % 7
+}
+
+func isoWeeksInYear(year int) int {
+	// If current year ends on Thursday or Previous ends on Wednesday
+	if dowDec31OfYear(year) == 4 || dowDec31OfYear(year-1) == 3 {
+		return 53
+	}
+
+	return 52
+}
+
 func ParseISOWeek(iso string) (ISOWeek, error) {
 	parts := strings.Split(iso, "-W")
 	if len(parts) != 2 {
@@ -168,7 +181,7 @@ func ParseISOWeek(iso string) (ISOWeek, error) {
 		return ISOWeek{}, err
 	}
 
-	if week < 1 || week > 53 {
+	if week < 1 || week > isoWeeksInYear(year) {
 		return ISOWeek{}, fmt.Errorf("")
 	}
 
