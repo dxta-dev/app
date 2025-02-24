@@ -1,4 +1,4 @@
-FROM oven/bun:1.1.29-debian@sha256:17bf28975c844016547afadb67843f65bdb619f8e581198c42b586e6403456ee AS bun
+FROM oven/bun:1.2.3-debian@sha256:37d8fde61feed19d1ab562e8f0e5ea815f319a3157fba462499c498d00f6ebdc AS bun
 
 WORKDIR /app
 
