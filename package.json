@@ -3,7 +3,7 @@
     "bun-types": "latest"
   },
   "dependencies": {
-    "tailwindcss": "^3.3.6"
+    "tailwindcss": "^4.0.9"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
