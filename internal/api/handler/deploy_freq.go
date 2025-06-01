@@ -26,7 +26,14 @@ func DeployFrequencyHandler(c echo.Context) error {
 
 	query := data.BuildDeployFrequencyQuery(weeksSorted)
 
-	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeksSorted, nil)
+	result, err := apiState.DB.GetAggregatedValues(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		nil,
+	)
 
 	if err != nil {
 		return err

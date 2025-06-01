@@ -3,10 +3,11 @@ package data
 import (
 	"context"
 	"database/sql"
-	"github.com/dxta-dev/app/internal/otel"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/dxta-dev/app/internal/otel"
 )
 
 type DB struct {
