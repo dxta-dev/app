@@ -16,3 +16,4 @@ formatters:
     - gofmt
     - goimports
     - golines
+

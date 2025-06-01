@@ -46,7 +46,10 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 		}
 
 		if tenant.DatabaseUrl == nil {
-			return nil, fmt.Errorf("utils: config needs to define either \"[tenants.%s].database_url\" or \"tenant_database_url_template\"", key)
+			return nil, fmt.Errorf(
+				"utils: config needs to define either \"[tenants.%s].database_url\" or \"tenant_database_url_template\"",
+				key,
+			)
 		}
 
 		config.Tenants[key] = tenant
@@ -55,12 +58,17 @@ func ValidateConfig(config *TomlConfig) (*Config, error) {
 	configTenantsSize := len(config.Tenants)
 
 	if configTenantsSize == 0 && config.SuperDatabaseUrl == nil {
-		return nil, fmt.Errorf("utils: config needs to define either \"[tenants.*]\" or \"super_database_url\"")
+		return nil, fmt.Errorf(
+			"utils: config needs to define either \"[tenants.*]\" or \"super_database_url\"",
+		)
 	}
 
 	if configTenantsSize > 0 {
 		if config.SuperDatabaseUrl != nil {
-			fmt.Printf("utils: using %d config \"[tenants.*]\", ignoring config \"super_database_url\"\n", configTenantsSize)
+			fmt.Printf(
+				"utils: using %d config \"[tenants.*]\", ignoring config \"super_database_url\"\n",
+				configTenantsSize,
+			)
 		}
 
 		return &Config{

@@ -43,7 +43,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expected: &Config{
@@ -52,7 +57,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expectErr: false,
@@ -63,7 +73,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          &superDatabaseUrl,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expected: &Config{
@@ -72,7 +87,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expectErr: false,
@@ -83,7 +103,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: &dbTemplate,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: nil},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   nil,
+					},
 				},
 			},
 			expected: &Config{
@@ -92,7 +117,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: &dbTemplate,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseName: "one", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "Tenant One",
+						SubdomainName: "one",
+						DatabaseName:  "one",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expectErr: false,
@@ -103,7 +133,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "", SubdomainName: "", DatabaseName: "", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "",
+						SubdomainName: "",
+						DatabaseName:  "",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expected: &Config{
@@ -112,7 +147,12 @@ func TestValidateConfig(t *testing.T) {
 				SuperDatabaseUrl:          nil,
 				TenantDatabaseUrlTemplate: nil,
 				Tenants: map[string]Tenant{
-					"tenant1": {Name: "tenant1", SubdomainName: "tenant1", DatabaseName: "tenant1", DatabaseUrl: &oneDatabaseUrl},
+					"tenant1": {
+						Name:          "tenant1",
+						SubdomainName: "tenant1",
+						DatabaseName:  "tenant1",
+						DatabaseUrl:   &oneDatabaseUrl,
+					},
 				},
 			},
 			expectErr: false,
@@ -171,7 +211,11 @@ super_database_url = "sqlite://super.db"
 		expected := &TomlConfig{
 			SuperDatabaseUrl: &superDatabaseUrl,
 			Tenants: map[string]Tenant{
-				"tenant1": {Name: "Tenant One", SubdomainName: "one", DatabaseUrl: &tenant1DatabaseUrl},
+				"tenant1": {
+					Name:          "Tenant One",
+					SubdomainName: "one",
+					DatabaseUrl:   &tenant1DatabaseUrl,
+				},
 			},
 		}
 
@@ -239,8 +283,12 @@ super_database_url = "sqlite://super.db"
 		expected := &TomlConfig{
 			SuperDatabaseUrl: &superDatabaseUrl,
 			Tenants: map[string]Tenant{
-				"crocoder": {Name: "crocoder", SubdomainName: "crocoder", DatabaseUrl: &crocoderDatabaseUrl},
-				"acme":     {DatabaseUrl: &acmeDatabaseUrl},
+				"crocoder": {
+					Name:          "crocoder",
+					SubdomainName: "crocoder",
+					DatabaseUrl:   &crocoderDatabaseUrl,
+				},
+				"acme": {DatabaseUrl: &acmeDatabaseUrl},
 			},
 		}
 
