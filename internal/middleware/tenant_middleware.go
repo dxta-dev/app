@@ -26,7 +26,10 @@ const TenantDatabaseURLContext tenantContextKey = "tenant_db_url"
 const TenantDatabasesGlobalContext string = "tenant_db_map"
 
 // TODO(scalability?): change from const map fetch to cache per tenant?
-func getTenantToDatabaseURLMap(ctx context.Context, superDatabaseUrl string) (TenantDbUrlMap, error) {
+func getTenantToDatabaseURLMap(
+	ctx context.Context,
+	superDatabaseUrl string,
+) (TenantDbUrlMap, error) {
 	tenantToDatabaseURLMap := make(TenantDbUrlMap)
 
 	db, err := sql.Open(otel.GetDriverName(), superDatabaseUrl)
@@ -66,7 +69,11 @@ func getTenantToDatabaseURLMap(ctx context.Context, superDatabaseUrl string) (Te
 	return tenantToDatabaseURLMap, nil
 }
 
-func getTenantDatabaseURL(ctx context.Context, config *util.Config, tenantKey string) (string, bool, error) {
+func getTenantDatabaseURL(
+	ctx context.Context,
+	config *util.Config,
+	tenantKey string,
+) (string, bool, error) {
 
 	if !config.ShouldUseSuperDatabase {
 		configTenant, configContainsTenant := config.Tenants[tenantKey]
@@ -131,14 +138,21 @@ func TenantMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return next(c)
 		}
 
-		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(ctx, config, subdomain)
+		tenantDatabaseUrl, tenantDatabaseUrlExists, err := getTenantDatabaseURL(
+			ctx,
+			config,
+			subdomain,
+		)
 
 		if err != nil {
 			log.Panicln("Error getting tenant database URL", err)
 		}
 
 		if !tenantDatabaseUrlExists {
-			return c.Redirect(http.StatusTemporaryRedirect, fmt.Sprintf("%s://%s/oss", hostProtocolScheme, strings.Join(parts[1:], ".")))
+			return c.Redirect(
+				http.StatusTemporaryRedirect,
+				fmt.Sprintf("%s://%s/oss", hostProtocolScheme, strings.Join(parts[1:], ".")),
+			)
 		}
 
 		ctx = context.WithValue(ctx, TenantDatabaseURLContext, tenantDatabaseUrl)
