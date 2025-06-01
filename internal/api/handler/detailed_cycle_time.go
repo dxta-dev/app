@@ -1,32 +1,28 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/api"
 	"github.com/dxta-dev/app/internal/api/data"
 	"github.com/dxta-dev/app/internal/util"
-	"github.com/labstack/echo/v4"
 )
 
-func DetailedCycleTimeHandler(c echo.Context) error {
+func DetailedCycleTimeHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	ctx := c.Request().Context()
-
-	apiState, err := api.NewAPIState(c)
-
+	apiState, err := api.NewAPIState(r)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
-	weekParam := c.QueryParam("weeks")
-
+	weekParam := r.URL.Query().Get("weeks")
 	weeksArray := util.GetWeeksArray(weekParam)
-
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
 	query := data.BuildDetailedCycleTimeQuery(weeksSorted, apiState.TeamId)
-
 	cycleTimes, err := apiState.DB.GetDetailedCycleTime(
 		ctx,
 		query,
@@ -35,10 +31,16 @@ func DetailedCycleTimeHandler(c echo.Context) error {
 		weeksSorted,
 		apiState.TeamId,
 	)
-
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return c.JSON(http.StatusOK, cycleTimes)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(cycleTimes); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
+
