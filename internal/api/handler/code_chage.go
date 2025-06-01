@@ -1,43 +1,48 @@
 package handler
 
 import (
-	"net/http"
+    "encoding/json"
+    "net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
-	"github.com/dxta-dev/app/internal/util"
-	"github.com/labstack/echo/v4"
+    "github.com/dxta-dev/app/internal/api"
+    "github.com/dxta-dev/app/internal/api/data"
+    "github.com/dxta-dev/app/internal/util"
 )
 
-func CodeChangeHandler(c echo.Context) error {
-	ctx := c.Request().Context()
+func CodeChangeHandler(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context()
 
-	apiState, err := api.NewAPIState(c)
+    apiState, err := api.NewAPIState(r)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	if err != nil {
-		return err
-	}
+    weekParam := r.URL.Query().Get("weeks")
 
-	weekParam := c.QueryParam("weeks")
+    weeksArray := util.GetWeeksArray(weekParam)
+    weeksSorted := util.SortISOWeeks(weeksArray)
 
-	weeksArray := util.GetWeeksArray(weekParam)
+    query := data.BuildCodeChangeQuery(weeksSorted, apiState.TeamId)
 
-	weeksSorted := util.SortISOWeeks(weeksArray)
+    result, err := apiState.DB.GetAggregatedValues(
+        ctx,
+        query,
+        apiState.Org,
+        apiState.Repo,
+        weeksSorted,
+        apiState.TeamId,
+    )
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	query := data.BuildCodeChangeQuery(weeksSorted, apiState.TeamId)
-
-	result, err := apiState.DB.GetAggregatedValues(
-		ctx,
-		query,
-		apiState.Org,
-		apiState.Repo,
-		weeksSorted,
-		apiState.TeamId,
-	)
-
-	if err != nil {
-		return err
-	}
-
-	return c.JSON(http.StatusOK, result)
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    if err := json.NewEncoder(w).Encode(result); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
+
