@@ -26,7 +26,14 @@ func TimeToMergeHandler(c echo.Context) error {
 
 	query := data.BuildTimeToMergeQuery(weeksSorted, apiState.TeamId)
 
-	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		apiState.TeamId,
+	)
 
 	if err != nil {
 		return err

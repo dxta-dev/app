@@ -161,7 +161,14 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
 	)
 }
 
-func (d DB) GetDetailedCycleTime(ctx context.Context, query string, namespace string, repository string, weeks []string, team *int64) (*AggregatedCycleTimeStatistics, error) {
+func (d DB) GetDetailedCycleTime(
+	ctx context.Context,
+	query string,
+	namespace string,
+	repository string,
+	weeks []string,
+	team *int64,
+) (*AggregatedCycleTimeStatistics, error) {
 	queryParamLength := len(weeks)
 
 	queryParams := make([]interface{}, queryParamLength)

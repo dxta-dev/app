@@ -26,7 +26,14 @@ func SmallMRsHandler(c echo.Context) error {
 
 	query := data.BuildSmallMRsQuery(weeksSorted, apiState.TeamId)
 
-	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedValues(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		apiState.TeamId,
+	)
 
 	if err != nil {
 		return err

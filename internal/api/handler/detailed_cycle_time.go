@@ -27,7 +27,14 @@ func DetailedCycleTimeHandler(c echo.Context) error {
 
 	query := data.BuildDetailedCycleTimeQuery(weeksSorted, apiState.TeamId)
 
-	cycleTimes, err := apiState.DB.GetDetailedCycleTime(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
+	cycleTimes, err := apiState.DB.GetDetailedCycleTime(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		apiState.TeamId,
+	)
 
 	if err != nil {
 		return err

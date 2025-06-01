@@ -20,7 +20,7 @@ func (d DB) GetTeams(ctx context.Context) ([]Team, error) {
 
 	defer rows.Close()
 
-	var teams []Team = make([]Team, 0)
+	var teams = make([]Team, 0)
 	for rows.Next() {
 		var team Team
 

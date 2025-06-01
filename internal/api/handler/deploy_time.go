@@ -26,7 +26,14 @@ func DeployTimeHandler(c echo.Context) error {
 
 	query := data.BuildDeployTimeQuery(weeksSorted, apiState.TeamId)
 
-	result, err := apiState.DB.GetAggregatedStatistics(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		apiState.TeamId,
+	)
 
 	if err != nil {
 		return err

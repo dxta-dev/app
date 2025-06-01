@@ -26,7 +26,14 @@ func MRsOpenedHandler(c echo.Context) error {
 
 	query := data.BuildMRsOpenedQuery(weeksSorted, apiState.TeamId)
 
-	result, err := apiState.DB.GetAggregatedValues(ctx, query, apiState.Org, apiState.Repo, weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedValues(
+		ctx,
+		query,
+		apiState.Org,
+		apiState.Repo,
+		weeksSorted,
+		apiState.TeamId,
+	)
 
 	if err != nil {
 		return err
