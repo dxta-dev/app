@@ -13,6 +13,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 
+	//nolint:staticcheck // ignore deprecation warning for otelecho
 	"go.opentelemetry.io/contrib/instrumentation/github.com/labstack/echo/otelecho"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/contrib/propagators/autoprop"
