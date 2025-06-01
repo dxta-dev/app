@@ -1,10 +1,11 @@
 package assert
 
 import (
-	"github.com/rs/zerolog/log"
 	"reflect"
 	"runtime"
 	"runtime/debug"
+
+	"github.com/rs/zerolog/log"
 )
 
 func Never(message string, fields ...map[string]interface{}) {
