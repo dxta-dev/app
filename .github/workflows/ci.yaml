@@ -54,6 +54,11 @@ jobs:
           echo "---- go list chi/v5 info ----"
           go list -json github.com/go-chi/chi/v5
 
+      - name: List cached chi directories
+        run: |
+          echo "Contents of go/pkg/mod/github.com/go-chi/chi@*:"
+          ls -1 ~/go/pkg/mod/github.com/go-chi/chi@*
+
       - name: Run golangci-lint (module mode)
         env:
           GO111MODULE: "on"
