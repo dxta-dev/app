@@ -38,6 +38,19 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Debug Go environment
+        run: |
+          echo "---- go env ----"
+          go env
+          echo "---- module list ----"
+          go list -m all | grep go-chi/chi
+          echo "---- try building cmd/api ----"
+          go build -v ./cmd/api
+
+
       - name: Install linters & tools
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
