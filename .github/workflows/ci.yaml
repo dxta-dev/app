@@ -38,9 +38,6 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: (Optional) Download dependencies
-        run: go mod download
-
       - name: Install linters & tools
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
@@ -83,9 +80,6 @@ jobs:
             ~/go/pkg/mod
           key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
-      - name: Download dependencies
-        run: go mod download
-
       - name: Dry Build API
         run: go build -o ./tmp/api ./cmd/api/main.go
 
@@ -104,7 +98,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build (and optionally push) Docker image
+      - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
