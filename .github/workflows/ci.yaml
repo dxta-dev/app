@@ -6,102 +6,109 @@ on:
       - main
   pull_request:
 
-permissions: read-all
-
+permissions:
+  contents: read
+  pull-requests: write
 
 env:
   TEST_TAG: user/app:test
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version: 1.22.2
-
   test:
-    needs: []
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
         with:
           go-version: 1.24
 
-      - name: Install golangci-lint
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: (Optional) Download dependencies
+        run: go mod download
+
+      - name: Install linters & tools
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
+          go install golang.org/x/tools/cmd/deadcode@v0.33.0
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Run golangci-lint
-        run: |
-          golangci-lint run --timeout 10m --config ./.golangci.yml ./... --verbose
-
-      - name: Install deadcode
-        run: |
-           go install golang.org/x/tools/cmd/deadcode@v0.33.0
+        run: golangci-lint run --timeout 10m --config ./.golangci.yml ./... --verbose
 
       - name: Run deadcode
         run: deadcode ./...
 
-      - name: Test
-        run: |
-          go test -v ./...
+      - name: Verify modules (optional)
+        run: go mod verify
+
+      - name: Run tests
+        run: go test -v ./...
 
   build:
-    needs: []
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
         with:
           go-version: 1.24
 
+      - name: Cache Go modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+
+      - name: Download dependencies
+        run: go mod download
+
       - name: Dry Build API
-        run: |
-          go build -o ./tmp/api ./cmd/api/main.go
+        run: go build -o ./tmp/api ./cmd/api/main.go
 
   docker:
     needs: [test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Dry Build API
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+      - name: Build (and optionally push) Docker image
+        uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
           file: ./api.dockerfile
+          load: true
           tags: ${{ env.TEST_TAG }}
+
