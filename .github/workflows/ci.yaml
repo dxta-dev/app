@@ -58,6 +58,8 @@ jobs:
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Run golangci-lint
+        env:
+          GO111MODULE: "on"
         run: golangci-lint run --timeout 10m --config ./.golangci.yml ./... --verbose
 
       - name: Run deadcode
