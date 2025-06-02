@@ -43,4 +43,3 @@ func CycleTimeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

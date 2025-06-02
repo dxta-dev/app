@@ -14,9 +14,9 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 
 	apiState, err := api.NewAPIState(r)
 	if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	weekParam := r.URL.Query().Get("weeks")
 
