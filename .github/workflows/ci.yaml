@@ -30,54 +30,20 @@ jobs:
         with:
           go-version: 1.24
 
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+      - name: Verify modules
+        run: go mod verify
 
-      - name: Download Go modules
-        run: go mod download
-
-      - name: Debug Go environment
+      - name: Install linters & tools
         run: |
-          echo "---- go env ----"
-          go env
-          echo "---- module list (filter chi) ----"
-          go list -m all | grep go-chi/chi || echo "no chi in module list"
-          echo "---- show chi directory in $GOPATH -----"
-          ls -ld $GOPATH/pkg/mod/github.com/go-chi/chi@* || echo "chi not in cache"
-          echo "---- go list api.go imports ----"
-          go list -json ./internal/api/api.go | jq '.Imports'
-          echo "---- go list chi/v5 info ----"
-          go list -json github.com/go-chi/chi/v5
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.58.1
+          go install golang.org/x/tools/cmd/deadcode@v0.33.0
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
-      - name: List cached chi directories
-        run: |
-          echo "Contents of go/pkg/mod/github.com/go-chi/chi@*:"
-          ls -1 ~/go/pkg/mod/github.com/go-chi/chi@*
-
-      - name: Run golangci-lint (module mode)
-        env:
-          GO111MODULE: "on"
-        run: |
-          echo "---- golangci-lint GOMOD check ----"
-          go env GOMOD
-          echo "---- golangci-lint run (with modules-download-mode=mod) ----"
-          golangci-lint run \
-            --timeout 10m \
-            --config ./.golangci.yml \
-            --modules-download-mode=mod \
-            ./... \
-            --verbose
+      - name: Run golangci-lint
+        run: golangci-lint run --timeout 10m --config ./.golangci.yml ./... --verbose
 
       - name: Run deadcode
         run: deadcode ./...
-
-      - name: Verify modules (optional)
-        run: go mod verify
 
       - name: Run tests
         run: go test -v ./...
@@ -97,14 +63,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: 1.24
-
-      - name: Cache Go modules
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
 
       - name: Dry Build API
         run: go build -o ./tmp/api ./cmd/api/main.go
