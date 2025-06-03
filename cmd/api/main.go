@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/dxta-dev/app/internal/api/handler"
@@ -90,8 +91,15 @@ func main() {
 	if apiSecret != "" {
 		r.Use(func(next http.Handler) http.Handler {
 			return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-				key := req.Header.Get("Authorization")
-				if key != apiSecret {
+				authHeader := req.Header.Get("Authorization")
+				if !strings.HasPrefix(authHeader, "Bearer ") {
+					w.WriteHeader(http.StatusUnauthorized)
+					w.Write([]byte("Unauthorized"))
+					return
+				}
+
+				token := strings.TrimPrefix(authHeader, "Bearer ")
+				if token != apiSecret {
 					w.WriteHeader(http.StatusUnauthorized)
 					w.Write([]byte("Unauthorized"))
 					return
