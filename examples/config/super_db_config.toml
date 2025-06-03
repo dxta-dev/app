@@ -1,2 +1,0 @@
-super_database_url = "sqlite://super.db"
-tenant_database_url_template = "%s" # %s is super_database.tenants[db_url]

@@ -10,7 +10,14 @@ type AggregatedValues = OverallWeeklyData[Value]
 type WeeklyValueData = WeeklyData[Value]
 type AggregatedValuesQuery = string
 
-func (d DB) GetAggregatedValues(ctx context.Context, query AggregatedValuesQuery, namespace string, repository string, weeks []string, team *int64) (*AggregatedValues, error) {
+func (d DB) GetAggregatedValues(
+	ctx context.Context,
+	query AggregatedValuesQuery,
+	namespace string,
+	repository string,
+	weeks []string,
+	team *int64,
+) (*AggregatedValues, error) {
 	queryParamLength := len(weeks)
 
 	queryParams := make([]interface{}, queryParamLength)

@@ -6,149 +6,83 @@ on:
       - main
   pull_request:
 
-permissions: read-all
-
+permissions:
+  contents: read
+  pull-requests: write
 
 env:
   TEST_TAG: user/app:test
 
 jobs:
-  setup:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
-        with:
-          egress-policy: audit
-
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
-      - name: Setup bun
-        uses: oven-sh/setup-bun@4bc047ad259df6fc24a6c9b0f9a0cb08cf17fbe5 # v2
-        with:
-          bun-version: 1.1.16
-
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
-        with:
-          go-version: 1.22.2
-
-      - name: Setup bun cache
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        id: bun-cache
-        with:
-          path: |
-            ./node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('./bun.lockb') }}
-
-      - name: bun install
-        if: steps.bun-cache.outputs.cache-hit != 'true'
-        run: |
-          bun i
-
-      - name: Setup generate cache
-        uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        id: generate-cache
-        with:
-          path: |
-            ./public/style.css
-            ./internal/web/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
-
-      - name: Generate
-        if: steps.generate-cache.outputs.cache-hit != 'true'
-        run: |
-          mkdir -p bin/
-          go install github.com/a-h/templ/cmd/templ@v0.2.663
-          templ generate
-          ./node_modules/.bin/tailwindcss -i ./style.css -o ./public/style.css
-
   test:
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.22.2
+          go-version: 1.24
 
-      - name: Restore generate cache
-        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: |
-            ./public/style.css
-            ./internal/web/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
+      - name: Verify modules
+        run: go mod verify
 
-      - name: Test
+      - name: Install linters & tools
         run: |
-          go test -v ./...
+          go install golang.org/x/tools/cmd/deadcode@v0.33.0
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Run deadcode
+        run: deadcode ./...
+
+      - name: Run tests
+        run: go test -v ./...
 
   build:
-    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Setup go
-        uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
+      - name: Set up Go 1.24
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.22.2
-
-      - name: Restore generate cache
-        uses: actions/cache/restore@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
-        with:
-          path: |
-            ./public/style.css
-            ./internal/web/template/**/*_templ.go
-          key: ${{ runner.os }}-generate-${{ hashFiles('./internal/**/template/**/*.templ') }}
-
-      - name: Dry Build Web
-        run: |
-          go build -o ./tmp/main ./cmd/web/main.go
+          go-version: 1.24
 
       - name: Dry Build API
-        run: |
-          go build -o ./tmp/api ./cmd/api/main.go
+        run: go build -o ./tmp/api ./cmd/api/main.go
 
   docker:
-    needs: [test, setup, build]
+    needs: [test, build]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Docker buildx
-        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
 
-      - name: Dry Build Web
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
+      - name: Build Docker image
+        uses: docker/build-push-action@v6
         with:
           context: .
-          load: true
-          file: ./Dockerfile
-          tags: ${{ env.TEST_TAG }}
-
-      - name: Dry Build API
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
-        with:
-          context: .
-          load: true
           file: ./api.dockerfile
+          load: true
           tags: ${{ env.TEST_TAG }}
+

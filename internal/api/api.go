@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -11,7 +12,7 @@ import (
 
 	"github.com/dxta-dev/app/internal/api/data"
 	"github.com/dxta-dev/app/internal/otel"
-	"github.com/labstack/echo/v4"
+	"github.com/go-chi/chi/v5"
 
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
@@ -28,12 +29,21 @@ var tenantRepoCache sync.Map
 func getCachedTenantRepo(ctx context.Context, org, repo string) (data.TenantRepo, error) {
 	cacheKey := strings.ToLower(org + "/" + repo)
 
-	if cachedUrl, ok := tenantRepoCache.Load(cacheKey); ok {
-		return cachedUrl.(data.TenantRepo), nil
+	if cached, ok := tenantRepoCache.Load(cacheKey); ok {
+		return cached.(data.TenantRepo), nil
 	}
-	driverName := otel.GetDriverName()
 
-	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
+	driverName := otel.GetDriverName()
+	superURL := os.Getenv("SUPER_DATABASE_URL")
+	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
+	if superURL == "" || devToken == "" {
+		return data.TenantRepo{}, fmt.Errorf("missing SUPER_DATABASE_URL or DXTA_DEV_GROUP_TOKEN")
+	}
+
+	reposDB, err := sql.Open(
+		driverName,
+		superURL+"?authToken="+devToken,
+	)
 	if err != nil {
 		return data.TenantRepo{}, err
 	}
@@ -45,19 +55,16 @@ func getCachedTenantRepo(ctx context.Context, org, repo string) (data.TenantRepo
 	}
 
 	tenantRepoCache.Store(cacheKey, tenantRepo)
-
 	return tenantRepo, nil
 }
 
-func NewAPIState(c echo.Context) (APIState, error) {
+func NewAPIState(r *http.Request) (APIState, error) {
+	ctx := r.Context()
 
-	ctx := c.Request().Context()
-
-	org := c.Param("org")
-	repo := c.Param("repo")
-
+	org := chi.URLParam(r, "org")
+	repo := chi.URLParam(r, "repo")
 	if org == "" || repo == "" {
-		return APIState{}, echo.NewHTTPError(http.StatusBadRequest, "org and repo are required")
+		return APIState{}, fmt.Errorf("org and repo are required path parameters")
 	}
 
 	tenantRepo, err := getCachedTenantRepo(ctx, org, repo)
@@ -66,17 +73,16 @@ func NewAPIState(c echo.Context) (APIState, error) {
 	}
 
 	db, err := data.NewDB(ctx, tenantRepo)
-
 	if err != nil {
 		return APIState{}, err
 	}
 
-	team := c.QueryParam("team")
-
 	var teamInt *int64
-
-	if t, err := strconv.ParseInt(team, 10, 64); err == nil && t > 0 {
-		teamInt = &t
+	teamParam := r.URL.Query().Get("team")
+	if teamParam != "" {
+		if t, err := strconv.ParseInt(teamParam, 10, 64); err == nil && t > 0 {
+			teamInt = &t
+		}
 	}
 
 	return APIState{
@@ -89,11 +95,17 @@ func NewAPIState(c echo.Context) (APIState, error) {
 
 func GetReposDB() (*sql.DB, error) {
 	driverName := otel.GetDriverName()
-
-	reposDB, err := sql.Open(driverName, os.Getenv("SUPER_DATABASE_URL")+"?authToken="+os.Getenv("DXTA_DEV_GROUP_TOKEN"))
+	superURL := os.Getenv("SUPER_DATABASE_URL")
+	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
+	if superURL == "" || devToken == "" {
+		return nil, fmt.Errorf("missing SUPER_DATABASE_URL or DXTA_DEV_GROUP_TOKEN")
+	}
+	reposDB, err := sql.Open(
+		driverName,
+		superURL+"?authToken="+devToken,
+	)
 	if err != nil {
 		return nil, err
 	}
-
 	return reposDB, nil
 }

@@ -1,26 +1,32 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/api"
-	"github.com/labstack/echo/v4"
 )
 
-func TeamsHandler(c echo.Context) error {
-	ctx := c.Request().Context()
+func TeamsHandler(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 
-	apiState, err := api.NewAPIState(c)
-
+	apiState, err := api.NewAPIState(r)
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	teams, err := apiState.DB.GetTeams(ctx)
-
 	if err != nil {
-		return err
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
 
-	return c.JSON(http.StatusOK, teams)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(teams); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
+
