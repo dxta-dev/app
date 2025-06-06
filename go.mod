@@ -3,7 +3,7 @@ module github.com/dxta-dev/app
 go 1.24.2
 
 require (
-	github.com/XSAM/otelsql v0.38.0
+	github.com/XSAM/otelsql v0.39.0
 	github.com/go-chi/chi/v5 v5.2.1
 	github.com/libsql/libsql-client-go v0.0.0-20231212112702-ff51beb13681
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0
