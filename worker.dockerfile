@@ -1,22 +1,30 @@
-FROM golang:1.24-alpine AS builder
-
-RUN apk add --no-cache git ca-certificates
+FROM golang:1.24-bullseye@sha256:f0fe88a509ede4f792cbd42056e939c210a1b2be282cfe89c57a654ef8707cd2 AS build
 
 WORKDIR /app
 
 COPY go.mod go.sum ./
+
 RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /go/bin/worker ./cmd/worker/main.go
+RUN go build \
+  -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
+  -o ./tmp/worker \
+  ./cmd/worker/main.go
 
-FROM alpine:latest
+RUN useradd -u 1001 dxta
 
-RUN apk add --no-cache ca-certificates
+FROM scratch
 
-COPY --from=builder /go/bin/worker /usr/local/bin/worker
+WORKDIR /
 
-RUN chmod +x /usr/local/bin/worker
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-ENTRYPOINT ["/usr/local/bin/worker"]
+COPY --from=build /etc/passwd /etc/passwd
+
+COPY --from=build /app/tmp/worker /worker
+
+USER dxta
+
+CMD ["/worker"]
