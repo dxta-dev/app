@@ -87,7 +87,7 @@ jobs:
           load: true
           tags: ${{ env.TEST_TAG_API }}
 
-  build-worker:
+  build-onboarding-worker:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -103,11 +103,11 @@ jobs:
         with:
           go-version: 1.24
 
-      - name: Dry Build Temporal Worker
-        run: go build -o ./tmp/worker ./cmd/worker/main.go
+      - name: Dry Build Onboarding Worker
+        run: go build -o ./tmp/onboarding-worker ./cmd/onboarding-worker/main.go
 
-  docker-worker:
-    needs: [test, build-worker]
+  docker-onboarding-worker:
+    needs: [test, build-onboarding-worker]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -125,6 +125,6 @@ jobs:
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
-          file: ./worker.dockerfile
+          file: ./onboarding-worker.dockerfile
           load: true
           tags: ${{ env.TEST_TAG_WORKER }}

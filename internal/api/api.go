@@ -14,7 +14,6 @@ import (
 	"github.com/dxta-dev/app/internal/otel"
 	"github.com/go-chi/chi/v5"
 
-	_ "github.com/libsql/libsql-client-go/libsql"
 )
 
 type APIState struct {
