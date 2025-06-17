@@ -1,44 +1,17 @@
 package main
 
 import (
-	"errors"
 	"log"
-	"os"
 
+	"github.com/dxta-dev/app/internal/onboarding"
+	"github.com/dxta-dev/app/internal/onboarding/activity"
+	"github.com/dxta-dev/app/internal/onboarding/workflow"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
 
-type config struct {
-	TemporalHostPort  string
-	TemporalNamespace string
-	TemporalQueueName string
-}
-
-func loadConfig() (*config, error) {
-	var hostport, namespace, taskQueue string
-
-	if hostport = os.Getenv("TEMPORAL_HOSTPORT"); hostport == "" {
-		log.Println("TEMPORAL_HOSTPORT not set; using default")
-	}
-
-	if namespace = os.Getenv("TEMPORAL_NAMESPACE"); namespace != "" {
-		return nil, errors.New("TEMPORAL_NAMESPACE is not defined")
-	}
-
-	if taskQueue = os.Getenv("TEMPORAL_TASK_QUEUE"); taskQueue == "" {
-		return nil, errors.New("TEMPORAL_TASK_QUEUE is not defined")
-	}
-
-	return &config{
-		TemporalHostPort:  hostport,
-		TemporalNamespace: namespace,
-		TemporalQueueName: taskQueue,
-	}, nil
-}
-
 func main() {
-	cfg, err := loadConfig()
+	cfg, err := onboarding.LoadConfig()
 	if err != nil {
 		log.Fatalln("Failed to load configuration:", err)
 	}
@@ -53,6 +26,9 @@ func main() {
 	defer temporalClient.Close()
 
 	w := worker.New(temporalClient, cfg.TemporalQueueName, worker.Options{})
+
+	w.RegisterWorkflow(workflow.CountUsersWorkflow)
+	w.RegisterActivity(activity.CountUsersActivity)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)
