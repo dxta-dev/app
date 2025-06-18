@@ -20,7 +20,7 @@ func LoadConfig() (*Config, error) {
 		log.Println("TEMPORAL_HOSTPORT not set; using default")
 	}
 
-	if namespace = os.Getenv("TEMPORAL_NAMESPACE"); namespace != "" {
+	if namespace = os.Getenv("TEMPORAL_NAMESPACE"); namespace == "" {
 		return nil, errors.New("TEMPORAL_NAMESPACE is not defined")
 	}
 
