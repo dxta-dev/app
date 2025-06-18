@@ -10,8 +10,8 @@ COPY . .
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
-  -o ./tmp/worker \
-  ./cmd/worker/main.go
+  -o ./tmp/onboarding-worker \
+  ./cmd/onboarding-worker/main.go
 
 RUN useradd -u 1001 dxta
 
@@ -23,8 +23,8 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=build /etc/passwd /etc/passwd
 
-COPY --from=build /app/tmp/worker /worker
+COPY --from=build /app/tmp/onboarding-worker /onboarding-worker
 
 USER dxta
 
-CMD ["/worker"]
+CMD ["/onboarding-worker"]
