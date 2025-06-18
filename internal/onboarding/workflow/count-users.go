@@ -1,7 +1,9 @@
 package workflow
 
 import (
-	"log"
+	"context"
+	"fmt"
+	"time"
 
 	"github.com/dxta-dev/app/internal/onboarding/activity"
 	"go.temporal.io/sdk/workflow"
@@ -23,6 +25,17 @@ func CountUsersWorkflow(ctx workflow.Context, dsn string) (int, error) {
 	return count, nil
 }
 
-func ExecuteCountUsersWorkflow(temporalClient client.Client, cfg onboarding.Config) {
-	log.Fatal("Not implemented yet")
+func ExecuteCountUsersWorkflow(ctx context.Context, temporalClient client.Client, cfg onboarding.Config) (int, error) {
+	wr, err := temporalClient.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
+		ID:        fmt.Sprintf("count-users-workflow-%v", time.Now().Format("20060102150405")),
+		TaskQueue: cfg.TemporalQueueName,
+	}, CountUsersWorkflow, cfg.UsersDSN)
+	if err != nil {
+		return 0, err
+	}
+
+	var result int
+	wr.Get(ctx, &result)
+
+	return result, nil
 }
