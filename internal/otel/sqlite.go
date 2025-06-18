@@ -2,6 +2,7 @@ package otel
 
 import (
 	"github.com/XSAM/otelsql"
+	_ "github.com/libsql/libsql-client-go/libsql"
 	semconv "go.opentelemetry.io/otel/semconv/v1.18.0"
 )
 
