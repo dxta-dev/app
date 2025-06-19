@@ -10,8 +10,8 @@ COPY . .
 
 RUN go build \
   -ldflags="-linkmode external -extldflags -static" \
-  -o ./tmp/other-api \
-  ./cmd/other-api/main.go
+  -o ./tmp/platform-api \
+  ./cmd/platform-api/main.go
 
 RUN useradd -u 1001 dxta
 
@@ -23,7 +23,7 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=build /etc/passwd /etc/passwd
 
-COPY --from=build /app/tmp/other-api /other-api
+COPY --from=build /app/tmp/platform-api /platform-api
 
 USER dxta
 
@@ -31,4 +31,4 @@ EXPOSE 80
 
 EXPOSE 443
 
-CMD ["/other-api"]
+CMD ["/platform-api"]

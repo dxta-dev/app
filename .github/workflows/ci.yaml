@@ -12,7 +12,7 @@ permissions:
 
 env:
   TEST_TAG_API: user/api:test
-  TEST_TAG_OTHER_API: user/other-api:test
+  TEST_TAG_PLATFORM_API: user/platform-api:test
   TEST_TAG_WORKER: user/worker:test
 
 jobs:
@@ -88,7 +88,7 @@ jobs:
           load: true
           tags: ${{ env.TEST_TAG_API }}
   
-  build-other-api:
+  build-platform-api:
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -104,11 +104,11 @@ jobs:
         with:
           go-version: 1.24
 
-      - name: Dry Build Other API
-        run: go build -ldflags="-linkmode external -extldflags -static" -o ./tmp/other-api ./cmd/other-api/main.go
+      - name: Dry Build Platform API
+        run: go build -ldflags="-linkmode external -extldflags -static" -o ./tmp/platform-api ./cmd/platform-api/main.go
 
-  docker-other-api:
-    needs: [test, build-other-api]
+  docker-platform-api:
+    needs: [test, build-platform-api]
     runs-on: ubuntu-latest
     steps:
       - name: Harden Runner
@@ -126,9 +126,9 @@ jobs:
         uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6.18.0
         with:
           context: .
-          file: ./other-api.dockerfile
+          file: ./platform-api.dockerfile
           load: true
-          tags: ${{ env.TEST_TAG_OTHER_API }}
+          tags: ${{ env.TEST_TAG_PLATFORM_API }}
 
   build-onboarding-worker:
     runs-on: ubuntu-latest
