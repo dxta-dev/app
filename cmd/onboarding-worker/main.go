@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	"github.com/dxta-dev/app/internal/onboarding"
@@ -24,6 +25,11 @@ func main() {
 		log.Fatalln("Unable to create Temporal client", err)
 	}
 	defer temporalClient.Close()
+
+	err = onboarding.RegisterNamespace(context.Background(), cfg.TemporalHostPort, cfg.TemporalNamespace, 30)
+	if err != nil {
+		log.Fatalln("Failed to register Temporal namespace:", err)
+	}
 
 	w := worker.New(temporalClient, cfg.TemporalQueueName, worker.Options{})
 
