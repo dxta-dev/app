@@ -3,6 +3,10 @@ watch-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c api.air.toml
 
+watch-internal-api:
+	@export $$(cat .env | xargs) && \
+    ./bin/air -c internal-api.air.toml
+
 .ONESHELL:
 setup:
 	@curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s
