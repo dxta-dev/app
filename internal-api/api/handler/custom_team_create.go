@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dxta-dev/app/internal/platform_api"
+	"github.com/dxta-dev/app/internal-api/api"
 	"github.com/go-chi/jwtauth/v5"
 )
 
@@ -34,13 +34,15 @@ func CustomTeamCreate(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if claims["organizationId"] == "" || claims["organizationId"] != organizationId {
+		orgIdFromJWT := claims["organizationId"]
+
+		if orgIdFromJWT == "" || orgIdFromJWT != organizationId {
 			http.Error(w, "Invalid organization id", http.StatusBadRequest)
 			return
 		}
 	}
 
-	apiState, err := platform_api.PlatformApiState(r, organizationId)
+	apiState, err := api.PlatformApiState(r, organizationId)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
