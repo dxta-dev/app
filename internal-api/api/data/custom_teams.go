@@ -6,7 +6,7 @@ type CreateCustomTeamRes struct{ Id string }
 
 func (d TenantDB) CreateCustomTeam(teamName string, organizationId string, ctx context.Context) (*CreateCustomTeamRes, error) {
 	query := `
-		INSERT INTO teams 
+		INSERT INTO custom_teams 
 			(name, organization_id) 
 		VALUES 
 			(?, ?) 

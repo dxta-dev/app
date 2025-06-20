@@ -18,7 +18,7 @@ type Key struct {
 	Kid string `json:"kid"`
 }
 
-type VerificationKeys struct {
+type JWKS struct {
 	Keys []Key `json:"keys"`
 }
 
@@ -53,16 +53,16 @@ func RetrieveJWK() (Key, error) {
 
 	defer resp.Body.Close()
 
-	j := VerificationKeys{}
-	err = json.NewDecoder(resp.Body).Decode(&j)
+	jwks := JWKS{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
 
 	if err != nil {
 		return Key{}, err
 	}
 
-	if len(j.Keys) == 0 {
+	if len(jwks.Keys) == 0 {
 		return Key{}, fmt.Errorf("no keys found in JWKS")
 	}
 
-	return j.Keys[0], nil
+	return jwks.Keys[0], nil
 }
