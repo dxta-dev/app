@@ -3,9 +3,9 @@ watch-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c api.air.toml
 
-watch-platform-api:
+watch-internal-api:
 	@export $$(cat .env | xargs) && \
-    ./bin/air -c platform-api.air.toml
+    ./bin/air -c internal-api.air.toml
 
 .ONESHELL:
 setup:

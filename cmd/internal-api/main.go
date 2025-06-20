@@ -54,7 +54,7 @@ func main() {
 		res, err := sdkresource.New(
 			context.Background(),
 			sdkresource.WithAttributes(
-				semconv.ServiceName("dxta-platform-api"),
+				semconv.ServiceName("dxta-internal-api"),
 			),
 		)
 		if err != nil {
