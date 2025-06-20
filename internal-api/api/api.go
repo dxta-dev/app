@@ -1,12 +1,12 @@
-package platform_api
+package api
 
 import (
 	"database/sql"
 	"net/http"
 	"os"
 
+	"github.com/dxta-dev/app/internal-api/api/data"
 	"github.com/dxta-dev/app/internal/otel"
-	"github.com/dxta-dev/app/internal/platform_api/data"
 )
 
 type State struct {
