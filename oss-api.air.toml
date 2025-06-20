@@ -4,8 +4,8 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "./tmp/api"
-  cmd = "go build -ldflags \"-X 'main.DEBUG=true'\" -o ./tmp/api ./cmd/api/main.go"
+  bin = "./tmp/oss-api"
+  cmd = "go build -ldflags \"-X 'main.DEBUG=true'\" -o ./tmp/oss-api ./cmd/oss-api/main.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []
@@ -17,7 +17,7 @@ tmp_dir = "tmp"
   include_ext = ["go"]
   include_file = []
   kill_delay = "0s"
-  log = "build-errors-api.log"
+  log = "build-errors-oss-api.log"
   poll = false
   poll_interval = 0
   post_cmd = []

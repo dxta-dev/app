@@ -1,7 +1,7 @@
-.PHONY: watch-api
-watch-api:
+.PHONY: watch-oss-api
+watch-oss-api:
 	@export $$(cat .env | xargs) && \
-    ./bin/air -c api.air.toml
+    ./bin/air -c oss-api.air.toml
 
 watch-internal-api:
 	@export $$(cat .env | xargs) && \
