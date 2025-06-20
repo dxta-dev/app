@@ -2,6 +2,7 @@ package data
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	"github.com/dxta-dev/app/internal/otel"
@@ -21,6 +22,7 @@ func NewTenantDB(dbUrl string) (TenantDB, error) {
 	)
 
 	if err != nil {
+		fmt.Printf("Issue while opening tenant database connection. DBUrl: %s Error: %s", dbUrl, err.Error())
 		return TenantDB{}, err
 	}
 

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -30,6 +31,7 @@ func getTenantDBUrl(ctx context.Context, organizationId string) (TenantDBData, e
 	)
 
 	if err != nil {
+		fmt.Printf("Issue while opening organizations-tenant-map database connection. Error: %s", err.Error())
 		return TenantDBData{}, err
 	}
 
@@ -38,7 +40,8 @@ func getTenantDBUrl(ctx context.Context, organizationId string) (TenantDBData, e
 	query := `
 		SELECT db_url 
 		FROM tenants 
-		WHERE organization_id = ?`
+		WHERE organization_id = ?;`
+
 	row := tenantOrganizationMapDB.QueryRowContext(ctx, query, organizationId)
 
 	var tenantData TenantDBData
@@ -46,13 +49,14 @@ func getTenantDBUrl(ctx context.Context, organizationId string) (TenantDBData, e
 	err = row.Scan(&tenantData.dbUrl)
 
 	if err != nil {
+		fmt.Printf("Could not retrieve tenant db url. Error: %s", err.Error())
 		return TenantDBData{}, err
 	}
 
 	return tenantData, nil
 }
 
-func PlatformApiState(r *http.Request, organizationId string) (State, error) {
+func InternalApiState(r *http.Request, organizationId string) (State, error) {
 	ctx := r.Context()
 	tenantData, err := getTenantDBUrl(ctx, organizationId)
 
