@@ -23,6 +23,11 @@ func CustomTeamCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if body.OrganizationId == "" || body.TeamName == "" {
+		http.Error(w, "Bad request", http.StatusBadRequest)
+		return
+	}
+
 	enableJWTAuth := os.Getenv("ENABLE_JWT_AUTH")
 	organizationId := body.OrganizationId
 

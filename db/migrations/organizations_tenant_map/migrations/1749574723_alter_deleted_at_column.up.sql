@@ -1,0 +1,1 @@
+ALTER TABLE tenants ALTER COLUMN deleted_at TO deleted_at DATETIME DEFAULT NULL;
