@@ -1,2 +1,0 @@
-ALTER TABLE teams ADD external_id INTEGER DEFAULT 0;
-ALTER TABLE team_members ADD email TEXT DEFAULT NULL;
