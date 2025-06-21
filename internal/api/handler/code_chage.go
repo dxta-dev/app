@@ -41,8 +41,8 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	markdown, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"abc",
-		"def",
+		"Code Change Metrics",
+		"implement this",
 		result,
 	)
 	if err != nil {
@@ -50,7 +50,7 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "text/markdown")
+	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
 	if _, err := w.Write([]byte(markdown)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
