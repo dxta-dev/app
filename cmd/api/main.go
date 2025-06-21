@@ -136,6 +136,7 @@ func main() {
 	r.Get("/repos", handler.ReposHandler)
 	r.Get("/teams/{org}/{repo}", handler.TeamsHandler)
 	r.Get("/code-change/{org}/{repo}", handler.CodeChangeHandler)
+	r.Get("/code-change/{org}/{repo}/md", handler.CodeChangeMarkdownHandler)
 	r.Get("/coding-time/{org}/{repo}", handler.CodingTimeHandler)
 	r.Get("/commits/{org}/{repo}", handler.CommitsHandler)
 	r.Get("/cycle-time/{org}/{repo}", handler.CycleTimeHandler)

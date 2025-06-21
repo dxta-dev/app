@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 

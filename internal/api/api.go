@@ -10,10 +10,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/dxta-dev/app/internal/api/data"
+	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/otel"
 	"github.com/go-chi/chi/v5"
-
 )
 
 type APIState struct {

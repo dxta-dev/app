@@ -20,7 +20,7 @@ func (d DB) GetAggregatedStatistics(
 ) (*AggregatedStatistics, error) {
 	queryParamLength := len(weeks)
 
-	queryParams := make([]interface{}, queryParamLength)
+	queryParams := make([]any, queryParamLength)
 	for i, v := range weeks {
 		queryParams[i] = v
 	}
