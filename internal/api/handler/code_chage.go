@@ -39,7 +39,7 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	markdown, err := markdown.GetAggregatedValuesMarkdown(
+	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
 		"Code Change Metrics",
 		`The Code Change engineering metric quantifies the team’s weekly development activity by measuring the total number of lines of code added, modified, or deleted across our repositories.
@@ -59,7 +59,7 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(markdown)); err != nil {
+	if _, err := w.Write([]byte(m)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

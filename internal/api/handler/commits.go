@@ -39,7 +39,7 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	markdown, err := markdown.GetAggregatedValuesMarkdown(
+	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
 		"Commits Metrics",
 		``,
@@ -52,7 +52,7 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte(markdown)); err != nil {
+	if _, err := w.Write([]byte(m)); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}

@@ -15,15 +15,19 @@ var aggregatedValuesTmplText = `# {{ .Title }}
 {{ .Description }}
 
 ## Data
+{{ $m := toMap .Values.Weekly }}
+{{ if $m }}
 In the table below, you’ll see weekly totals from **{{ (index .Values.Weekly 0).Week }}** through **{{ (index .Values.Weekly (sub (len .Values.Weekly) 1)).Week }}**, summing to **{{ .Values.Overall.Value }}** lines changed.
 
-{{ $m := toMap .Values.Weekly }}
 | Week            | Value |
 |-----------------|-------|
 {{- range $week, $val := $m }}
 | {{ $week }} | {{ $val }} |
 {{- end }}
 | **Total** | **{{ .Values.Overall.Value }}** |
+{{ else }}
+**No data available**
+{{ end }}
 `
 
 func aggregatedValuesToMap(wd []data.WeeklyData[data.Value]) map[string]int {

@@ -165,6 +165,7 @@ func main() {
 	r.Get("/{org}/{repo}/cycle-time", handler.CycleTimeHandler)
 	r.Get("/{org}/{repo}/detailed-cycle-time", handler.DetailedCycleTimeHandler)
 	r.Get("/{org}/{repo}/deploy-freq", handler.DeployFrequencyHandler)
+	r.Get("/{org}/{repo}/deploy-freq.md", handler.DeployFrequencyMarkdownHandler)
 	r.Get("/{org}/{repo}/deploy-time", handler.DeployTimeHandler)
 	r.Get("/{org}/{repo}/handover", handler.HandoverHandler)
 	r.Get("/{org}/{repo}/merge-freq", handler.MergeFrequencyHandler)
@@ -177,6 +178,7 @@ func main() {
 	r.Get("/{org}/{repo}/review-time", handler.ReviewTimeHandler)
 	r.Get("/{org}/{repo}/time-to-merge", handler.TimeToMergeHandler)
 	r.Get("/{org}/{repo}/small-mrs", handler.SmallMRsHandler)
+	r.Get("/{org}/{repo}/small-mrs.md", handler.SmallMRsMarkdownHandler)
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)
