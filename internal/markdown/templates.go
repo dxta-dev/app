@@ -54,7 +54,12 @@ func GetAggregatedValuesMarkdown(
 ) (string, error) {
 	tmpl, err := template.
 		New("agg").
-		Funcs(template.FuncMap{"toMap": aggregatedValuesToMap, "sub": sub}).
+		Funcs(
+			template.FuncMap{
+				"toMap": aggregatedValuesToMap,
+				"sub":   sub,
+			},
+		).
 		Parse(aggregatedValuesTmplText)
 	if err != nil {
 		return "", fmt.Errorf("parsing markdown template: %w", err)
