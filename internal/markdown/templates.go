@@ -9,24 +9,17 @@ import (
 	"github.com/dxta-dev/app/internal/data"
 )
 
-var aggregatedValuesTmplText = `# {{- .Title }}
+var aggregatedValuesTmplText = `# {{ .Title }}
 
 ## Description
+{{ .Description }}
 
-The Code Change engineering metric quantifies the team’s weekly development activity by measuring the total number of lines of code added, modified, or deleted across our repositories.
-
-* **Source**: Computed from commit diffs in our Git version-control system, excluding merge commits and auto-generated files.
-* **Aggregation**: Grouped by ISO week (Monday–Sunday).
-* **Purpose**:
-   * Tracks engineering velocity and throughput over time.
-   * Highlights spikes (e.g., major feature work or refactors) and troughs (e.g., stabilization periods, planning, or holidays).
-   * Helps correlate process changes (code freezes, new tooling) with fluctuations in developer output.
-
+## Data
 In the table below, you’ll see weekly totals from **{{ (index .Values.Weekly 0).Week }}** through **{{ (index .Values.Weekly (sub (len .Values.Weekly) 1)).Week }}**, summing to **{{ .Values.Overall.Value }}** lines changed.
 
+{{ $m := toMap .Values.Weekly }}
 | Week            | Value |
 |-----------------|-------|
-{{ $m := toMap .Values.Weekly }}
 {{- range $week, $val := $m }}
 | {{ $week }} | {{ $val }} |
 {{- end }}
@@ -43,7 +36,9 @@ func aggregatedValuesToMap(wd []data.WeeklyData[data.Value]) map[string]int {
 	return m
 }
 
-func sub(a, b int) int { return a - b }
+func sub(a, b int) int {
+	return a - b
+}
 
 type aggregattedValuesPayload struct {
 	Title       string
