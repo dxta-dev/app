@@ -9,7 +9,7 @@ RUN go mod download
 COPY . .
 
 RUN go build \
-  -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
+  -ldflags="-linkmode external -extldflags -static" \
   -o ./tmp/oss-api \
   ./cmd/oss-api/main.go
 
