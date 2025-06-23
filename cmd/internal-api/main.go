@@ -123,6 +123,7 @@ func main() {
 		}
 
 		// TO-DO Add middleware if we don't authenticate with JWT
+		// https://app.plane.so/crocoder/browse/DXTA-307/
 
 		r.Post("/teams", handler.CreateTeam)
 		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)

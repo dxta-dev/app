@@ -88,12 +88,12 @@ func CreateAuthVerifier(pubKey ed25519.PublicKey) *jwtauth.JWTAuth {
 }
 
 type contextKey struct {
-	name string
+	key string
 }
 
 var (
-	OrganizationIdCtxKey = &contextKey{"organizationId"}
-	ApiStateCtxKey       = &contextKey{"apiState"}
+	OrganizationIdCtxKey = contextKey{"organizationId"}
+	ApiStateCtxKey       = contextKey{"apiState"}
 )
 
 func Authenticator() func(http.Handler) http.Handler {
