@@ -12,7 +12,7 @@ require (
 	go.opentelemetry.io/otel v1.36.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.36.0
 	go.opentelemetry.io/otel/sdk v1.36.0
-	go.temporal.io/api v1.46.0
+	go.temporal.io/api v1.50.0
 	go.temporal.io/sdk v1.34.0
 	google.golang.org/grpc v1.72.1
 	google.golang.org/protobuf v1.36.6
