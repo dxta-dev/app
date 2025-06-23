@@ -41,7 +41,7 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Commits Metrics",
+		"Commits Metric",
 		``,
 		result,
 	)

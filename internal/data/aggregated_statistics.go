@@ -94,12 +94,12 @@ func ScanAggregatedStatisticsRows(rows *sql.Rows, weeks []string) (*AggregatedSt
 			dataPoint = WeeklyStatisticsData{
 				Week: week,
 				Data: Statistics{
-					Average:      nil,
-					Median:       nil,
-					Percentile75: nil,
-					Percentile95: nil,
-					Total:        nil,
-					Count:        nil,
+					Average:      0,
+					Median:       0,
+					Percentile75: 0,
+					Percentile95: 0,
+					Total:        0,
+					Count:        0,
 				},
 			}
 		}
