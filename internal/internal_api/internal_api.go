@@ -1,4 +1,4 @@
-package api
+package internal_api
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dxta-dev/app/internal-api/api/data"
+	"github.com/dxta-dev/app/internal/internal_api/data"
 	"github.com/dxta-dev/app/internal/otel"
 	_ "github.com/libsql/libsql-client-go/libsql"
 )

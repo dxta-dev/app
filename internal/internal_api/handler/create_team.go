@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal-api/api"
-	"github.com/dxta-dev/app/internal-api/util"
+	"github.com/dxta-dev/app/internal/internal_api"
+	"github.com/dxta-dev/app/internal/util"
 )
 
 type CreateTeamRequestBody struct {
@@ -35,7 +35,7 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
+	apiState := ctx.Value(util.ApiStateCtxKey).(internal_api.State)
 
 	newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
 

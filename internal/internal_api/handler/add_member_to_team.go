@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dxta-dev/app/internal-api/api"
-	"github.com/dxta-dev/app/internal-api/util"
+	"github.com/dxta-dev/app/internal/internal_api"
+	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -18,7 +18,7 @@ type AddMemberToTeamResponse struct {
 func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
+	apiState := ctx.Value(util.ApiStateCtxKey).(internal_api.State)
 
 	teamId, err := strconv.ParseInt(chi.URLParam(r, "team_id"), 10, 64)
 	if err != nil {

@@ -9,8 +9,11 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/dxta-dev/app/internal/internal_api/handler"
+	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/jwtauth/v5"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -85,8 +88,6 @@ func main() {
 
 	r.Use(middleware.Compress(5, "gzip"))
 
-	// TODO: add auth middleware
-
 	if isEndpointProvided {
 		r.Use(func(next http.Handler) http.Handler {
 			return otelhttp.NewHandler(next, "dxta-app")
@@ -111,8 +112,23 @@ func main() {
 		srv.IdleTimeout = 30 * time.Second
 	}
 
-	// TODO: add handlers
-	// r.Get("/path/{var}", handler.SomeHandler)
+	r.Route("/tenant", func(r chi.Router) {
+		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
+			pubKey, _ := util.GetRawPublicKey()
+
+			tokenAuth := util.CreateAuthVerifier(pubKey)
+
+			r.Use(jwtauth.Verifier(tokenAuth))
+			r.Use(util.Authenticator())
+		}
+
+		// TO-DO Add middleware if we don't authenticate with JWT
+
+		r.Post("/teams", handler.CreateTeam)
+		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)
+		r.Post("/members", handler.CreateMember)
+	})
+
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`OK`))
 	})
