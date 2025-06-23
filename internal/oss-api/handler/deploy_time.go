@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	api "github.com/dxta-dev/app/internal/oss-api"
+	"github.com/dxta-dev/app/internal/oss-api/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func HandoverHandler(w http.ResponseWriter, r *http.Request) {
+func DeployTimeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,7 +22,7 @@ func HandoverHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildHandoverQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildDeployTimeQuery(weeksSorted, apiState.TeamId)
 	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
@@ -43,4 +43,3 @@ func HandoverHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

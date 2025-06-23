@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	api "github.com/dxta-dev/app/internal/oss-api"
+	"github.com/dxta-dev/app/internal/oss-api/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 

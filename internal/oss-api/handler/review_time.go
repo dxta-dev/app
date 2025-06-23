@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	api "github.com/dxta-dev/app/internal/oss-api"
+	"github.com/dxta-dev/app/internal/oss-api/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func MergeFrequencyHandler(w http.ResponseWriter, r *http.Request) {
+func ReviewTimeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,8 +22,8 @@ func MergeFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildMergeFrequencyQuery(weeksSorted, apiState.TeamId)
-	result, err := apiState.DB.GetAggregatedValues(
+	query := data.BuildReviewTimeQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
 		apiState.Org,
@@ -43,4 +43,3 @@ func MergeFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
