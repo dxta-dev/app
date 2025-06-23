@@ -7,7 +7,6 @@ import (
 
 	"github.com/dxta-dev/app/internal-api/api"
 	"github.com/dxta-dev/app/internal-api/util"
-	"github.com/go-chi/chi/v5"
 )
 
 type CreateMemberRequestBody struct {
@@ -35,14 +34,7 @@ func CreateMember(w http.ResponseWriter, r *http.Request) {
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	organizationId := chi.URLParam(r, "organization_id")
-
-	apiState, err := api.InternalApiState(r, organizationId)
-
-	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-		return
-	}
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	newMemberRes, err := apiState.DB.CreateMember(body.Name, body.Email, ctx)
 

@@ -1,6 +1,7 @@
 package util
 
 import (
+	"context"
 	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
@@ -8,6 +9,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/dxta-dev/app/internal-api/api"
 	"github.com/go-chi/jwtauth/v5"
 )
 
@@ -65,4 +67,70 @@ func RetrieveJWK() (Key, error) {
 	}
 
 	return jwks.Keys[0], nil
+}
+
+type contextKey struct {
+	name string
+}
+
+var (
+	OrganizationIdCtxKey = &contextKey{"organizationId"}
+	ApiStateCtxKey       = &contextKey{"apiState"}
+)
+
+func Authenticator() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		hfn := func(w http.ResponseWriter, r *http.Request) {
+			token, claims, err := jwtauth.FromContext(r.Context())
+
+			if err != nil {
+				fmt.Println("Error extracting token and claims from context")
+				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+				return
+			}
+
+			if token == nil {
+				fmt.Println("No token found in context")
+				JSONError(w, ErrorParam{Error: "Unauthorized"}, http.StatusUnauthorized)
+				return
+			}
+
+			authId := claims["organizationId"].(string)
+
+			if authId == "" {
+				fmt.Println("No organization id found in JWT payload")
+				JSONError(w, ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
+				return
+			}
+
+			ctx := r.Context()
+
+			tenantData, err := api.GetTenantDBUrlByAuthId(ctx, authId)
+
+			if err != nil {
+				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+				return
+			}
+
+			apiState, err := api.InternalApiState(tenantData.DBUrl, r)
+
+			if err != nil {
+				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+				return
+			}
+
+			organizationId, err := apiState.DB.GetOrganizationIdByAuthId(authId, ctx)
+
+			if err != nil {
+				JSONError(w, ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
+				return
+			}
+
+			ctx = context.WithValue(ctx, OrganizationIdCtxKey, organizationId)
+			ctx = context.WithValue(ctx, ApiStateCtxKey, apiState)
+
+			next.ServeHTTP(w, r.WithContext(ctx))
+		}
+		return http.HandlerFunc(hfn)
+	}
 }

@@ -18,7 +18,7 @@ type AddMemberToTeamResponse struct {
 func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	organizationId := chi.URLParam(r, "organization_id")
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	teamId, err := strconv.ParseInt(chi.URLParam(r, "team_id"), 10, 64)
 	if err != nil {
@@ -31,13 +31,6 @@ func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Printf("Issue while parsing member id URL param. Error: %s", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
-		return
-	}
-
-	apiState, err := api.InternalApiState(r, organizationId)
-
-	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
 		return
 	}
 

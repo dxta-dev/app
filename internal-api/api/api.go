@@ -17,10 +17,10 @@ type State struct {
 }
 
 type TenantDBData struct {
-	dbUrl string
+	DBUrl string
 }
 
-func getTenantDBUrl(ctx context.Context, organizationId string) (TenantDBData, error) {
+func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, error) {
 	driverName := otel.GetDriverName()
 	tenantOrganizationMapDBUrl := os.Getenv("TENANT_ORG_MAPPING_URL")
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
@@ -42,29 +42,18 @@ func getTenantDBUrl(ctx context.Context, organizationId string) (TenantDBData, e
 		FROM tenants 
 		WHERE organization_id = ?;`
 
-	row := tenantOrganizationMapDB.QueryRowContext(ctx, query, organizationId)
-
 	var tenantData TenantDBData
 
-	err = row.Scan(&tenantData.dbUrl)
-
-	if err != nil {
-		fmt.Printf("Could not retrieve tenant db url. Error: %s", err.Error())
+	if err = tenantOrganizationMapDB.QueryRowContext(ctx, query, authId).Scan(&tenantData.DBUrl); err != nil {
+		fmt.Printf("Could not retrieve tenant db url for organization with id: %s. Error: %s", authId, err.Error())
 		return TenantDBData{}, err
 	}
 
 	return tenantData, nil
 }
 
-func InternalApiState(r *http.Request, organizationId string) (State, error) {
-	ctx := r.Context()
-	tenantData, err := getTenantDBUrl(ctx, organizationId)
-
-	if err != nil {
-		return State{}, err
-	}
-
-	tenantDB, err := data.NewTenantDB(tenantData.dbUrl)
+func InternalApiState(dbUrl string, r *http.Request) (State, error) {
+	tenantDB, err := data.NewTenantDB(dbUrl)
 
 	if err != nil {
 		return State{}, err

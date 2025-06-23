@@ -7,7 +7,6 @@ import (
 
 	"github.com/dxta-dev/app/internal-api/api"
 	"github.com/dxta-dev/app/internal-api/util"
-	"github.com/go-chi/chi/v5"
 )
 
 type CreateTeamRequestBody struct {
@@ -29,19 +28,14 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	organizationId := chi.URLParam(r, "organization_id")
+	organizationId := ctx.Value(util.OrganizationIdCtxKey).(int64)
 
-	if organizationId == "" || body.TeamName == "" {
-		fmt.Printf("No organization id or team name provided. Organization id: %s Team name: %s", organizationId, body.TeamName)
+	if organizationId == 0 || body.TeamName == "" {
+		fmt.Printf("No organization id or team name provided. Organization id: %d Team name: %s", organizationId, body.TeamName)
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState, err := api.InternalApiState(r, organizationId)
-
-	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-		return
-	}
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
 
