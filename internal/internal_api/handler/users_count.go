@@ -17,24 +17,20 @@ type UsersCountResponse struct {
 	Count int `json:"count"`
 }
 
-func UsersCount(w http.ResponseWriter, r *http.Request) {
-	cfg, err := onboarding.LoadConfig()
-	if err != nil {
-		log.Fatalln("Failed to load configuration:", err)
+type Users struct {
+	temporalClient client.Client
+	config         onboarding.Config
+}
+
+func NewUsers(temporalClient client.Client, config onboarding.Config) *Users {
+	return &Users{
+		temporalClient: temporalClient,
+		config:         config,
 	}
+}
 
-	temporalClient, err := client.Dial(client.Options{
-		HostPort:  cfg.TemporalHostPort,
-		Namespace: cfg.TemporalOnboardingNamespace,
-	})
-	if err != nil {
-		fmt.Printf("Unable to create Temporal client. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-	}
-
-	defer temporalClient.Close()
-
-	out, err := workflow.ExecuteCountUsersWorkflow(r.Context(), temporalClient, *cfg)
+func (u *Users) UsersCount(w http.ResponseWriter, r *http.Request) {
+	out, err := workflow.ExecuteCountUsersWorkflow(r.Context(), u.temporalClient, u.config)
 	if err != nil {
 		log.Fatal(errors.Unwrap(err))
 	}
@@ -43,7 +39,11 @@ func UsersCount(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(UsersCountResponse{Count: out}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Internal Server Error"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }

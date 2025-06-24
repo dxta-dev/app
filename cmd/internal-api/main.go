@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/dxta-dev/app/internal/internal_api/handler"
+	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"go.temporal.io/sdk/client"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -50,6 +52,11 @@ func initTracer(ctx context.Context, res *sdkresource.Resource) (*sdktrace.Trace
 }
 
 func main() {
+	cfg, err := onboarding.LoadConfig()
+	if err != nil {
+		log.Fatalln("Failed to load configuration:", err)
+	}
+
 	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" ||
 		os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
 
@@ -112,6 +119,18 @@ func main() {
 		srv.IdleTimeout = 30 * time.Second
 	}
 
+	temporalClient, err := client.Dial(client.Options{
+		HostPort:  cfg.TemporalHostPort,
+		Namespace: cfg.TemporalOnboardingNamespace,
+	})
+	if err != nil {
+		log.Fatalf("Unable to create Temporal client: %v", err)
+	}
+
+	defer temporalClient.Close()
+
+	usersHandler := handler.NewUsers(temporalClient, *cfg)
+
 	r.Route("/tenant", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
 			pubKey, _ := util.GetRawPublicKey()
@@ -134,7 +153,11 @@ func main() {
 		w.Write([]byte(`OK`))
 	})
 
-	r.Get("/users-count", handler.UsersCount)
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`OK`))
+	})
+
+	r.Get("/users-count", usersHandler.UsersCount)
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)
