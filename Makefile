@@ -8,7 +8,7 @@ watch-internal-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c internal-api.air.toml
 
-.PHONY: onboarding-worker
+.PHONY: watch-onboarding-worker
 watch-onboarding-worker:
 	@export $$(cat .env | xargs) && \
 	./bin/air -c onboarding-worker.air.toml
