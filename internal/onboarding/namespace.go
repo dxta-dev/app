@@ -1,28 +1,24 @@
 package onboarding
 
 import (
-    "context"
-    "fmt"
-    "time"
+	"context"
+	"fmt"
+	"time"
 
-    "google.golang.org/grpc/codes"
-    "google.golang.org/grpc/status"
-    "google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/durationpb"
 
-    "go.temporal.io/api/workflowservice/v1"
-    "go.temporal.io/sdk/client"
+	"go.temporal.io/api/workflowservice/v1"
+	"go.temporal.io/sdk/client"
 )
 
 func RegisterNamespace(ctx context.Context, hostPort, namespace string, retentionDays int) error {
-    nsClient, err := client.NewNamespaceClient(client.Options{HostPort: hostPort})
-    if err != nil {
-        return fmt.Errorf("unable to create namespace client: %w", err)
-    }
-    defer nsClient.Close()
+	nsClient, err := client.NewNamespaceClient(client.Options{HostPort: hostPort})
+	if err != nil {
+		return fmt.Errorf("unable to create namespace client: %w", err)
+	}
+	defer nsClient.Close()
 	if _, err := nsClient.Describe(ctx, namespace); err == nil {
 		return nil
-	} else if s, ok := status.FromError(err); !ok || s.Code() != codes.NotFound {
-		return fmt.Errorf("failed to describe namespace %q: %w", namespace, err)
 	}
 
 	if retentionDays < 1 {
@@ -40,5 +36,5 @@ func RegisterNamespace(ctx context.Context, hostPort, namespace string, retentio
 		return fmt.Errorf("failed to register namespace %q: %w", namespace, err)
 	}
 
-    return nil
+	return nil
 }

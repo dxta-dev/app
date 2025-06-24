@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -10,10 +11,13 @@ import (
 	"time"
 
 	"github.com/dxta-dev/app/internal/internal_api/handler"
+	"github.com/dxta-dev/app/internal/onboarding"
+	"github.com/dxta-dev/app/internal/onboarding/workflow"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"go.temporal.io/sdk/client"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	instrruntime "go.opentelemetry.io/contrib/instrumentation/runtime"
@@ -82,6 +86,20 @@ func main() {
 			"missing OTEL exporter configuration. Provide one of (OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_TRACES_ENDPOINT)"))
 	}
 
+	cfg, err := onboarding.LoadConfig()
+	if err != nil {
+		log.Fatalln("Failed to load configuration:", err)
+	}
+
+	temporalClient, err := client.Dial(client.Options{
+		HostPort:  cfg.TemporalHostPort,
+		Namespace: cfg.TemporalNamespace,
+	})
+	if err != nil {
+		log.Fatalln("Unable to create Temporal client", err)
+	}
+	defer temporalClient.Close()
+
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
@@ -132,6 +150,16 @@ func main() {
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`OK`))
+	})
+
+	r.Get("/users-count", func(w http.ResponseWriter, r *http.Request) {
+		out, err := workflow.ExecuteCountUsersWorkflow(context.Background(), temporalClient, *cfg)
+		if err != nil {
+			log.Fatal(errors.Unwrap(err))
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("{ \"count\": " + fmt.Sprintf("%d", out) + "}"))
 	})
 
 	go func() {

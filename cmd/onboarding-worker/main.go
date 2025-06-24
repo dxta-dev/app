@@ -26,7 +26,12 @@ func main() {
 	}
 	defer temporalClient.Close()
 
-	err = onboarding.RegisterNamespace(context.Background(), cfg.TemporalHostPort, cfg.TemporalNamespace, 30)
+	err = onboarding.RegisterNamespace(
+		context.Background(),
+		cfg.TemporalHostPort,
+		cfg.TemporalNamespace,
+		30,
+	)
 	if err != nil {
 		log.Fatalln("Failed to register Temporal namespace:", err)
 	}
