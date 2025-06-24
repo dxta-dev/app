@@ -13,7 +13,9 @@ import (
 )
 
 func CountUsersWorkflow(ctx workflow.Context, dsn string) (int, error) {
-	ao := workflow.ActivityOptions{}
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Minute * 5,
+	}
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
@@ -25,17 +27,29 @@ func CountUsersWorkflow(ctx workflow.Context, dsn string) (int, error) {
 	return count, nil
 }
 
-func ExecuteCountUsersWorkflow(ctx context.Context, temporalClient client.Client, cfg onboarding.Config) (int, error) {
-	wr, err := temporalClient.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
-		ID:        fmt.Sprintf("count-users-workflow-%v", time.Now().Format("20060102150405")),
-		TaskQueue: cfg.TemporalQueueName,
-	}, CountUsersWorkflow, cfg.UsersDSN)
+func ExecuteCountUsersWorkflow(
+	ctx context.Context,
+	temporalClient client.Client,
+	cfg onboarding.Config,
+) (int, error) {
+	wr, err := temporalClient.ExecuteWorkflow(
+		ctx,
+		client.StartWorkflowOptions{
+			ID:        fmt.Sprintf("count-users-workflow-%v", time.Now().Format("20060102150405")),
+			TaskQueue: cfg.TemporalOnboardingQueueName,
+		},
+		CountUsersWorkflow,
+		cfg.UsersDSN,
+	)
 	if err != nil {
-		return 0, err
+		return 0, fmt.Errorf("failed to start CountUsersWorkflow: %w", err)
 	}
 
 	var result int
-	wr.Get(ctx, &result)
+	err = wr.Get(ctx, &result)
+	if err != nil {
+		return 0, fmt.Errorf("failed to get result from CountUsersWorkflow: %w", err)
+	}
 
 	return result, nil
 }
