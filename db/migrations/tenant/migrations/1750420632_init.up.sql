@@ -1,0 +1,164 @@
+CREATE TABLE "settings" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "tenant_name" TEXT NOT NULL,
+    "tenant_domain" TEXT NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now'))
+);
+
+-- References to DXTA organizations
+CREATE TABLE "organizations" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "name" TEXT NOT NULL,
+    "auth_id" TEXT DEFAULT NULL, -- From Better Auth
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL
+);
+
+-- References to DXTA teams
+CREATE TABLE "teams" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "name" TEXT NOT NULL,
+    "organization_id" INTEGER NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL,
+    FOREIGN KEY ("organization_id") references "organizations" ("id")
+);
+
+CREATE TABLE "members" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT DEFAULT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL
+);
+
+CREATE TABLE "teams__members" (
+    "team_id" INTEGER NOT NULL,
+    "member_id" INTEGER NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY ("team_id", "member_id"),
+    FOREIGN KEY ("team_id") REFERENCES "teams" ("id"), 
+    FOREIGN KEY ("member_id") REFERENCES "members" ("id") 
+);
+
+---------------------------------- Github ----------------------------------
+
+CREATE TABLE "github_organizations" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "external_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "github_app_installation_id" INTEGER NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL
+);
+
+-- DXTA organizations to github organizations
+CREATE TABLE "organizations__github_organizations" (
+	  "organization_id" INTEGER NOT NULL,
+	  "github_organization_id" INTEGER NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+	   PRIMARY KEY ("organization_id", "github_organization_id"),
+    FOREIGN KEY ("organization_id") REFERENCES "organizations" ("id"),
+    FOREIGN KEY ("github_organization_id") REFERENCES "github_organizations" ("id")
+);
+
+CREATE TABLE "github_members" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "external_id" INTEGER NOT NULL,
+    "username" TEXT NOT NULL,
+    "email" TEXT DEFAULT NULL,
+    "member_id" INTEGER NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL,
+    FOREIGN KEY ("member_id") REFERENCES "members" ("id")
+);
+
+CREATE TABLE "github_teams" (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "external_id" INTEGER NOT NULL,
+    "name" TEXT NOT NULL,
+    "github_organization_id" INTEGER NOT NULL,
+    "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
+    "deleted_at" DATETIME DEFAULT NULL,
+    FOREIGN KEY ("github_organization_id") references "github_organizations" ("id")
+);
+
+CREATE TABLE "github_teams__github_members" (
+    "github_team_id" INTEGER NOT NULL,
+    "github_member_id" INTEGER NOT NULL,
+    PRIMARY KEY ("github_team_id", "github_member_id"),
+    FOREIGN KEY ("github_team_id") REFERENCES "github_teams" ("id"),
+    FOREIGN KEY ("github_member_id") REFERENCES "github_members" ("id")
+);
+
+---------------------------------- Last updated at triggers ----------------------------------
+
+CREATE TRIGGER "settings_set_updated_at"
+AFTER UPDATE ON "settings"
+FOR EACH ROW
+BEGIN
+  UPDATE "settings" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "organizations_set_updated_at"
+AFTER UPDATE ON "organizations"
+FOR EACH ROW
+BEGIN
+  UPDATE "organizations" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "teams_set_updated_at"
+AFTER UPDATE ON "teams"
+FOR EACH ROW
+BEGIN
+  UPDATE "teams" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "members_set_updated_at"
+AFTER UPDATE ON "members"
+FOR EACH ROW
+BEGIN
+  UPDATE "members" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "github_organizations_set_updated_at"
+AFTER UPDATE ON "github_organizations"
+FOR EACH ROW
+BEGIN
+  UPDATE "github_organizations" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "github_members_set_updated_at"
+AFTER UPDATE ON "github_members"
+FOR EACH ROW
+BEGIN
+  UPDATE "github_members" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
+
+CREATE TRIGGER "github_teams_set_updated_at"
+AFTER UPDATE ON "github_teams"
+FOR EACH ROW
+BEGIN
+  UPDATE "github_teams" 
+  SET updated_at = datetime('now')
+  WHERE id = OLD.id;
+END;
