@@ -19,7 +19,7 @@ func main() {
 
 	temporalClient, err := client.Dial(client.Options{
 		HostPort:  cfg.TemporalHostPort,
-		Namespace: cfg.TemporalNamespace,
+		Namespace: cfg.TemporalOnboardingNamespace,
 	})
 	if err != nil {
 		log.Fatalln("Unable to create Temporal client", err)
@@ -29,14 +29,14 @@ func main() {
 	err = onboarding.RegisterNamespace(
 		context.Background(),
 		cfg.TemporalHostPort,
-		cfg.TemporalNamespace,
+		cfg.TemporalOnboardingNamespace,
 		30,
 	)
 	if err != nil {
 		log.Fatalln("Failed to register Temporal namespace:", err)
 	}
 
-	w := worker.New(temporalClient, cfg.TemporalQueueName, worker.Options{})
+	w := worker.New(temporalClient, cfg.TemporalOnboardingQueueName, worker.Options{})
 
 	w.RegisterWorkflow(workflow.CountUsersWorkflow)
 	w.RegisterActivity(activity.CountUsersActivity)

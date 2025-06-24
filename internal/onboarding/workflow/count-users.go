@@ -36,7 +36,7 @@ func ExecuteCountUsersWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:        fmt.Sprintf("count-users-workflow-%v", time.Now().Format("20060102150405")),
-			TaskQueue: cfg.TemporalQueueName,
+			TaskQueue: cfg.TemporalOnboardingQueueName,
 		},
 		CountUsersWorkflow,
 		cfg.UsersDSN,

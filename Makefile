@@ -9,10 +9,9 @@ watch-internal-api:
     ./bin/air -c internal-api.air.toml
 
 .PHONY: onboarding-worker
-onboarding-worker:
+watch-onboarding-worker:
 	@export $$(cat .env | xargs) && \
-	go run cmd/onboarding-worker/main.go
-
+	./bin/air -c onboarding-worker.air.toml
 
 .ONESHELL:
 setup:
