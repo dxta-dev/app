@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	api "github.com/dxta-dev/app/internal/oss-api"
+	"github.com/dxta-dev/app/internal/oss-api/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func CommitsHandler(w http.ResponseWriter, r *http.Request) {
+func ReviewDepthHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -19,14 +19,11 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	weekParam := r.URL.Query().Get("weeks")
-
 	weeksArray := util.GetWeeksArray(weekParam)
-
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildCommitsQuery(weeksSorted, apiState.TeamId)
-
-	result, err := apiState.DB.GetAggregatedValues(
+	query := data.BuildReviewDepthQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
 		apiState.Org,
@@ -34,7 +31,6 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 		weeksSorted,
 		apiState.TeamId,
 	)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

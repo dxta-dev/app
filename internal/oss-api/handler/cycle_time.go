@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
-	"github.com/dxta-dev/app/internal/api/data"
+	api "github.com/dxta-dev/app/internal/oss-api"
+	"github.com/dxta-dev/app/internal/oss-api/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func DeployFrequencyHandler(w http.ResponseWriter, r *http.Request) {
+func CycleTimeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,14 +22,14 @@ func DeployFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildDeployFrequencyQuery(weeksSorted)
-	result, err := apiState.DB.GetAggregatedValues(
+	query := data.BuildCycleTimeQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
 		apiState.Org,
 		apiState.Repo,
 		weeksSorted,
-		nil,
+		apiState.TeamId,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -43,4 +43,3 @@ func DeployFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

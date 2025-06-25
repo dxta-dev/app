@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dxta-dev/app/internal/api/handler"
+	"github.com/dxta-dev/app/internal/oss-api/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
