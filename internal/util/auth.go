@@ -102,7 +102,7 @@ func Authenticator() func(http.Handler) http.Handler {
 			token, claims, err := jwtauth.FromContext(r.Context())
 
 			if err != nil {
-				fmt.Println("Error extracting token and claims from context")
+				fmt.Printf("Error extracting token and claims from context. Error: %s", err.Error())
 				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
 				return
 			}
