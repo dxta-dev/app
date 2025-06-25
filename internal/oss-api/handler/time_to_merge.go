@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func MRPickupTimeHandler(w http.ResponseWriter, r *http.Request) {
+func TimeToMergeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,7 +22,7 @@ func MRPickupTimeHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildPickupTimeQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildTimeToMergeQuery(weeksSorted, apiState.TeamId)
 	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,

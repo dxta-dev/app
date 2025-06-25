@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/markdown"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func SmallMRsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
+func MRsOpenedMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -24,7 +24,7 @@ func SmallMRsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildSmallMRsQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildMRsOpenedQuery(weeksSorted, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
@@ -38,9 +38,10 @@ func SmallMRsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Small MRs Metrics",
+		"Pull Requests Opened Metrics",
 		``,
 		result,
 	)
@@ -57,7 +58,7 @@ func SmallMRsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func SmallMRsHandler(w http.ResponseWriter, r *http.Request) {
+func MRsOpenedHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -70,7 +71,7 @@ func SmallMRsHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildSmallMRsQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildMRsOpenedQuery(weeksSorted, apiState.TeamId)
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
 		query,

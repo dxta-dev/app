@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/markdown"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func MRsOpenedMarkdownHandler(w http.ResponseWriter, r *http.Request) {
+func ReviewMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -24,7 +24,7 @@ func MRsOpenedMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildMRsOpenedQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildReviewQuery(weeksSorted, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
@@ -41,7 +41,7 @@ func MRsOpenedMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Pull Requests Opened Metrics",
+		"Reviewed Metrics",
 		``,
 		result,
 	)
@@ -58,7 +58,7 @@ func MRsOpenedMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func MRsOpenedHandler(w http.ResponseWriter, r *http.Request) {
+func ReviewHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -71,7 +71,7 @@ func MRsOpenedHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildMRsOpenedQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildReviewQuery(weeksSorted, apiState.TeamId)
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
 		query,

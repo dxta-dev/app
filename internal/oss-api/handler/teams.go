@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 )
 
 func TeamsHandler(w http.ResponseWriter, r *http.Request) {

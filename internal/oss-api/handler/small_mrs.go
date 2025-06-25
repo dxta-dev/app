@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/markdown"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
+func SmallMRsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -24,7 +24,7 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildCommitsQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildSmallMRsQuery(weeksSorted, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
@@ -38,10 +38,9 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Commits Metric",
+		"Small MRs Metrics",
 		``,
 		result,
 	)
@@ -58,7 +57,7 @@ func CommitsMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func CommitsHandler(w http.ResponseWriter, r *http.Request) {
+func SmallMRsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -68,13 +67,10 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	weekParam := r.URL.Query().Get("weeks")
-
 	weeksArray := util.GetWeeksArray(weekParam)
-
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildCommitsQuery(weeksSorted, apiState.TeamId)
-
+	query := data.BuildSmallMRsQuery(weeksSorted, apiState.TeamId)
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
 		query,
@@ -83,7 +79,6 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 		weeksSorted,
 		apiState.TeamId,
 	)
-
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -96,3 +91,4 @@ func CommitsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+

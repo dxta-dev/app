@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/markdown"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func ReviewMarkdownHandler(w http.ResponseWriter, r *http.Request) {
+func DeployFrequencyMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -24,7 +24,7 @@ func ReviewMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildReviewQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildDeployFrequencyQuery(weeksSorted)
 
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
@@ -41,7 +41,7 @@ func ReviewMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Reviewed Metrics",
+		"Deploy Frequency Metrics",
 		``,
 		result,
 	)
@@ -58,7 +58,7 @@ func ReviewMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ReviewHandler(w http.ResponseWriter, r *http.Request) {
+func DeployFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -71,14 +71,14 @@ func ReviewHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildReviewQuery(weeksSorted, apiState.TeamId)
+	query := data.BuildDeployFrequencyQuery(weeksSorted)
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
 		query,
 		apiState.Org,
 		apiState.Repo,
 		weeksSorted,
-		apiState.TeamId,
+		nil,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -92,4 +92,3 @@ func ReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

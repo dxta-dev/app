@@ -33,18 +33,10 @@ In the table below, you’ll see weekly totals from **{{ (index .Values.Weekly 0
 {{ end }}
 `
 
-func aggregatedStatisticsToMap(wd []data.WeeklyData[data.Statistics]) map[string]data.Statistics {
-	m := make(map[string]data.Statistics, len(wd))
-	for _, w := range wd {
-		m[w.Week] = w.Data
-	}
-	return m
-}
-
 func aggregatedValuesToMap(wd []data.WeeklyData[data.Value]) map[string]int {
 	m := make(map[string]int, len(wd))
 	for _, w := range wd {
-		m[w.Week] = w.Data.Value
+		m[w.Week] = *w.Data.Value
 	}
 	return m
 }

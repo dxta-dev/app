@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func CodingTimeHandler(w http.ResponseWriter, r *http.Request) {
+func MRsMergedWithoutReviewHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -19,13 +19,11 @@ func CodingTimeHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	weekParam := r.URL.Query().Get("weeks")
-
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildCodingTimeQuery(weeksSorted, apiState.TeamId)
-
-	result, err := apiState.DB.GetAggregatedStatistics(
+	query := data.BuildMRsMergedWithoutReviewQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
 		query,
 		apiState.Org,
@@ -45,3 +43,4 @@ func CodingTimeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+

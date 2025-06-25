@@ -24,7 +24,7 @@ type Statistics struct {
 }
 
 type Value struct {
-	Value int `json:"value"`
+	Value *int `json:"value"`
 }
 
 func getTeamSubquery() string {

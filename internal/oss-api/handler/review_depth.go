@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func MRsMergedWithoutReviewHandler(w http.ResponseWriter, r *http.Request) {
+func ReviewDepthHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,8 +22,8 @@ func MRsMergedWithoutReviewHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildMRsMergedWithoutReviewQuery(weeksSorted, apiState.TeamId)
-	result, err := apiState.DB.GetAggregatedValues(
+	query := data.BuildReviewDepthQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
 		apiState.Org,

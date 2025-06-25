@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/api"
+	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/data"
 	"github.com/dxta-dev/app/internal/util"
 )
 
-func DetailedCycleTimeHandler(w http.ResponseWriter, r *http.Request) {
+func MRPickupTimeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	apiState, err := api.NewAPIState(r)
@@ -22,8 +22,8 @@ func DetailedCycleTimeHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildDetailedCycleTimeQuery(weeksSorted, apiState.TeamId)
-	cycleTimes, err := apiState.DB.GetDetailedCycleTime(
+	query := data.BuildPickupTimeQuery(weeksSorted, apiState.TeamId)
+	result, err := apiState.DB.GetAggregatedStatistics(
 		ctx,
 		query,
 		apiState.Org,
@@ -38,7 +38,7 @@ func DetailedCycleTimeHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(cycleTimes); err != nil {
+	if err := json.NewEncoder(w).Encode(result); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
