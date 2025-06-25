@@ -1,18 +1,18 @@
-package workflow
+package workflows
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	"github.com/dxta-dev/app/internal/onboarding/activity"
+	"github.com/dxta-dev/app/internal/onboarding/activities"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/dxta-dev/app/internal/onboarding"
 	"go.temporal.io/sdk/client"
 )
 
-func CountUsersWorkflow(ctx workflow.Context, dsn string) (int, error) {
+func CountUsers(ctx workflow.Context) (int, error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute * 5,
 	}
@@ -20,7 +20,7 @@ func CountUsersWorkflow(ctx workflow.Context, dsn string) (int, error) {
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var count int
-	err := workflow.ExecuteActivity(ctx, activity.CountUsersActivity, dsn).Get(ctx, &count)
+	err := workflow.ExecuteActivity(ctx, (*activities.UserActivites).CountUsers).Get(ctx, &count)
 	if err != nil {
 		return 0, err
 	}
@@ -35,11 +35,10 @@ func ExecuteCountUsersWorkflow(
 	wr, err := temporalClient.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
-			ID:        fmt.Sprintf("count-users-workflow-%v", time.Now().Format("20060102150405")),
+			ID:        fmt.Sprintf("count-users-%v", time.Now().Format("20060102150405")),
 			TaskQueue: cfg.TemporalOnboardingQueueName,
 		},
-		CountUsersWorkflow,
-		cfg.UsersDSN,
+		CountUsers,
 	)
 	if err != nil {
 		return 0, fmt.Errorf("failed to start CountUsersWorkflow: %w", err)

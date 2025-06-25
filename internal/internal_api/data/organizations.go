@@ -7,8 +7,8 @@ import (
 
 func (d TenantDB) GetOrganizationIdByAuthId(authId string, ctx context.Context) (int64, error) {
 	query := `
-	SELECT id 
-	FROM organizations 
+	SELECT id
+	FROM organizations
 	WHERE auth_id = ?;`
 
 	var organizationId int64
