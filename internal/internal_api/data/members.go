@@ -7,12 +7,16 @@ import (
 
 type CreateMemberResponse struct{ Id int64 }
 
-func (d TenantDB) CreateMember(name string, email *string, ctx context.Context) (*CreateMemberResponse, error) {
+func (d TenantDB) CreateMember(
+	name string,
+	email *string,
+	ctx context.Context,
+) (*CreateMemberResponse, error) {
 	query := `
-		INSERT INTO members 
-			(name, email) 
-		VALUES 
-			(?, ?) 
+		INSERT INTO members
+			(name, email)
+		VALUES
+			(?, ?)
 		RETURNING id;`
 
 	rows := d.DB.QueryRowContext(ctx, query, name, email)
@@ -34,15 +38,20 @@ func (d TenantDB) CreateMember(name string, email *string, ctx context.Context) 
 
 func (d TenantDB) AddMemberToTeam(teamId int64, memberId int64, ctx context.Context) error {
 	query := `
-		INSERT INTO teams__members 
-			(team_id, member_id) 
-		VALUES 
+		INSERT INTO teams__members
+			(team_id, member_id)
+		VALUES
 			(?, ?);`
 
 	_, err := d.DB.Exec(query, teamId, memberId)
 
 	if err != nil {
-		fmt.Printf("Could not add member with id: %d to team with id %d . Error: %s", memberId, teamId, err.Error())
+		fmt.Printf(
+			"Could not add member with id: %d to team with id %d . Error: %s",
+			memberId,
+			teamId,
+			err.Error(),
+		)
 		return err
 	}
 

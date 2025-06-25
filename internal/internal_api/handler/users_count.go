@@ -8,7 +8,7 @@ import (
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/onboarding"
-	"github.com/dxta-dev/app/internal/onboarding/workflow"
+	"github.com/dxta-dev/app/internal/onboarding/workflows"
 	"github.com/dxta-dev/app/internal/util"
 	"go.temporal.io/sdk/client"
 )
@@ -30,7 +30,7 @@ func NewUsers(temporalClient client.Client, config onboarding.Config) *Users {
 }
 
 func (u *Users) UsersCount(w http.ResponseWriter, r *http.Request) {
-	out, err := workflow.ExecuteCountUsersWorkflow(r.Context(), u.temporalClient, u.config)
+	out, err := workflows.ExecuteCountUsersWorkflow(r.Context(), u.temporalClient, u.config)
 	if err != nil {
 		log.Fatal(errors.Unwrap(err))
 	}
