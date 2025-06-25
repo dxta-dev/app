@@ -18,7 +18,14 @@ type AddMemberToTeamResponse struct {
 func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
+	authId := ctx.Value(util.AuthIdCtxKey).(string)
+
+	apiState, err := api.InternalApiState(authId, ctx)
+
+	if err != nil {
+		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		return
+	}
 
 	teamId, err := strconv.ParseInt(chi.URLParam(r, "team_id"), 10, 64)
 	if err != nil {

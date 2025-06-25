@@ -129,7 +129,7 @@ func main() {
 
 	defer temporalClient.Close()
 
-	usersHandler := handler.NewUsers(temporalClient, *cfg)
+	temporalHandler := handler.SetupOnboardingTemporal(temporalClient, *cfg)
 
 	r.Route("/tenant", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
@@ -147,8 +147,8 @@ func main() {
 		r.Post("/teams", handler.CreateTeam)
 		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)
 		r.Post("/members", handler.CreateMember)
+		r.Get("/provision-github-installations/{installation_id}", temporalHandler.ProvisionGithubInstallationData)
 	})
-
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`OK`))
 	})
@@ -157,7 +157,7 @@ func main() {
 		w.Write([]byte(`OK`))
 	})
 
-	r.Get("/users-count", usersHandler.UsersCount)
+	r.Get("/users-count", temporalHandler.UsersCount)
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)

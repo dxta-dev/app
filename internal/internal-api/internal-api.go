@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
 
 	"github.com/dxta-dev/app/internal/internal-api/data"
@@ -59,8 +58,14 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, e
 	return tenantData, nil
 }
 
-func InternalApiState(dbUrl string, r *http.Request) (State, error) {
-	tenantDB, err := data.NewTenantDB(dbUrl)
+func InternalApiState(authId string, ctx context.Context) (State, error) {
+	tenantData, err := GetTenantDBUrlByAuthId(ctx, authId)
+
+	if err != nil {
+		return State{}, err
+	}
+
+	tenantDB, err := data.NewTenantDB(tenantData.DBUrl, ctx)
 
 	if err != nil {
 		return State{}, err

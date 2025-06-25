@@ -6,6 +6,7 @@ import (
 
 	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/activities"
+	"github.com/dxta-dev/app/internal/onboarding/data"
 	"github.com/dxta-dev/app/internal/onboarding/workflows"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -17,6 +18,12 @@ func main() {
 		log.Fatalln("Failed to load configuration:", err)
 	}
 
+	err = data.LoadGithubConfig()
+
+	if err != nil {
+		log.Fatalln("Failed to load github configuration:", err)
+	}
+
 	temporalClient, err := client.Dial(client.Options{
 		HostPort:  cfg.TemporalHostPort,
 		Namespace: cfg.TemporalOnboardingNamespace,
@@ -26,12 +33,19 @@ func main() {
 	}
 	defer temporalClient.Close()
 
+	err = data.InitAppClient()
+
+	if err != nil {
+		log.Fatalf("Unable to init app client: %v", err)
+	}
+
 	err = onboarding.RegisterNamespace(
 		context.Background(),
 		cfg.TemporalHostPort,
 		cfg.TemporalOnboardingNamespace,
 		30,
 	)
+
 	if err != nil {
 		log.Fatalln("Failed to register Temporal namespace:", err)
 	}
@@ -44,6 +58,9 @@ func main() {
 
 	w.RegisterWorkflow(workflows.CountUsers)
 	w.RegisterActivity(userActivities)
+
+	/* w.RegisterWorkflow(workflow.ProvisionGithubInstallationData)
+	w.RegisterActivity(activity.GetGithubInstallation) */
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)
