@@ -9,7 +9,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/dxta-dev/app/internal/internal_api/handler"
+	"github.com/dxta-dev/app/internal/internal-api/handler"
 	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"

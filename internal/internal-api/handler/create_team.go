@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/internal_api"
+	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/util"
 )
 
@@ -31,16 +31,24 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 	organizationId := ctx.Value(util.OrganizationIdCtxKey).(int64)
 
 	if organizationId == 0 || body.TeamName == "" {
-		fmt.Printf("No organization id or team name provided. Organization id: %d Team name: %s", organizationId, body.TeamName)
+		fmt.Printf(
+			"No organization id or team name provided. Organization id: %d Team name: %s",
+			organizationId,
+			body.TeamName,
+		)
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(internal_api.State)
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
 
 	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Could not create new team"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Could not create new team"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -48,7 +56,11 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(CreateTeamResponse{TeamId: newTeamRes.Id}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Internal Server Error"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }

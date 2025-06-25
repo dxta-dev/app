@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/dxta-dev/app/internal/internal_api"
+	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
 )
@@ -18,7 +18,7 @@ type AddMemberToTeamResponse struct {
 func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(internal_api.State)
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	teamId, err := strconv.ParseInt(chi.URLParam(r, "team_id"), 10, 64)
 	if err != nil {
@@ -37,7 +37,11 @@ func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	err = apiState.DB.AddMemberToTeam(teamId, memberId, ctx)
 
 	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Could not add member to team"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Could not add member to team"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -45,7 +49,11 @@ func AddMemberToTeam(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(AddMemberToTeamResponse{Message: "success"}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Internal Server Error"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }
