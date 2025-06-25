@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/durationpb"
 
 	"go.temporal.io/api/workflowservice/v1"
@@ -21,8 +19,6 @@ func RegisterNamespace(ctx context.Context, hostPort, namespace string, retentio
 	defer nsClient.Close()
 	if _, err := nsClient.Describe(ctx, namespace); err == nil {
 		return nil
-	} else if s, ok := status.FromError(err); !ok || s.Code() != codes.NotFound {
-		return fmt.Errorf("failed to describe namespace %q: %w", namespace, err)
 	}
 
 	if retentionDays < 1 {

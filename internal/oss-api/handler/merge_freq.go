@@ -92,4 +92,3 @@ func MergeFrequencyHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

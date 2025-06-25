@@ -43,4 +43,3 @@ func MRPickupTimeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

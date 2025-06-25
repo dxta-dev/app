@@ -56,7 +56,7 @@ func main() {
 		res, err := sdkresource.New(
 			context.Background(),
 			sdkresource.WithAttributes(
-				semconv.ServiceName("dxta-api"),
+				semconv.ServiceName("dxta-oss-api"),
 			),
 		)
 		if err != nil {
@@ -182,6 +182,14 @@ func main() {
 	r.Get("/{org}/{repo}/time-to-merge", handler.TimeToMergeHandler)
 	r.Get("/{org}/{repo}/small-mrs", handler.SmallMRsHandler)
 	r.Get("/{org}/{repo}/small-mrs.md", handler.SmallMRsMarkdownHandler)
+
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`OK`))
+	})
+
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`OK`))
+	})
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)

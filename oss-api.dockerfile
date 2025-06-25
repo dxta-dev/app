@@ -9,9 +9,9 @@ RUN go mod download
 COPY . .
 
 RUN go build \
-  -ldflags="-linkmode external -extldflags -static -X 'main.BUILDTIME=$(date --iso-8601=seconds --utc)'" \
-  -o api \
-  ./cmd/api/main.go
+  -ldflags="-linkmode external -extldflags -static" \
+  -o ./tmp/oss-api \
+  ./cmd/oss-api/main.go
 
 RUN useradd -u 1001 dxta
 
@@ -23,7 +23,7 @@ COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 COPY --from=build /etc/passwd /etc/passwd
 
-COPY --from=build /app/api /api
+COPY --from=build /app/tmp/oss-api /oss-api
 
 USER dxta
 
@@ -31,4 +31,4 @@ EXPOSE 80
 
 EXPOSE 443
 
-CMD ["/api"]
+CMD ["/oss-api"]

@@ -43,4 +43,3 @@ func HandoverHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

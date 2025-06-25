@@ -43,4 +43,3 @@ func TimeToMergeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-

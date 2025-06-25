@@ -1,11 +1,17 @@
-.PHONY: watch-api
-watch-api:
+.PHONY: watch-oss-api
+watch-oss-api:
 	@export $$(cat .env | xargs) && \
-    ./bin/air -c api.air.toml
+    ./bin/air -c oss-api.air.toml
 
+.PHONY: watch-internal-api
 watch-internal-api:
 	@export $$(cat .env | xargs) && \
     ./bin/air -c internal-api.air.toml
+
+.PHONY: watch-onboarding-worker
+watch-onboarding-worker:
+	@export $$(cat .env | xargs) && \
+	./bin/air -c onboarding-worker.air.toml
 
 .ONESHELL:
 setup:

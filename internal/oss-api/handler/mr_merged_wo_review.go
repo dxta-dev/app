@@ -43,4 +43,3 @@ func MRsMergedWithoutReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
