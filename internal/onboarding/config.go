@@ -7,25 +7,25 @@ import (
 )
 
 type Config struct {
-	TemporalHostPort  string
-	TemporalNamespace string
-	TemporalQueueName string
-	UsersDSN          string
+	TemporalHostPort            string
+	TemporalOnboardingNamespace string
+	TemporalOnboardingQueueName string
+	UsersDSN                    string
 }
 
 func LoadConfig() (*Config, error) {
-	var hostport, namespace, taskQueue, usersDSN string
+	var hostport, onboardingNamespace, onboardingTaskQueue, usersDSN string
 
 	if hostport = os.Getenv("TEMPORAL_HOSTPORT"); hostport == "" {
 		log.Println("TEMPORAL_HOSTPORT not set; using default")
 	}
 
-	if namespace = os.Getenv("TEMPORAL_NAMESPACE"); namespace == "" {
-		return nil, errors.New("TEMPORAL_NAMESPACE is not defined")
+	if onboardingNamespace = os.Getenv("TEMPORAL_ONBOARDING_NAMESPACE"); onboardingNamespace == "" {
+		return nil, errors.New("TEMPORAL_ONBOARDING_NAMESPACE is not defined")
 	}
 
-	if taskQueue = os.Getenv("TEMPORAL_TASK_QUEUE"); taskQueue == "" {
-		return nil, errors.New("TEMPORAL_TASK_QUEUE is not defined")
+	if onboardingTaskQueue = os.Getenv("TEMPORAL_ONBOARDING_TASK_QUEUE"); onboardingTaskQueue == "" {
+		return nil, errors.New("TEMPORAL_ONBOARDING_TASK_QUEUE is not defined")
 	}
 
 	if usersDSN = os.Getenv("USERS_DSN"); usersDSN == "" {
@@ -33,9 +33,9 @@ func LoadConfig() (*Config, error) {
 	}
 
 	return &Config{
-		TemporalHostPort:  hostport,
-		TemporalNamespace: namespace,
-		TemporalQueueName: taskQueue,
-		UsersDSN:          usersDSN,
+		TemporalHostPort:            hostport,
+		TemporalOnboardingNamespace: onboardingNamespace,
+		TemporalOnboardingQueueName: onboardingTaskQueue,
+		UsersDSN:                    usersDSN,
 	}, nil
 }

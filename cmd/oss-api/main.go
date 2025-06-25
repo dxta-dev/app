@@ -154,6 +154,14 @@ func main() {
 	r.Get("/time-to-merge/{org}/{repo}", handler.TimeToMergeHandler)
 	r.Get("/small-mrs/{org}/{repo}", handler.SmallMRsHandler)
 
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`OK`))
+	})
+
+	r.Get("/ready", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte(`OK`))
+	})
+
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
