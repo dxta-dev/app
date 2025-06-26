@@ -135,6 +135,8 @@ func main() {
 
 	r.Get("/repos", handler.ReposHandler)
 	r.Get("/teams/{org}/{repo}", handler.TeamsHandler)
+
+	//TODO: deprecate
 	r.Get("/code-change/{org}/{repo}", handler.CodeChangeHandler)
 	r.Get("/coding-time/{org}/{repo}", handler.CodingTimeHandler)
 	r.Get("/commits/{org}/{repo}", handler.CommitsHandler)
@@ -153,6 +155,33 @@ func main() {
 	r.Get("/review-time/{org}/{repo}", handler.ReviewTimeHandler)
 	r.Get("/time-to-merge/{org}/{repo}", handler.TimeToMergeHandler)
 	r.Get("/small-mrs/{org}/{repo}", handler.SmallMRsHandler)
+
+	// New endpoints
+	r.Get("/{org}/{repo}/code-change", handler.CodeChangeHandler)
+	r.Get("/{org}/{repo}/code-change.md", handler.CodeChangeMarkdownHandler)
+	r.Get("/{org}/{repo}/coding-time", handler.CodingTimeHandler)
+	r.Get("/{org}/{repo}/commits", handler.CommitsHandler)
+	r.Get("/{org}/{repo}/commits.md", handler.CommitsMarkdownHandler)
+	r.Get("/{org}/{repo}/cycle-time", handler.CycleTimeHandler)
+	r.Get("/{org}/{repo}/detailed-cycle-time", handler.DetailedCycleTimeHandler)
+	r.Get("/{org}/{repo}/deploy-freq", handler.DeployFrequencyHandler)
+	r.Get("/{org}/{repo}/deploy-freq.md", handler.DeployFrequencyMarkdownHandler)
+	r.Get("/{org}/{repo}/deploy-time", handler.DeployTimeHandler)
+	r.Get("/{org}/{repo}/handover", handler.HandoverHandler)
+	r.Get("/{org}/{repo}/merge-freq", handler.MergeFrequencyHandler)
+	r.Get("/{org}/{repo}/merge-freq.md", handler.MergeFrequencyMarkdownHandler)
+	r.Get("/{org}/{repo}/mr-merged-wo-review", handler.MRsMergedWithoutReviewHandler)
+	r.Get("/{org}/{repo}/mr-opened", handler.MRsOpenedHandler)
+	r.Get("/{org}/{repo}/mr-opened.md", handler.MRsOpenedMarkdownHandler)
+	r.Get("/{org}/{repo}/mr-pickup-time", handler.MRPickupTimeHandler)
+	r.Get("/{org}/{repo}/mr-size", handler.MRSizeHandler)
+	r.Get("/{org}/{repo}/review", handler.ReviewHandler)
+	r.Get("/{org}/{repo}/review.md", handler.ReviewMarkdownHandler)
+	r.Get("/{org}/{repo}/review-depth", handler.ReviewDepthHandler)
+	r.Get("/{org}/{repo}/review-time", handler.ReviewTimeHandler)
+	r.Get("/{org}/{repo}/time-to-merge", handler.TimeToMergeHandler)
+	r.Get("/{org}/{repo}/small-mrs", handler.SmallMRsHandler)
+	r.Get("/{org}/{repo}/small-mrs.md", handler.SmallMRsMarkdownHandler)
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`OK`))

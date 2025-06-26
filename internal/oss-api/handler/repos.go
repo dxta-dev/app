@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	api "github.com/dxta-dev/app/internal/oss-api"
-	"github.com/dxta-dev/app/internal/oss-api/data"
+	"github.com/dxta-dev/app/internal/data"
 )
 
 func ReposHandler(w http.ResponseWriter, r *http.Request) {
