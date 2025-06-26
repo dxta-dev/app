@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/internal_api"
+	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/util"
 )
 
@@ -34,12 +34,16 @@ func CreateMember(w http.ResponseWriter, r *http.Request) {
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(internal_api.State)
+	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
 
 	newMemberRes, err := apiState.DB.CreateMember(body.Name, body.Email, ctx)
 
 	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Could not create new member"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Could not create new member"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 
@@ -47,7 +51,11 @@ func CreateMember(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(CreateMemberResponse{MemberId: newMemberRes.Id}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		util.JSONError(
+			w,
+			util.ErrorParam{Error: "Internal Server Error"},
+			http.StatusInternalServerError,
+		)
 		return
 	}
 }

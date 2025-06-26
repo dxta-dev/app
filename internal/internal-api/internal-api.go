@@ -1,4 +1,4 @@
-package internal_api
+package api
 
 import (
 	"context"
@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dxta-dev/app/internal/internal_api/data"
+	"github.com/dxta-dev/app/internal/internal-api/data"
 	"github.com/dxta-dev/app/internal/otel"
 	_ "github.com/libsql/libsql-client-go/libsql"
 )
@@ -31,21 +31,28 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, e
 	)
 
 	if err != nil {
-		fmt.Printf("Issue while opening organizations-tenant-map database connection. Error: %s", err.Error())
+		fmt.Printf(
+			"Issue while opening organizations-tenant-map database connection. Error: %s",
+			err.Error(),
+		)
 		return TenantDBData{}, err
 	}
 
 	defer tenantOrganizationMapDB.Close()
 
 	query := `
-		SELECT db_url 
-		FROM tenants 
+		SELECT db_url
+		FROM tenants
 		WHERE organization_id = ?;`
 
 	var tenantData TenantDBData
 
 	if err = tenantOrganizationMapDB.QueryRowContext(ctx, query, authId).Scan(&tenantData.DBUrl); err != nil {
-		fmt.Printf("Could not retrieve tenant db url for organization with id: %s. Error: %s", authId, err.Error())
+		fmt.Printf(
+			"Could not retrieve tenant db url for organization with id: %s. Error: %s",
+			authId,
+			err.Error(),
+		)
 		return TenantDBData{}, err
 	}
 
