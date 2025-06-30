@@ -1,4 +1,4 @@
-package data
+package activities
 
 import (
 	"encoding/base64"
@@ -24,28 +24,28 @@ type GithubCfg struct {
 	RoundTripper        http.RoundTripper
 }
 
-func LoadGithubConfig() error {
+func LoadGithubConfig() (*GithubCfg, error) {
 	appIdStr := os.Getenv("GITHUB_APP_ID")
 	appPrivateKeyStr := os.Getenv("GITHUB_APP_PRIVATE_KEY")
 
 	if appIdStr == "" {
-		return errors.New("GITHUB_APP_ID not set")
+		return nil, errors.New("GITHUB_APP_ID not set")
 	}
 
 	if appPrivateKeyStr == "" {
-		return errors.New("GITHUB_APP_PRIVATE_KEY not set")
+		return nil, errors.New("GITHUB_APP_PRIVATE_KEY not set")
 	}
 
 	appId, err := strconv.ParseInt(appIdStr, 10, 64)
 
 	if err != nil {
-		return errors.New("could not parse app id string to int64")
+		return nil, errors.New("could not parse app id string to int64")
 	}
 
 	appPrivateKey, err := base64.StdEncoding.DecodeString(appPrivateKeyStr)
 
 	if err != nil {
-		return errors.New("failed to decode base64 string")
+		return nil, errors.New("failed to decode base64 string")
 	}
 
 	GithubConfig = &GithubCfg{
@@ -55,7 +55,7 @@ func LoadGithubConfig() error {
 		RoundTripper:        http.DefaultTransport,
 	}
 
-	return nil
+	return GithubConfig, nil
 }
 
 func getInstallationTransport(tr http.RoundTripper, installationId int64) (http.RoundTripper, error) {
@@ -117,12 +117,10 @@ func InitAppClient() error {
 	return nil
 }
 
-type NewAppClient struct {
-	client *github.Client
+type GithubActivities struct {
+	githubConfig GithubCfg
 }
 
-func AppClient(client *github.Client) *NewAppClient {
-	return &NewAppClient{
-		client,
-	}
+func InitGHActivities(githubCfg GithubCfg) *GithubActivities {
+	return &GithubActivities{githubConfig: githubCfg}
 }

@@ -2,14 +2,13 @@ package data
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	"github.com/google/go-github/v72/github"
 )
 
-func (cfg GithubCfg) GetGithubInstallation(installationId int64, ctx context.Context) (*github.Installation, error) {
-	githubAppClient := cfg.GithubAppClient
-
+func GetGithubInstallation(installationId int64, githubAppClient *github.Client, ctx context.Context) (*github.Installation, error) {
 	installation, _, err := githubAppClient.Apps.GetInstallation(ctx, installationId)
 
 	if err != nil {
@@ -20,56 +19,66 @@ func (cfg GithubCfg) GetGithubInstallation(installationId int64, ctx context.Con
 	return installation, nil
 }
 
-/* func (d TenantDB) SyncGithubInstallationDataToTenant(
+func SyncGithubInstallationDataToTenant(
 	installationId int64,
 	installationOrgName string,
+	installationOrgId int64,
 	organizationId string,
+	db *sql.DB,
 	ctx context.Context,
 ) error {
-	tx, err := d.DB.BeginTx(ctx, nil)
+	tx, err := db.BeginTx(ctx, nil)
 
 	if err != nil {
 		return err
 	}
 
-	_, err = tx.Exec(`
+	rows := tx.QueryRowContext(ctx, `
 		INSERT INTO github_organizations
-    		(github_app_installation_id, name)
+    		(github_app_installation_id, name, external_id)
     	VALUES
-			(?, ?);`,
-		installationId, installationOrgName)
+			(?, ?, ?) 
+		RETURNING id`,
+		installationId, installationOrgName, installationOrgId)
+
+	var githubOrganizationId int64
+
+	err = rows.Scan(&githubOrganizationId)
 
 	if err != nil {
 		_ = tx.Rollback()
 		return err
 	}
 
-	_, err = tx.Exec(`
-		INSERT INTO organizations
-			(external_id)
-    	VALUES
-			(?)
-    	ON CONFLICT
-			(external_id)
-    	DO NOTHING;`,
+	rows = tx.QueryRowContext(ctx, `
+		SELECT id 
+		FROM organizations 
+		WHERE auth_id = ?;`,
 		organizationId)
 
+	var orgId int64
+	err = rows.Scan(&orgId)
+
 	if err != nil {
 		_ = tx.Rollback()
 		return err
 	}
 
 	_, err = tx.Exec(`
-		INSERT INTO 'organizations_github_organizations'
-    		('organization_id', 'github_app_installation_id')
+		INSERT INTO 'organizations__github_organizations'
+    		('organization_id', 'github_organization_id')
     	VALUES
     	    (?, ?);`,
-		organizationId, installationId)
+		orgId, githubOrganizationId)
 
 	if err != nil {
 		_ = tx.Rollback()
+		return err
+	}
+
+	if err := tx.Commit(); err != nil {
 		return err
 	}
 
 	return nil
-} */
+}

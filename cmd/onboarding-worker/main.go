@@ -6,7 +6,6 @@ import (
 
 	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/activities"
-	"github.com/dxta-dev/app/internal/onboarding/data"
 	"github.com/dxta-dev/app/internal/onboarding/workflows"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
@@ -18,7 +17,7 @@ func main() {
 		log.Fatalln("Failed to load configuration:", err)
 	}
 
-	err = data.LoadGithubConfig()
+	githubConfig, err := activities.LoadGithubConfig()
 
 	if err != nil {
 		log.Fatalln("Failed to load github configuration:", err)
@@ -33,7 +32,7 @@ func main() {
 	}
 	defer temporalClient.Close()
 
-	err = data.InitAppClient()
+	err = activities.InitAppClient()
 
 	if err != nil {
 		log.Fatalf("Unable to init app client: %v", err)
@@ -55,12 +54,14 @@ func main() {
 	userActivities := activities.NewUserActivites(
 		*cfg,
 	)
+	githubActivities := activities.InitGHActivities(*githubConfig)
+	dbActivities := activities.InitDBActivities()
 
 	w.RegisterWorkflow(workflows.CountUsers)
+	w.RegisterWorkflow(workflows.ProvisionGithubInstallationData)
 	w.RegisterActivity(userActivities)
-
-	/* w.RegisterWorkflow(workflow.ProvisionGithubInstallationData)
-	w.RegisterActivity(activity.GetGithubInstallation) */
+	w.RegisterActivity(githubActivities)
+	w.RegisterActivity(dbActivities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)
