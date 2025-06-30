@@ -6,9 +6,11 @@ import (
 	"fmt"
 )
 
+type AggregatedStatisticsKey struct{}
+
 type AggregatedStatistics = OverallWeeklyData[Statistics]
 type WeeklyStatisticsData = WeeklyData[Statistics]
-type AggregatedStatisticsQuery = string
+type AggregatedStatisticsQuery = Query[AggregatedStatisticsKey]
 
 func (d DB) GetAggregatedStatistics(
 	ctx context.Context,
@@ -32,7 +34,7 @@ func (d DB) GetAggregatedStatistics(
 		queryParams = append(queryParams, team)
 	}
 
-	rows, err := d.db.QueryContext(ctx, query, queryParams...)
+	rows, err := d.db.QueryContext(ctx, query.Get(), queryParams...)
 
 	if err != nil {
 		return nil, err
@@ -113,7 +115,7 @@ func ScanAggregatedStatisticsRows(rows *sql.Rows, weeks []string) (*AggregatedSt
 }
 
 func buildQueryAggregatedStatistics(baseQuery string) AggregatedStatisticsQuery {
-	return fmt.Sprintf(`
+	return AggregatedStatisticsQuery{value: fmt.Sprintf(`
 		WITH dataset AS (%s),
 		data_by_week AS (
 			SELECT
@@ -156,5 +158,5 @@ func buildQueryAggregatedStatistics(baseQuery string) AggregatedStatisticsQuery 
 			count
 		FROM data_by_week;`,
 		baseQuery,
-	)
+	)}
 }
