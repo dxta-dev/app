@@ -11,8 +11,14 @@ import (
 	"go.temporal.io/sdk/workflow"
 )
 
+type TeamWithMembers struct {
+	Team    *github.Team
+	Members []*github.User
+}
+
 type GithubDataProvisionResponse struct {
 	Installation *github.Installation `json:"installation"`
+	Teams        []TeamWithMembers    `json:"teams"`
 }
 
 func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) (*GithubDataProvisionResponse, error) {
@@ -30,8 +36,6 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 		return nil, err
 	}
 
-	fmt.Printf("INSTALLATIONS: %v", installation)
-
 	// 2. Add installation data to tenant
 	var syncResult bool
 	err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncGithubInstallationDataToTenant, installationId, installation.Account.Login, installation.Account.ID, authId, dbUrl).Get(ctx, &syncResult)
@@ -40,12 +44,37 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 		return nil, err
 	}
 
+	// 3. Add Teams to tenant
+	var teamsWithMembers []TeamWithMembers
 	if installation.TargetType != nil && *installation.TargetType == "Organization" {
-		// 3. Add Teams to tenant
+		var teams []*github.Team
+		// 3.1 Retrieve all teams and its members
+		err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeams, installation.Account.Login, installationId).Get(ctx, &teams)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// 3.2 Retrieve members for each team
+		// TO-DO Run this in go routines instead in sequence
+		for _, team := range teams {
+			teamWithMembers := TeamWithMembers{Team: team, Members: []*github.User{}}
+
+			var members []*github.User
+
+			err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembers, installationId, installation.Account.Login, *team.Slug).Get(ctx, &members)
+
+			if err != nil {
+				return nil, err
+			}
+
+			teamWithMembers.Members = members
+			teamsWithMembers = append(teamsWithMembers, teamWithMembers)
+		}
 
 	}
 
-	return &GithubDataProvisionResponse{Installation: installation}, nil
+	return &GithubDataProvisionResponse{Installation: installation, Teams: teamsWithMembers}, nil
 }
 
 type Args struct {

@@ -10,12 +10,7 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding/workflows"
 	"github.com/dxta-dev/app/internal/util"
 	"github.com/go-chi/chi/v5"
-	"github.com/google/go-github/v72/github"
 )
-
-type Response struct {
-	Installations *github.Installation `json:"installations"`
-}
 
 func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -59,7 +54,7 @@ func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWrit
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(Response{Installations: out.Installation}); err != nil {
+	if err := json.NewEncoder(w).Encode(workflows.GithubDataProvisionResponse{Installation: out.Installation, Teams: out.Teams}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
 		util.JSONError(
 			w,
