@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func BuildReviewTimeQuery(weeks []string, team *int64) AggregatedValuesQuery {
+func BuildReviewTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery {
 	teamQuery := ""
 
 	if team != nil {
