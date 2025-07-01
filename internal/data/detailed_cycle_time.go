@@ -16,8 +16,10 @@ type CycleTimeStatistics struct {
 
 type AggregatedCycleTimeStatistics = OverallWeeklyData[CycleTimeStatistics]
 type WeeklyCycleTimeStatistics = WeeklyData[CycleTimeStatistics]
+type CycleTimeStatisticsKey struct {}
+type CycleTimeStatisticsQuery = Query[CycleTimeStatisticsKey]
 
-func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
+func BuildDetailedCycleTimeQuery(weeks []string, team *int64) CycleTimeStatisticsQuery {
 	teamQuery := ""
 
 	if team != nil {
@@ -26,7 +28,7 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
 
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
-	return fmt.Sprintf(`
+	return CycleTimeStatisticsQuery{ value :fmt.Sprintf(`
 	WITH has_deployment AS (
 		SELECT DISTINCT repository_external_id, forge_type
 		FROM tenant_deployment_environments
@@ -158,12 +160,12 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) string {
 	`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	)}
 }
 
 func (d DB) GetDetailedCycleTime(
 	ctx context.Context,
-	query string,
+	query CycleTimeStatisticsQuery,
 	namespace string,
 	repository string,
 	weeks []string,
@@ -184,7 +186,7 @@ func (d DB) GetDetailedCycleTime(
 		queryParams = append(queryParams, team)
 	}
 
-	rows, err := d.db.QueryContext(ctx, query, queryParams...)
+	rows, err := d.db.QueryContext(ctx, query.Get(), queryParams...)
 	if err != nil {
 		return nil, err
 	}

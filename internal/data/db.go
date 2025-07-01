@@ -14,6 +14,15 @@ type DB struct {
 	db *sql.DB
 }
 
+type Query[T any] struct {
+	value string
+	_     T
+}
+
+func (q *Query[T]) Get() string {
+	return q.value
+}
+
 var dbPool sync.Map
 
 func NewDB(ctx context.Context, tenantRepo TenantRepo) (DB, error) {
