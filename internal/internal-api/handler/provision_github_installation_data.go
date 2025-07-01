@@ -32,7 +32,7 @@ func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWrit
 		return
 	}
 
-	out, err := workflows.ExecuteGithubInstallationDataProvision(
+	workflows.ExecuteGithubInstallationDataProvision(
 		ctx,
 		t.temporalClient,
 		workflows.Args{
@@ -42,19 +42,10 @@ func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWrit
 			DBUrl:                       tenantData.DBUrl,
 		})
 
-	if err != nil {
-		fmt.Println(err.Error())
-		util.JSONError(
-			w,
-			util.ErrorParam{Error: "Internal Server Error"},
-			http.StatusInternalServerError,
-		)
-	}
-
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode(workflows.GithubDataProvisionResponse{Installation: out.Installation, Teams: out.Teams}); err != nil {
+	if err := json.NewEncoder(w).Encode("Success"); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
 		util.JSONError(
 			w,

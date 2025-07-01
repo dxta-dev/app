@@ -117,10 +117,9 @@ func InitAppClient() error {
 	return nil
 }
 
-type NewInstallationClientFunc func(installationId int64) (*github.Client, error)
 type GithubActivities struct {
 	githubConfig          GithubCfg
-	newInstallationClient NewInstallationClientFunc
+	newInstallationClient func(installationId int64) (*github.Client, error)
 }
 
 func InitGHActivities(githubCfg GithubCfg) *GithubActivities {

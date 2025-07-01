@@ -6,75 +6,82 @@ import (
 	"time"
 
 	"github.com/dxta-dev/app/internal/onboarding/activities"
+	"github.com/dxta-dev/app/internal/onboarding/data"
 	"github.com/google/go-github/v72/github"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/workflow"
 )
 
-type TeamWithMembers struct {
-	Team    *github.Team
-	Members []*github.User
-}
-
 type GithubDataProvisionResponse struct {
-	Installation *github.Installation `json:"installation"`
-	Teams        []TeamWithMembers    `json:"teams"`
+	Installation *github.Installation   `json:"installation"`
+	Teams        []data.TeamWithMembers `json:"teams"`
 }
 
-func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) (*GithubDataProvisionResponse, error) {
+func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) error {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute,
 	}
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	// 1. Get installation
+	// 1. Get installation data
 	var installation *github.Installation
 	err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	// 2. Add installation data to tenant
-	var syncResult bool
+	// 2. Store installation data to tenant
+	var syncResult *data.SyncGithubDataResult
 	err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncGithubInstallationDataToTenant, installationId, installation.Account.Login, installation.Account.ID, authId, dbUrl).Get(ctx, &syncResult)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// 3. Add Teams to tenant
-	var teamsWithMembers []TeamWithMembers
 	if installation.TargetType != nil && *installation.TargetType == "Organization" {
+		// 3.1 Retrieve all teams
 		var teams []*github.Team
-		// 3.1 Retrieve all teams and its members
 		err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeams, installation.Account.Login, installationId).Get(ctx, &teams)
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		// 3.2 Retrieve members for each team
-		// TO-DO Run this in go routines instead in sequence
-		for _, team := range teams {
-			teamWithMembers := TeamWithMembers{Team: team, Members: []*github.User{}}
+		// 3.2 Retrieve members and store teams and members to tenant db
+		for _, t := range teams {
+			team := t
+			teamWithMembers := data.TeamWithMembers{Team: team, Members: data.ExtendedMembers{}}
 
 			var members []*github.User
-
-			err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembers, installationId, installation.Account.Login, *team.Slug).Get(ctx, &members)
+			err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembers, installationId, installation.Account.Login, team.Slug).Get(ctx, &members)
 
 			if err != nil {
-				return nil, err
+				return err
 			}
 
-			teamWithMembers.Members = members
-			teamsWithMembers = append(teamsWithMembers, teamWithMembers)
-		}
+			var membersWithEmails *data.ExtendedMembers
 
+			err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembersWithEmails, installationId, members).Get(ctx, &membersWithEmails)
+
+			if err != nil {
+				return err
+			}
+
+			teamWithMembers.Members = *membersWithEmails
+
+			var syncTeamsAndMembersRes *bool
+			err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncTeamsAndMembersToTenant, teamWithMembers, dbUrl, syncResult.GithubOrganizationId, syncResult.OrganizationId).Get(ctx, &syncTeamsAndMembersRes)
+
+			if err != nil {
+				return err
+			}
+		}
 	}
 
-	return &GithubDataProvisionResponse{Installation: installation, Teams: teamsWithMembers}, nil
+	return nil
 }
 
 type Args struct {
@@ -88,8 +95,8 @@ func ExecuteGithubInstallationDataProvision(
 	ctx context.Context,
 	temporalClient client.Client,
 	args Args,
-) (*GithubDataProvisionResponse, error) {
-	wr, err := temporalClient.ExecuteWorkflow(
+) (string, error) {
+	_, err := temporalClient.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:        fmt.Sprintf("onboarding-workflow-%v", time.Now().Format("20060102150405")),
@@ -100,17 +107,10 @@ func ExecuteGithubInstallationDataProvision(
 		args.AuthId,
 		args.DBUrl,
 	)
-	if err != nil {
-		return nil, err
-	}
-
-	var installation *GithubDataProvisionResponse
-
-	err = wr.Get(ctx, &installation)
 
 	if err != nil {
-		return nil, err
+		return "Unable to execute ", err
 	}
 
-	return installation, nil
+	return "success", nil
 }

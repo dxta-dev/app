@@ -5,6 +5,11 @@ import (
 	"database/sql"
 )
 
+type SyncGithubDataResult struct {
+	OrganizationId       int64
+	GithubOrganizationId int64
+}
+
 func SyncGithubInstallationDataToTenant(
 	installationId int64,
 	installationOrgName string,
@@ -12,11 +17,11 @@ func SyncGithubInstallationDataToTenant(
 	organizationId string,
 	db *sql.DB,
 	ctx context.Context,
-) error {
+) (*SyncGithubDataResult, error) {
 	tx, err := db.BeginTx(ctx, nil)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	rows := tx.QueryRowContext(ctx, `
@@ -33,7 +38,7 @@ func SyncGithubInstallationDataToTenant(
 
 	if err != nil {
 		_ = tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	rows = tx.QueryRowContext(ctx, `
@@ -50,7 +55,7 @@ func SyncGithubInstallationDataToTenant(
 
 	if err != nil {
 		_ = tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	_, err = tx.Exec(`
@@ -62,12 +67,15 @@ func SyncGithubInstallationDataToTenant(
 
 	if err != nil {
 		_ = tx.Rollback()
-		return err
+		return nil, err
 	}
 
 	if err := tx.Commit(); err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &SyncGithubDataResult{
+		OrganizationId:       orgId,
+		GithubOrganizationId: githubOrganizationId,
+	}, nil
 }

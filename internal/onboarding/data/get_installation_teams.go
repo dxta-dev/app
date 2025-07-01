@@ -7,6 +7,11 @@ import (
 	"github.com/google/go-github/v72/github"
 )
 
+type TeamWithMembers struct {
+	Team    *github.Team
+	Members ExtendedMembers
+}
+
 func GetInstallationTeams(
 	ctx context.Context,
 	installationOrgName string,
