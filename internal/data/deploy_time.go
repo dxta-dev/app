@@ -13,7 +13,7 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
-	return fmt.Sprintf(`
+	return AggregatedStatisticsQuery{value: fmt.Sprintf(`
 	WITH has_deployment AS (
 		SELECT DISTINCT repository_external_id, forge_type
 		FROM tenant_deployment_environments
@@ -99,5 +99,5 @@ func BuildDeployTimeQuery(weeks []string, team *int64) AggregatedStatisticsQuery
 	FROM data_by_week;`,
 		weeksPlaceholder,
 		teamQuery,
-	)
+	)}
 }
