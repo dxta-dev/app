@@ -39,7 +39,7 @@ func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWrit
 	workflows.ExecuteGithubInstallationDataProvision(
 		ctx,
 		t.temporalClient,
-		workflows.Args{
+		workflows.ExecuteGithubInstallationDataProvisionParams{
 			TemporalOnboardingQueueName: t.config.TemporalOnboardingNamespace,
 			InstallationId:              installationId,
 			AuthId:                      authId,

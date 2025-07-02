@@ -17,11 +17,25 @@ type GithubDataProvisionResponse struct {
 	Teams        []data.TeamWithMembers `json:"teams"`
 }
 
-func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) (count int, err error) {
+type ProvisionGithubInstallationDataParams struct {
+	InstallationId int64
+	AuthId         string
+	DBUrl          string
+}
+
+func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithubInstallationDataParams) (count int, err error) {
+
+	installationId := params.InstallationId
+	authId := params.AuthId
+	dbUrl := params.DBUrl
+
+	fmt.Println(installationId)
+	fmt.Println(authId)
+	fmt.Println(dbUrl)
+
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute,
 	}
-
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var installation *github.Installation
@@ -91,7 +105,7 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 	return
 }
 
-type Args struct {
+type ExecuteGithubInstallationDataProvisionParams struct {
 	TemporalOnboardingQueueName string
 	InstallationId              int64
 	AuthId                      string
@@ -101,18 +115,20 @@ type Args struct {
 func ExecuteGithubInstallationDataProvision(
 	ctx context.Context,
 	temporalClient client.Client,
-	args Args,
+	params ExecuteGithubInstallationDataProvisionParams,
 ) (string, error) {
 	_, err := temporalClient.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID:        fmt.Sprintf("onboarding-workflow-%v", time.Now().Format("20060102150405")),
-			TaskQueue: args.TemporalOnboardingQueueName,
+			TaskQueue: params.TemporalOnboardingQueueName,
 		},
 		ProvisionGithubInstallationData,
-		args.InstallationId,
-		args.AuthId,
-		args.DBUrl,
+		ProvisionGithubInstallationDataParams{
+			InstallationId: params.InstallationId,
+			AuthId:         params.AuthId,
+			DBUrl:          params.DBUrl,
+		},
 	)
 
 	if err != nil {
