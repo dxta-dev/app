@@ -14,7 +14,7 @@ func SyncGithubInstallationDataToTenant(
 	installationId int64,
 	installationOrgName string,
 	installationOrgId int64,
-	organizationId string,
+	authId string,
 	db *sql.DB,
 	ctx context.Context,
 ) (*SyncGithubDataResult, error) {
@@ -48,7 +48,7 @@ func SyncGithubInstallationDataToTenant(
 			organizations 
 		WHERE 
 			auth_id = ?;`,
-		organizationId)
+		authId)
 
 	var orgId int64
 	err = rows.Scan(&orgId)

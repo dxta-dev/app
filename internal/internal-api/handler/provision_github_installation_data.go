@@ -12,6 +12,10 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+type ProvisionGithubInstallationDataResponse struct {
+	Message string `json:"message"`
+}
+
 func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
@@ -45,7 +49,7 @@ func (t *OnboardingTemporal) ProvisionGithubInstallationData(w http.ResponseWrit
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	if err := json.NewEncoder(w).Encode("Success"); err != nil {
+	if err := json.NewEncoder(w).Encode(ProvisionGithubInstallationDataResponse{Message: "Success"}); err != nil {
 		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
 		util.JSONError(
 			w,

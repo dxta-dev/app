@@ -111,13 +111,15 @@ func Authenticator() func(http.Handler) http.Handler {
 				return
 			}
 
-			authId := claims["organizationId"].(string)
+			authId := claims["organizationId"]
 
-			if authId == "" {
+			if authId == nil {
 				fmt.Println("No auth id found in JWT payload")
 				JSONError(w, ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
 				return
 			}
+
+			authId = authId.(string)
 
 			ctx := r.Context()
 

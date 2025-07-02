@@ -17,7 +17,7 @@ type GithubDataProvisionResponse struct {
 	Teams        []data.TeamWithMembers `json:"teams"`
 }
 
-func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) error {
+func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64, authId string, dbUrl string) (count int, err error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute,
 	}
@@ -26,10 +26,10 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 
 	// 1. Get installation data
 	var installation *github.Installation
-	err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
+	err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
 
 	if err != nil {
-		return err
+		return
 	}
 
 	// 2. Store installation data to tenant
@@ -37,51 +37,62 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 	err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncGithubInstallationDataToTenant, installationId, installation.Account.Login, installation.Account.ID, authId, dbUrl).Get(ctx, &syncResult)
 
 	if err != nil {
-		return err
+		return
 	}
 
-	// 3. Add Teams to tenant
+	// 3. Retrieve installation Github Teams and Github Members and store them in tenant db and create copy of them as DXTA Teams and Members
 	if installation.TargetType != nil && *installation.TargetType == "Organization" {
-		// 3.1 Retrieve all teams
+		// 3.1 Retrieve all installation Github Teams
 		var teams []*github.Team
-		err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeams, installation.Account.Login, installationId).Get(ctx, &teams)
+		err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeams, installation.Account.Login, installationId).Get(ctx, &teams)
 
 		if err != nil {
-			return err
+			return
 		}
 
-		// 3.2 Retrieve members and store teams and members to tenant db
-		for _, t := range teams {
-			team := t
-			teamWithMembers := data.TeamWithMembers{Team: team, Members: data.ExtendedMembers{}}
+		// 3.2 Retrieve Github Members and store installation Github Teams and Github Members to tenant db
+		for _, team := range teams {
+			workflow.Go(ctx, func(gctx workflow.Context) {
+				teamWithMembers := data.TeamWithMembers{Team: team, Members: data.ExtendedMembers{}}
 
-			var members []*github.User
-			err := workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembers, installationId, installation.Account.Login, team.Slug).Get(ctx, &members)
+				var members []*github.User
 
-			if err != nil {
-				return err
-			}
+				err = workflow.ExecuteActivity(gctx, (*activities.GithubActivities).GetInstallationTeamMembers, installationId, installation.Account.Login, team.Slug).Get(gctx, &members)
 
-			var membersWithEmails *data.ExtendedMembers
+				if err != nil {
+					return
+				}
 
-			err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeamMembersWithEmails, installationId, members).Get(ctx, &membersWithEmails)
+				var membersWithEmails *data.ExtendedMembers
 
-			if err != nil {
-				return err
-			}
+				err = workflow.ExecuteActivity(gctx, (*activities.GithubActivities).GetInstallationTeamMembersWithEmails, installationId, members).Get(gctx, &membersWithEmails)
 
-			teamWithMembers.Members = *membersWithEmails
+				if err != nil {
+					return
+				}
 
-			var syncTeamsAndMembersRes *bool
-			err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncTeamsAndMembersToTenant, teamWithMembers, dbUrl, syncResult.GithubOrganizationId, syncResult.OrganizationId).Get(ctx, &syncTeamsAndMembersRes)
+				teamWithMembers.Members = *membersWithEmails
 
-			if err != nil {
-				return err
-			}
+				var syncTeamsAndMembersRes *bool
+				err = workflow.ExecuteActivity(gctx, (*activities.DBActivities).SyncTeamsAndMembersToTenant, teamWithMembers, dbUrl, syncResult.GithubOrganizationId, syncResult.OrganizationId).Get(gctx, &syncTeamsAndMembersRes)
+
+				if err != nil {
+					return
+				}
+
+				// Count number of finished go routines
+				// so we can unblock calling thread when
+				// all go routines finish
+				count += 1
+			})
 		}
+
+		_ = workflow.Await(ctx, func() bool {
+			return err != nil || count == len(teams)
+		})
 	}
 
-	return nil
+	return
 }
 
 type Args struct {
@@ -112,5 +123,5 @@ func ExecuteGithubInstallationDataProvision(
 		return "Unable to execute ", err
 	}
 
-	return "success", nil
+	return "Success", nil
 }
