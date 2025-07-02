@@ -28,18 +28,26 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	organizationId := ctx.Value(util.OrganizationIdCtxKey).(int64)
-
-	if organizationId == 0 || body.TeamName == "" {
-		fmt.Printf(
-			"No organization id or team name provided. Organization id: %d Team name: %s",
-			organizationId,
-			body.TeamName,
-		)
+	if body.TeamName == "" {
+		fmt.Printf("No team name provided. Team name: %s", body.TeamName)
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
+	authId := ctx.Value(util.AuthIdCtxKey).(string)
+
+	apiState, err := api.InternalApiState(authId, ctx)
+
+	if err != nil {
+		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		return
+	}
+
+	organizationId, err := apiState.DB.GetOrganizationIdByAuthId(authId, ctx)
+
+	if err != nil {
+		util.JSONError(w, util.ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
+		return
+	}
 
 	newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
 

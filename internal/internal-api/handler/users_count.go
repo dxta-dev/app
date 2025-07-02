@@ -7,30 +7,16 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/workflows"
 	"github.com/dxta-dev/app/internal/util"
-	"go.temporal.io/sdk/client"
 )
 
 type UsersCountResponse struct {
 	Count int `json:"count"`
 }
 
-type Users struct {
-	temporalClient client.Client
-	config         onboarding.Config
-}
-
-func NewUsers(temporalClient client.Client, config onboarding.Config) *Users {
-	return &Users{
-		temporalClient: temporalClient,
-		config:         config,
-	}
-}
-
-func (u *Users) UsersCount(w http.ResponseWriter, r *http.Request) {
-	out, err := workflows.ExecuteCountUsersWorkflow(r.Context(), u.temporalClient, u.config)
+func (t OnboardingTemporal) UsersCount(w http.ResponseWriter, r *http.Request) {
+	out, err := workflows.ExecuteCountUsersWorkflow(r.Context(), t.temporalClient, t.config)
 	if err != nil {
 		log.Fatal(errors.Unwrap(err))
 	}

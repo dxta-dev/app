@@ -17,6 +17,12 @@ func main() {
 		log.Fatalln("Failed to load configuration:", err)
 	}
 
+	githubConfig, err := activities.LoadGithubConfig()
+
+	if err != nil {
+		log.Fatalln("Failed to load github configuration:", err)
+	}
+
 	temporalClient, err := client.Dial(client.Options{
 		HostPort:  cfg.TemporalHostPort,
 		Namespace: cfg.TemporalOnboardingNamespace,
@@ -26,12 +32,19 @@ func main() {
 	}
 	defer temporalClient.Close()
 
+	err = activities.InitAppClient()
+
+	if err != nil {
+		log.Fatalf("Unable to init app client: %v", err)
+	}
+
 	err = onboarding.RegisterNamespace(
 		context.Background(),
 		cfg.TemporalHostPort,
 		cfg.TemporalOnboardingNamespace,
 		30,
 	)
+
 	if err != nil {
 		log.Fatalln("Failed to register Temporal namespace:", err)
 	}
@@ -41,9 +54,14 @@ func main() {
 	userActivities := activities.NewUserActivites(
 		*cfg,
 	)
+	githubActivities := activities.InitGHActivities(*githubConfig)
+	dbActivities := activities.InitDBActivities()
 
 	w.RegisterWorkflow(workflows.CountUsers)
+	w.RegisterWorkflow(workflows.ProvisionGithubInstallationData)
 	w.RegisterActivity(userActivities)
+	w.RegisterActivity(githubActivities)
+	w.RegisterActivity(dbActivities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)

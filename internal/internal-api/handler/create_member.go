@@ -34,7 +34,14 @@ func CreateMember(w http.ResponseWriter, r *http.Request) {
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 	}
 
-	apiState := ctx.Value(util.ApiStateCtxKey).(api.State)
+	authId := ctx.Value(util.AuthIdCtxKey).(string)
+
+	apiState, err := api.InternalApiState(authId, ctx)
+
+	if err != nil {
+		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+		return
+	}
 
 	newMemberRes, err := apiState.DB.CreateMember(body.Name, body.Email, ctx)
 

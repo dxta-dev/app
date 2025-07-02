@@ -9,7 +9,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dxta-dev/app/internal/internal-api"
 	"github.com/go-chi/jwtauth/v5"
 )
 
@@ -92,8 +91,7 @@ type contextKey struct {
 }
 
 var (
-	OrganizationIdCtxKey = contextKey{"organizationId"}
-	ApiStateCtxKey       = contextKey{"apiState"}
+	AuthIdCtxKey = contextKey{"authId"}
 )
 
 func Authenticator() func(http.Handler) http.Handler {
@@ -102,7 +100,7 @@ func Authenticator() func(http.Handler) http.Handler {
 			token, claims, err := jwtauth.FromContext(r.Context())
 
 			if err != nil {
-				fmt.Println("Error extracting token and claims from context")
+				fmt.Printf("Error extracting token and claims from context. Error: %s", err.Error())
 				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
 				return
 			}
@@ -113,39 +111,19 @@ func Authenticator() func(http.Handler) http.Handler {
 				return
 			}
 
-			authId := claims["organizationId"].(string)
+			authId := claims["organizationId"]
 
-			if authId == "" {
-				fmt.Println("No organization id found in JWT payload")
+			if authId == nil {
+				fmt.Println("No auth id found in JWT payload")
 				JSONError(w, ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
 				return
 			}
+
+			authId = authId.(string)
 
 			ctx := r.Context()
 
-			tenantData, err := api.GetTenantDBUrlByAuthId(ctx, authId)
-
-			if err != nil {
-				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-				return
-			}
-
-			apiState, err := api.InternalApiState(tenantData.DBUrl, r)
-
-			if err != nil {
-				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-				return
-			}
-
-			organizationId, err := apiState.DB.GetOrganizationIdByAuthId(authId, ctx)
-
-			if err != nil {
-				JSONError(w, ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
-				return
-			}
-
-			ctx = context.WithValue(ctx, OrganizationIdCtxKey, organizationId)
-			ctx = context.WithValue(ctx, ApiStateCtxKey, apiState)
+			ctx = context.WithValue(ctx, AuthIdCtxKey, authId)
 
 			next.ServeHTTP(w, r.WithContext(ctx))
 		}
