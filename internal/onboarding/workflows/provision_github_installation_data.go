@@ -24,7 +24,6 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	// 1. Get installation data
 	var installation *github.Installation
 	err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
 
@@ -32,7 +31,6 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 		return
 	}
 
-	// 2. Store installation data to tenant
 	var syncResult *data.SyncGithubDataResult
 	err = workflow.ExecuteActivity(ctx, (*activities.DBActivities).SyncGithubInstallationDataToTenant, installationId, installation.Account.Login, installation.Account.ID, authId, dbUrl).Get(ctx, &syncResult)
 
@@ -40,9 +38,8 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 		return
 	}
 
-	// 3. Retrieve installation Github Teams and Github Members and store them in tenant db and create copy of them as DXTA Teams and Members
 	if installation.TargetType != nil && *installation.TargetType == "Organization" {
-		// 3.1 Retrieve all installation Github Teams
+
 		var teams []*github.Team
 		err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetInstallationTeams, installation.Account.Login, installationId).Get(ctx, &teams)
 
@@ -50,7 +47,6 @@ func ProvisionGithubInstallationData(ctx workflow.Context, installationId int64,
 			return
 		}
 
-		// 3.2 Retrieve Github Members and store installation Github Teams and Github Members to tenant db
 		for _, team := range teams {
 			workflow.Go(ctx, func(gctx workflow.Context) {
 				teamWithMembers := data.TeamWithMembers{Team: team, Members: data.ExtendedMembers{}}
