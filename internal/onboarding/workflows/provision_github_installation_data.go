@@ -9,6 +9,7 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding/data"
 	"github.com/google/go-github/v72/github"
 	"go.temporal.io/sdk/client"
+	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 )
 
@@ -24,19 +25,18 @@ type ProvisionGithubInstallationDataParams struct {
 }
 
 func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithubInstallationDataParams) (count int, err error) {
+	ao := workflow.ActivityOptions{
+		StartToCloseTimeout: time.Second * 30,
+		RetryPolicy: &temporal.RetryPolicy{
+			MaximumAttempts: 10,
+		},
+	}
+
+	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	installationId := params.InstallationId
 	authId := params.AuthId
 	dbUrl := params.DBUrl
-
-	fmt.Println(installationId)
-	fmt.Println(authId)
-	fmt.Println(dbUrl)
-
-	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Minute,
-	}
-	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var installation *github.Installation
 	err = workflow.ExecuteActivity(ctx, (*activities.GithubActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
