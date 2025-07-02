@@ -26,15 +26,14 @@ jobs:
       - name: Check PR title for ticket number
         run: |
           # Fetch the PR title using GitHub API
-          PR_TITLE=${{ github.event.pull_request.title }}
 
-          echo "PR Title: $PR_TITLE"
+          echo "PR Title: ${{ github.event.pull_request.title }}"
 
           # Regex pattern for a ticket number
           TICKET_PATTERN="DXTA-[0-9]+"  # Matches strings like DXTA-123
 
           # Check if PR title matches the pattern
-          if [[ ! "$PR_TITLE" =~ $TICKET_PATTERN ]]; then
+          if [[ ! "${{ github.event.pull_request.title }}" =~ $TICKET_PATTERN ]]; then
             echo "Error: PR title does not contain a valid ticket number!"
             exit 1  # Fail the CI/CD pipeline
           fi
