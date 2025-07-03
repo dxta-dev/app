@@ -1,8 +1,9 @@
 package data
 
 import (
+	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"os"
 
 	"github.com/dxta-dev/app/internal/otel"
@@ -12,7 +13,7 @@ type TenantDB struct {
 	DB *sql.DB
 }
 
-func NewTenantDB(dbUrl string) (TenantDB, error) {
+func NewTenantDB(dbUrl string, ctx context.Context) (TenantDB, error) {
 	driverName := otel.GetDriverName()
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
 
@@ -22,12 +23,11 @@ func NewTenantDB(dbUrl string) (TenantDB, error) {
 	)
 
 	if err != nil {
-		fmt.Printf(
-			"Issue while opening tenant database connection. DBUrl: %s Error: %s",
-			dbUrl,
-			err.Error(),
-		)
-		return TenantDB{}, err
+		return TenantDB{}, errors.New("failed to open tenant db connection " + err.Error())
+	}
+
+	if err := tenantDB.PingContext(ctx); err != nil {
+		return TenantDB{}, errors.New("failed to verify tenant db connection " + err.Error())
 	}
 
 	return TenantDB{

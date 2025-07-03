@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/go-github/v73/github"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
@@ -32,11 +31,42 @@ func AfterGithubInstallationWorkflow(
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	installationId := params.InstallationID
+	var installation activity.GithubInstallation
 
-	var installation *github.Installation
-	err = workflow.ExecuteActivity(ctx, (*activity.GithubInstallationActivities).GetGithubInstallation, installationId).
-		Get(ctx, &installation)
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.GithubInstallationActivities).GetGithubInstallation,
+		params.InstallationID,
+	).Get(ctx, &installation)
+
+	if err != nil {
+		return
+	}
+
+	var organizationId int64
+
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).GetOrganizationIDByAuthID,
+		params.AuthID,
+		params.DBURL,
+	).Get(ctx, &organizationId)
+
+	if err != nil {
+		return
+	}
+
+	var githubOrganizationId int64
+
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).UpsertGithubOrganization,
+		params.DBURL,
+		params.InstallationID,
+		installation.OrganizationLogin,
+		installation.OrganizationID,
+		organizationId,
+	).Get(ctx, &githubOrganizationId)
 
 	if err != nil {
 		return

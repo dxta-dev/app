@@ -131,25 +131,33 @@ type GithubAppClient struct {
 	client *github.Client
 }
 
-func (gac *GithubAppClient) GetOrganizationLogin(
+type Account struct {
+	ID    int64
+	Login string
+}
+
+func (gac *GithubAppClient) GetInstallationAccount(
 	ctx context.Context,
 	installationID int64,
-) (string, error) {
+) (*Account, error) {
 	installation, _, error := gac.client.Apps.GetInstallation(ctx, installationID)
 	if error != nil {
-		return "", errors.New("failed to get installation: " + error.Error())
+		return nil, errors.New("failed to get installation: " + error.Error())
 
 	}
 
 	if installation.Account == nil || installation.Account.Login == nil {
-		return "", errors.New("installation account or login is nil")
+		return nil, errors.New("installation account or login is nil")
 	}
 
-	if installation.TargetType == nil || *installation.TargetType != "organization" {
-		return "", errors.New("installation is not for an organization")
+	if installation.TargetType == nil || *installation.TargetType != "Organization" {
+		return nil, errors.New("installation is not for an organization")
 	}
 
-	return *installation.Account.Login, nil
+	return &Account{
+		ID:    *installation.Account.ID,
+		Login: *installation.Account.Login,
+	}, nil
 }
 
 func NewAppClient(cfg GithubConfig) (*GithubAppClient, error) {

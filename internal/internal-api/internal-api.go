@@ -59,8 +59,8 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, e
 	return tenantData, nil
 }
 
-func InternalApiState(dbUrl string, r *http.Request) (State, error) {
-	tenantDB, err := data.NewTenantDB(dbUrl)
+func InternalApiState(ctx context.Context, dbUrl string, r *http.Request) (State, error) {
+	tenantDB, err := data.NewTenantDB(dbUrl, ctx)
 
 	if err != nil {
 		return State{}, err

@@ -9,7 +9,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/dxta-dev/app/internal/internal-api"
+	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/go-chi/jwtauth/v5"
 )
 
@@ -130,7 +130,7 @@ func Authenticator() func(http.Handler) http.Handler {
 				return
 			}
 
-			apiState, err := api.InternalApiState(tenantData.DBUrl, r)
+			apiState, err := api.InternalApiState(ctx, tenantData.DBUrl, r)
 
 			if err != nil {
 				JSONError(w, ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
