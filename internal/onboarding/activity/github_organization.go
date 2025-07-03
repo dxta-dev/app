@@ -14,7 +14,7 @@ func (ta *TenantActivities) UpsertGithubOrganization(
 	installationOrgName string,
 	installationOrgId int64,
 	organizationId int64,
-) (int64, error) {
+) (res int64, err error) {
 	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
 
 	if err != nil {
@@ -27,7 +27,11 @@ func (ta *TenantActivities) UpsertGithubOrganization(
 		return 0, err
 	}
 
-	defer tx.Rollback()
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
 
 	rows := tx.QueryRowContext(ctx, `
 		INSERT INTO github_organizations
