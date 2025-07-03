@@ -1,11 +1,11 @@
-package workflows
+package workflow
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	activity "github.com/dxta-dev/app/internal/onboarding/activities"
+	"github.com/dxta-dev/app/internal/onboarding/activity"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/dxta-dev/app/internal/onboarding"

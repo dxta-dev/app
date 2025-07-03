@@ -1,4 +1,4 @@
-package workflows
+package workflow
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
-	activity "github.com/dxta-dev/app/internal/onboarding/activities"
+	"github.com/dxta-dev/app/internal/onboarding/activity"
 )
 
 type ProvisionGithubInstallationDataParams struct {

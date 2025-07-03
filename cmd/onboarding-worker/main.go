@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/dxta-dev/app/internal/onboarding"
-	activity "github.com/dxta-dev/app/internal/onboarding/activities"
-	"github.com/dxta-dev/app/internal/onboarding/workflows"
+	"github.com/dxta-dev/app/internal/onboarding/activity"
+	"github.com/dxta-dev/app/internal/onboarding/workflow"
 	"go.temporal.io/sdk/client"
 	"go.temporal.io/sdk/worker"
 )
@@ -55,8 +55,8 @@ func main() {
 	)
 	githubInstallationActivities := activity.GithubInstallationActivities(*githubAppClient)
 
-	w.RegisterWorkflow(workflows.CountUsers)
-	w.RegisterWorkflow(workflows.ProvisionGithubInstallationData)
+	w.RegisterWorkflow(workflow.CountUsers)
+	w.RegisterWorkflow(workflow.ProvisionGithubInstallationData)
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 
