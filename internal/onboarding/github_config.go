@@ -152,7 +152,7 @@ func (gac *GithubAppClient) GetOrganizationLogin(
 	return *installation.Account.Login, nil
 }
 
-func InitAppClient(cfg GithubConfig) (*GithubAppClient, error) {
+func NewAppClient(cfg GithubConfig) (*GithubAppClient, error) {
 	tr, err := getAppTransport(cfg.RoundTripper, cfg.GithubAppId, cfg.GithubAppPrivateKey)
 
 	if err != nil {

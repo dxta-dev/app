@@ -13,15 +13,15 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding/activity"
 )
 
-type ProvisionGithubInstallationDataParams struct {
-	InstallationId int64
-	AuthId         string
-	DBUrl          string
+type AfterGithubInstallationParams struct {
+	InstallationID int64
+	AuthID         string
+	DBURL          string
 }
 
-func ProvisionGithubInstallationData(
+func AfterGithubInstallationWorkflow(
 	ctx workflow.Context,
-	params ProvisionGithubInstallationDataParams,
+	params AfterGithubInstallationParams,
 ) (err error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 30,
@@ -32,10 +32,10 @@ func ProvisionGithubInstallationData(
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	installationId := params.InstallationId
+	installationId := params.InstallationID
 
 	var installation *github.Installation
-	err = workflow.ExecuteActivity(ctx, (*activity.GithubActivities).GetGithubInstallation, installationId).
+	err = workflow.ExecuteActivity(ctx, (*activity.GithubInstallationActivities).GetGithubInstallation, installationId).
 		Get(ctx, &installation)
 
 	if err != nil {
@@ -45,32 +45,32 @@ func ProvisionGithubInstallationData(
 	return
 }
 
-type ExecuteGithubInstallationDataProvisionParams struct {
+type ExecuteAfterGithubInstallationParams struct {
 	TemporalOnboardingQueueName string
-	InstallationId              int64
-	AuthId                      string
-	DBUrl                       string
+	InstallationID              int64
+	AuthID                      string
+	DBURL                       string
 }
 
-func ExecuteGithubInstallationDataProvision(
+func ExecuteAfterGithubInstallationWorkflow(
 	ctx context.Context,
 	temporalClient client.Client,
-	params ExecuteGithubInstallationDataProvisionParams,
+	params ExecuteAfterGithubInstallationParams,
 ) (string, error) {
 	_, err := temporalClient.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID: fmt.Sprintf(
-				"onboarding-workflow-github-%v",
-				time.Now().Format("20060102150405"),
+				"onboarding-workflow-github-%v-%v",
+				params.InstallationID, params.AuthID,
 			),
 			TaskQueue: params.TemporalOnboardingQueueName,
 		},
-		ProvisionGithubInstallationData,
-		ProvisionGithubInstallationDataParams{
-			InstallationId: params.InstallationId,
-			AuthId:         params.AuthId,
-			DBUrl:          params.DBUrl,
+		AfterGithubInstallationWorkflow,
+		AfterGithubInstallationParams{
+			InstallationID: params.InstallationID,
+			AuthID:         params.AuthID,
+			DBURL:          params.DBURL,
 		},
 	)
 

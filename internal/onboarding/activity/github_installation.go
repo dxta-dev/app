@@ -7,21 +7,21 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding"
 )
 
-type GithubActivities struct {
+type GithubInstallationActivities struct {
 	githubAppClient onboarding.GithubAppClient
 }
 
-func NewGithubInstallationActivities(GithubAppClient onboarding.GithubAppClient) *GithubActivities {
-	return &GithubActivities{
+func NewGithubInstallationActivities(GithubAppClient onboarding.GithubAppClient) *GithubInstallationActivities {
+	return &GithubInstallationActivities{
 		githubAppClient: GithubAppClient,
 	}
 }
 
-func (ga *GithubActivities) GetGithubInstallation(
+func (gia *GithubInstallationActivities) GetGithubInstallation(
 	ctx context.Context,
 	installationId int64,
 ) (string, error) {
-	login, err := ga.githubAppClient.GetOrganizationLogin(ctx, installationId)
+	login, err := gia.githubAppClient.GetOrganizationLogin(ctx, installationId)
 
 	if err != nil {
 		fmt.Printf("Could not retrieve installation. Error: %v", err.Error())

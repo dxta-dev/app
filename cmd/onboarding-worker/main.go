@@ -32,7 +32,7 @@ func main() {
 	}
 	defer temporalClient.Close()
 
-	githubAppClient, err := onboarding.InitAppClient(*githubConfig)
+	githubAppClient, err := onboarding.NewAppClient(*githubConfig)
 
 	if err != nil {
 		log.Fatalf("Unable to init app client: %v", err)
@@ -53,10 +53,10 @@ func main() {
 	userActivities := activity.NewUserActivites(
 		*cfg,
 	)
-	githubInstallationActivities := activity.GithubInstallationActivities(*githubAppClient)
+	githubInstallationActivities := activity.NewGithubInstallationActivities(*githubAppClient)
 
 	w.RegisterWorkflow(workflow.CountUsers)
-	w.RegisterWorkflow(workflow.ProvisionGithubInstallationData)
+	w.RegisterWorkflow(workflow.AfterGithubInstallationWorkflow)
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 
