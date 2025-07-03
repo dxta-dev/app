@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/dxta-dev/app/internal/onboarding/activities"
+	activity "github.com/dxta-dev/app/internal/onboarding/activities"
 	"go.temporal.io/sdk/workflow"
 
 	"github.com/dxta-dev/app/internal/onboarding"
@@ -20,7 +20,7 @@ func CountUsers(ctx workflow.Context) (int, error) {
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	var count int
-	err := workflow.ExecuteActivity(ctx, (*activities.UserActivites).CountUsers).Get(ctx, &count)
+	err := workflow.ExecuteActivity(ctx, (*activity.UserActivites).CountUsers).Get(ctx, &count)
 	if err != nil {
 		return 0, err
 	}
