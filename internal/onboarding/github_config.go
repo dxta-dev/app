@@ -53,7 +53,12 @@ func LoadGithubConfig() (*GithubConfig, error) {
 	}, nil
 }
 
-func getInstallationTransport(tr http.RoundTripper, installationId int64, appId int64, appPrivateKey []byte) (http.RoundTripper, error) {
+func getInstallationTransport(
+	tr http.RoundTripper,
+	installationId int64,
+	appId int64,
+	appPrivateKey []byte,
+) (http.RoundTripper, error) {
 	itt, err := ghinstallation.New(tr, appId, installationId, appPrivateKey)
 
 	if err != nil {
@@ -63,7 +68,11 @@ func getInstallationTransport(tr http.RoundTripper, installationId int64, appId 
 	return itt, nil
 }
 
-func getAppTransport(tr http.RoundTripper, appId int64, appPrivateKey []byte) (http.RoundTripper, error) {
+func getAppTransport(
+	tr http.RoundTripper,
+	appId int64,
+	appPrivateKey []byte,
+) (http.RoundTripper, error) {
 	atr, err := ghinstallation.NewAppsTransport(tr, appId, appPrivateKey)
 
 	if err != nil {
@@ -74,18 +83,40 @@ func getAppTransport(tr http.RoundTripper, appId int64, appPrivateKey []byte) (h
 }
 
 func createLimiter(tr http.RoundTripper) http.RoundTripper {
-	return github_ratelimit.New(tr,
-		github_primary_ratelimit.WithLimitDetectedCallback(func(ctx *github_primary_ratelimit.CallbackContext) {
-			fmt.Printf("Primary rate limit detected: category %s, reset time: %v\n", ctx.Category, ctx.ResetTime)
-		}),
-		github_secondary_ratelimit.WithLimitDetectedCallback(func(ctx *github_secondary_ratelimit.CallbackContext) {
-			fmt.Printf("Secondary rate limit detected: reset time: %v, total sleep time: %v\n", ctx.ResetTime, ctx.TotalSleepTime)
-		}),
+	return github_ratelimit.New(
+		tr,
+		github_primary_ratelimit.WithLimitDetectedCallback(
+			func(ctx *github_primary_ratelimit.CallbackContext) {
+				fmt.Printf(
+					"Primary rate limit detected: category %s, reset time: %v\n",
+					ctx.Category,
+					ctx.ResetTime,
+				)
+			},
+		),
+		github_secondary_ratelimit.WithLimitDetectedCallback(
+			func(ctx *github_secondary_ratelimit.CallbackContext) {
+				fmt.Printf(
+					"Secondary rate limit detected: reset time: %v, total sleep time: %v\n",
+					ctx.ResetTime,
+					ctx.TotalSleepTime,
+				)
+			},
+		),
 	)
 }
 
-func NewInstallationClient(installationId int64, tr http.RoundTripper, cfg GithubConfig) (*github.Client, error) {
-	tr, err := getInstallationTransport(tr, installationId, cfg.GithubAppId, cfg.GithubAppPrivateKey)
+func NewInstallationClient(
+	installationId int64,
+	tr http.RoundTripper,
+	cfg GithubConfig,
+) (*github.Client, error) {
+	tr, err := getInstallationTransport(
+		tr,
+		installationId,
+		cfg.GithubAppId,
+		cfg.GithubAppPrivateKey,
+	)
 
 	if err != nil {
 		return nil, err
@@ -96,11 +127,32 @@ func NewInstallationClient(installationId int64, tr http.RoundTripper, cfg Githu
 	return github.NewClient(&http.Client{Transport: tr}), nil
 }
 
-type AppClient struct {
-	GetInstallation func(ctx context.Context, id int64) (*github.Installation, *github.Response, error)
+type GithubAppClient struct {
+	client *github.Client
 }
 
-func InitAppClient(cfg GithubConfig) (*AppClient, error) {
+func (gac *GithubAppClient) GetOrganizationLogin(
+	ctx context.Context,
+	installationID int64,
+) (string, error) {
+	installation, _, error := gac.client.Apps.GetInstallation(ctx, installationID)
+	if error != nil {
+		return "", errors.New("failed to get installation: " + error.Error())
+
+	}
+
+	if installation.Account == nil || installation.Account.Login == nil {
+		return "", errors.New("installation account or login is nil")
+	}
+
+	if installation.TargetType == nil || *installation.TargetType != "organization" {
+		return "", errors.New("installation is not for an organization")
+	}
+
+	return *installation.Account.Login, nil
+}
+
+func InitAppClient(cfg GithubConfig) (*GithubAppClient, error) {
 	tr, err := getAppTransport(cfg.RoundTripper, cfg.GithubAppId, cfg.GithubAppPrivateKey)
 
 	if err != nil {
@@ -111,7 +163,7 @@ func InitAppClient(cfg GithubConfig) (*AppClient, error) {
 
 	client := github.NewClient(&http.Client{Transport: tr})
 
-	return &AppClient{
-		GetInstallation: client.Apps.GetInstallation,
+	return &GithubAppClient{
+		client: client,
 	}, nil
 }

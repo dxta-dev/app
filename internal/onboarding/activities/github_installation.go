@@ -5,29 +5,28 @@ import (
 	"fmt"
 
 	"github.com/dxta-dev/app/internal/onboarding"
-	"github.com/google/go-github/v73/github"
 )
 
-type InstallationActivities struct {
-	GithubAppClient onboarding.AppClient
+type GithubActivities struct {
+	githubAppClient onboarding.GithubAppClient
 }
 
-func GithubInstallationActivities(GithubAppClient onboarding.AppClient) *InstallationActivities {
-	return &InstallationActivities{
-		GithubAppClient: GithubAppClient,
+func NewGithubInstallationActivities(GithubAppClient onboarding.GithubAppClient) *GithubActivities {
+	return &GithubActivities{
+		githubAppClient: GithubAppClient,
 	}
 }
 
-func (a InstallationActivities) GetGithubInstallation(
+func (ga *GithubActivities) GetGithubInstallation(
 	ctx context.Context,
 	installationId int64,
-) (*github.Installation, error) {
-	installation, _, err := a.GithubAppClient.GetInstallation(ctx, installationId)
+) (string, error) {
+	login, err := ga.githubAppClient.GetOrganizationLogin(ctx, installationId)
 
 	if err != nil {
 		fmt.Printf("Could not retrieve installation. Error: %v", err.Error())
-		return nil, err
+		return "", err
 	}
 
-	return installation, nil
+	return login, nil
 }

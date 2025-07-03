@@ -19,7 +19,10 @@ type ProvisionGithubInstallationDataParams struct {
 	DBUrl          string
 }
 
-func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithubInstallationDataParams) (err error) {
+func ProvisionGithubInstallationData(
+	ctx workflow.Context,
+	params ProvisionGithubInstallationDataParams,
+) (err error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 30,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -32,7 +35,8 @@ func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithu
 	installationId := params.InstallationId
 
 	var installation *github.Installation
-	err = workflow.ExecuteActivity(ctx, (*activity.InstallationActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
+	err = workflow.ExecuteActivity(ctx, (*activity.GithubActivities).GetGithubInstallation, installationId).
+		Get(ctx, &installation)
 
 	if err != nil {
 		return
@@ -56,7 +60,10 @@ func ExecuteGithubInstallationDataProvision(
 	_, err := temporalClient.ExecuteWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
-			ID:        fmt.Sprintf("onboarding-workflow-%v", time.Now().Format("20060102150405")),
+			ID: fmt.Sprintf(
+				"onboarding-workflow-github-%v",
+				time.Now().Format("20060102150405"),
+			),
 			TaskQueue: params.TemporalOnboardingQueueName,
 		},
 		ProvisionGithubInstallationData,
