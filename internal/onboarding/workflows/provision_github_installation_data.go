@@ -19,7 +19,7 @@ type ProvisionGithubInstallationDataParams struct {
 	DBUrl          string
 }
 
-func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithubInstallationDataParams) (count int, err error) {
+func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithubInstallationDataParams) (err error) {
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Second * 30,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -30,8 +30,6 @@ func ProvisionGithubInstallationData(ctx workflow.Context, params ProvisionGithu
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
 	installationId := params.InstallationId
-	/* authId := params.AuthId
-	dbUrl := params.DBUrl */
 
 	var installation *github.Installation
 	err = workflow.ExecuteActivity(ctx, (*activity.InstallationActivities).GetGithubInstallation, installationId).Get(ctx, &installation)
