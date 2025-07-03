@@ -1,6 +1,7 @@
 package onboarding
 
 import (
+	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -95,7 +96,11 @@ func NewInstallationClient(installationId int64, tr http.RoundTripper, cfg Githu
 	return github.NewClient(&http.Client{Transport: tr}), nil
 }
 
-func InitAppClient(cfg GithubConfig) (*github.Client, error) {
+type AppClient struct {
+	GetInstallation func(ctx context.Context, id int64) (*github.Installation, *github.Response, error)
+}
+
+func InitAppClient(cfg GithubConfig) (*AppClient, error) {
 	tr, err := getAppTransport(cfg.RoundTripper, cfg.GithubAppId, cfg.GithubAppPrivateKey)
 
 	if err != nil {
@@ -106,5 +111,7 @@ func InitAppClient(cfg GithubConfig) (*github.Client, error) {
 
 	client := github.NewClient(&http.Client{Transport: tr})
 
-	return client, nil
+	return &AppClient{
+		GetInstallation: client.Apps.GetInstallation,
+	}, nil
 }

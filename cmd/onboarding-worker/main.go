@@ -53,7 +53,7 @@ func main() {
 	userActivities := activity.NewUserActivites(
 		*cfg,
 	)
-	githubInstallationActivities := activity.GithubInstallationActivities(githubAppClient)
+	githubInstallationActivities := activity.GithubInstallationActivities(*githubAppClient)
 
 	w.RegisterWorkflow(workflows.CountUsers)
 	w.RegisterWorkflow(workflows.ProvisionGithubInstallationData)
