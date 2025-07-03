@@ -56,6 +56,7 @@ func main() {
 	githubInstallationActivities := activity.GithubInstallationActivities(githubAppClient)
 
 	w.RegisterWorkflow(workflows.CountUsers)
+	w.RegisterWorkflow(workflows.ProvisionGithubInstallationData)
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 
