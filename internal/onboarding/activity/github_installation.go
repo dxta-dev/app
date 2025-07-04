@@ -17,16 +17,24 @@ func NewGithubInstallationActivities(GithubAppClient onboarding.GithubAppClient)
 	}
 }
 
-func (gia *GithubInstallationActivities) GetGithubInstallation(
+type GithubInstallationOrganization struct {
+	OrganizationID    int64
+	OrganizationLogin string
+}
+
+func (gia *GithubInstallationActivities) GetInstallationOrganization(
 	ctx context.Context,
 	installationId int64,
-) (string, error) {
-	login, err := gia.githubAppClient.GetOrganizationLogin(ctx, installationId)
+) (*GithubInstallationOrganization, error) {
+	account, err := gia.githubAppClient.GetInstallationAccount(ctx, installationId)
 
 	if err != nil {
 		fmt.Printf("Could not retrieve installation. Error: %v", err.Error())
-		return "", err
+		return nil, err
 	}
 
-	return login, nil
+	return &GithubInstallationOrganization{
+		OrganizationID:    account.ID,
+		OrganizationLogin: account.Login,
+	}, nil
 }
