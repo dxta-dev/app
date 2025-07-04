@@ -5,6 +5,7 @@ on:
     branches:
       - main
   pull_request:
+    types: [opened, edited, synchronize, reopened]
 
 permissions:
   contents: read
@@ -16,6 +17,27 @@ env:
   TEST_TAG_WORKER: user/worker:test
 
 jobs:
+  check-title:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: actions/checkout@v4
+
+      - name: Check PR title for ticket number
+        run: |
+          echo "PR Title: ${{ github.event.pull_request.title }}"
+
+          # Regex pattern for a ticket number
+          TICKET_PATTERN="DXTA-[0-9]+"  # Matches strings like DXTA-123
+
+          # Check if PR title matches the pattern
+          if [[ ! "${{ github.event.pull_request.title }}" =~ $TICKET_PATTERN ]]; then
+            echo "Error: PR title does not contain a valid ticket number!"
+            exit 1  # Fail the CI/CD pipeline
+          fi
+
+          echo "PR title contains a valid ticket number."
+
   test:
     runs-on: ubuntu-latest
     steps:
