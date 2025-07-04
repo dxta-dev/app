@@ -1,13 +1,13 @@
 package onboarding
 
 import (
-	"context"
 	"encoding/base64"
 	"errors"
 	"fmt"
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/gofri/go-github-ratelimit/v2/github_ratelimit"
@@ -106,58 +106,8 @@ func createLimiter(tr http.RoundTripper) http.RoundTripper {
 	)
 }
 
-func NewInstallationClient(
-	installationId int64,
-	tr http.RoundTripper,
-	cfg GithubConfig,
-) (*github.Client, error) {
-	tr, err := getInstallationTransport(
-		tr,
-		installationId,
-		cfg.GithubAppId,
-		cfg.GithubAppPrivateKey,
-	)
-
-	if err != nil {
-		return nil, err
-	}
-
-	tr = createLimiter(tr)
-
-	return github.NewClient(&http.Client{Transport: tr}), nil
-}
-
 type GithubAppClient struct {
 	client *github.Client
-}
-
-type Account struct {
-	ID    int64
-	Login string
-}
-
-func (gac *GithubAppClient) GetInstallationAccount(
-	ctx context.Context,
-	installationID int64,
-) (*Account, error) {
-	installation, _, error := gac.client.Apps.GetInstallation(ctx, installationID)
-	if error != nil {
-		return nil, errors.New("failed to get installation: " + error.Error())
-
-	}
-
-	if installation.Account == nil || installation.Account.Login == nil {
-		return nil, errors.New("installation account or login is nil")
-	}
-
-	if installation.TargetType == nil || *installation.TargetType != "Organization" {
-		return nil, errors.New("installation is not for an organization")
-	}
-
-	return &Account{
-		ID:    *installation.Account.ID,
-		Login: *installation.Account.Login,
-	}, nil
 }
 
 func NewAppClient(cfg GithubConfig) (*GithubAppClient, error) {
@@ -174,4 +124,47 @@ func NewAppClient(cfg GithubConfig) (*GithubAppClient, error) {
 	return &GithubAppClient{
 		client: client,
 	}, nil
+}
+
+type GithubInstallationClient struct {
+	client *github.Client
+}
+
+func NewInstallationClient(
+	installationId int64,
+	cfg GithubConfig,
+) (*GithubInstallationClient, error) {
+	tr, err := getInstallationTransport(
+		cfg.RoundTripper,
+		installationId,
+		cfg.GithubAppId,
+		cfg.GithubAppPrivateKey,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tr = createLimiter(tr)
+
+	client := github.NewClient(&http.Client{Transport: tr})
+
+	return &GithubInstallationClient{
+		client: client,
+	}, nil
+}
+
+func GetCachedGithubInstallationClient(clientMap *sync.Map, cacheKey int64, config GithubConfig) (*GithubInstallationClient, error) {
+	client, ok := clientMap.Load(cacheKey)
+
+	if !ok {
+		client, err := NewInstallationClient(cacheKey, config)
+
+		if err != nil {
+			return nil, errors.New("Could not create new installation client: " + err.Error())
+		}
+		return client, nil
+	}
+
+	return client.(*GithubInstallationClient), nil
 }
