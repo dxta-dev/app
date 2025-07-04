@@ -17,15 +17,15 @@ func NewGithubInstallationActivities(GithubAppClient onboarding.GithubAppClient)
 	}
 }
 
-type GithubInstallation struct {
+type GithubInstallationOrganization struct {
 	OrganizationID    int64
 	OrganizationLogin string
 }
 
-func (gia *GithubInstallationActivities) GetGithubInstallation(
+func (gia *GithubInstallationActivities) GetInstallationOrganization(
 	ctx context.Context,
 	installationId int64,
-) (*GithubInstallation, error) {
+) (*GithubInstallationOrganization, error) {
 	account, err := gia.githubAppClient.GetInstallationAccount(ctx, installationId)
 
 	if err != nil {
@@ -33,7 +33,7 @@ func (gia *GithubInstallationActivities) GetGithubInstallation(
 		return nil, err
 	}
 
-	return &GithubInstallation{
+	return &GithubInstallationOrganization{
 		OrganizationID:    account.ID,
 		OrganizationLogin: account.Login,
 	}, nil

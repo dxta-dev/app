@@ -31,11 +31,11 @@ func AfterGithubInstallationWorkflow(
 
 	ctx = workflow.WithActivityOptions(ctx, ao)
 
-	var installation activity.GithubInstallation
+	var installation activity.GithubInstallationOrganization
 
 	err = workflow.ExecuteActivity(
 		ctx,
-		(*activity.GithubInstallationActivities).GetGithubInstallation,
+		(*activity.GithubInstallationActivities).GetInstallationOrganization,
 		params.InstallationID,
 	).Get(ctx, &installation)
 
