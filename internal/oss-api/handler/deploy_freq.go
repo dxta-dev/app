@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/data"
@@ -9,6 +8,8 @@ import (
 	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/util"
 )
+
+var DeployFrequencyHandler = OSSMetricHandler(data.BuildDeployFrequencyQuery)
 
 func DeployFrequencyMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -24,7 +25,7 @@ func DeployFrequencyMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	weeksArray := util.GetWeeksArray(weekParam)
 	weeksSorted := util.SortISOWeeks(weeksArray)
 
-	query := data.BuildDeployFrequencyQuery(weeksSorted)
+	query := data.BuildDeployFrequencyQuery(weeksSorted, apiState.TeamId)
 
 	result, err := apiState.DB.GetAggregatedValues(
 		ctx,
@@ -58,37 +59,3 @@ func DeployFrequencyMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func DeployFrequencyHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-
-	apiState, err := api.NewAPIState(r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	weekParam := r.URL.Query().Get("weeks")
-	weeksArray := util.GetWeeksArray(weekParam)
-	weeksSorted := util.SortISOWeeks(weeksArray)
-
-	query := data.BuildDeployFrequencyQuery(weeksSorted)
-	result, err := apiState.DB.GetAggregatedValues(
-		ctx,
-		query,
-		apiState.Org,
-		apiState.Repo,
-		weeksSorted,
-		nil,
-	)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(result); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
