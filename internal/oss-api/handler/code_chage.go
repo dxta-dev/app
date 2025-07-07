@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/dxta-dev/app/internal/data"
+	"github.com/dxta-dev/app/internal/docs"
 	"github.com/dxta-dev/app/internal/markdown"
 	api "github.com/dxta-dev/app/internal/oss-api"
 	"github.com/dxta-dev/app/internal/util"
@@ -39,17 +40,19 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	meta, body, err := util.ReadMarkdownFromFS[docs.MarkdownHandlerFrontmatter](
+		docs.DocsFS,
+		"code_change/markdown_handler.md",
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	m, err := markdown.GetAggregatedValuesMarkdown(
 		ctx,
-		"Code Change Metrics",
-		`The Code Change engineering metric quantifies the team’s weekly development activity by measuring the total number of lines of code added, modified, or deleted across our repositories.
-
-* **Source**: Computed from commit diffs in our Git version-control system, excluding merge commits and auto-generated files.
-* **Aggregation**: Grouped by ISO week (Monday–Sunday).
-* **Purpose**:
-   * Tracks engineering velocity and throughput over time.
-   * Highlights spikes (e.g., major feature work or refactors) and troughs (e.g., stabilization periods, planning, or holidays).
-   * Helps correlate process changes (code freezes, new tooling) with fluctuations in developer output.`,
+		meta.Title,
+		body,
 		result,
 	)
 	if err != nil {
@@ -64,6 +67,13 @@ func CodeChangeMarkdownHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
+
+type OSSMetricQueryBuilder[ func(weeks []string, team *int64) data.AggregatedValuesQuery
+
+
+func OSSMetricHandler[T any]() {
+}
+
 
 func CodeChangeHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
