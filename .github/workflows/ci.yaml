@@ -24,6 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Check PR title for ticket number
+        if: github.event_name == 'pull_request'
         run: |
           echo "PR Title: ${{ github.event.pull_request.title }}"
 
