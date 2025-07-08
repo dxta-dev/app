@@ -84,10 +84,12 @@ CREATE TABLE "github_teams" (
     "external_id" INTEGER NOT NULL UNIQUE,
     "name" TEXT NOT NULL,
     "github_organization_id" INTEGER NOT NULL,
+    "team_id" INTEGER NULL,
     "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "deleted_at" DATETIME DEFAULT NULL,
-    FOREIGN KEY ("github_organization_id") references "github_organizations" ("id")
+    FOREIGN KEY ("github_organization_id") REFERENCES "github_organizations" ("id"),
+    FOREIGN KEY ("team_id") REFERENCES "teams" ("id")
 );
 
 CREATE TABLE "github_teams__github_members" (

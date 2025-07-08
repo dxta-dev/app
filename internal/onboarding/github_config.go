@@ -62,7 +62,7 @@ func getInstallationTransport(
 	itt, err := ghinstallation.New(tr, appId, installationId, appPrivateKey)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create apps transport: %w", err)
+		return nil, errors.New("failed to create installation transport: " + err.Error())
 	}
 
 	return itt, nil
@@ -76,7 +76,7 @@ func getAppTransport(
 	atr, err := ghinstallation.NewAppsTransport(tr, appId, appPrivateKey)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create apps transport: %w", err)
+		return nil, errors.New("failed to create apps transport: " + err.Error())
 	}
 
 	return atr, nil
