@@ -9,11 +9,11 @@ import (
 	"github.com/dxta-dev/app/internal/otel"
 )
 
-type TenantDB struct {
+type DB struct {
 	DB *sql.DB
 }
 
-func NewTenantDB(dbUrl string, ctx context.Context) (TenantDB, error) {
+func NewDB(dbUrl string, ctx context.Context) (DB, error) {
 	driverName := otel.GetDriverName()
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
 
@@ -23,14 +23,14 @@ func NewTenantDB(dbUrl string, ctx context.Context) (TenantDB, error) {
 	)
 
 	if err != nil {
-		return TenantDB{}, errors.New("failed to open tenant db connection " + err.Error())
+		return DB{}, errors.New("failed to open tenant db connection " + err.Error())
 	}
 
 	if err := tenantDB.PingContext(ctx); err != nil {
-		return TenantDB{}, errors.New("failed to verify tenant db connection " + err.Error())
+		return DB{}, errors.New("failed to verify tenant db connection " + err.Error())
 	}
 
-	return TenantDB{
+	return DB{
 		DB: tenantDB,
 	}, nil
 }
