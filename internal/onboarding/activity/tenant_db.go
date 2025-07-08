@@ -16,6 +16,7 @@ type DatabaseData struct {
 	DBID     string `json:"DbId"`
 	Hostname string `json:"Hostname"`
 	Name     string `json:"Name"`
+	DBURL    string
 }
 type CreateTenantDBRes struct {
 	Database DatabaseData `json:"database"`
@@ -99,6 +100,8 @@ func (cta CreateTenantActivities) CreateTenantDB(
 
 	fmt.Printf("Success! Data: %v", body)
 
+	body.Database.DBURL = fmt.Sprintf("libsql://%s", body.Database.Hostname)
+
 	return &body, nil
 }
 
@@ -106,7 +109,7 @@ func (cta CreateTenantActivities) AddTenantDBToMap(
 	ctx context.Context,
 	authId string,
 	DBName string,
-	DBHostName string,
+	DBURL string,
 	DBDomainName string,
 ) (bool, error) {
 	db, err := onboarding.GetDB(ctx, cta.config.OrganizationsTenantMapDBURL)
@@ -115,12 +118,10 @@ func (cta CreateTenantActivities) AddTenantDBToMap(
 		return false, errors.New("failed to get organizations-tenant-map db: " + err.Error())
 	}
 
-	dbUrl := fmt.Sprintf("libsql://%s", DBHostName)
-
 	_, err = db.QueryContext(ctx, `
 		INSERT INTO tenants 
 			(organization_id, db_url, name, domain) 
-		VALUES (?, ?, ?, ?);`, authId, dbUrl, DBName, DBDomainName)
+		VALUES (?, ?, ?, ?);`, authId, DBURL, DBName, DBDomainName)
 
 	if err != nil {
 		return false, errors.New("failed to store tenant db data to organizations-tenant-map db: " + err.Error())
