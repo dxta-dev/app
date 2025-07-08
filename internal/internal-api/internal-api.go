@@ -13,7 +13,7 @@ import (
 )
 
 type State struct {
-	DB data.TenantDB
+	DB data.DB
 }
 
 type TenantDBData struct {
@@ -60,7 +60,7 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, e
 }
 
 func InternalApiState(ctx context.Context, dbUrl string, r *http.Request) (State, error) {
-	tenantDB, err := data.NewTenantDB(dbUrl, ctx)
+	tenantDB, err := data.NewDB(dbUrl, ctx)
 
 	if err != nil {
 		return State{}, err

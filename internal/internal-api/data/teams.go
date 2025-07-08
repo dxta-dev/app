@@ -7,7 +7,7 @@ import (
 
 type CreateTeamResponse struct{ Id int64 }
 
-func (d TenantDB) CreateTeam(
+func (d DB) CreateTeam(
 	teamName string,
 	organizationId int64,
 	ctx context.Context,
