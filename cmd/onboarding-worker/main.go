@@ -50,20 +50,21 @@ func main() {
 	}
 
 	tenantDBConnections := sync.Map{}
+	githubInstallationClientMap := sync.Map{}
 
 	w := worker.New(temporalClient, cfg.TemporalOnboardingQueueName, worker.Options{})
 
-	userActivities := activity.NewUserActivites(
-		*cfg,
-	)
+	userActivities := activity.NewUserActivites(*cfg)
 	githubInstallationActivities := activity.NewGithubInstallationActivities(*githubAppClient)
 	tenantActivities := activity.NewTenantActivities(&tenantDBConnections)
+	githubActivities := activity.NewGithubActivities(&githubInstallationClientMap, *githubConfig)
 
 	w.RegisterWorkflow(workflow.CountUsers)
 	w.RegisterWorkflow(workflow.AfterGithubInstallationWorkflow)
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 	w.RegisterActivity(tenantActivities)
+	w.RegisterActivity(githubActivities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)

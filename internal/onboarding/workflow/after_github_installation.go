@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"go.temporal.io/sdk/temporal"
 	"go.temporal.io/sdk/workflow"
 
+	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/activity"
 )
 
@@ -22,8 +24,14 @@ func AfterGithubInstallationWorkflow(
 	ctx workflow.Context,
 	params AfterGithubInstallationParams,
 ) (err error) {
+
+	if params.InstallationID == 0 || params.AuthID == "" || params.DBURL == "" {
+		err = errors.New("bad request")
+		return
+	}
+
 	ao := workflow.ActivityOptions{
-		StartToCloseTimeout: time.Second * 30,
+		StartToCloseTimeout: time.Minute,
 		RetryPolicy: &temporal.RetryPolicy{
 			MaximumAttempts: 10,
 		},
@@ -72,6 +80,89 @@ func AfterGithubInstallationWorkflow(
 		return
 	}
 
+	var githubTeams onboarding.Teams
+
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.GithubActivities).GetTeams,
+		params.InstallationID,
+		installation.OrganizationLogin,
+	).Get(ctx, &githubTeams)
+
+	if err != nil {
+		return
+	}
+
+	counter := 0
+
+	for _, team := range githubTeams {
+		workflow.Go(ctx, func(gctx workflow.Context) {
+
+			if err != nil {
+				return
+			}
+
+			var teamMembers onboarding.Members
+
+			err = workflow.ExecuteActivity(
+				gctx,
+				(*activity.GithubActivities).GetTeamMembers,
+				params.InstallationID,
+				installation.OrganizationLogin,
+				team.Slug,
+			).Get(gctx, &teamMembers)
+
+			if err != nil {
+				return
+			}
+
+			var teamMembersFutures []workflow.Future
+
+			for _, member := range teamMembers {
+				teamMembersFutures = append(teamMembersFutures, workflow.ExecuteActivity(gctx, (*activity.GithubActivities).GetTeamMemberEmail, params.InstallationID, member))
+			}
+
+			var teamMembersWithEmails onboarding.Members
+
+			for i := 0; i < len(teamMembers); i++ {
+				var memberWithEmail onboarding.Member
+
+				err := teamMembersFutures[i].Get(gctx, &memberWithEmail)
+
+				if err != nil {
+					return
+				}
+
+				teamMembersWithEmails = append(teamMembersWithEmails, memberWithEmail)
+			}
+
+			var teamAndMembersUpsertRes *bool
+
+			err = workflow.ExecuteActivity(
+				gctx,
+				(*activity.TenantActivities).UpsertTeamAndMembers,
+				team,
+				teamMembersWithEmails,
+				params.DBURL,
+				githubOrganizationId,
+				organizationId,
+			).Get(gctx, &teamAndMembersUpsertRes)
+
+			if err != nil {
+				return
+			}
+
+			// Count number of finished go routines
+			// so we can unblock calling thread when
+			// all go routines finish
+			counter += 1
+		})
+	}
+
+	_ = workflow.Await(ctx, func() bool {
+		return err != nil || counter == len(githubTeams)
+	})
+
 	return
 }
 
@@ -80,6 +171,7 @@ type ExecuteAfterGithubInstallationParams struct {
 	InstallationID              int64
 	AuthID                      string
 	DBURL                       string
+	DBDomainName                string
 }
 
 func ExecuteAfterGithubInstallationWorkflow(
@@ -92,7 +184,8 @@ func ExecuteAfterGithubInstallationWorkflow(
 		client.StartWorkflowOptions{
 			ID: fmt.Sprintf(
 				"onboarding-workflow-github-%v-%v",
-				params.InstallationID, params.AuthID,
+				params.DBDomainName,
+				params.InstallationID,
 			),
 			TaskQueue: params.TemporalOnboardingQueueName,
 		},
