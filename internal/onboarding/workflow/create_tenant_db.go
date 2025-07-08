@@ -14,15 +14,16 @@ import (
 )
 
 type CreateTenantDBParams struct {
-	DBName string
-	AuthID string
+	DBName           string
+	AuthID           string
+	OrganizationName string
 }
 
 func CreateTenantDBWorkflow(
 	ctx workflow.Context,
 	params CreateTenantDBParams,
 ) (err error) {
-	if params.DBName == "" || params.AuthID == "" {
+	if params.DBName == "" || params.AuthID == "" || params.OrganizationName == "" {
 		err = errors.New("bad request")
 		return
 	}
@@ -56,7 +57,7 @@ func CreateTenantDBWorkflow(
 		(*activity.CreateTenantActivities).AddTenantDBToMap,
 		params.AuthID,
 		params.DBName,
-		newDBData.Database.Hostname,
+		newDBData.Database.DBURL,
 		newDBData.Database.Name,
 	)
 
@@ -64,8 +65,16 @@ func CreateTenantDBWorkflow(
 		ctx,
 		(*activity.TenantActivities).UpsertTenantDBInfo,
 		params.DBName,
-		newDBData.Database.Hostname,
+		newDBData.Database.DBURL,
 		newDBData.Database.Name,
+	)
+
+	createOrganizationFuture := workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).CreateOrganization,
+		params.OrganizationName,
+		params.AuthID,
+		newDBData.Database.DBURL,
 	)
 
 	var tenantDBMapRes bool
@@ -84,6 +93,14 @@ func CreateTenantDBWorkflow(
 		return
 	}
 
+	var createOrganizationRes bool
+
+	err = createOrganizationFuture.Get(ctx, &createOrganizationRes)
+
+	if err != nil {
+		return
+	}
+
 	return
 }
 
@@ -91,6 +108,7 @@ type ExecuteCreateTenantDBWorkflowParams struct {
 	TemporalOnboardingQueueName string
 	AuthID                      string
 	DBName                      string
+	OrganizationName            string
 }
 
 func ExecuteCreateTenantDBWorkflow(
@@ -110,8 +128,9 @@ func ExecuteCreateTenantDBWorkflow(
 		},
 		CreateTenantDBWorkflow,
 		CreateTenantDBParams{
-			AuthID: params.AuthID,
-			DBName: params.DBName,
+			AuthID:           params.AuthID,
+			DBName:           params.DBName,
+			OrganizationName: params.OrganizationName,
 		},
 	)
 
