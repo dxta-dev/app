@@ -23,6 +23,12 @@ func main() {
 		log.Fatalln("Failed to load github configuration:", err)
 	}
 
+	createTenantConfig, err := onboarding.LoadCreateTenantConfig()
+
+	if err != nil {
+		log.Fatalln("Failed to load create tenant configuration:", err)
+	}
+
 	temporalClient, err := client.Dial(client.Options{
 		HostPort:  cfg.TemporalHostPort,
 		Namespace: cfg.TemporalOnboardingNamespace,
@@ -54,13 +60,17 @@ func main() {
 	githubInstallationActivities := activity.NewGithubInstallationActivities(*githubAppClient)
 	tenantActivities := activity.NewTenantActivities()
 	githubActivities := activity.NewGithubActivities(*githubConfig)
+	createTenantActivities := activity.NewCreateTenantActivities(*createTenantConfig)
 
 	w.RegisterWorkflow(workflow.CountUsers)
 	w.RegisterWorkflow(workflow.AfterGithubInstallationWorkflow)
+	w.RegisterWorkflow(workflow.CreateTenantDBWorkflow)
+
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 	w.RegisterActivity(tenantActivities)
 	w.RegisterActivity(githubActivities)
+	w.RegisterActivity(createTenantActivities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)
