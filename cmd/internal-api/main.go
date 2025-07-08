@@ -129,8 +129,6 @@ func main() {
 
 	defer temporalClient.Close()
 
-	usersHandler := handler.NewUsers(temporalClient, *cfg)
-
 	r.Route("/tenant", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
 			pubKey, _ := util.GetRawPublicKey()
@@ -139,14 +137,35 @@ func main() {
 
 			r.Use(jwtauth.Verifier(tokenAuth))
 			r.Use(util.Authenticator())
+		} else {
+			// TO-DO Handle different type of auth or no auth at all
+			// right now just exit with error
+			log.Fatalln("Enable jwt auth")
 		}
-
-		// TO-DO Add middleware if we don't authenticate with JWT
-		// https://app.plane.so/crocoder/browse/DXTA-307/
 
 		r.Post("/teams", handler.CreateTeam)
 		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)
 		r.Post("/members", handler.CreateMember)
+	})
+
+	temporalHandler := handler.NewTemporalHandler(temporalClient, *cfg)
+
+	r.Route("/onboarding", func(r chi.Router) {
+		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
+			pubKey, _ := util.GetRawPublicKey()
+
+			tokenAuth := util.CreateAuthVerifier(pubKey)
+
+			r.Use(jwtauth.Verifier(tokenAuth))
+			r.Use(util.Authenticator())
+		} else {
+			// TO-DO Handle different type of auth or no auth at all
+			// right now just exit with error
+			log.Fatalln("Enable jwt auth")
+		}
+
+		r.Post("/databases", temporalHandler.CreateTenantDB)
+		r.Post("/github-installation", temporalHandler.GithubInstallation)
 	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -157,7 +176,7 @@ func main() {
 		w.Write([]byte(`OK`))
 	})
 
-	r.Get("/users-count", usersHandler.UsersCount)
+	r.Get("/users-count", temporalHandler.UsersCount)
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)
