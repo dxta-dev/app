@@ -177,15 +177,17 @@ func upsertMember(ctx context.Context, tx *sql.Tx, teamId int64, githubTeamId in
 			return false, errors.New("Issue while updating member_id in github member: " + err.Error())
 		}
 
-		_, err = tx.Exec(`
+		if teamId != 0 {
+			_, err = tx.Exec(`
 			INSERT INTO teams__members
 				(team_id, member_id)
 			VALUES
 				(?, ?);`,
-			teamId, memberId)
+				teamId, memberId)
 
-		if err != nil {
-			return false, errors.New("Issue creating teams__members: " + err.Error())
+			if err != nil {
+				return false, errors.New("Issue creating teams__members: " + err.Error())
+			}
 		}
 	}
 

@@ -2,6 +2,7 @@ package workflow
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -23,6 +24,12 @@ func AfterGithubInstallationWorkflow(
 	ctx workflow.Context,
 	params AfterGithubInstallationParams,
 ) (err error) {
+
+	if params.InstallationID == 0 || params.AuthID == "" || params.DBURL == "" {
+		err = errors.New("bad request")
+		return
+	}
+
 	ao := workflow.ActivityOptions{
 		StartToCloseTimeout: time.Minute,
 		RetryPolicy: &temporal.RetryPolicy{
@@ -164,6 +171,7 @@ type ExecuteAfterGithubInstallationParams struct {
 	InstallationID              int64
 	AuthID                      string
 	DBURL                       string
+	DBDomainName                string
 }
 
 func ExecuteAfterGithubInstallationWorkflow(
@@ -176,7 +184,8 @@ func ExecuteAfterGithubInstallationWorkflow(
 		client.StartWorkflowOptions{
 			ID: fmt.Sprintf(
 				"onboarding-workflow-github-%v-%v",
-				params.InstallationID, params.AuthID,
+				params.DBDomainName,
+				params.InstallationID,
 			),
 			TaskQueue: params.TemporalOnboardingQueueName,
 		},
