@@ -157,7 +157,8 @@ func main() {
 	r.Get("/small-mrs/{org}/{repo}", handler.SmallMRsHandler)
 
 	// New endpoints
-	r.Get("/{org}/{repo}/code-change", handler.CodeChangeHandler)
+	r.Get(
+		"/{org}/{repo}/code-change", handler.CodeChangeHandler)
 	r.Get("/{org}/{repo}/code-change.md", handler.CodeChangeMarkdownHandler)
 	r.Get("/{org}/{repo}/coding-time", handler.CodingTimeHandler)
 	r.Get("/{org}/{repo}/commits", handler.CommitsHandler)
