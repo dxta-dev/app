@@ -20,6 +20,38 @@ type AfterGithubInstallationParams struct {
 	DBURL          string
 }
 
+func addMemberToMap(
+	team onboarding.Team,
+	member onboarding.ExtendedMember,
+	membersMap activity.MembersRecordMap,
+) activity.MemberRecord {
+	m, ok := membersMap[*member.Login]
+
+	if ok {
+		m.Teams = append(m.Teams, struct {
+			Name   *string
+			TeamID *int64
+		}{Name: team.Name})
+
+		membersMap[*member.Login] = m
+
+	} else {
+		t := append(m.Teams, struct {
+			Name   *string
+			TeamID *int64
+		}{Name: team.Name})
+
+		membersMap[*member.Login] = activity.MemberRecord{
+			ID:    member.ID,
+			Login: member.Login,
+			Email: member.Email,
+			Name:  member.Name,
+			Teams: t,
+		}
+	}
+	return m
+}
+
 func AfterGithubInstallationWorkflow(
 	ctx workflow.Context,
 	params AfterGithubInstallationParams,
@@ -118,10 +150,17 @@ func AfterGithubInstallationWorkflow(
 			var teamMembersFutures []workflow.Future
 
 			for _, member := range teamMembers {
-				teamMembersFutures = append(teamMembersFutures, workflow.ExecuteActivity(gctx, (*activity.GithubActivities).GetExtendedTeamMember, params.InstallationID, member))
+				teamMembersFutures = append(
+					teamMembersFutures,
+					workflow.ExecuteActivity(
+						gctx,
+						(*activity.GithubActivities).GetExtendedTeamMember,
+						params.InstallationID,
+						member,
+					))
 			}
 
-			for i := 0; i < len(teamMembers); i++ {
+			for i := range teamMembers {
 				var member onboarding.ExtendedMember
 
 				err := teamMembersFutures[i].Get(gctx, &member)
@@ -130,31 +169,7 @@ func AfterGithubInstallationWorkflow(
 					return
 				}
 
-				m, ok := membersMap[*member.ID]
-
-				if ok {
-					m.Teams = append(m.Teams, struct {
-						Name   *string
-						TeamID *int64
-					}{Name: team.Name})
-
-					membersMap[*member.ID] = m
-
-				} else {
-					t := append(m.Teams, struct {
-						Name   *string
-						TeamID *int64
-					}{team.Name, nil})
-
-					membersMap[*member.ID] = activity.MemberRecord{
-						ID:    member.ID,
-						Login: member.Login,
-						Email: member.Email,
-						Name:  member.Name,
-						Teams: t,
-					}
-				}
-
+				addMemberToMap(team, member, membersMap)
 			}
 
 			teamsMap[*team.Name] = activity.TeamsRecord{
@@ -184,6 +199,10 @@ func AfterGithubInstallationWorkflow(
 		teamsMap,
 	).Get(ctx, &teamsMap)
 
+	if err != nil {
+		return
+	}
+
 	var newGithubMembers activity.MembersRecordMap
 
 	err = workflow.ExecuteActivity(
@@ -194,27 +213,20 @@ func AfterGithubInstallationWorkflow(
 		teamsMap,
 	).Get(ctx, &newGithubMembers)
 
-	newMembers := make([]activity.MemberRecord, 0)
+	if err != nil {
+		return
+	}
 
 	if len(newGithubMembers) > 0 {
-		var memberUpsertFutures []workflow.Future
+		newMembers := make([]activity.MemberRecord, 0)
 
-		for _, newGithubMember := range newGithubMembers {
-
-			memberUpsertFutures = append(memberUpsertFutures, workflow.ExecuteActivity(ctx, (*activity.TenantActivities).CreateTeamMember, params.DBURL, newGithubMember, organizationId))
-		}
-
-		for i := 0; i < len(newGithubMembers); i++ {
-			var newMemberRes activity.MemberRecord
-
-			err = memberUpsertFutures[i].Get(ctx, &newMemberRes)
-
-			if err != nil {
-				return
-			}
-
-			newMembers = append(newMembers, newMemberRes)
-		}
+		err = workflow.ExecuteActivity(
+			ctx,
+			(*activity.TenantActivities).CreateTeamMembers,
+			params.DBURL,
+			newGithubMembers,
+			organizationId,
+		).Get(ctx, &newMembers)
 
 		var joinRes bool
 

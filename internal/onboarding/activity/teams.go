@@ -9,12 +9,10 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding"
 )
 
-func (ta *TenantActivities) CreateTeamMember(
-	ctx context.Context,
+func (ta *TenantActivities) CreateTeamMembers(ctx context.Context,
 	DBURL string,
-	member MemberRecord,
-	organizationID int64,
-) (*MemberRecord, error) {
+	members MembersRecordMap,
+	organizationID int64) ([]MemberRecord, error) {
 	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
 
 	if err != nil {
@@ -33,41 +31,80 @@ func (ta *TenantActivities) CreateTeamMember(
 		}
 	}()
 
-	row := db.QueryRowContext(ctx, `
-		INSERT INTO members
-			(name, email)
-		VALUES
-			(?, ?)
-		RETURNING id;`,
-		member.Name, member.Email)
+	args := make([]any, 0)
+	values := make([]string, 0)
+	idsToUpdate := make([]string, 0)
 
-	var memberId int64
-
-	member.MemberID = &memberId
-
-	err = row.Scan(&memberId)
-
-	if err != nil {
-		return nil, errors.New("Issue creating member: " + err.Error())
+	for _, member := range members {
+		args = append(args, member.Name, member.Email, member.Login)
+		values = append(values, "(?, ?, ?)")
+		idsToUpdate = append(idsToUpdate, fmt.Sprintf("%d", *member.GithubMemberId))
 	}
 
-	_, err = tx.Exec(`
-		UPDATE 
-			github_members 
-		SET 
-			member_id = ? 
-		WHERE id = ?`,
-		memberId, member.GithubMemberId)
+	query := fmt.Sprintf(`
+		INSERT INTO members
+			(name, email, username)
+		VALUES
+			%s
+		RETURNING id, username;
+	`, strings.Join(values, ", "))
+
+	rows, err := tx.QueryContext(ctx, query,
+		args...)
 
 	if err != nil {
-		return nil, errors.New("Issue while updating member_id in github member: " + err.Error())
+		return nil, errors.New("failed to create members: " + err.Error())
+	}
+
+	caseStatements := make([]string, 0)
+	newMembers := make([]MemberRecord, 0)
+
+	for rows.Next() {
+		var res struct {
+			ID       *int64
+			Username *string
+		}
+
+		if err := rows.Scan(&res.ID, &res.Username); err != nil {
+			return nil, errors.New("failed to scan create member result: " + err.Error())
+		}
+
+		member, ok := members[*res.Username]
+
+		if !ok {
+			return nil, errors.New("failed to get a member record from map")
+		}
+
+		member.MemberID = res.ID
+		newMembers = append(newMembers, member)
+
+		caseStatements = append(caseStatements, fmt.Sprintf("WHEN username = '%s' THEN %d", *res.Username, *res.ID))
+
+	}
+	caseClause := strings.Join(caseStatements, "\n    ")
+	whereInClause := strings.Join(idsToUpdate, ", ")
+
+	query = fmt.Sprintf(`
+		UPDATE 
+			github_members 
+		SET member_id = CASE 
+			%s 
+		ELSE member_id 
+		END 
+		WHERE id IN (%s)
+	`, caseClause, whereInClause)
+
+	_, err = tx.ExecContext(ctx, query)
+
+	if err != nil {
+		return nil, errors.New("failed to update github members reference: " + err.Error())
 	}
 
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
 
-	return &member, err
+	return newMembers, nil
 }
 
 func (ta *TenantActivities) JoinTeamsMembers(
@@ -86,7 +123,7 @@ func (ta *TenantActivities) JoinTeamsMembers(
 
 	for _, member := range newMembers {
 		for _, team := range member.Teams {
-			args = append(args, []any{team.TeamID, member.MemberID}...)
+			args = append(args, team.TeamID, member.MemberID)
 			values = append(values, "(?, ?)")
 		}
 

@@ -31,6 +31,7 @@ CREATE TABLE "members" (
     "id" INTEGER PRIMARY KEY NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT DEFAULT NULL,
+    "username" TEXT NOT NULL UNIQUE,
     "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "deleted_at" DATETIME DEFAULT NULL
@@ -70,7 +71,7 @@ CREATE TABLE "organizations__github_organizations" (
 CREATE TABLE "github_members" (
     "id" INTEGER PRIMARY KEY NOT NULL,
     "external_id" INTEGER NOT NULL UNIQUE,
-    "username" TEXT NOT NULL,
+    "username" TEXT NOT NULL UNIQUE,
     "email" TEXT DEFAULT NULL,
     "member_id" INTEGER NULL,
     "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),

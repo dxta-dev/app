@@ -74,10 +74,12 @@ func (ga *GithubActivities) GetExtendedTeamMember(
 }
 
 type TeamsRecord struct {
-	ID           *int64
-	Name         *string
+	ID   *int64
+	Name *string
+	// ID of a record after insertion to github_teams table
 	GithubTeamID *int64
-	TeamID       *int64
+	// ID of a record after insertion to teams table
+	TeamID *int64
 }
 
 type TeamsRecordMap map[string]TeamsRecord
@@ -111,7 +113,7 @@ func (ta *TenantActivities) UpsertTeams(
 	values := make([]string, 0)
 
 	for _, t := range *teamsRecordMap {
-		args = append(args, []any{t.Name, t.ID, githubOrganizationId}...)
+		args = append(args, t.Name, t.ID, githubOrganizationId)
 		values = append(values, "(?, ?, ?)")
 	}
 
@@ -209,25 +211,27 @@ func (ta *TenantActivities) UpsertTeams(
 }
 
 type MemberRecord struct {
-	ID             *int64
-	Login          *string
-	Name           *string
-	Email          *string
+	ID    *int64
+	Login *string
+	Name  *string
+	Email *string
+	// ID of a record after insertion to github_members table
 	GithubMemberId *int64
-	MemberID       *int64
-	Teams          []struct {
+	// ID of a record after insertion to members table
+	MemberID *int64
+	Teams    []struct {
 		Name   *string
 		TeamID *int64
 	}
 }
 
-type MembersRecordMap map[int64]MemberRecord
+type MembersRecordMap map[string]MemberRecord
 
 func (ta *TenantActivities) UpsertGithubMembers(
 	ctx context.Context,
 	DBURL string,
 	membersMap MembersRecordMap,
-	teamsRecordMap *TeamsRecordMap,
+	teamsRecordMap TeamsRecordMap,
 ) (res *MembersRecordMap, err error) {
 	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
 
@@ -251,19 +255,21 @@ func (ta *TenantActivities) UpsertGithubMembers(
 	values := make([]string, 0)
 
 	for _, m := range membersMap {
-		args = append(args, []any{m.ID, m.Login, m.Email}...)
+		args = append(args, m.ID, m.Login, m.Email)
 		values = append(values, "(?, ?, ?)")
 	}
 
 	query := fmt.Sprintf(`
 		INSERT INTO github_members
 			(external_id, username, email)
-		VALUES %s ON CONFLICT 
+		VALUES 
+			%s 
+		ON CONFLICT 
 			(external_id) 
 		DO UPDATE SET 
 			username = excluded.username, 
 			email = excluded.email 
-		RETURNING id, member_id, external_id`,
+		RETURNING id, member_id, username`,
 		strings.Join(values, ", "))
 
 	rows, err := tx.QueryContext(ctx, query,
@@ -279,20 +285,21 @@ func (ta *TenantActivities) UpsertGithubMembers(
 	values = make([]string, 0)
 
 	for rows.Next() {
-		var id, member_id, external_id *int64
+		var id, member_id *int64
+		var username *string
 
-		if err := rows.Scan(&id, &member_id, &external_id); err != nil {
+		if err := rows.Scan(&id, &member_id, &username); err != nil {
 			return nil, errors.New("failed to scan github members upsert result: " + err.Error())
 		}
 
-		memberRecord, ok := membersMap[*external_id]
+		memberRecord, ok := membersMap[*username]
 
 		if !ok {
 			return nil, errors.New("failed to get a team from map")
 		}
 
 		for idx, t := range memberRecord.Teams {
-			team, ok := (*teamsRecordMap)[*t.Name]
+			team, ok := teamsRecordMap[*t.Name]
 			t.TeamID = team.TeamID
 
 			memberRecord.Teams[idx] = t
@@ -301,13 +308,13 @@ func (ta *TenantActivities) UpsertGithubMembers(
 				return nil, errors.New("failed to get a team from map")
 			}
 
-			args = append(args, []any{team.GithubTeamID, id}...)
+			args = append(args, team.GithubTeamID, id)
 			values = append(values, "(?, ?)")
 		}
 
 		if member_id == nil {
 			memberRecord.GithubMemberId = id
-			newMembersMap[*external_id] = memberRecord
+			newMembersMap[*username] = memberRecord
 		}
 	}
 
