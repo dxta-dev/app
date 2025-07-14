@@ -95,13 +95,11 @@ func AfterGithubInstallationWorkflow(
 
 	counter := 0
 
+	teamsMap := activity.TeamsRecordMap{}
+	membersMap := activity.MembersRecordMap{}
+
 	for _, team := range githubTeams {
 		workflow.Go(ctx, func(gctx workflow.Context) {
-
-			if err != nil {
-				return
-			}
-
 			var teamMembers onboarding.Members
 
 			err = workflow.ExecuteActivity(
@@ -110,6 +108,7 @@ func AfterGithubInstallationWorkflow(
 				params.InstallationID,
 				installation.OrganizationLogin,
 				team.Slug,
+				team.Name,
 			).Get(gctx, &teamMembers)
 
 			if err != nil {
@@ -119,37 +118,50 @@ func AfterGithubInstallationWorkflow(
 			var teamMembersFutures []workflow.Future
 
 			for _, member := range teamMembers {
-				teamMembersFutures = append(teamMembersFutures, workflow.ExecuteActivity(gctx, (*activity.GithubActivities).GetTeamMemberEmail, params.InstallationID, member))
+				teamMembersFutures = append(teamMembersFutures, workflow.ExecuteActivity(gctx, (*activity.GithubActivities).GetExtendedTeamMember, params.InstallationID, member))
 			}
 
-			var teamMembersWithEmails onboarding.Members
-
 			for i := 0; i < len(teamMembers); i++ {
-				var memberWithEmail onboarding.Member
+				var member onboarding.ExtendedMember
 
-				err := teamMembersFutures[i].Get(gctx, &memberWithEmail)
+				err := teamMembersFutures[i].Get(gctx, &member)
 
 				if err != nil {
 					return
 				}
 
-				teamMembersWithEmails = append(teamMembersWithEmails, memberWithEmail)
+				m, ok := membersMap[*member.ID]
+
+				if ok {
+					m.Teams = append(m.Teams, struct {
+						Name   *string
+						TeamID *int64
+					}{Name: team.Name})
+
+					membersMap[*member.ID] = m
+
+				} else {
+					t := append(m.Teams, struct {
+						Name   *string
+						TeamID *int64
+					}{team.Name, nil})
+
+					membersMap[*member.ID] = activity.MemberRecord{
+						ID:    member.ID,
+						Login: member.Login,
+						Email: member.Email,
+						Name:  member.Name,
+						Teams: t,
+					}
+				}
+
 			}
 
-			var teamAndMembersUpsertRes *bool
-
-			err = workflow.ExecuteActivity(
-				gctx,
-				(*activity.TenantActivities).UpsertTeamAndMembers,
-				team,
-				teamMembersWithEmails,
-				params.DBURL,
-				githubOrganizationId,
-				organizationId,
-			).Get(gctx, &teamAndMembersUpsertRes)
-
-			if err != nil {
-				return
+			teamsMap[*team.Name] = activity.TeamsRecord{
+				ID:           team.ID,
+				Name:         team.Name,
+				GithubTeamID: nil,
+				TeamID:       nil,
 			}
 
 			// Count number of finished go routines
@@ -162,6 +174,61 @@ func AfterGithubInstallationWorkflow(
 	_ = workflow.Await(ctx, func() bool {
 		return err != nil || counter == len(githubTeams)
 	})
+
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).UpsertTeams,
+		params.DBURL,
+		githubOrganizationId,
+		organizationId,
+		teamsMap,
+	).Get(ctx, &teamsMap)
+
+	var newGithubMembers activity.MembersRecordMap
+
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).UpsertGithubMembers,
+		params.DBURL,
+		membersMap,
+		teamsMap,
+	).Get(ctx, &newGithubMembers)
+
+	newMembers := make([]activity.MemberRecord, 0)
+
+	if len(newGithubMembers) > 0 {
+		var memberUpsertFutures []workflow.Future
+
+		for _, newGithubMember := range newGithubMembers {
+
+			memberUpsertFutures = append(memberUpsertFutures, workflow.ExecuteActivity(ctx, (*activity.TenantActivities).CreateTeamMember, params.DBURL, newGithubMember, organizationId))
+		}
+
+		for i := 0; i < len(newGithubMembers); i++ {
+			var newMemberRes activity.MemberRecord
+
+			err = memberUpsertFutures[i].Get(ctx, &newMemberRes)
+
+			if err != nil {
+				return
+			}
+
+			newMembers = append(newMembers, newMemberRes)
+		}
+
+		var joinRes bool
+
+		err = workflow.ExecuteActivity(
+			ctx,
+			(*activity.TenantActivities).JoinTeamsMembers,
+			params.DBURL,
+			newMembers,
+		).Get(ctx, &joinRes)
+
+		if err != nil {
+			return
+		}
+	}
 
 	return
 }

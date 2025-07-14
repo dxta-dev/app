@@ -50,7 +50,11 @@ type Team struct {
 
 type Teams []Team
 
-func (gic *GithubInstallationClient) GetTeams(ctx context.Context, organizationName string, listOptions *ListOptions) (Teams, error) {
+func (gic *GithubInstallationClient) GetTeams(
+	ctx context.Context,
+	organizationName string,
+	listOptions *ListOptions,
+) (Teams, error) {
 	opts := &github.ListOptions{}
 
 	if listOptions != nil {
@@ -87,13 +91,17 @@ func (gic *GithubInstallationClient) GetTeams(ctx context.Context, organizationN
 type Member struct {
 	Login *string `json:"login,omitempty"`
 	ID    *int64  `json:"id,omitempty"`
-	Name  *string `json:"name,omitempty"`
-	Email *string `json:"email,omitempty"`
 }
 
 type Members []Member
 
-func (gic *GithubInstallationClient) GetTeamMembers(ctx context.Context, organizationName string, teamSlug string, listOptions *ListOptions) (Members, error) {
+func (gic *GithubInstallationClient) GetTeamMembers(
+	ctx context.Context,
+	organizationName string,
+	teamSlug string,
+	teamName string,
+	listOptions *ListOptions,
+) (Members, error) {
 	lo := github.ListOptions{}
 
 	if listOptions != nil {
@@ -105,7 +113,12 @@ func (gic *GithubInstallationClient) GetTeamMembers(ctx context.Context, organiz
 	var allMembers Members
 
 	for range listOptions.MaxPages {
-		members, res, err := gic.client.Teams.ListTeamMembersBySlug(ctx, organizationName, teamSlug, opts)
+		members, res, err := gic.client.Teams.ListTeamMembersBySlug(
+			ctx,
+			organizationName,
+			teamSlug,
+			opts,
+		)
 
 		if err != nil {
 			return nil, errors.New("failed to retrieve github team members list: " + err.Error())
@@ -114,7 +127,10 @@ func (gic *GithubInstallationClient) GetTeamMembers(ctx context.Context, organiz
 		m := make(Members, 0)
 
 		for _, member := range members {
-			m = append(m, Member{Login: member.Login, ID: member.ID, Name: member.Name, Email: member.Email})
+			m = append(m,
+				Member{
+					Login: member.Login,
+					ID:    member.ID})
 		}
 
 		allMembers = append(allMembers, m...)
@@ -129,14 +145,25 @@ func (gic *GithubInstallationClient) GetTeamMembers(ctx context.Context, organiz
 	return allMembers, nil
 }
 
-func (gic *GithubInstallationClient) GetTeamMemberWithEmail(ctx context.Context, teamMember Member) (*Member, error) {
+type ExtendedMember struct {
+	*Member
+	Email *string
+	Name  *string
+}
+
+func (gic *GithubInstallationClient) GetExtendedTeamMember(
+	ctx context.Context,
+	teamMember Member,
+) (*ExtendedMember, error) {
 	user, _, err := gic.client.Users.Get(ctx, *teamMember.Login)
 
 	if err != nil {
 		return nil, errors.New("failed to retrieve github team member email: " + err.Error())
 	}
 
-	teamMember.Email = user.Email
-
-	return &teamMember, nil
+	return &ExtendedMember{
+		Member: &teamMember,
+		Email:  user.Email,
+		Name:   user.Name,
+	}, nil
 }

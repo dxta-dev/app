@@ -2,8 +2,9 @@ package activity
 
 import (
 	"context"
-	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/dxta-dev/app/internal/onboarding"
@@ -21,7 +22,11 @@ func NewGithubActivities(clientMap *sync.Map, githubConfig onboarding.GithubConf
 	}
 }
 
-func (ga *GithubActivities) GetTeams(ctx context.Context, installationId int64, organizationName string) (onboarding.Teams, error) {
+func (ga *GithubActivities) GetTeams(
+	ctx context.Context,
+	installationId int64,
+	organizationName string,
+) (onboarding.Teams, error) {
 
 	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
 
@@ -32,192 +37,68 @@ func (ga *GithubActivities) GetTeams(ctx context.Context, installationId int64, 
 	return client.GetTeams(ctx, organizationName, &onboarding.ListOptions{PerPage: 100, MaxPages: 50})
 }
 
-func (ga *GithubActivities) GetTeamMembers(ctx context.Context, installationId int64, organizationName string, teamSlug string) (onboarding.Members, error) {
+func (ga *GithubActivities) GetTeamMembers(
+	ctx context.Context,
+	installationId int64,
+	organizationName string,
+	teamSlug string,
+	teamName string,
+) (onboarding.Members, error) {
 	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
 
 	if err != nil {
 		return nil, errors.New("could not create new installation client to get github members " + err.Error())
 	}
 
-	return client.GetTeamMembers(ctx, organizationName, teamSlug, &onboarding.ListOptions{PerPage: 100, MaxPages: 50})
+	return client.GetTeamMembers(
+		ctx,
+		organizationName,
+		teamSlug,
+		teamName,
+		&onboarding.ListOptions{PerPage: 100, MaxPages: 50})
 }
 
-func (ga *GithubActivities) GetTeamMemberEmail(ctx context.Context, installationId int64, teamMember onboarding.Member, teamSlug string) (*onboarding.Member, error) {
+func (ga *GithubActivities) GetExtendedTeamMember(
+	ctx context.Context,
+	installationId int64,
+	teamMember onboarding.Member,
+	teamSlug string,
+) (*onboarding.ExtendedMember, error) {
 	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
 
 	if err != nil {
 		return nil, errors.New("could not create new installation client to get github members " + err.Error())
 	}
 
-	return client.GetTeamMemberWithEmail(ctx, teamMember)
+	return client.GetExtendedTeamMember(ctx, teamMember)
 }
 
-type UpsertTeamRes struct {
-	githubTeamId int64
-	teamId       int64
+type TeamsRecord struct {
+	ID           *int64
+	Name         *string
+	GithubTeamID *int64
+	TeamID       *int64
 }
 
-func upsertTeam(ctx context.Context, tx *sql.Tx, teamIdPtr *int64, teamNamePtr *string, organizationId, githubOrganizationId int64) (*UpsertTeamRes, error) {
+type TeamsRecordMap map[string]TeamsRecord
 
-	if tx == nil || teamIdPtr == nil || teamNamePtr == nil {
-		return nil, errors.New("invalid params in upsertTeams")
-	}
-
-	var githubTeamId int64
-
-	rows := tx.QueryRowContext(ctx, `
-		SELECT id 
-		FROM github_teams 
-		WHERE external_id = ?;`, teamIdPtr)
-
-	if err := rows.Scan(&githubTeamId); err != nil {
-		if err != sql.ErrNoRows {
-			return nil, errors.New("failed to retrieve github_team: " + err.Error())
-		}
-	}
-
-	var teamId int64
-
-	if githubTeamId == 0 {
-		rows = tx.QueryRowContext(ctx, `
-		INSERT INTO github_teams 
-            (name, external_id, github_organization_id) 
-        VALUES 
-            (?, ?, ?) 
-        RETURNING 
-            id;`,
-			teamNamePtr, teamIdPtr, githubOrganizationId)
-
-		if err := rows.Scan(&githubTeamId); err != nil {
-			return nil, errors.New("failed to upsert github_teams: " + err.Error())
-		}
-
-		rows = tx.QueryRowContext(ctx, `
-		INSERT INTO teams 
-            (name, organization_id) 
-        VALUES 
-            (?, ?) 
-        RETURNING 
-            id;`,
-			teamNamePtr, organizationId)
-
-		if err := rows.Scan(&teamId); err != nil {
-			return nil, errors.New("failed to upsert teams: " + err.Error())
-		}
-	}
-
-	return &UpsertTeamRes{githubTeamId, teamId}, nil
-}
-
-func upsertMember(ctx context.Context, tx *sql.Tx, teamId int64, githubTeamId int64, member onboarding.Member) (bool, error) {
-	rowRes := tx.QueryRowContext(ctx, `
-			INSERT INTO github_members
-				(external_id, username, email)
-			VALUES
-				(?, ?, ?)
-			ON CONFLICT 
-				(external_id) 
-			DO UPDATE SET 
-				username = excluded.username, 
-				email = excluded.email 
-			RETURNING id, member_id`,
-		member.ID, member.Login, member.Email)
-
-	var githubMemberId int64
-	var memberRefId *int64
-
-	if err := rowRes.Scan(&githubMemberId, &memberRefId); err != nil {
-		return false, errors.New("failed to upsert github_member: " + err.Error())
-	}
-
-	_, err := tx.Exec(`
-			INSERT OR IGNORE INTO github_teams__github_members
-				(github_team_id, github_member_id)
-			VALUES
-				(?, ?);`,
-		githubTeamId, githubMemberId)
-
-	if err != nil {
-		return false, errors.New("Issue creating github_teams__github_members: " + err.Error())
-	}
-
-	if memberRefId == nil {
-		name := member.Name
-
-		if name == nil {
-			defaultName := "DXTA member"
-			name = &defaultName
-		}
-
-		rowRes = tx.QueryRowContext(ctx, `
-			INSERT INTO members
-				(name, email)
-			VALUES
-				(?, ?)
-			RETURNING id;`,
-			name, member.Email)
-
-		var memberId int64
-
-		err = rowRes.Scan(&memberId)
-
-		if err != nil {
-			return false, errors.New("Issue creating member: " + err.Error())
-		}
-
-		_, err = tx.Exec(`
-				UPDATE 
-					github_members 
-				SET 
-					member_id = ? 
-				WHERE id = ?`,
-			memberId, githubMemberId)
-
-		if err != nil {
-			return false, errors.New("Issue while updating member_id in github member: " + err.Error())
-		}
-
-		if teamId != 0 {
-			_, err = tx.Exec(`
-			INSERT INTO teams__members
-				(team_id, member_id)
-			VALUES
-				(?, ?);`,
-				teamId, memberId)
-
-			if err != nil {
-				return false, errors.New("Issue creating teams__members: " + err.Error())
-			}
-		}
-	}
-
-	if memberRefId != nil && teamId != 0 {
-		_, err = tx.Exec(`
-			INSERT INTO teams__members
-				(team_id, member_id)
-			VALUES
-				(?, ?);`,
-			teamId, memberRefId)
-
-		if err != nil {
-			return false, errors.New("Issue creating teams__members: " + err.Error())
-		}
-	}
-
-	return true, nil
-}
-
-func (ta *TenantActivities) UpsertTeamAndMembers(ctx context.Context, team onboarding.Team, members onboarding.Members, DBURL string, githubOrganizationId int64, organizationId int64) (res bool, err error) {
+func (ta *TenantActivities) UpsertTeams(
+	ctx context.Context,
+	DBURL string,
+	githubOrganizationId int64,
+	organizationId int64,
+	teamsRecordMap *TeamsRecordMap,
+) (res *TeamsRecordMap, err error) {
 	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
 
 	if err != nil {
-		return false, errors.New("failed to get cached tenant db to upsert teams and members: " + err.Error())
+		return nil, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())
 	}
 
 	tx, err := db.BeginTx(ctx, nil)
 
 	if err != nil {
-		return false, errors.New("failed to begin transaction to upsert teams and members: " + err.Error())
+		return nil, errors.New("failed to begin transaction to upsert teams: " + err.Error())
 	}
 
 	defer func() {
@@ -226,19 +107,226 @@ func (ta *TenantActivities) UpsertTeamAndMembers(ctx context.Context, team onboa
 		}
 	}()
 
-	teamData, err := upsertTeam(ctx, tx, team.ID, team.Name, organizationId, githubOrganizationId)
+	args := make([]any, 0)
+	values := make([]string, 0)
 
-	if err != nil {
-		return false, errors.New("failed to upsert teams: " + err.Error())
+	for _, t := range *teamsRecordMap {
+		args = append(args, []any{t.Name, t.ID, githubOrganizationId}...)
+		values = append(values, "(?, ?, ?)")
 	}
 
-	for _, member := range members {
-		_, err := upsertMember(ctx, tx, teamData.teamId, teamData.githubTeamId, member)
+	query := fmt.Sprintf(
+		`
+		INSERT INTO github_teams 
+            (name, external_id, github_organization_id) 
+        VALUES 
+			%s 
+		ON CONFLICT 
+			(external_id) 
+		DO UPDATE SET 
+			name = excluded.name 
+		RETURNING id, name, external_id, team_id;
+	`, strings.Join(values, ", "),
+	)
 
-		if err != nil {
-			return false, errors.New("failed to upsert member: " + err.Error())
+	rows, err := tx.QueryContext(ctx, query,
+		args...)
+
+	if err != nil {
+		return nil, errors.New("failed to upsert github_teams: " + err.Error())
+	}
+
+	args = make([]any, 0)
+	values = make([]string, 0)
+
+	for rows.Next() {
+		var res struct {
+			ID         int64
+			Name       string
+			ExternalID int64
+			TeamID     *int64
+		}
+
+		if err := rows.Scan(&res.ID, &res.Name, &res.ExternalID, &res.TeamID); err != nil {
+			return nil, errors.New("failed to scan github team upsert result: " + err.Error())
+		}
+
+		teamRecord, ok := (*teamsRecordMap)[res.Name]
+
+		if !ok {
+			return nil, errors.New("failed to get a team record from map")
+		}
+
+		teamRecord.GithubTeamID = &res.ID
+
+		(*teamsRecordMap)[res.Name] = teamRecord
+
+		if res.TeamID == nil {
+			args = append(args, res.Name, organizationId)
+			values = append(values, "(?, ?)")
 		}
 	}
 
-	return true, nil
+	if len(values) > 0 {
+		query = fmt.Sprintf(`
+			INSERT INTO teams 
+				(name, organization_id) 
+			VALUES %s RETURNING id, name;`,
+			strings.Join(values, ", "))
+
+		rows, err = tx.QueryContext(ctx, query, args...)
+
+		if err != nil {
+			return nil, errors.New("failed to upsert teams: " + err.Error())
+		}
+
+		for rows.Next() {
+			var res struct {
+				ID   int64
+				Name string
+			}
+
+			if err := rows.Scan(&res.ID, &res.Name); err != nil {
+				return nil, errors.New("failed to scan team upsert result: " + err.Error())
+			}
+
+			teamRecord, ok := (*teamsRecordMap)[res.Name]
+
+			if !ok {
+				return nil, errors.New("failed to get a teamRecord from map")
+			}
+
+			teamRecord.TeamID = &res.ID
+			(*teamsRecordMap)[res.Name] = teamRecord
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return teamsRecordMap, nil
+}
+
+type MemberRecord struct {
+	ID             *int64
+	Login          *string
+	Name           *string
+	Email          *string
+	GithubMemberId *int64
+	MemberID       *int64
+	Teams          []struct {
+		Name   *string
+		TeamID *int64
+	}
+}
+
+type MembersRecordMap map[int64]MemberRecord
+
+func (ta *TenantActivities) UpsertGithubMembers(
+	ctx context.Context,
+	DBURL string,
+	membersMap MembersRecordMap,
+	teamsRecordMap *TeamsRecordMap,
+) (res *MembersRecordMap, err error) {
+	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+
+	if err != nil {
+		return nil, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())
+	}
+
+	tx, err := db.BeginTx(ctx, nil)
+
+	if err != nil {
+		return nil, errors.New("failed to begin transaction to upsert teams: " + err.Error())
+	}
+
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	args := make([]any, 0)
+	values := make([]string, 0)
+
+	for _, m := range membersMap {
+		args = append(args, []any{m.ID, m.Login, m.Email}...)
+		values = append(values, "(?, ?, ?)")
+	}
+
+	query := fmt.Sprintf(`
+		INSERT INTO github_members
+			(external_id, username, email)
+		VALUES %s ON CONFLICT 
+			(external_id) 
+		DO UPDATE SET 
+			username = excluded.username, 
+			email = excluded.email 
+		RETURNING id, member_id, external_id`,
+		strings.Join(values, ", "))
+
+	rows, err := tx.QueryContext(ctx, query,
+		args...)
+
+	if err != nil {
+		return nil, errors.New("failed to upsert github_members: " + err.Error())
+	}
+
+	newMembersMap := MembersRecordMap{}
+
+	args = make([]any, 0)
+	values = make([]string, 0)
+
+	for rows.Next() {
+		var id, member_id, external_id *int64
+
+		if err := rows.Scan(&id, &member_id, &external_id); err != nil {
+			return nil, errors.New("failed to scan github members upsert result: " + err.Error())
+		}
+
+		memberRecord, ok := membersMap[*external_id]
+
+		if !ok {
+			return nil, errors.New("failed to get a team from map")
+		}
+
+		for idx, t := range memberRecord.Teams {
+			team, ok := (*teamsRecordMap)[*t.Name]
+			t.TeamID = team.TeamID
+
+			memberRecord.Teams[idx] = t
+
+			if !ok {
+				return nil, errors.New("failed to get a team from map")
+			}
+
+			args = append(args, []any{team.GithubTeamID, id}...)
+			values = append(values, "(?, ?)")
+		}
+
+		if member_id == nil {
+			memberRecord.GithubMemberId = id
+			newMembersMap[*external_id] = memberRecord
+		}
+	}
+
+	query = fmt.Sprintf(`
+		INSERT OR IGNORE INTO github_teams__github_members
+			(github_team_id, github_member_id)
+		VALUES %s ;`,
+		strings.Join(values, ", "))
+
+	_, err = tx.QueryContext(ctx, query,
+		args...)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return nil, err
+	}
+
+	return &newMembersMap, nil
 }
