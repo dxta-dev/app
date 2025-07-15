@@ -2,22 +2,22 @@ package activity
 
 import (
 	"context"
+	"database/sql"
 	"errors"
-	"sync"
 
 	"github.com/dxta-dev/app/internal/onboarding"
 )
 
 type TenantActivities struct {
-	DBConnections *sync.Map
+	GetCachedTenantDB func(dbUrl string, ctx context.Context) (*sql.DB, error)
 }
 
-func NewTenantActivities(DBConnections *sync.Map) *TenantActivities {
-	return &TenantActivities{DBConnections}
+func NewTenantActivities() *TenantActivities {
+	return &TenantActivities{GetCachedTenantDB: onboarding.GetCachedTenantDB}
 }
 
 func (ta *TenantActivities) GetOrganizationIDByAuthID(ctx context.Context, authID string, DBURL string) (int64, error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return 0, err

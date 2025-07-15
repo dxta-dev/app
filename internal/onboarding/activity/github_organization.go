@@ -3,8 +3,6 @@ package activity
 import (
 	"context"
 	"errors"
-
-	"github.com/dxta-dev/app/internal/onboarding"
 )
 
 func (ta *TenantActivities) UpsertGithubOrganization(
@@ -15,7 +13,7 @@ func (ta *TenantActivities) UpsertGithubOrganization(
 	installationOrgId int64,
 	organizationId int64,
 ) (res int64, err error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return 0, err
