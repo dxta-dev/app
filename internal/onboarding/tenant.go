@@ -9,19 +9,20 @@ import (
 	internal_api_data "github.com/dxta-dev/app/internal/internal-api/data"
 )
 
-func GetCachedTenantDB(store *sync.Map, dbUrl string, ctx context.Context) (*sql.DB, error) {
-	db, ok := store.Load(dbUrl)
+var tenantDBConnections = sync.Map{}
 
-	if !ok {
-		tenantDB, err := internal_api_data.NewDB(dbUrl, ctx)
-
-		if err != nil {
-			return nil, errors.New("failed to create tenant db connection: " + err.Error())
-		}
-
-		db = tenantDB.DB
-		store.Store(dbUrl, db)
+func GetCachedTenantDB(DBURL string, ctx context.Context) (*sql.DB, error) {
+	if cachedDB, ok := tenantDBConnections.Load(DBURL); ok {
+		return cachedDB.(*sql.DB), nil
 	}
 
-	return db.(*sql.DB), nil
+	db, err := internal_api_data.NewDB(DBURL, ctx)
+
+	if err != nil {
+		return nil, errors.New("failed to create tenant db connection: " + err.Error())
+	}
+
+	tenantDBConnections.Store(DBURL, db.DB)
+
+	return db.DB, nil
 }

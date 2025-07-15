@@ -5,15 +5,13 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-
-	"github.com/dxta-dev/app/internal/onboarding"
 )
 
 func (ta *TenantActivities) CreateTeamMembers(ctx context.Context,
 	DBURL string,
 	members MembersRecordMap,
 	organizationID int64) ([]MemberRecord, error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return nil, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())
@@ -112,7 +110,7 @@ func (ta *TenantActivities) JoinTeamsMembers(
 	DBURL string,
 	newMembers []MemberRecord,
 ) (bool, error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return false, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())

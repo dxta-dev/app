@@ -13,13 +13,13 @@ type DB struct {
 	DB *sql.DB
 }
 
-func NewDB(dbUrl string, ctx context.Context) (DB, error) {
+func NewDB(DBURL string, ctx context.Context) (DB, error) {
 	driverName := otel.GetDriverName()
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
 
 	tenantDB, err := sql.Open(
 		driverName,
-		dbUrl+"?authToken="+devToken,
+		DBURL+"?authToken="+devToken,
 	)
 
 	if err != nil {

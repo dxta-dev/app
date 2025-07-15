@@ -154,17 +154,17 @@ func NewInstallationClient(
 	}, nil
 }
 
-func GetCachedGithubInstallationClient(clientMap *sync.Map, cacheKey int64, config GithubConfig) (*GithubInstallationClient, error) {
-	client, ok := clientMap.Load(cacheKey)
+var githubInstallationClientMap = sync.Map{}
 
-	if !ok {
-		client, err := NewInstallationClient(cacheKey, config)
-
-		if err != nil {
-			return nil, errors.New("Could not create new installation client: " + err.Error())
-		}
-		return client, nil
+func GetCachedGithubInstallationClient(cacheKey int64, config GithubConfig) (*GithubInstallationClient, error) {
+	if client, ok := githubInstallationClientMap.Load(cacheKey); ok {
+		return client.(*GithubInstallationClient), nil
 	}
 
-	return client.(*GithubInstallationClient), nil
+	client, err := NewInstallationClient(cacheKey, config)
+
+	if err != nil {
+		return nil, errors.New("Could not create new installation client: " + err.Error())
+	}
+	return client, nil
 }

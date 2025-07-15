@@ -5,19 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/dxta-dev/app/internal/onboarding"
 )
 
 type GithubActivities struct {
-	ClientMap    *sync.Map
 	GithubConfig onboarding.GithubConfig
 }
 
-func NewGithubActivities(clientMap *sync.Map, githubConfig onboarding.GithubConfig) *GithubActivities {
+func NewGithubActivities(githubConfig onboarding.GithubConfig) *GithubActivities {
 	return &GithubActivities{
-		ClientMap:    clientMap,
 		GithubConfig: githubConfig,
 	}
 }
@@ -28,7 +25,7 @@ func (ga *GithubActivities) GetTeams(
 	organizationName string,
 ) (onboarding.Teams, error) {
 
-	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
+	client, err := onboarding.GetCachedGithubInstallationClient(installationId, ga.GithubConfig)
 
 	if err != nil {
 		return nil, errors.New("could not create new installation client to get github teams " + err.Error())
@@ -44,7 +41,7 @@ func (ga *GithubActivities) GetTeamMembers(
 	teamSlug string,
 	teamName string,
 ) (onboarding.Members, error) {
-	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
+	client, err := onboarding.GetCachedGithubInstallationClient(installationId, ga.GithubConfig)
 
 	if err != nil {
 		return nil, errors.New("could not create new installation client to get github members " + err.Error())
@@ -64,7 +61,7 @@ func (ga *GithubActivities) GetExtendedTeamMember(
 	teamMember onboarding.Member,
 	teamSlug string,
 ) (*onboarding.ExtendedMember, error) {
-	client, err := onboarding.GetCachedGithubInstallationClient(ga.ClientMap, installationId, ga.GithubConfig)
+	client, err := onboarding.GetCachedGithubInstallationClient(installationId, ga.GithubConfig)
 
 	if err != nil {
 		return nil, errors.New("could not create new installation client to get github members " + err.Error())
@@ -91,7 +88,7 @@ func (ta *TenantActivities) UpsertTeams(
 	organizationId int64,
 	teamsRecordMap *TeamsRecordMap,
 ) (res *TeamsRecordMap, err error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return nil, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())
@@ -233,7 +230,7 @@ func (ta *TenantActivities) UpsertGithubMembers(
 	membersMap MembersRecordMap,
 	teamsRecordMap TeamsRecordMap,
 ) (res *MembersRecordMap, err error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return nil, errors.New("failed to get cached tenant db to upsert teams: " + err.Error())
