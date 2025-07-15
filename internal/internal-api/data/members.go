@@ -7,7 +7,7 @@ import (
 
 type CreateMemberResponse struct{ Id int64 }
 
-func (d TenantDB) CreateMember(
+func (d DB) CreateMember(
 	name string,
 	email *string,
 	ctx context.Context,
@@ -36,7 +36,7 @@ func (d TenantDB) CreateMember(
 
 }
 
-func (d TenantDB) AddMemberToTeam(teamId int64, memberId int64, ctx context.Context) error {
+func (d DB) AddMemberToTeam(teamId int64, memberId int64, ctx context.Context) error {
 	query := `
 		INSERT INTO teams__members
 			(team_id, member_id)

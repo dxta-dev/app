@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"net/http"
 	"os"
+	"sync"
 
 	"github.com/dxta-dev/app/internal/internal-api/data"
 	"github.com/dxta-dev/app/internal/otel"
@@ -13,14 +13,20 @@ import (
 )
 
 type State struct {
-	DB data.TenantDB
+	DB data.DB
 }
 
 type TenantDBData struct {
 	DBUrl string
 }
 
-func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, error) {
+var tenantDBURLcache sync.Map
+
+func GetTenantDBUrlByAuthId(ctx context.Context, authID string) (TenantDBData, error) {
+	if cached, ok := tenantDBURLcache.Load(authID); ok {
+		return TenantDBData{DBUrl: cached.(string)}, nil
+	}
+
 	driverName := otel.GetDriverName()
 	tenantOrganizationMapDBUrl := os.Getenv("TENANT_ORG_MAPPING_URL")
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
@@ -47,20 +53,28 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authId string) (TenantDBData, e
 
 	var tenantData TenantDBData
 
-	if err = tenantOrganizationMapDB.QueryRowContext(ctx, query, authId).Scan(&tenantData.DBUrl); err != nil {
+	if err = tenantOrganizationMapDB.QueryRowContext(ctx, query, authID).Scan(&tenantData.DBUrl); err != nil {
 		fmt.Printf(
 			"Could not retrieve tenant db url for organization with id: %s. Error: %s",
-			authId,
+			authID,
 			err.Error(),
 		)
 		return TenantDBData{}, err
 	}
 
+	tenantDBURLcache.Store(authID, tenantData.DBUrl)
+
 	return tenantData, nil
 }
 
-func InternalApiState(ctx context.Context, dbUrl string, r *http.Request) (State, error) {
-	tenantDB, err := data.NewTenantDB(dbUrl, ctx)
+func InternalApiState(authId string, ctx context.Context) (State, error) {
+	tenantData, err := GetTenantDBUrlByAuthId(ctx, authId)
+
+	if err != nil {
+		return State{}, err
+	}
+
+	tenantDB, err := data.NewDB(tenantData.DBUrl, ctx)
 
 	if err != nil {
 		return State{}, err
