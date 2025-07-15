@@ -20,7 +20,7 @@ func (ta *TenantActivities) GetOrganizationIDByAuthID(ctx context.Context, authI
 	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
 
 	if err != nil {
-		return 0, err
+		return 0, errors.New("failed to get cached tenant DB: " + err.Error())
 	}
 
 	var organizationId int64
@@ -37,4 +37,31 @@ func (ta *TenantActivities) GetOrganizationIDByAuthID(ctx context.Context, authI
 	}
 
 	return organizationId, nil
+}
+
+func (ta *TenantActivities) CreateOrganization(
+	ctx context.Context,
+	organizationName string,
+	authID string,
+	DBURL string,
+) (bool, error) {
+
+	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+
+	if err != nil {
+		return false, errors.New("failed to get cached tenant DB: " + err.Error())
+	}
+
+	_, err = db.QueryContext(ctx, `
+		INSERT INTO organizations 
+			(name, auth_id) 
+		VALUES 
+			(?, ?);`,
+		organizationName, authID)
+
+	if err != nil {
+		return false, errors.New("failed to create organization: " + err.Error())
+	}
+
+	return true, nil
 }
