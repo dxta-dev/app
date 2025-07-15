@@ -13,7 +13,7 @@ func GetCachedTenantDB(store *sync.Map, dbUrl string, ctx context.Context) (*sql
 	db, ok := store.Load(dbUrl)
 
 	if !ok {
-		tenantDB, err := internal_api_data.NewTenantDB(dbUrl, ctx)
+		tenantDB, err := internal_api_data.NewDB(dbUrl, ctx)
 
 		if err != nil {
 			return nil, errors.New("failed to create tenant db connection: " + err.Error())

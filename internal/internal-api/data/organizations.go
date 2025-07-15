@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-func (d TenantDB) GetOrganizationIdByAuthId(authId string, ctx context.Context) (int64, error) {
+func (d DB) GetOrganizationIdByAuthId(authId string, ctx context.Context) (int64, error) {
 	query := `
 	SELECT id
 	FROM organizations
