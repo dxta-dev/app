@@ -16,19 +16,19 @@ type CreateDatabaseRequestBody struct {
 	OrganizationName string `json:"organizationName"`
 }
 
-type TemporalClient struct {
+type TemporalHandler struct {
 	temporalClient client.Client
 	config         onboarding.Config
 }
 
-func NewTemporalHandler(temporalClient client.Client, config onboarding.Config) *TemporalClient {
-	return &TemporalClient{
+func NewTemporalHandler(temporalClient client.Client, config onboarding.Config) *TemporalHandler {
+	return &TemporalHandler{
 		temporalClient,
 		config,
 	}
 }
 
-func (tc *TemporalClient) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
+func (th *TemporalHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &CreateDatabaseRequestBody{}
@@ -47,8 +47,8 @@ func (tc *TemporalClient) CreateTenantDB(w http.ResponseWriter, r *http.Request)
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
 
-	_, err := workflow.ExecuteCreateTenantDBWorkflow(ctx, tc.temporalClient, workflow.ExecuteCreateTenantDBWorkflowParams{
-		TemporalOnboardingQueueName: tc.config.TemporalOnboardingQueueName,
+	_, err := workflow.ExecuteCreateTenantDBWorkflow(ctx, th.temporalClient, workflow.ExecuteCreateTenantDBWorkflowParams{
+		TemporalOnboardingQueueName: th.config.TemporalOnboardingQueueName,
 		AuthID:                      authId,
 		DBName:                      body.DBName,
 		OrganizationName:            body.OrganizationName,

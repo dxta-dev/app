@@ -15,7 +15,7 @@ type GithubInstallationRequestBody struct {
 	DBDomainName   string `json:"dbDomainName"`
 }
 
-func (tc *TemporalClient) GithubInstallation(w http.ResponseWriter, r *http.Request) {
+func (th *TemporalHandler) GithubInstallation(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &GithubInstallationRequestBody{}
@@ -33,8 +33,8 @@ func (tc *TemporalClient) GithubInstallation(w http.ResponseWriter, r *http.Requ
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
 
-	_, err := workflow.ExecuteAfterGithubInstallationWorkflow(ctx, tc.temporalClient, workflow.ExecuteAfterGithubInstallationParams{
-		TemporalOnboardingQueueName: tc.config.TemporalOnboardingQueueName,
+	_, err := workflow.ExecuteAfterGithubInstallationWorkflow(ctx, th.temporalClient, workflow.ExecuteAfterGithubInstallationParams{
+		TemporalOnboardingQueueName: th.config.TemporalOnboardingQueueName,
 		AuthID:                      authId,
 		InstallationID:              body.InstallationID,
 		DBURL:                       body.DBURL,

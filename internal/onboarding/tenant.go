@@ -104,13 +104,3 @@ func GetCachedTenantDB(DBURL string, ctx context.Context) (*sql.DB, error) {
 
 	return db.DB, nil
 }
-
-func GetDB(ctx context.Context, DBURL string) (*sql.DB, error) {
-	db, err := NewDB(DBURL, ctx)
-
-	if err != nil {
-		return nil, errors.New("failed to create db connection: " + err.Error())
-	}
-
-	return db.DB, nil
-}
