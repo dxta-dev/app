@@ -31,7 +31,7 @@ CREATE TABLE "members" (
     "id" INTEGER PRIMARY KEY NOT NULL,
     "name" TEXT NOT NULL,
     "email" TEXT DEFAULT NULL,
-    "username" TEXT NOT NULL UNIQUE,
+    "username" TEXT UNIQUE DEFAULT NULL,
     "created_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "updated_at" DATETIME NOT NULL DEFAULT (datetime('now')),
     "deleted_at" DATETIME DEFAULT NULL
