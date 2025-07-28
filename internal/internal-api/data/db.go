@@ -17,6 +17,10 @@ func NewDB(DBURL string, ctx context.Context) (DB, error) {
 	driverName := otel.GetDriverName()
 	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
 
+	if devToken == "" {
+		return DB{}, errors.New("no dev group token provided")
+	}
+
 	tenantDB, err := sql.Open(
 		driverName,
 		DBURL+"?authToken="+devToken,
