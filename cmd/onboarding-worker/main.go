@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"sync"
 
 	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/activity"
@@ -49,21 +48,19 @@ func main() {
 		log.Fatalln("Failed to register Temporal namespace:", err)
 	}
 
-	tenantDBConnections := sync.Map{}
-
 	w := worker.New(temporalClient, cfg.TemporalOnboardingQueueName, worker.Options{})
 
-	userActivities := activity.NewUserActivites(
-		*cfg,
-	)
+	userActivities := activity.NewUserActivites(*cfg)
 	githubInstallationActivities := activity.NewGithubInstallationActivities(*githubAppClient)
-	tenantActivities := activity.NewTenantActivities(&tenantDBConnections)
+	tenantActivities := activity.NewTenantActivities()
+	githubActivities := activity.NewGithubActivities(*githubConfig)
 
 	w.RegisterWorkflow(workflow.CountUsers)
 	w.RegisterWorkflow(workflow.AfterGithubInstallationWorkflow)
 	w.RegisterActivity(userActivities)
 	w.RegisterActivity(githubInstallationActivities)
 	w.RegisterActivity(tenantActivities)
+	w.RegisterActivity(githubActivities)
 
 	if err := w.Run(worker.InterruptCh()); err != nil {
 		log.Fatalln("Worker failed to start", err)

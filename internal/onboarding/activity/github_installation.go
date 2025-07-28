@@ -2,7 +2,7 @@ package activity
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/dxta-dev/app/internal/onboarding"
 )
@@ -29,8 +29,7 @@ func (gia *GithubInstallationActivities) GetInstallationOrganization(
 	account, err := gia.githubAppClient.GetInstallationAccount(ctx, installationId)
 
 	if err != nil {
-		fmt.Printf("Could not retrieve installation. Error: %v", err.Error())
-		return nil, err
+		return nil, errors.New("failed to retrieve installation account: " + err.Error())
 	}
 
 	return &GithubInstallationOrganization{
