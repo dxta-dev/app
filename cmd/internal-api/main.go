@@ -15,6 +15,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth/v5"
+	"github.com/go-playground/validator/v10"
 	"go.temporal.io/sdk/client"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -129,6 +130,12 @@ func main() {
 
 	defer temporalClient.Close()
 
+	// use a single instance of Validate, it caches struct info
+	validate := validator.New(validator.WithRequiredStructEnabled())
+
+	createTeamHandler := handler.NewCreateTeamHandler(validate)
+	createMemberHandler := handler.NewCreateMemberHandler(validate)
+
 	r.Route("/tenant", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
 			pubKey, _ := util.GetRawPublicKey()
@@ -143,12 +150,12 @@ func main() {
 			log.Fatalln("Enable jwt auth")
 		}
 
-		r.Post("/teams", handler.CreateTeam)
+		r.Post("/teams", createTeamHandler.CreateTeam)
 		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)
-		r.Post("/members", handler.CreateMember)
+		r.Post("/members", createMemberHandler.CreateMember)
 	})
 
-	temporalHandler := handler.NewTemporalHandler(temporalClient, *cfg)
+	temporalHandler := handler.NewTemporalHandler(temporalClient, *cfg, validate)
 
 	r.Route("/onboarding", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {

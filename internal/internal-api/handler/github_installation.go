@@ -26,14 +26,17 @@ func (th *TemporalHandler) GithubInstallation(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	if body.InstallationID == 0 || body.DBURL == "" || body.DBDomainName == "" {
-		fmt.Printf("Bad request body %v", body)
+	err := th.validate.Struct(body)
+
+	if err != nil {
+		fmt.Printf("Bad request body: %v", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
+		return
 	}
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
 
-	_, err := workflow.ExecuteAfterGithubInstallationWorkflow(ctx, th.temporalClient, workflow.ExecuteAfterGithubInstallationParams{
+	_, err = workflow.ExecuteAfterGithubInstallationWorkflow(ctx, th.temporalClient, workflow.ExecuteAfterGithubInstallationParams{
 		TemporalOnboardingQueueName: th.config.TemporalOnboardingQueueName,
 		AuthID:                      authId,
 		InstallationID:              body.InstallationID,

@@ -7,6 +7,7 @@ import (
 
 	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/go-playground/validator/v10"
 )
 
 type CreateTeamRequestBody struct {
@@ -14,10 +15,20 @@ type CreateTeamRequestBody struct {
 }
 
 type CreateTeamResponse struct {
-	TeamId int64 `json:"team_id"`
+	TeamId int64 `json:"team_id" validate:"required"`
 }
 
-func CreateTeam(w http.ResponseWriter, r *http.Request) {
+type CreateTeamHandler struct {
+	validate *validator.Validate
+}
+
+func NewCreateTeamHandler(validate *validator.Validate) *CreateTeamHandler {
+	return &CreateTeamHandler{
+		validate,
+	}
+}
+
+func (cth CreateTeamHandler) CreateTeam(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &CreateTeamRequestBody{}
@@ -28,9 +39,12 @@ func CreateTeam(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.TeamName == "" {
-		fmt.Printf("No team name provided. Team name: %s", body.TeamName)
+	err := cth.validate.Struct(body)
+
+	if err != nil {
+		fmt.Printf("Bad request body: %v", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
+		return
 	}
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)

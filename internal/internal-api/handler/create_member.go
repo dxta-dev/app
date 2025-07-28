@@ -7,18 +7,29 @@ import (
 
 	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/go-playground/validator/v10"
 )
 
 type CreateMemberRequestBody struct {
-	Name  string  `json:"name"`
-	Email *string `json:"email"`
+	Name  string  `json:"name" validate:"required"`
+	Email *string `json:"email" validate:"omitempty,email"`
 }
 
 type CreateMemberResponse struct {
 	MemberId int64 `json:"member_id"`
 }
 
-func CreateMember(w http.ResponseWriter, r *http.Request) {
+type CreateMemberHandler struct {
+	validate *validator.Validate
+}
+
+func NewCreateMemberHandler(validate *validator.Validate) *CreateMemberHandler {
+	return &CreateMemberHandler{
+		validate,
+	}
+}
+
+func (cmh CreateMemberHandler) CreateMember(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &CreateMemberRequestBody{}
@@ -29,9 +40,12 @@ func CreateMember(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if body.Name == "" {
-		fmt.Println("No member name in request body")
+	err := cmh.validate.Struct(body)
+
+	if err != nil {
+		fmt.Printf("Bad request body: %v", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
+		return
 	}
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
