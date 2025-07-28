@@ -7,7 +7,7 @@ import (
 	"os"
 	"sync"
 
-	internal_api_data "github.com/dxta-dev/app/internal/internal-api/data"
+	"github.com/dxta-dev/app/internal/otel"
 )
 
 var tenantDBConnections = sync.Map{}
@@ -59,12 +59,42 @@ func LoadCreateTenantConfig() (*CreateTenantConfig, error) {
 
 }
 
+type DB struct {
+	DB *sql.DB
+}
+
+func NewDB(DBURL string, ctx context.Context) (DB, error) {
+	driverName := otel.GetDriverName()
+	devToken := os.Getenv("DXTA_DEV_GROUP_TOKEN")
+
+	if devToken == "" {
+		return DB{}, errors.New("no dev group token provided")
+	}
+
+	tenantDB, err := sql.Open(
+		driverName,
+		DBURL+"?authToken="+devToken,
+	)
+
+	if err != nil {
+		return DB{}, errors.New("failed to open db connection " + err.Error())
+	}
+
+	if err := tenantDB.PingContext(ctx); err != nil {
+		return DB{}, errors.New("failed to verify db connection " + err.Error())
+	}
+
+	return DB{
+		DB: tenantDB,
+	}, nil
+}
+
 func GetCachedTenantDB(DBURL string, ctx context.Context) (*sql.DB, error) {
 	if cachedDB, ok := tenantDBConnections.Load(DBURL); ok {
 		return cachedDB.(*sql.DB), nil
 	}
 
-	db, err := internal_api_data.NewDB(DBURL, ctx)
+	db, err := NewDB(DBURL, ctx)
 
 	if err != nil {
 		return nil, errors.New("failed to create tenant db connection: " + err.Error())
@@ -76,10 +106,10 @@ func GetCachedTenantDB(DBURL string, ctx context.Context) (*sql.DB, error) {
 }
 
 func GetDB(ctx context.Context, DBURL string) (*sql.DB, error) {
-	db, err := internal_api_data.NewDB(DBURL, ctx)
+	db, err := NewDB(DBURL, ctx)
 
 	if err != nil {
-		return nil, errors.New("failed to create tenant db connection: " + err.Error())
+		return nil, errors.New("failed to create db connection: " + err.Error())
 	}
 
 	return db.DB, nil

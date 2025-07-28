@@ -46,7 +46,7 @@ func (ta *TenantActivities) CreateOrganization(
 	DBURL string,
 ) (bool, error) {
 
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return false, errors.New("failed to get cached tenant DB: " + err.Error())

@@ -3,8 +3,6 @@ package activity
 import (
 	"context"
 	"errors"
-
-	"github.com/dxta-dev/app/internal/onboarding"
 )
 
 func (ta *TenantActivities) UpsertTenantDBInfo(
@@ -13,7 +11,7 @@ func (ta *TenantActivities) UpsertTenantDBInfo(
 	DBURL string,
 	DBDomainName string,
 ) (bool, error) {
-	db, err := onboarding.GetCachedTenantDB(ta.DBConnections, DBURL, ctx)
+	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
 		return false, err

@@ -112,13 +112,15 @@ func (cta CreateTenantActivities) AddTenantDBToMap(
 	DBURL string,
 	DBDomainName string,
 ) (bool, error) {
-	db, err := onboarding.GetDB(ctx, cta.config.OrganizationsTenantMapDBURL)
+	db, err := onboarding.NewDB(cta.config.OrganizationsTenantMapDBURL, ctx)
 
 	if err != nil {
 		return false, errors.New("failed to get organizations-tenant-map db: " + err.Error())
 	}
 
-	_, err = db.QueryContext(ctx, `
+	defer db.DB.Close()
+
+	_, err = db.DB.QueryContext(ctx, `
 		INSERT INTO tenants 
 			(organization_id, db_url, name, domain) 
 		VALUES (?, ?, ?, ?);`, authId, DBURL, DBName, DBDomainName)
