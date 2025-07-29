@@ -133,9 +133,6 @@ func main() {
 	// use a single instance of Validate, it caches struct info
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
-	createTeamHandler := handler.NewCreateTeamHandler(validate)
-	createMemberHandler := handler.NewCreateMemberHandler(validate)
-
 	r.Route("/tenant", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
 			pubKey, _ := util.GetRawPublicKey()
@@ -150,12 +147,12 @@ func main() {
 			log.Fatalln("Enable jwt auth")
 		}
 
-		r.Post("/teams", createTeamHandler.CreateTeam)
+		r.Post("/teams", handler.CreateTeam(validate))
 		r.Post("/teams/{team_id}/members/{member_id}", handler.AddMemberToTeam)
-		r.Post("/members", createMemberHandler.CreateMember)
+		r.Post("/members", handler.CreateMember(validate))
 	})
 
-	temporalHandler := handler.NewTemporalHandler(temporalClient, *cfg, validate)
+	onboardingHandler := handler.NewOnboardingHandler(temporalClient, *cfg, validate)
 
 	r.Route("/onboarding", func(r chi.Router) {
 		if os.Getenv("ENABLE_JWT_AUTH") == "true" {
@@ -171,8 +168,8 @@ func main() {
 			log.Fatalln("Enable jwt auth")
 		}
 
-		r.Post("/databases", temporalHandler.CreateTenantDB)
-		r.Post("/github-installation", temporalHandler.GithubInstallation)
+		r.Post("/databases", onboardingHandler.CreateTenantDB)
+		r.Post("/github-installation", onboardingHandler.GithubInstallation)
 	})
 
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -183,7 +180,7 @@ func main() {
 		w.Write([]byte(`OK`))
 	})
 
-	r.Get("/users-count", temporalHandler.UsersCount)
+	r.Get("/users-count", onboardingHandler.UsersCount)
 
 	go func() {
 		log.Printf("Listening on %s\n", srv.Addr)

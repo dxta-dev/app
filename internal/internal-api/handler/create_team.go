@@ -18,71 +18,63 @@ type CreateTeamResponse struct {
 	TeamId int64 `json:"team_id" validate:"required"`
 }
 
-type CreateTeamHandler struct {
-	validate *validator.Validate
-}
+func CreateTeam(validate *validator.Validate) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 
-func NewCreateTeamHandler(validate *validator.Validate) *CreateTeamHandler {
-	return &CreateTeamHandler{
-		validate,
-	}
-}
+		body := &CreateTeamRequestBody{}
 
-func (cth CreateTeamHandler) CreateTeam(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+		if err := json.NewDecoder(r.Body).Decode(body); err != nil {
+			fmt.Printf("Issue while parsing body. Error: %s", err.Error())
+			util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
+			return
+		}
 
-	body := &CreateTeamRequestBody{}
+		err := validate.Struct(body)
 
-	if err := json.NewDecoder(r.Body).Decode(body); err != nil {
-		fmt.Printf("Issue while parsing body. Error: %s", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
-		return
-	}
+		if err != nil {
+			fmt.Printf("Bad request body: %v", err.Error())
+			util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
+			return
+		}
 
-	err := cth.validate.Struct(body)
+		authId := ctx.Value(util.AuthIdCtxKey).(string)
 
-	if err != nil {
-		fmt.Printf("Bad request body: %v", err.Error())
-		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
-		return
-	}
+		apiState, err := api.InternalApiState(authId, ctx)
 
-	authId := ctx.Value(util.AuthIdCtxKey).(string)
+		if err != nil {
+			util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
+			return
+		}
 
-	apiState, err := api.InternalApiState(authId, ctx)
+		organizationId, err := apiState.DB.GetOrganizationIdByAuthId(authId, ctx)
 
-	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Internal Server Error"}, http.StatusInternalServerError)
-		return
-	}
+		if err != nil {
+			util.JSONError(w, util.ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
+			return
+		}
 
-	organizationId, err := apiState.DB.GetOrganizationIdByAuthId(authId, ctx)
+		newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
 
-	if err != nil {
-		util.JSONError(w, util.ErrorParam{Error: "Bad request"}, http.StatusBadRequest)
-		return
-	}
+		if err != nil {
+			util.JSONError(
+				w,
+				util.ErrorParam{Error: "Could not create new team"},
+				http.StatusInternalServerError,
+			)
+			return
+		}
 
-	newTeamRes, err := apiState.DB.CreateTeam(body.TeamName, organizationId, ctx)
-
-	if err != nil {
-		util.JSONError(
-			w,
-			util.ErrorParam{Error: "Could not create new team"},
-			http.StatusInternalServerError,
-		)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	if err := json.NewEncoder(w).Encode(CreateTeamResponse{TeamId: newTeamRes.Id}); err != nil {
-		fmt.Printf("Issue while formatting response. Error: %s", err.Error())
-		util.JSONError(
-			w,
-			util.ErrorParam{Error: "Internal Server Error"},
-			http.StatusInternalServerError,
-		)
-		return
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		if err := json.NewEncoder(w).Encode(CreateTeamResponse{TeamId: newTeamRes.Id}); err != nil {
+			fmt.Printf("Issue while formatting response. Error: %s", err.Error())
+			util.JSONError(
+				w,
+				util.ErrorParam{Error: "Internal Server Error"},
+				http.StatusInternalServerError,
+			)
+			return
+		}
 	}
 }

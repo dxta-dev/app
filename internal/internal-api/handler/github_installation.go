@@ -15,7 +15,7 @@ type GithubInstallationRequestBody struct {
 	DBDomainName   string `json:"dbDomainName"`
 }
 
-func (th *TemporalHandler) GithubInstallation(w http.ResponseWriter, r *http.Request) {
+func (th *OnboardingHandler) GithubInstallation(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &GithubInstallationRequestBody{}

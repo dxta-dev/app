@@ -56,7 +56,6 @@ func AfterGithubInstallationWorkflow(
 	ctx workflow.Context,
 	params AfterGithubInstallationParams,
 ) (err error) {
-
 	if params.InstallationID == 0 || params.AuthID == "" || params.DBURL == "" {
 		err = errors.New("bad request")
 		return

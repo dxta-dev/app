@@ -17,21 +17,21 @@ type CreateDatabaseRequestBody struct {
 	OrganizationName string `json:"organizationName" validate:"required"`
 }
 
-type TemporalHandler struct {
+type OnboardingHandler struct {
 	temporalClient client.Client
 	config         onboarding.Config
 	validate       *validator.Validate
 }
 
-func NewTemporalHandler(temporalClient client.Client, config onboarding.Config, validate *validator.Validate) *TemporalHandler {
-	return &TemporalHandler{
+func NewOnboardingHandler(temporalClient client.Client, config onboarding.Config, validate *validator.Validate) *OnboardingHandler {
+	return &OnboardingHandler{
 		temporalClient,
 		config,
 		validate,
 	}
 }
 
-func (th *TemporalHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
+func (th *OnboardingHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &CreateDatabaseRequestBody{}
