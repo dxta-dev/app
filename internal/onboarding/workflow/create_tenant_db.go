@@ -120,7 +120,7 @@ func ExecuteCreateTenantDBWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID: fmt.Sprintf(
-				"onboarding-workflow-github-%v-%v",
+				"create-tenant-workflow-%v-%v",
 				params.AuthID,
 				params.DBName,
 			),

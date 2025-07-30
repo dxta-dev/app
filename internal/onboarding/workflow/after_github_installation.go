@@ -261,7 +261,7 @@ func ExecuteAfterGithubInstallationWorkflow(
 		ctx,
 		client.StartWorkflowOptions{
 			ID: fmt.Sprintf(
-				"onboarding-workflow-github-%v-%v",
+				"after-github-installation-workflow-github-%v-%v",
 				params.DBDomainName,
 				params.InstallationID,
 			),
