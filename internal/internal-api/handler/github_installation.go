@@ -5,21 +5,19 @@ import (
 	"fmt"
 	"net/http"
 
+	api "github.com/dxta-dev/app/internal/internal-api"
 	"github.com/dxta-dev/app/internal/onboarding/workflow"
 	"github.com/dxta-dev/app/internal/util"
 )
 
 type GithubInstallationRequestBody struct {
-	InstallationID int64  `json:"installationId"`
-	DBURL          string `json:"dbUrl"`
-	DBDomainName   string `json:"dbDomainName"`
+	InstallationID int64 `json:"installationId"`
 }
 
 func (th *OnboardingHandler) GithubInstallation(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &GithubInstallationRequestBody{}
-
 	if err := json.NewDecoder(r.Body).Decode(body); err != nil {
 		fmt.Printf("Issue while parsing body. Error: %s", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
@@ -36,12 +34,20 @@ func (th *OnboardingHandler) GithubInstallation(w http.ResponseWriter, r *http.R
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
 
+	tenantData, err := api.GetTenantDBDataByAuthId(ctx, authId)
+
+	if err != nil {
+		fmt.Printf("Failed to retrieve tenant db data: %v", err.Error())
+		util.JSONError(w, util.ErrorParam{Error: "Failed to retrieve tenant db data"}, http.StatusInternalServerError)
+		return
+	}
+
 	_, err = workflow.ExecuteAfterGithubInstallationWorkflow(ctx, th.temporalClient, workflow.ExecuteAfterGithubInstallationParams{
 		TemporalOnboardingQueueName: th.config.TemporalOnboardingQueueName,
 		AuthID:                      authId,
 		InstallationID:              body.InstallationID,
-		DBURL:                       body.DBURL,
-		DBDomainName:                body.DBDomainName,
+		DBURL:                       tenantData.DBUrl,
+		DBDomainName:                tenantData.Domain,
 	})
 
 	if err != nil {

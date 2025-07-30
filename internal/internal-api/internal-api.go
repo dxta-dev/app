@@ -17,14 +17,17 @@ type State struct {
 }
 
 type TenantDBData struct {
-	DBUrl string
+	DBUrl  string
+	Name   string
+	Domain string
 }
 
 var tenantDBURLcache sync.Map
 
-func GetTenantDBUrlByAuthId(ctx context.Context, authID string) (TenantDBData, error) {
+func GetTenantDBDataByAuthId(ctx context.Context, authID string) (TenantDBData, error) {
 	if cached, ok := tenantDBURLcache.Load(authID); ok {
-		return TenantDBData{DBUrl: cached.(string)}, nil
+		c := cached.(*TenantDBData)
+		return TenantDBData{DBUrl: c.DBUrl, Name: c.Name, Domain: c.Domain}, nil
 	}
 
 	driverName := otel.GetDriverName()
@@ -47,13 +50,25 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authID string) (TenantDBData, e
 	defer tenantOrganizationMapDB.Close()
 
 	query := `
-		SELECT db_url
-		FROM tenants
-		WHERE organization_id = ?;`
+		SELECT 
+			db_url, 
+			name, 
+			domain
+		FROM 
+			tenants
+		WHERE 
+			organization_id = ?;`
 
 	var tenantData TenantDBData
 
-	if err = tenantOrganizationMapDB.QueryRowContext(ctx, query, authID).Scan(&tenantData.DBUrl); err != nil {
+	if err = tenantOrganizationMapDB.
+		QueryRowContext(ctx, query, authID).
+		Scan(
+			&tenantData.DBUrl,
+			&tenantData.Name,
+			&tenantData.Domain,
+		); err != nil {
+
 		fmt.Printf(
 			"Could not retrieve tenant db url for organization with id: %s. Error: %s",
 			authID,
@@ -62,13 +77,17 @@ func GetTenantDBUrlByAuthId(ctx context.Context, authID string) (TenantDBData, e
 		return TenantDBData{}, err
 	}
 
-	tenantDBURLcache.Store(authID, tenantData.DBUrl)
+	tenantDBURLcache.Store(authID, &TenantDBData{
+		DBUrl:  tenantData.DBUrl,
+		Name:   tenantData.Name,
+		Domain: tenantData.Domain,
+	})
 
 	return tenantData, nil
 }
 
 func InternalApiState(authId string, ctx context.Context) (State, error) {
-	tenantData, err := GetTenantDBUrlByAuthId(ctx, authId)
+	tenantData, err := GetTenantDBDataByAuthId(ctx, authId)
 
 	if err != nil {
 		return State{}, err

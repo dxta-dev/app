@@ -45,7 +45,7 @@ func CreateTenantDBWorkflow(
 	err = workflow.ExecuteActivity(
 		ctx,
 		(*activity.CreateTenantActivities).CreateTenantDB,
-		sanitizedDBName,
+		fmt.Sprintf("%s-tenant", sanitizedDBName),
 	).Get(ctx, &newDBData)
 
 	if err != nil {

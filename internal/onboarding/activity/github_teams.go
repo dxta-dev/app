@@ -166,6 +166,9 @@ func (ta *TenantActivities) UpsertTeams(
 		}
 	}
 
+	caseValues := make([]string, 0)
+	githubTeamIdValues := make([]string, 0)
+
 	if len(values) > 0 {
 		query = fmt.Sprintf(`
 			INSERT INTO teams 
@@ -197,6 +200,27 @@ func (ta *TenantActivities) UpsertTeams(
 
 			teamRecord.TeamID = &res.ID
 			(*teamsRecordMap)[res.Name] = teamRecord
+
+			caseValues = append(
+				caseValues,
+				fmt.Sprintf("WHEN %d THEN %d", *teamRecord.GithubTeamID, *teamRecord.TeamID),
+			)
+			githubTeamIdValues = append(githubTeamIdValues, fmt.Sprintf("%d", *teamRecord.GithubTeamID))
+		}
+
+		query := fmt.Sprintf(`
+			UPDATE 
+				github_teams 
+			SET team_id = CASE id 
+				%s 
+			END 
+			WHERE id in (%s)`,
+			strings.Join(caseValues, "\n"),
+			strings.Join(githubTeamIdValues, ", "),
+		)
+
+		if _, err = tx.ExecContext(ctx, query); err != nil {
+			return nil, errors.New("failed to update team_id in  github_teams: " + err.Error())
 		}
 	}
 
