@@ -120,7 +120,7 @@ func AfterGithubInstallationWorkflow(
 		installation.OrganizationLogin,
 	).Get(ctx, &githubTeams)
 
-	if err != nil {
+	if err != nil || len(githubTeams) == 0 {
 		return
 	}
 
@@ -212,33 +212,31 @@ func AfterGithubInstallationWorkflow(
 		teamsMap,
 	).Get(ctx, &newGithubMembers)
 
-	if err != nil {
+	if err != nil || len(newGithubMembers) == 0 {
 		return
 	}
 
-	if len(newGithubMembers) > 0 {
-		newMembers := make([]activity.MemberRecord, 0)
+	newMembers := make([]activity.MemberRecord, 0)
 
-		err = workflow.ExecuteActivity(
-			ctx,
-			(*activity.TenantActivities).CreateTeamMembers,
-			params.DBURL,
-			newGithubMembers,
-			organizationId,
-		).Get(ctx, &newMembers)
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).CreateTeamMembers,
+		params.DBURL,
+		newGithubMembers,
+		organizationId,
+	).Get(ctx, &newMembers)
 
-		var joinRes bool
+	var joinRes bool
 
-		err = workflow.ExecuteActivity(
-			ctx,
-			(*activity.TenantActivities).JoinTeamsMembers,
-			params.DBURL,
-			newMembers,
-		).Get(ctx, &joinRes)
+	err = workflow.ExecuteActivity(
+		ctx,
+		(*activity.TenantActivities).JoinTeamsMembers,
+		params.DBURL,
+		newMembers,
+	).Get(ctx, &joinRes)
 
-		if err != nil {
-			return
-		}
+	if err != nil {
+		return
 	}
 
 	return
