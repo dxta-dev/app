@@ -23,7 +23,7 @@ type AfterGithubInstallationParams struct {
 func addMemberToMap(
 	team onboarding.Team,
 	member onboarding.ExtendedMember,
-	membersMap activity.MembersRecordMap,
+	membersMap activity.MembersMap,
 ) activity.MemberRecord {
 	m, ok := membersMap[*member.Login]
 
@@ -124,10 +124,10 @@ func AfterGithubInstallationWorkflow(
 		return
 	}
 
-	counter := 0
+	processedGHTeamsCount := 0
 
-	teamsMap := activity.TeamsRecordMap{}
-	membersMap := activity.MembersRecordMap{}
+	teamsMap := activity.TeamsMap{}
+	membersMap := activity.MembersMap{}
 
 	for _, team := range githubTeams {
 		workflow.Go(ctx, func(gctx workflow.Context) {
@@ -171,7 +171,7 @@ func AfterGithubInstallationWorkflow(
 				addMemberToMap(team, member, membersMap)
 			}
 
-			teamsMap[*team.Name] = activity.TeamsRecord{
+			teamsMap[*team.Name] = activity.TeamRecord{
 				ID:           team.ID,
 				Name:         team.Name,
 				GithubTeamID: nil,
@@ -181,12 +181,12 @@ func AfterGithubInstallationWorkflow(
 			// Count number of finished go routines
 			// so we can unblock calling thread when
 			// all go routines finish
-			counter += 1
+			processedGHTeamsCount += 1
 		})
 	}
 
 	_ = workflow.Await(ctx, func() bool {
-		return err != nil || counter == len(githubTeams)
+		return err != nil || processedGHTeamsCount == len(githubTeams)
 	})
 
 	err = workflow.ExecuteActivity(
@@ -202,7 +202,7 @@ func AfterGithubInstallationWorkflow(
 		return
 	}
 
-	var newGithubMembers activity.MembersRecordMap
+	var newGithubMembers activity.MembersMap
 
 	err = workflow.ExecuteActivity(
 		ctx,
