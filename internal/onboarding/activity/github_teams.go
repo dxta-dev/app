@@ -70,7 +70,7 @@ func (ga *GithubActivities) GetExtendedTeamMember(
 	return client.GetExtendedTeamMember(ctx, teamMember)
 }
 
-type TeamsRecord struct {
+type TeamRecord struct {
 	ID   *int64
 	Name *string
 	// ID of a record after insertion to github_teams table
@@ -79,15 +79,15 @@ type TeamsRecord struct {
 	TeamID *int64
 }
 
-type TeamsRecordMap map[string]TeamsRecord
+type TeamsMap map[string]TeamRecord
 
 func (ta *TenantActivities) UpsertTeams(
 	ctx context.Context,
 	DBURL string,
 	githubOrganizationId int64,
 	organizationId int64,
-	teamsRecordMap *TeamsRecordMap,
-) (res *TeamsRecordMap, err error) {
+	teamsMap *TeamsMap,
+) (res *TeamsMap, err error) {
 	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
@@ -109,7 +109,7 @@ func (ta *TenantActivities) UpsertTeams(
 	args := make([]any, 0)
 	values := make([]string, 0)
 
-	for _, t := range *teamsRecordMap {
+	for _, t := range *teamsMap {
 		args = append(args, t.Name, t.ID, githubOrganizationId)
 		values = append(values, "(?, ?, ?)")
 	}
@@ -150,7 +150,7 @@ func (ta *TenantActivities) UpsertTeams(
 			return nil, errors.New("failed to scan github team upsert result: " + err.Error())
 		}
 
-		teamRecord, ok := (*teamsRecordMap)[res.Name]
+		teamRecord, ok := (*teamsMap)[res.Name]
 
 		if !ok {
 			return nil, errors.New("failed to get a team record from map")
@@ -158,13 +158,16 @@ func (ta *TenantActivities) UpsertTeams(
 
 		teamRecord.GithubTeamID = &res.ID
 
-		(*teamsRecordMap)[res.Name] = teamRecord
+		(*teamsMap)[res.Name] = teamRecord
 
 		if res.TeamID == nil {
 			args = append(args, res.Name, organizationId)
 			values = append(values, "(?, ?)")
 		}
 	}
+
+	caseValues := make([]string, 0)
+	githubTeamIdValues := make([]string, 0)
 
 	if len(values) > 0 {
 		query = fmt.Sprintf(`
@@ -189,14 +192,35 @@ func (ta *TenantActivities) UpsertTeams(
 				return nil, errors.New("failed to scan team upsert result: " + err.Error())
 			}
 
-			teamRecord, ok := (*teamsRecordMap)[res.Name]
+			teamRecord, ok := (*teamsMap)[res.Name]
 
 			if !ok {
 				return nil, errors.New("failed to get a teamRecord from map")
 			}
 
 			teamRecord.TeamID = &res.ID
-			(*teamsRecordMap)[res.Name] = teamRecord
+			(*teamsMap)[res.Name] = teamRecord
+
+			caseValues = append(
+				caseValues,
+				fmt.Sprintf("WHEN %d THEN %d", *teamRecord.GithubTeamID, *teamRecord.TeamID),
+			)
+			githubTeamIdValues = append(githubTeamIdValues, fmt.Sprintf("%d", *teamRecord.GithubTeamID))
+		}
+
+		query := fmt.Sprintf(`
+			UPDATE 
+				github_teams 
+			SET team_id = CASE id 
+				%s 
+			END 
+			WHERE id IN (%s)`,
+			strings.Join(caseValues, "\n"),
+			strings.Join(githubTeamIdValues, ", "),
+		)
+
+		if _, err = tx.ExecContext(ctx, query); err != nil {
+			return nil, errors.New("failed to update team_id in  github_teams: " + err.Error())
 		}
 	}
 
@@ -204,7 +228,7 @@ func (ta *TenantActivities) UpsertTeams(
 		return nil, err
 	}
 
-	return teamsRecordMap, nil
+	return teamsMap, nil
 }
 
 type MemberRecord struct {
@@ -222,14 +246,14 @@ type MemberRecord struct {
 	}
 }
 
-type MembersRecordMap map[string]MemberRecord
+type MembersMap map[string]MemberRecord
 
 func (ta *TenantActivities) UpsertGithubMembers(
 	ctx context.Context,
 	DBURL string,
-	membersMap MembersRecordMap,
-	teamsRecordMap TeamsRecordMap,
-) (res *MembersRecordMap, err error) {
+	membersMap MembersMap,
+	teamsMap TeamsMap,
+) (res *MembersMap, err error) {
 	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
 	if err != nil {
@@ -276,7 +300,7 @@ func (ta *TenantActivities) UpsertGithubMembers(
 		return nil, errors.New("failed to upsert github_members: " + err.Error())
 	}
 
-	newMembersMap := MembersRecordMap{}
+	newMembersMap := MembersMap{}
 
 	args = make([]any, 0)
 	values = make([]string, 0)
@@ -296,7 +320,7 @@ func (ta *TenantActivities) UpsertGithubMembers(
 		}
 
 		for idx, t := range memberRecord.Teams {
-			team, ok := teamsRecordMap[*t.Name]
+			team, ok := teamsMap[*t.Name]
 			t.TeamID = team.TeamID
 
 			memberRecord.Teams[idx] = t

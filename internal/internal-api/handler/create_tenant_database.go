@@ -8,27 +8,30 @@ import (
 	"github.com/dxta-dev/app/internal/onboarding"
 	"github.com/dxta-dev/app/internal/onboarding/workflow"
 	"github.com/dxta-dev/app/internal/util"
+	"github.com/go-playground/validator/v10"
 	"go.temporal.io/sdk/client"
 )
 
 type CreateDatabaseRequestBody struct {
-	DBName           string `json:"dbName"`
-	OrganizationName string `json:"organizationName"`
+	DBName           string `json:"dbName" validate:"required"`
+	OrganizationName string `json:"organizationName" validate:"required"`
 }
 
-type TemporalHandler struct {
+type OnboardingHandler struct {
 	temporalClient client.Client
 	config         onboarding.Config
+	validate       *validator.Validate
 }
 
-func NewTemporalHandler(temporalClient client.Client, config onboarding.Config) *TemporalHandler {
-	return &TemporalHandler{
+func NewOnboardingHandler(temporalClient client.Client, config onboarding.Config, validate *validator.Validate) *OnboardingHandler {
+	return &OnboardingHandler{
 		temporalClient,
 		config,
+		validate,
 	}
 }
 
-func (th *TemporalHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
+func (th *OnboardingHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	body := &CreateDatabaseRequestBody{}
@@ -39,15 +42,17 @@ func (th *TemporalHandler) CreateTenantDB(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	if body.DBName == "" || body.OrganizationName == "" {
-		fmt.Printf("Bad request body: %v", body)
+	err := th.validate.Struct(body)
+
+	if err != nil {
+		fmt.Printf("Bad request body: %v", err.Error())
 		util.JSONError(w, util.ErrorParam{Error: "Bad Request"}, http.StatusBadRequest)
 		return
 	}
 
 	authId := ctx.Value(util.AuthIdCtxKey).(string)
 
-	_, err := workflow.ExecuteCreateTenantDBWorkflow(ctx, th.temporalClient, workflow.ExecuteCreateTenantDBWorkflowParams{
+	_, err = workflow.ExecuteCreateTenantDBWorkflow(ctx, th.temporalClient, workflow.ExecuteCreateTenantDBWorkflowParams{
 		TemporalOnboardingQueueName: th.config.TemporalOnboardingQueueName,
 		AuthID:                      authId,
 		DBName:                      body.DBName,

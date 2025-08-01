@@ -15,7 +15,7 @@ type UsersCountResponse struct {
 	Count int `json:"count"`
 }
 
-func (th *TemporalHandler) UsersCount(w http.ResponseWriter, r *http.Request) {
+func (th *OnboardingHandler) UsersCount(w http.ResponseWriter, r *http.Request) {
 	out, err := workflow.ExecuteCountUsersWorkflow(r.Context(), th.temporalClient, th.config)
 	if err != nil {
 		log.Fatal(errors.Unwrap(err))

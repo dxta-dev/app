@@ -9,7 +9,7 @@ import (
 
 func (ta *TenantActivities) CreateTeamMembers(ctx context.Context,
 	DBURL string,
-	members MembersRecordMap,
+	membersMap MembersMap,
 	organizationID int64) ([]MemberRecord, error) {
 	db, err := ta.GetCachedTenantDB(DBURL, ctx)
 
@@ -33,7 +33,7 @@ func (ta *TenantActivities) CreateTeamMembers(ctx context.Context,
 	values := make([]string, 0)
 	idsToUpdate := make([]string, 0)
 
-	for _, member := range members {
+	for _, member := range membersMap {
 		args = append(args, member.Name, member.Email, member.Login)
 		values = append(values, "(?, ?, ?)")
 		idsToUpdate = append(idsToUpdate, fmt.Sprintf("%d", *member.GithubMemberId))
@@ -67,7 +67,7 @@ func (ta *TenantActivities) CreateTeamMembers(ctx context.Context,
 			return nil, errors.New("failed to scan create member result: " + err.Error())
 		}
 
-		member, ok := members[*res.Username]
+		member, ok := membersMap[*res.Username]
 
 		if !ok {
 			return nil, errors.New("failed to get a member record from map")
