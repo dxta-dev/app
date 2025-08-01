@@ -28,7 +28,7 @@ jobs:
         run: |
           echo "PR Title: ${{ github.event.pull_request.title }}"
           
-          echo "DATA: ${{ github.event.pull_request }}"
+          echo "DATA: ${{ github.event.pull_request.user.type }}"
 
           # Regex pattern for a ticket number
           TICKET_PATTERN="DXTA-[0-9]+"  # Matches strings like DXTA-123
