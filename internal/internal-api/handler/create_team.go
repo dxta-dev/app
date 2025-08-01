@@ -11,11 +11,11 @@ import (
 )
 
 type CreateTeamRequestBody struct {
-	TeamName string `json:"teamName"`
+	TeamName string `json:"teamName" validate:"required"`
 }
 
 type CreateTeamResponse struct {
-	TeamId int64 `json:"team_id" validate:"required"`
+	TeamId int64 `json:"team_id"`
 }
 
 func CreateTeam(validate *validator.Validate) http.HandlerFunc {

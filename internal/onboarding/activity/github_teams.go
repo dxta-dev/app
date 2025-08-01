@@ -214,7 +214,7 @@ func (ta *TenantActivities) UpsertTeams(
 			SET team_id = CASE id 
 				%s 
 			END 
-			WHERE id in (%s)`,
+			WHERE id IN (%s)`,
 			strings.Join(caseValues, "\n"),
 			strings.Join(githubTeamIdValues, ", "),
 		)
