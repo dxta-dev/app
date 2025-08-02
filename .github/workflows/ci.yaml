@@ -18,7 +18,7 @@ env:
 
 jobs:
   check-title:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: actions/checkout@v4
@@ -39,7 +39,7 @@ jobs:
           echo "PR title contains a valid ticket number."
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -69,7 +69,7 @@ jobs:
         run: go test -v ./...
 
   build-oss-api:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -89,7 +89,7 @@ jobs:
 
   docker-oss-api:
     needs: [test, build-oss-api]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -111,7 +111,7 @@ jobs:
           tags: ${{ env.TEST_TAG_OSS_API }}
   
   build-internal-api:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -131,7 +131,7 @@ jobs:
 
   docker-internal-api:
     needs: [test, build-internal-api]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -153,7 +153,7 @@ jobs:
           tags: ${{ env.TEST_TAG_INTERNAL_API }}
 
   build-onboarding-worker:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
@@ -173,7 +173,7 @@ jobs:
 
   docker-onboarding-worker:
     needs: [test, build-onboarding-worker]
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@6c439dc8bdf85cadbbce9ed30d1c7b959517bc49
