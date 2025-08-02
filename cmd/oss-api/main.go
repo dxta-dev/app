@@ -48,6 +48,7 @@ func initTracer(ctx context.Context, res *sdkresource.Resource) (*sdktrace.Trace
 	return tp, nil
 }
 
+
 func main() {
 	isEndpointProvided := os.Getenv("OTEL_EXPORTER_OTLP_ENDPOINT") != "" ||
 		os.Getenv("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") != ""
