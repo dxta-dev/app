@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-func BuildDeployFrequencyQuery(weeks []string) AggregatedValuesQuery {
+func BuildDeployFrequencyQuery(weeks []string, _ *int64) AggregatedValuesQuery {
 
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 

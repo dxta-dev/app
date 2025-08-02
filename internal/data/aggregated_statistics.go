@@ -12,6 +12,17 @@ type AggregatedStatistics = OverallWeeklyData[Statistics]
 type WeeklyStatisticsData = WeeklyData[Statistics]
 type AggregatedStatisticsQuery = Query[AggregatedStatisticsKey]
 
+func (AggregatedStatisticsKey) Execute(
+	ctx context.Context,
+	db *DB,
+	q AggregatedStatisticsQuery,
+	org, repo string,
+	weeks []string,
+	team *int64,
+) (any, error) {
+	return db.GetAggregatedStatistics(ctx, q, org, repo, weeks, team)
+}
+
 func (d DB) GetAggregatedStatistics(
 	ctx context.Context,
 	query AggregatedStatisticsQuery,

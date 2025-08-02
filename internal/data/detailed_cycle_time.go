@@ -16,8 +16,19 @@ type CycleTimeStatistics struct {
 
 type AggregatedCycleTimeStatistics = OverallWeeklyData[CycleTimeStatistics]
 type WeeklyCycleTimeStatistics = WeeklyData[CycleTimeStatistics]
-type CycleTimeStatisticsKey struct {}
+type CycleTimeStatisticsKey struct{}
 type CycleTimeStatisticsQuery = Query[CycleTimeStatisticsKey]
+
+func (CycleTimeStatisticsKey) Execute(
+	ctx context.Context,
+	db *DB,
+	q CycleTimeStatisticsQuery,
+	org, repo string,
+	weeks []string,
+	team *int64,
+) (any, error) {
+	return db.GetDetailedCycleTime(ctx, q, org, repo, weeks, team)
+}
 
 func BuildDetailedCycleTimeQuery(weeks []string, team *int64) CycleTimeStatisticsQuery {
 	teamQuery := ""
@@ -28,7 +39,7 @@ func BuildDetailedCycleTimeQuery(weeks []string, team *int64) CycleTimeStatistic
 
 	weeksPlaceholder := getWeeksPlaceholder(len(weeks))
 
-	return CycleTimeStatisticsQuery{ value :fmt.Sprintf(`
+	return CycleTimeStatisticsQuery{value: fmt.Sprintf(`
 	WITH has_deployment AS (
 		SELECT DISTINCT repository_external_id, forge_type
 		FROM tenant_deployment_environments

@@ -11,6 +11,17 @@ type AggregatedValues = OverallWeeklyData[Value]
 type WeeklyValueData = WeeklyData[Value]
 type AggregatedValuesQuery = Query[AggregatedValuesKey]
 
+func (AggregatedValuesKey) Execute(
+	ctx context.Context,
+	db *DB,
+	q AggregatedValuesQuery,
+	org, repo string,
+	weeks []string,
+	team *int64,
+) (any, error) {
+	return db.GetAggregatedValues(ctx, q, org, repo, weeks, team)
+}
+
 func (d DB) GetAggregatedValues(
 	ctx context.Context,
 	query AggregatedValuesQuery,
